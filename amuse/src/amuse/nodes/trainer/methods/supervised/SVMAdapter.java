@@ -1,0 +1,137 @@
+/** 
+ * This file is part of AMUSE framework (Advanced MUsic Explorer).
+ * 
+ * Copyright 2006-2010 by code authors
+ * 
+ * Created at TU Dortmund, Chair of Algorithm Engineering
+ * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
+ *
+ * AMUSE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AMUSE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Creation date: 16.06.2010
+ */
+package amuse.nodes.trainer.methods.supervised;
+
+import java.util.StringTokenizer;
+
+import amuse.data.io.DataSet;
+import amuse.data.io.DataSetInput;
+import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.trainer.TrainingConfiguration;
+import amuse.nodes.trainer.interfaces.TrainerInterface;
+import amuse.util.LibraryInitializer;
+
+import com.rapidminer.operator.IOContainer;
+import com.rapidminer.operator.IOObject;
+import com.rapidminer.operator.Model;
+import com.rapidminer.operator.Operator;
+import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.learner.Learner;
+import com.rapidminer.tools.OperatorService;
+
+/**
+ * Adapter for JMySVMLearner. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
+ * 
+ * @author Igor Vatolkin
+ * @version $Id: vatolkin $
+ */
+public class SVMAdapter extends AmuseTask implements TrainerInterface {
+
+	/** The SVM kernel type */
+	private String kernel;
+	
+	/** The SVM kernel parameter gamma (for radial kernel only) */
+	private Double kernelGamma;
+	
+	/** The SVM kernel parameter degree (for polynomial kernel only) */
+	private Double kernelDegree;
+	
+	/** The SVM kernel parameter a (for neural kernel only) */
+	private Double kernelA;
+	
+	/** The SVM kernel parameter b (for neural kernel only) */
+	private Double kernelB;
+	
+	/** The SVM complexity constant */
+	private Double c;
+	
+	/** Insensitivity constant */
+	private Double epsilon;
+	
+	/**
+	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#setParameters(String)
+	 */
+	public void setParameters(String parameterString) {
+
+		// Default parameters?
+		if(parameterString == "" || parameterString == null) {
+			kernel = new String("dot");
+			kernelGamma = 1.0;
+			kernelDegree = 2.0;
+			kernelA = 1.0;
+			kernelB = 0.0;
+			c = 0.0;
+			epsilon = 0.0;
+		} else {
+			StringTokenizer tok = new StringTokenizer(parameterString, "_");
+			kernel = tok.nextToken();
+			kernelGamma = new Double(tok.nextToken());
+			kernelDegree = new Double(tok.nextToken());
+			kernelA = new Double(tok.nextToken());
+			kernelB = new Double(tok.nextToken());
+			c = new Double(tok.nextToken());
+			epsilon = new Double(tok.nextToken());
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.interfaces.AmuseTaskInterface#initialize()
+	 */
+	public void initialize() throws NodeException {
+		try {
+			LibraryInitializer.initializeRapidMiner(properties.getProperty("homeFolder") + "/operatorsClassification.xml");
+		} catch (Exception e) {
+			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
+		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
+	 */
+	public void trainModel(String outputModel) throws NodeException {
+		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
+			
+		// Train the model and save it
+		try {
+			Learner learner = (Learner)OperatorService.createOperator("JMySVMLearner");
+			((Operator)learner).setParameter("kernel_type", this.kernel);
+			((Operator)learner).setParameter("kernel_gamma", this.kernelGamma.toString());
+			((Operator)learner).setParameter("kernel_degree", this.kernelDegree.toString());
+			((Operator)learner).setParameter("kernel_a", this.kernelA.toString());
+			((Operator)learner).setParameter("kernel_b", this.kernelB.toString());
+			((Operator)learner).setParameter("C", this.c.toString());
+			((Operator)learner).setParameter("epsilon", this.epsilon.toString());
+			Model model = learner.learn(dataSet.convertToRapidMinerExampleSet());
+			Operator modelWriter = OperatorService.createOperator(ModelWriter.class);
+			modelWriter.setParameter("model_file", outputModel);
+			modelWriter.apply(new IOContainer(new IOObject[]{model}));
+		} catch (Exception e) {
+			throw new NodeException("Classification training failed: " + e.getMessage());
+		}
+	}
+
+}

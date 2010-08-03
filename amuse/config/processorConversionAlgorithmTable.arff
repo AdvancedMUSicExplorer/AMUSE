@@ -1,0 +1,35 @@
+% Table with processor algorithms which convert the feature matrix to vector (used as classifier input)
+
+@RELATION algorithms
+
+% Unique algorithm ID
+@ATTRIBUTE Id NUMERIC
+% Algorithm name
+@ATTRIBUTE Name STRING
+% Java class which runs algorithm
+@ATTRIBUTE AdapterClass STRING
+% Algorithm home folder (e.g. if an external tool is used)
+@ATTRIBUTE HomeFolder STRING
+% Algorithm start script for adapter only if external tool is used (otherwise please set to -1)
+@ATTRIBUTE StartScript STRING
+% Base script for algorithm
+@ATTRIBUTE InputBaseBatch STRING
+% Script for algorithm (after the parameters / options were saved to base script)
+@ATTRIBUTE InputBatch STRING
+% Description of algorithm
+@ATTRIBUTE AlgorithmDescription STRING
+% Names of parameters for this algorithm
+@ATTRIBUTE ParameterNames STRING
+% Regular expression which describes allowed definition ranges for algorithm parameters
+@ATTRIBUTE ParameterDefinitions STRING
+% Default parameter values
+@ATTRIBUTE DefaultParameterValues STRING
+% Descriptions of parameters
+@ATTRIBUTE ParameterDescriptions STRING
+
+@DATA
+0, "GMM1", "amuse.nodes.processor.methods.converters.GMMConverter", "", -1, -1, -1, "Performs conversion of the given feature matrix with GMM1 model (saving mean value and deviation for each feature)",  "Mean:|Std_dev:", "[%n{true,false}|%n{true,false}]", "[true_true]", "Save the mean|Save the standard deviation"
+2, "Quartiles", "amuse.nodes.processor.methods.converters.QuartileConverter", "", -1, -1, -1, "Calculates quartile boundaries for each feature from the given feature matrix", "", "", "", ""
+3, "StructureGMM1", "amuse.nodes.processor.methods.converters.StructureGMMConverter", "", -1, -1, -1, "Saves mean value and deviation for each feature selecting only the partitions from the middles of structural parts (e.g. refrain or bridge)", "Number of partitions:", "[%i]","[4]", "Number of partitions to select from the middle of each structural part"
+
+

@@ -1,0 +1,17 @@
+NumericalXValidation
+A cross validation for numerical learning.
+groups/24/validation.png
+<operator name="XValidation" class="XValidation">
+  <parameter key="sampling_type"	value="shuffled sampling"/>
+  <operator name="LinearRegression" class="LinearRegression">
+  </operator>
+  <operator name="OperatorChain" class="OperatorChain">
+    <operator name="ModelApplier" class="ModelApplier">
+      <list key="application_parameters">
+      </list>
+    </operator>
+    <operator name="Performance" class="Performance">
+    </operator>
+  </operator>
+</operator>
+

@@ -1,0 +1,7 @@
+Automatical Feature Construction
+Evolutionary feature construction which eases learning for a given learning scheme.
+yagga.xml
+Input.configure_operator
+Input.attributes
+YAGGA.maximum_number_of_generations
+YAGGA.population_size

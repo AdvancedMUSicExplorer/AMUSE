@@ -1,0 +1,12 @@
+#!/bin/tcsh
+
+# Make the given script executable
+chmod u+x $1
+
+# Submit the given script to LSF grid
+# $1 - script name
+# $2 - path to task configuration
+bsub -R "hardy select[swp > 4000]" "$1 $2"
+
+# Sleep a bit
+sleep 4

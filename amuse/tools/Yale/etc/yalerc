@@ -1,0 +1,86 @@
+##
+## File: $Id: yalerc,v 2.35 2006/09/27 23:00:52 ingomierswa Exp $
+##
+## This file 'yalerc' contains system independent properties for yale
+## These properties may as well be set using java's -D option.
+## Yale also scans for configuration files in the user's home directory
+## and in the current working directory.
+##
+
+## Format the logfile, i.e. use Unix style characters to mark characters
+## as bold (for display with less, more...) ?
+yale.general.logfile.format                = no
+## The default random seed (-1: random random seed)
+yale.general.randomseed                    = 2001
+
+## sendmail command to send notification emails with. 
+yale.tools.sendmail.command                = /usr/sbin/sendmail
+## gnuplot executable
+yale.tools.gnuplot.command                 = gnuplot
+## editor for source code. For development only. 
+## %f is replaced by the filename, %l is replaced by the linenumber.
+# yale.tools.editor                        = emacsclient --no-wait +%l %f
+
+## The default number of fraction digits for numbers
+yale.gui.fractiondigits.numbers            = 3
+## The default number of fraction digits for percent values
+yale.gui.fractiondigits.percent            = 2
+## Show Tip of the Day at startup?
+yale.gui.tip.show	                  = true
+## Check for updates at startup?
+yale.gui.update.check	                  = true
+## Beep when experiment terminates successfully?
+yale.gui.beep.success                     = true
+## Beep when experiment causes error?
+yale.gui.beep.error                       = true
+## Beep at breakpoint?
+yale.gui.beep.breakpoint                  = true
+## The default plotter
+yale.gui.plotter.default                  = Scatter
+## The size of the scatter plots
+yale.gui.plotter.matrixplot.size          = 200
+## Color for minimum values in the plotter legends
+yale.gui.plotter.legend.mincolor          = 0,0,255
+## Color for maximum values in the plotter legends
+yale.gui.plotter.legend.maxcolor          = 255,0,0
+## Limit for number of classes in plotter legends
+yale.gui.plotter.legend.classlimit        = 10
+## Limit for number of nominal classes in colorized plots
+yale.gui.plotter.colors.classlimit        = 10
+## Limit for the number of rows (data points) for plotting. Plotters will sample if this limit is exceeded.
+yale.gui.plotter.rows.maximum             = 1000
+## Limit for number of states in the undo list
+yale.gui.undolist.size                    = 10
+## Limit for number of rows of attribute editor
+yale.gui.attributeeditor.rowlimit         = 50
+## Limit for number of rows of attribute editor
+yale.gui.attributeeditor.columnlimit      = 20
+## Limit for number of rows in message viewer
+yale.gui.messageviewer.rowlimit           = 1000
+## Color for warnings in the message viewer
+yale.gui.messageviewer.highlight.warnings = 0,0,255
+## Color for errors in the message viewer
+yale.gui.messageviewer.highlight.errors   = 255,0,0
+## Color for main keywords in the XML editor
+yale.gui.xml.highlight.main               = 255,0,0
+## Color for other keywords in the XML editor
+yale.gui.xml.highlight.other              = 0,0,255
+## Color for quoted text in the XML editor
+yale.gui.xml.highlight.quote              = 255,175,175
+## the pluggable look and feel [system|cross_platform|classname]
+yale.gui.plaf                             = system
+#yale.gui.plaf                             = cross_platform
+#yale.gui.plaf                             = com.sun.java.swing.plaf.motif.MotifLookAndFeel
+#yale.gui.plaf                             = com.sun.java.swing.plaf.windows.WindowsLookAndFeel
+#yale.gui.plaf                             = com.sun.java.swing.plaf.gtk.GTKLookAndFeel
+
+
+
+## Commands for external programs 
+
+#yale.external.mysvm.learncommand           =
+#yale.external.mysvm.applycommand           =
+#yale.external.mysvm.weighted.learncommand  =
+#yale.external.mysvm.weighted.applycommand  =
+#yale.external.svmlight.learncommand        =
+#yale.external.svmlight.applycommand        =

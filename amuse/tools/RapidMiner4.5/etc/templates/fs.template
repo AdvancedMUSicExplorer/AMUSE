@@ -1,0 +1,9 @@
+Feature Selection
+Employ forward selection or backward elemination for feature selection.
+fs.xml
+ExampleSource.configure_operator
+ExampleSource.attributes
+FS.selection_direction
+Learner.svm_type
+Learner.kernel_type
+XValidation.number_of_validations

@@ -1,0 +1,11 @@
+% Table with installed plugins
+@RELATION plugins
+
+% Unique plugin Id
+@ATTRIBUTE Id NUMERIC
+% Plugin name
+@ATTRIBUTE Name STRING
+% Installed version description
+@ATTRIBUTE VersionDescription STRING
+
+@DATA

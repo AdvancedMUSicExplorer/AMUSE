@@ -1,0 +1,12 @@
+Feature Selection + Wrapper Validation
+Use a wrapper validation to evaluate the results of multiple feature selection runs.
+mvfs.xml
+ExampleSource.configure_operator
+ExampleSource.attributes
+FS.selection_direction
+Learner.svm_type
+Learner.kernel_type
+XValidation.number_of_validations
+WrapperValidation.number_of_validations
+OuterLearner.svm_type
+OuterLearner.kernel_type

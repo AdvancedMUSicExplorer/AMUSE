@@ -1,0 +1,4 @@
+<operator name="Root" class="Process">
+  <operator name="Input" class="ExampleSource"/>
+  <operator name="Learner" class="DecisionTree"/>
+</operator>

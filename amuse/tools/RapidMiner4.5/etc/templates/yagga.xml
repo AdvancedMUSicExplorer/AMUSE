@@ -1,0 +1,13 @@
+<operator name="Root" class="Process">
+  <operator name="Input" class="ExampleSource"/>
+  <operator name="YAGGA" class="YAGGA">
+    <operator name="XVal" class="XValidation">
+      <operator name="NearestNeighbors" class="NearestNeighbors"/>
+      <operator name="ApplierChain" class="OperatorChain">
+        <operator name="Applier" class="ModelApplier"/>
+        <operator name="Evaluation" class="Performance">
+        </operator>
+      </operator>
+    </operator>
+  </operator>
+</operator>

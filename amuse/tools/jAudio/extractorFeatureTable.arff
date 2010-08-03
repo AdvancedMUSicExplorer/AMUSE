@@ -1,0 +1,41 @@
+% Music feature table
+
+@relation "Mapping of jAudio features to Amuse feature IDs"
+
+@attribute ExtractorDescription string
+@attribute Id numeric
+
+@data
+"Spectral Centroid0", 14
+"Spectral Rolloff Point0", 21
+"Spectral Flux0", 22
+"Spectral Variability0", 24
+"Root Mean Square0", 4
+"Fraction Of Low Energy Windows0", 6
+"Zero Crossings0", 0
+"Strongest Beat0", 405
+"Beat Sum0", 407
+"Strength Of Strongest Beat0", 402
+"MFCC0", 28
+"MFCC1", 28
+"MFCC2", 28
+"MFCC3", 28
+"MFCC4", 28
+"MFCC5", 28
+"MFCC6", 28
+"MFCC7", 28
+"MFCC8", 28
+"MFCC9", 28
+"MFCC10", 28
+"MFCC11", 28
+"MFCC12", 28
+"LPC0", 1
+"LPC1", 1
+"LPC2", 1
+"LPC3", 1
+"LPC4", 1
+"LPC5", 1
+"LPC6", 1
+"LPC7", 1
+"LPC8", 1
+"LPC9", 1
