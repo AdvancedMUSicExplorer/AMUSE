@@ -170,9 +170,9 @@ public class FitnessEvaluator {
 		
 		processedModel = new String(
 			strategy.getConfiguration().getConstantParameterByName("Processing steps").
-				getAttributes().getNamedItem("stringValue").getNodeValue() + "_" +
+				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" +
 			strategy.getConfiguration().getConstantParameterByName("Conversion steps").
-				getAttributes().getNamedItem("stringValue").getNodeValue() + "_" + 
+				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
 			strategy.getConfiguration().getConstantParameterByName("Partition size").
 				getAttributes().getNamedItem("intValue").getNodeValue() + "ms_" + 
 			strategy.getConfiguration().getConstantParameterByName("Partition overlap").
