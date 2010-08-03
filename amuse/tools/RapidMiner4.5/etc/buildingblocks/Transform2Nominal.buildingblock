@@ -1,0 +1,11 @@
+Transform2Nominal
+This standard preprocessing chain replaces missing values and transforms the data to a nominal data set (by disretization into 5 bins)
+operators/24/chain.png
+<operator name="Transform2Nominal" class="OperatorChain" expanded="yes">
+    <operator name="MissingValueReplenishment" class="MissingValueReplenishment">
+    </operator>
+    <operator name="FrequencyDiscretization" class="FrequencyDiscretization">
+        <parameter key="create_view"	value="false"/>
+        <parameter key="number_of_bins"	value="5"/>
+    </operator>
+</operator>

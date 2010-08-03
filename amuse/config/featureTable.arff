@@ -1,0 +1,73 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+
+@DATA
+
+% Timbre features
+
+0, "Zero-crossing rate", 0, 512, 1
+1, "Linear prediction coefficients", 0, 512, 10
+2, "Average distance between extremal spectral values and its variance", 1, 512, 2
+3, "Average distance between zero-crossings of the time-domain signal and its variance", 1, 512, 2
+4, "Root mean square", 0, 512, 1
+6, "Low energy", 0, 512, 1
+7, "Normalized energy of harmonic components", 2, 512, 1
+10, "Tristimulus", 2, 512, 2
+14, "Spectral centroid", 1, 512, 1
+16, "Spectral bandwidth", 1, 512, 1
+17, "Spectral skewness", 1, 512, 1
+18, "Spectral kurtosis", 1, 512, 1
+19, "Spectral crest factor", 1, 512, 4
+20, "Spectral flatness measure", 1, 512, 4
+21, "Spectral extent", 1, 512, 1
+22, "Spectral flux", 0, 512, 1
+25, "Sub-band energy ratio", 1, 512, 4
+28, "Mel frequency cepstral coefficients", 0, 512, 13
+29, "Spectral slope", 1, 512, 1
+30, "y-axis intercept", 1, 512, 1
+31, "Discrepancy", 1, 512, 1
+32, "Angles in phase domain", 1, 512, 1
+33, "Distances in phase domain", 1, 512, 1
+45, "CMRARE cepstral modulation features with polynomial order 3", 2, 110250, 8
+46, "CMRARE cepstral modulation features with polynomial order 5", 2, 110250, 12
+47, "CMRARE cepstral modulation features with polynomial order 10", 2, 110250, 22
+
+% Harmony and melody features
+
+200, "Fundamental frequency", 2, 512, 1
+204, "Chroma vector", 1, 512, 24
+205, "Amplitude of maximum in the chromagram", 1, 512, 1
+207, "Tone with maximum strength in the chromagram", 1, 512, 1
+211, "Amplitude, position and width of 1st spectral peak", 1, 512, 3
+212, "Amplitude, position and width of 2nd spectral peak", 1, 512, 3
+213, "Amplitude, position and width of 3rd spectral peak", 1, 512, 3
+214, "Amplitude, position and width of 4th spectral peak", 1, 512, 3
+215, "Amplitude, position and width of 5th spectral peak", 1, 512, 3
+
+% Tempo features
+
+400, "Duration of music piece", 2, -1, 1
+401, "Tempo", 1, 512, 1
+402, "First relative periodicity amplitude peak", 0, 512, 1
+405, "First periodicity peak in bpm", 1, 512, 1
+406, "Second periodicity peak in bpm", 1, 512, 1
+407, "Sum of correlated components", 0, 512, 1
+
+% Structural features
+

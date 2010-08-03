@@ -1,0 +1,20 @@
+<operator name="Root" class="Process">
+  <operator name="ExampleSource" class="ExampleSource"/>
+  <operator name="FS" class="FeatureSelection">
+    <operator name="FSChain" class="OperatorChain">
+      <operator name="XValidation" class="XValidation">
+        <operator name="Learner" class="LibSVMLearner"/>
+        <operator name="ApplierChain" class="OperatorChain">
+          <operator name="Applier" class="ModelApplier"/>
+          <operator name="Evaluator" class="Performance"/>
+        </operator>
+      </operator>
+      <operator name="ProcessLog" class="ProcessLog">
+        <list key="log">
+ 	  <parameter key="generation"  value="operator.FS.value.generation"/> 
+   	  <parameter key="performance" value="operator.FS.value.performance"/>
+        </list>
+      </operator>
+    </operator>
+  </operator>
+</operator>

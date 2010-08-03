@@ -1,0 +1,7 @@
+# yale.external.mysvm.learncommand           =
+# yale.external.mysvm.applycommand           =
+# yale.external.mysvm.weighted.learncommand  =
+# yale.external.mysvm.weighted.applycommand  =
+
+# yale.external.svmlight.learncommand        =
+# yale.external.svmlight.applycommand        =

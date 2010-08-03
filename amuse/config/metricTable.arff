@@ -1,0 +1,64 @@
+% Table with all classifier evaluation metrics available in Amuse.
+% Normally only a few number of metrics is required, please save as
+% another file a modified copy of this file leaving only the metrics 
+% you want to calculate.
+
+@RELATION metrics
+
+% Unique metric ID
+@ATTRIBUTE Id NUMERIC
+% Metric name
+@ATTRIBUTE Name STRING
+% Metric category
+@ATTRIBUTE Category {"Data reduction", "Standard measures", "Confusion matrix", "Recall and specificity combinations", "Correlation-based measures", "Measured error", "Song list", "?"}
+% Optimal value (e.g. 0 if this metric should be minimized)
+@ATTRIBUTE OptimalValue NUMERIC
+% Class for metric calculation
+@ATTRIBUTE MetricClass STRING
+% Should this metric be calculated for complete songs?
+@ATTRIBUTE CalculateForSongs {true,false}
+% Should this metric be calculated for each song partition?
+@ATTRIBUTE CalculateForPartitions {true,false}
+% Does this metric support binary classifier? (true/false)
+@ATTRIBUTE SupportsBinary STRING
+% Does this metric support multiclass classifier? (true/false)
+@ATTRIBUTE SupportsMulticlass STRING
+% Does this metric support fuzzy classifier? (true/false)
+@ATTRIBUTE SupportsFuzzy STRING
+
+@DATA
+
+% Runtime metrics
+
+0, "Ratio of used raw time windows", "Data reduction",  -1, amuse.nodes.validator.metrics.datareduction.RatioOfUsedRawTimeWindows, ?, ?, ?, ?, ?
+1, "Feature matrix reduction rate", "Data reduction",  -1, amuse.nodes.validator.metrics.datareduction.FeatureMatrixReductionRate, ?, ?, ?, ?, ?
+2, "Feature vector reduction rate", "Data reduction", -1, amuse.nodes.validator.metrics.datareduction.FeatureVectorReductionRate, ?, ?, ?, ?, ?
+
+% Confusion matrix based measures
+
+100, "True positives", "Confusion matrix", -1, amuse.nodes.validator.metrics.confusionmatrix.base.TruePositives, true, true, true, false, false
+101, "True negatives", "Confusion matrix", -1, amuse.nodes.validator.metrics.confusionmatrix.base.TrueNegatives, true, true, true, false, false
+102, "False positives", "Confusion matrix", -1, amuse.nodes.validator.metrics.confusionmatrix.base.FalsePositives, true, true, true, false, false
+103, "False negatives", "Confusion matrix", -1, amuse.nodes.validator.metrics.confusionmatrix.base.FalseNegatives, true, true, true, false, false
+104, "Accuracy", "Standard measures", 1.0, amuse.nodes.validator.metrics.confusionmatrix.Accuracy, true, true, true, true, false
+105, "Precision", "Standard measures", -1, amuse.nodes.validator.metrics.confusionmatrix.Precision, true, true, true, true, false
+106, "Recall", "Standard measures", -1, amuse.nodes.validator.metrics.confusionmatrix.Recall, true, true, true, true, false
+107, "Specificity", "Standard measures", -1, amuse.nodes.validator.metrics.confusionmatrix.Specificity, true, true, true, false, false
+108, "F1-measure", "Standard measures", -1, amuse.nodes.validator.metrics.confusionmatrix.FMeasure, true, true, true, true, false
+110, "Youden's index", "Recall and specificity combinations", -1, amuse.nodes.validator.metrics.confusionmatrix.YoudensIndex, true, true, true, false, false
+111, "Likelihoods", "Recall and specificity combinations", -1, amuse.nodes.validator.metrics.confusionmatrix.Likelihoods, true, true, true, false, false
+112, "Discriminant power", "Recall and specificity combinations", -1, amuse.nodes.validator.metrics.confusionmatrix.DiscriminantPower, true, true, true, false, false
+113, "Geometric means", "Recall and specificity combinations", -1, amuse.nodes.validator.metrics.confusionmatrix.GeometricMeans, true, true, true, false, false
+114, "List of correctly predicted instances", "Song list", -1, amuse.nodes.validator.metrics.confusionmatrix.base.ListOfCorrectlyPredictedInstances, true, false, true, true, true
+
+% Numeric prediction measured errors
+
+200, "Absolute error", "Measured error", 0.0, amuse.nodes.validator.metrics.AbsoluteError, true, true, true, true, true
+201, "Relative error", "Measured error", 0.0, amuse.nodes.validator.metrics.RelativeError, true, true, true, true, true
+202, "Mean squared error", "Measured error", 0.0, amuse.nodes.validator.metrics.MeanSquaredError, true, true, true, true, true
+
+% Correlation between predicted and labeled values
+
+300, "Standard correlation coefficient", "Correlation-based measures", 1.0, amuse.nodes.validator.metrics.correlation.StandardCorrelationCoefficient, true, true, true, true, true
+301, "Spearman's Rho", "Correlation-based measures", 1.0, amuse.nodes.validator.metrics.correlation.SpearmansRhoRankCorrelation, true, true, true, true, true
+302, "Kendal's Tau", "Correlation-based measures", 1.0, amuse.nodes.validator.metrics.correlation.KendallsTauRankCorrelation, true, false, true, true, true

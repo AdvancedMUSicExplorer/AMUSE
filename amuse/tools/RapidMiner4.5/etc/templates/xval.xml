@@ -1,0 +1,10 @@
+<operator name="Root" class="Process">
+  <operator name="ExampleSource" class="ExampleSource"/>
+  <operator name="XValid" class="XValidation">
+    <operator name="Learner" class="LibSVMLearner"/>
+    <operator name="ApplierChain" class="OperatorChain">
+      <operator name="Applier" class="ModelApplier"/>
+      <operator name="Evaluator" class="Performance"/>
+    </operator>
+  </operator>
+</operator>

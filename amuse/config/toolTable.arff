@@ -1,0 +1,15 @@
+% Table with installed tools
+@RELATION tools
+
+% Unique tool Id
+@ATTRIBUTE Id NUMERIC
+% Tool name
+@ATTRIBUTE Name STRING
+% Tool folder
+@ATTRIBUTE Folder STRING
+% Installed version description
+@ATTRIBUTE VersionDescription STRING
+% Plugins which require this tool
+@ATTRIBUTE PluginList STRING
+
+@DATA

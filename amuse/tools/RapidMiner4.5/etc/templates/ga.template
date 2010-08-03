@@ -1,0 +1,7 @@
+GA
+Employ a genetic algorithm for feature selection.
+ga.xml
+ExampleSource.configure_operator
+ExampleSource.attributes
+Learner.svm_type
+Learner.kernel_type

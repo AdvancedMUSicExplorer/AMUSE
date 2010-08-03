@@ -1,0 +1,12 @@
+<operator name="Root" class="Process">
+  <operator name="ExampleSource" class="ExampleSource"/>
+  <operator name="GA" class="GeneticAlgorithm">
+    <operator name="XVal" class="XValidation">
+      <operator name="Learner" class="LibSVMLearner"/>
+      <operator name="ApplierChain" class="OperatorChain">
+        <operator name="Applier" class="ModelApplier"/>
+        <operator name="Evaluator" class="Performance"/>
+      </operator>
+    </operator>
+  </operator>
+</operator>

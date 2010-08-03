@@ -1,0 +1,27 @@
+% Algorithms for classifier validation
+
+@RELATION 'Classifier validation methods'
+
+% Unique algorithm ID 
+@ATTRIBUTE Id NUMERIC
+% Algorithm name
+@ATTRIBUTE Name STRING
+% Algorithm category
+@ATTRIBUTE Category {"Single evaluation", "Cross-validation"}
+% Java class which runs algorithm
+@ATTRIBUTE MethodClass STRING
+% Description of algorithm
+@ATTRIBUTE AlgorithmDescription STRING
+% Names of parameters for this algorithm
+@ATTRIBUTE ParameterNames STRING
+% Regular expression which describes allowed definition ranges for algorithm parameters
+@ATTRIBUTE ParameterDefinitions STRING
+% Default parameter values
+@ATTRIBUTE DefaultParameterValues STRING
+% Descriptions of parameters
+@ATTRIBUTE ParameterDescriptions STRING
+
+@DATA
+0, "Single_Evaluator", "Single evaluation", "amuse.nodes.validator.methods.SingleEvaluator", "Evaluates the given classification model(s)", "Path to classification model or folder with models:", "[%fof]", "[]", "Path to a single classification model file or folder with several models"
+
+1, "n-Fold_Cross-Validation", "Cross-validation", "amuse.nodes.validator.methods.NFoldCrossValidator", "n-fold cross validation", "n:|Random seed:", "[%i{2-INF} %d]", "[10_0]", "Partition number|Set to 0 if the new seed should be generated; set to -1 if the partitions should be built sequentually from the song list"

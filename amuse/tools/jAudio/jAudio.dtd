@@ -1,0 +1,19 @@
+<!ELEMENT batchFile (batch+)>
+<!ELEMENT batch (fileSet,settings,destination+)>
+<!ATTLIST batch ID CDATA "" >
+<!ELEMENT fileSet (file+)>
+<!ELEMENT file (#PCDATA)>
+<!ELEMENT settings (windowSize,windowOverlap,samplingRate,normalise,perWindowStats,overallStats,outputType,feature+)>
+<!ELEMENT windowSize (#PCDATA)>
+<!ELEMENT windowOverlap (#PCDATA)>
+<!ELEMENT samplingRate (#PCDATA)>
+<!ELEMENT normalise (#PCDATA)>
+<!ELEMENT perWindowStats (#PCDATA)>
+<!ELEMENT overallStats (#PCDATA)>
+<!ELEMENT outputType (#PCDATA)>
+<!ELEMENT amuseEnableFeature (feature)>
+<!ELEMENT feature (name,active,attribute*)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT active (#PCDATA)>
+<!ELEMENT attribute (#PCDATA)>
+<!ELEMENT destination (#PCDATA)>

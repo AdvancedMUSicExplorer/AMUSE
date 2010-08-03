@@ -1,0 +1,29 @@
+<operator name="Root" class="Process">
+  <operator name="ExampleSource" class="ExampleSource"/>
+  <operator name="EvolutionaryWeighting" class="EvolutionaryWeighting">
+    <parameter key="tournament_size"	value="0.2"/>
+    <parameter key="p_crossover"	value="0.5"/>
+    <parameter key="crossover_type"	value="shuffle"/>
+    <operator name="WeightingChain" class="OperatorChain">
+      <operator name="XValidation" class="XValidation">
+        <parameter key="number_of_validations"	value="5"/>
+        <operator name="NearestNeighbors" class="NearestNeighbors"/>
+        <operator name="ApplierChain" class="OperatorChain">
+          <operator name="ModelApplier" class="ModelApplier">
+            <list key="prediction_parameters">
+            </list>
+          </operator>
+          <operator name="Performance" class="Performance">
+          </operator>
+        </operator>
+      </operator>
+      <operator name="ProcessLog" class="ProcessLog">
+        <list key="log">
+          <parameter key="Generation"	value="operator.EvolutionaryWeighting.value.generation"/>
+          <parameter key="BestPerf"	value="operator.EvolutionaryWeighting.value.best"/>
+          <parameter key="Perf"	value="operator.EvolutionaryWeighting.value.performance"/>
+        </list>
+      </operator>
+    </operator>
+  </operator>
+</operator>

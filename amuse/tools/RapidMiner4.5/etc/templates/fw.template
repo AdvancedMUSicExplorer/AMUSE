@@ -1,0 +1,7 @@
+Feature Weighting
+Evolutionary feature weighting optimizing 1-Nearest Neighbor.
+fw.xml
+ExampleSource.configure_operator
+ExampleSource.attributes
+EvolutionaryWeighting.maximum_number_of_generations
+EvolutionaryWeighting.population_size

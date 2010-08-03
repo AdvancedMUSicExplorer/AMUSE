@@ -1,0 +1,17 @@
+Transform2Binominal
+This standard preprocessing chain replaces missing values and transforms the data into a binominal data set (only binary attributes)
+operators/24/chain.png
+<operator name="Transform2Binominal" class="OperatorChain" expanded="yes">
+    <operator name="MissingValueReplenishment" class="MissingValueReplenishment">
+        <list key="columns">
+        </list>
+    </operator>
+    <operator name="FrequencyDiscretization" class="FrequencyDiscretization">
+        <parameter key="create_view"	value="false"/>
+        <parameter key="number_of_bins"	value="5"/>
+    </operator>
+    <operator name="Nominal2Binominal" class="Nominal2Binominal">
+        <parameter key="create_view"	value="false"/>
+    </operator>
+</operator>
+

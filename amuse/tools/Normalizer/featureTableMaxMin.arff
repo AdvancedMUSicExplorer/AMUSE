@@ -1,0 +1,88 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@relation features
+
+% Unique feature ID
+@attribute Id numeric
+% Feature description
+@attribute Description string
+% Minimal possible values for this feature (for normalization)
+@attribute Min string
+% Maximum possible values for this feature (for normalization)
+@attribute Max string
+
+@data
+
+% Timbre features
+0, "Zero-crossing rate", "0", "0.92578"
+1, "Linear prediction coefficients", "-0.99994 -0.96233 -0.992 -0.89737 -0.9447 -0.88499 -0.85583 -0.7767 -0.87212 0", "0.97376 0.99942 0.93097 0.96428 0.91279 0.97913 0.95063 0.91406 0.76972 0"
+2, "Average distance between extremal spectral values and its variance", "152.5781 0", "10465.137 4931.1035"
+3, "Average distance between zero-crossings of the time-domain signal and its variance", "0 0", "511 255.5"
+4, "Root mean square", "0", "0.87074"
+6, "Low energy","0", "0.99"
+7, "Normalized energy of harmonic components", "0.00026565", "1.9252"
+10, "Tristimulus", "9.3542e-06 0.00054017", "1 0.9968"
+14, "Spectral centroid", "-1", "10174.849"
+15, "Spectral irregularity", "0", "1.9314"
+16, "Spectral bandwidth", "1.799e-11", "6088.3657"
+17, "Spectral skewness", "-12.8708", "23379322"
+18, "Spectral kurtosis", "1.0825", "579020240000000"
+19, "Spectral crest factor", "1 1 1 1", "5.8101 11.096 20.9453 35.8723"
+20, "Spectral flatness measure", "0.044587 0 0 0", "1 1 1 1"
+21, "Spectral extent", "43.0664", "10981.934"
+22, "Spectral flux", "0", "0.00055385"
+23, "Spectral brightness", "0.0017014", "0.99857"
+24, "Sensory roughness", "0", "30197.3458"
+25, "Sub-band energy ratio", "1.7947e-06 1.044e-32 1.187e-32 2.5165e-32", "1 0.99978 0.99517 1"
+28, "Mel frequency cepstral coefficients", "-1150 -46.8729 -35.3628 -28.3327 -23.1719 -19.3514 -19.0815 -19.1367 -20.8302 -16.801 -16.2137 -14.4444 -13.6393", "-43.0525 51.59 37.1358 25.1999 25.9342 23.3367 19.6387 17.2066 18.1659 18.4253 16.752 16.621 15.5209"
+29, "Spectral slope", "-1.4199e-05", "6.3392e-06"
+30, "y-axis intercept", "-0.013596", "0.13247"
+31, "Discrepancy", "0", "0.0082093"
+32, "Angles in phase domain", "0", "3.1175"
+33, "Distances in phase domain", "0", "0.95122"
+38, "Mel frequency cepstral coefficients - Nokia", "-9.0905 -5.5595 -3.5797 -3.2379 -2.9564 -2.5932 -2.5812 -2.388 -2.1137 -2.1515 -2.0349 -2.0887 -1.7808 -1.7692 -1.5962 -1.7651 -1.6588 -1.4879 -1.5007 -1.796", "5.2235 5.0414 3.4009 3.1838 2.9186 2.779 2.5049 2.1911 2.3087 2.0745 2.1563 1.7732 1.9307 1.9504 1.6651 1.7593 1.741 1.9165 1.4796 1.4658"
+39, "Mel frequency cepstral coefficients - MIR Toolbox", "-4.9456 -5.0526 -3.0271 -2.7871 -2.1279 -2.133 -2.2415 -2.092 -2.1296 -2.4433 -2.2004 -2.0493 -2.4341", "8.5961 4.142 3.5532 2.413 2.4246 2.1364 2.4478 2.3278 2.2143 2.2905 2.4536 2.3039 2.1147"
+40, "Bark scale magnitudes", "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", "442.2265 263.3293 256.5954 282.5314 237.9718 284.3145 300.8961 286.2226 253.3654 276.7572 303.8893 239.3971 266.9546 244.1183 267.1927 244.1146 480.5641 361.0792 434.0457 505.6247 420.3824 547.3417 652.0286"
+41, "CMRARE cepstral modulation features with polynomial order 3", "-2.1524e-07 -0.00019167 -0.0092771 -0.050659 -1.3022e-07 -6.4923e-05 -0.0037244 -0.022205", "4.6575e-07 8.3651e-05 0.023565 1.6568 1.7123e-07 5.033e-05 0.0081405 1.8277"
+42, "CMRARE cepstral modulation features with polynomial order 4", "-7.0125e-09 -1.187e-06 -0.00064227 -0.016987 -0.19346 -3.1466e-09 -2.2508e-06 -0.00026696 -0.019033 -0.081138", "2.1487e-09 3.7162e-06 0.00020866 0.043616 1.7576 4.326e-09 1.6244e-06 0.00035455 0.016609 2.1037"
+60, "Zero-crossing rate for ERB bands", "0 0 0 0 0 0 0 0 0 0", "0.011719 0.018555 0.029297 0.043945 0.06543 0.09375 0.13379 0.19336 0.27734 0.39746"
+61, "Root mean square for ERB bands", "0 0 0 0 0 0 0 0 0 0", "1.9634 1.6597 1.6697 1.7673 1.635 1.3883 1.13 1.0251 0.96001 0.64022"
+62, "Spectral centroid for ERB bands", "34.8426 71.1462 105.1238 13.1314 356.0585 377.1061 672.8802 588.6477 797.1556 3755.4505", "5070.1392 5074.7811 5080.4166 5086.5017 5091.3972 5090.9968 5074.7787 5560.199 6095.7174 8434.3053"
+
+% Harmony and melody features
+200, "Fundamental frequency", "0", "10225.758"
+201, "Inharmonicity", "0.075176", "0.7163"
+202, "Key and its clarity", "1 0.069317", "12 0.95867"
+203, "Major/minor alignment", "-0.39645", "0.40998"
+204, "Chroma vector", "0 0 0 0 0 0 0 0 0 0 0 0 1.9424e-16 2.0777e-16 3.2843e-16 3.5903e-16 1.9167e-16 2.2271e-16 4.1777e-16 4.8467e-16 0.0018133 1.6421e-16 1.5289e-16 1.784e-16", "2.5217 1.5314 1.7148 2.2759 1.3045 1.969 1.3339 1.9564 2.503 1.5138 1.524 1.5927 0.77499 0.62202 0.75358 0.75398 0.75637 0.82849 0.91314 0.786 1 0.65492 0.7185 0.70101"
+205, "Amplitude of maximum in the chromagram", "0", "1.1384"
+206, "Chroma vector - MIR Toolbox", "0 0 0 0 0 0 0 0 0 0 0 0", "1 1 1 1 1 1 1 1 1 1 1 1"
+207, "Tone with maximum strength in the chromagram", "0", "11"
+209, "Strengths of major keys", "-0.89669 -0.90862 -0.92716 -0.88715 -0.87669 -0.91037 -0.92644 -0.90882 -0.89801 -0.95249 -0.9529 -0.89926", "0.94363 0.94139 0.94586 0.94594 0.94042 0.95469 0.89845 0.95372 0.93086 0.94168 0.95867 0.91491"
+210, "Strengths of minor keys", "-0.90214 -0.84602 -0.90953 -0.90897 -0.88593 -0.91635 -0.96601 -0.88884 -0.91398 -0.90137 -0.90133 -0.91852", "0.94956 0.93743 0.94465 0.87309 0.93295 0.94266 0.9472 0.94121 0.92787 0.93236 0.89858 0.90327"
+211, "Amplitude, position and width of 1st spectral peak", "0 43.0664 3", "1.1384 10981.934 255"
+212, "Amplitude, position and width of 2nd spectral peak", "2.5953e-09 43.0664 1", "0.58801 10981.934 251"
+213, "Amplitude, position and width of 3rd spectral peak", "2.5953e-09 43.0664 1", "0.34224 10981.934 247"
+214, "Amplitude, position and width of 4th spectral peak", "2.571e-09 43.0664 1", "0.24725 10981.934 243"
+215, "Amplitude, position and width of 5th spectral peak", "1.956e-08 43.0664 1", "0.1971 10981.934 238"
+216, "Tonal centroid vector", "-1.0262 -1.263 -1.9836 -1.9925 -0.71539 -0.65898", "1.2428 1.1362 1.3472 1.8742  0.6292 0.55815"
+217, "Harmonic change detection function", "0", "1.9055"
+218, "Chroma Energy Normalized Statistics", "0 0 0 0 0 0 0 0 0 0 0 0", "1 1 1 1 1 1 0.99311 1 0.99999 1 1 0.99846"
+
+% Tempo features
+401, "Tempo", "40", "299"
+402, "First relative periodicity amplitude peak", "0.0051356", "1"
+405, "First periodicity peak in bpm", "40", "299"
+406, "Second periodicity peak in bpm", "40", "299"
+407, "Sum of correlated components", "0", "5719.8936"
+410, "Characteristics of fluctuation patterns", "0 0 0 0 0 0 0", "21.4904 0.66796 2234.7453 116631.8978 7419.8166 36.3551 1.6145"
+418, "Rhythmic clarity", "-0.036898", "0.85597"
+420, "Estimated onset number per minute", "0", "519.104"
+421, "Estimated beat number per minute", "5.7678", "230.7129"
+422, "Estimated tatum number per minute", "5.7678", "571.0144"
+425, "Tempo based on onset times", "60.3645", "196.8346"
+427, "Five peaks of fluctuation curves summed across all bands", "0.050798 0.079165 0.15878 0.051704 0.065466", "9.0639 9.9983 9.9983 9.9353 9.7297"

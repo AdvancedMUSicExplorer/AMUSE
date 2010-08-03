@@ -1,0 +1,270 @@
+<operators>
+     
+  <!-- Weka operators -->
+
+  <factory class = "edu.udo.cs.yale.tools.WekaOperatorFactory"/>
+
+  <!-- YALE Core -->
+
+  <operator
+     name        = "OperatorChain"
+     class       = "edu.udo.cs.yale.operator.SimpleOperatorChain"
+     description = "A chain of operators that is subsequently applied."
+     icon        = "chain"/>
+
+  <operator 
+     name        = "ModelApplier"     
+     class       = "edu.udo.cs.yale.operator.ModelApplier"
+     description = "Applies a model to an example set. This might be a prediction or another data transformation model."
+     icon        = "model_applier"/>
+
+  <!-- YALE Experiment -->
+     
+  <operator 
+     name        = "Experiment" 
+     class       = "edu.udo.cs.yale.operator.ExperimentOperator"
+     description = "The root operator chain, which needs to be the outer most operator of any experiment in Yale."
+     icon        = "chain"
+     group       = "Core"/>
+     
+  <operator
+     name        = "IOConsumer"
+     class       = "edu.udo.cs.yale.operator.IOConsumeOperator"
+     description = "This operators simply consumes some unused outputs."
+     icon        = "io_consumer"
+     group       = "Core"/>
+
+  <operator
+     name        = "IOMultiplier"
+     class       = "edu.udo.cs.yale.operator.IOMultiplyOperator"
+     description = "This operators simply multiplies selected input objects."
+     icon        = "io_multiplier"
+     group       = "Core"/>
+
+  <operator
+     name        = "IOSelector"
+     class       = "edu.udo.cs.yale.operator.IOSelector"
+     description = "This operators simply selects one of the input objects of the specified type and discards the rest."
+     icon        = "io_selector"
+     group       = "Core"/>
+     
+  <operator
+     name        = "CommandLineOperator"
+     class       = "edu.udo.cs.yale.operator.CommandLineOperator"
+     description = "This operator simply executes a command in a shell of the underlying operating system, basically any system command or external program."
+     icon        = "command"
+     group       = "Core"/>
+     
+  <operator
+     name        = "MacroDefinition"
+     class       = "edu.udo.cs.yale.operator.MacroDefinitionOperator"
+     description = "This operator can be used to define arbitrary macros which can be used by %{my_macro} in string type parameter values."
+     icon        = "macro"
+     group       = "Core"/>
+
+
+  <!-- YALE IO -->
+
+  <operator
+     name        = "SimpleExampleSource"
+     class       = "edu.udo.cs.yale.operator.io.SimpleExampleSource"
+     description = "This operator reads an example set from file. It is a simpler version of the ExampleSource operator."
+     group       = "IO.Examples"/>
+          
+  <operator 
+     name        = "ExampleSource"     
+     class       = "edu.udo.cs.yale.operator.io.ExampleSource"
+     description = "This operator reads an example set from file. The operator can be configured to read almost all file formats."
+     group       = "IO.Examples"/>
+
+  <operator 
+     name        = "ExampleSetWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ExampleSetWriter"
+     description = "Writes the values of all examples to a file."
+     group       = "IO.Examples"/>
+
+  <operator 
+     name        = "ArffExampleSetWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ArffExampleSetWriter"
+     description = "Writes the values of all examples into an ARFF-file."
+     group       = "IO.Examples"/>
+
+  <operator 
+     name        = "ArffExampleSource"     
+     class       = "edu.udo.cs.yale.operator.io.ArffExampleSource"
+     description = "This operator can read arff files."
+     group       = "IO.Examples"/>
+     
+  <operator 
+     name        = "ModelLoader"     
+     class       = "edu.udo.cs.yale.operator.io.ModelLoader"
+     description = "Reads a model from a given file."
+     group       = "IO.Models"/>
+
+  <operator 
+     name        = "ModelWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ModelWriter"
+     description = "Writes a model to a given file."
+     group       = "IO.Models"/>
+
+  <operator 
+     name        = "ParameterSetLoader"     
+     class       = "edu.udo.cs.yale.operator.io.ParameterSetLoader"
+     description = "Reads a parameter set from a file."
+     group       = "IO.Other"/>
+
+  <operator 
+     name        = "ParameterSetWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ParameterSetWriter"
+     description = "Writes a parameter set into a file."
+     group       = "IO.Other"/>
+
+  <operator 
+     name        = "ThresholdLoader"     
+     class       = "edu.udo.cs.yale.operator.io.ThresholdLoader"
+     description = "Loads a threshold from a file (used for transforming soft into crisp predictions)."
+     group       = "IO.Other"/>
+
+  <operator 
+     name        = "ThresholdWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ThresholdWriter"
+     description = "Writes a threshold to a file (used for transforming soft into crisp predictions)."
+     group       = "IO.Other"/>
+     
+  <operator
+     name        = "IOContainerWriter"
+     class       = "edu.udo.cs.yale.operator.io.IOContainerWriter"
+     description = "Writes all current IO objects to a file."
+     group       = "IO.Other"/>
+
+  <operator
+     name        = "IOContainerReader"
+     class       = "edu.udo.cs.yale.operator.io.IOContainerReader"
+     description = "Reads an IOContainer from a file."
+     group       = "IO.Other"/>
+       
+  <operator
+     name        = "IOObjectWriter"
+     class       = "edu.udo.cs.yale.operator.io.IOObjectWriter"
+     description = "Generic writer for all types of IOObjects."
+     group       = "IO.Other"/>
+
+  <operator
+     name        = "IOObjectReader"
+     class       = "edu.udo.cs.yale.operator.io.IOObjectReader"
+     description = "Generic reader for all types of IOObjects."
+     group       = "IO.Other"/>
+                         
+  <operator 
+     name        = "ResultWriter"     
+     class       = "edu.udo.cs.yale.operator.io.ResultWriter"
+     description = "This operator can be used at each point in an operator chain and and writes current results to the console or to a file."
+     group       = "IO.Results"/>
+
+  <operator 
+     name        = "PerformanceWriter"     
+     class       = "edu.udo.cs.yale.operator.io.PerformanceWriter"
+     description = "This operator can be used to write the input performance into a file."
+     group       = "IO.Results"/>
+
+  <operator 
+     name        = "PerformanceLoader"     
+     class       = "edu.udo.cs.yale.operator.io.PerformanceLoader"
+     description = "This operator can be used to load a performance vector from a file."
+     group       = "IO.Results"/>
+
+
+  <!-- YALE Learner -->
+
+  <operator 
+     name        = "DefaultLearner"     
+     class       = "edu.udo.cs.yale.operator.learner.lazy.DefaultLearner"
+     description = "Learns a default value."
+     group       = "Learner.Lazy"/>
+
+  <!-- YALE Meta Operators -->
+
+  <operator 
+     name        = "OperatorEnabler" 
+     class       = "edu.udo.cs.yale.operator.meta.OperatorEnabler"
+     description = "This operator can be used to automatically enable or disable inner operators."
+     group       = "Meta"/>
+     
+  <operator 
+     name        = "ExampleSetIterator"     
+     class       = "edu.udo.cs.yale.operator.meta.ExampleSetIterator"
+     description = "Performs its inner operators for each example set found in input."
+     group       = "Meta"/>
+
+  <operator 
+     name        = "MultipleLabelIterator"     
+     class       = "edu.udo.cs.yale.operator.meta.MultipleLabelIterator"
+     description = "Performs its inner operators for each label found in input example set."
+     group       = "Meta"/>
+
+ <operator
+     name        = "RepeatUntilOperatorChain"
+     class       = "edu.udo.cs.yale.operator.meta.RepeatUntilOperatorChain"
+     description = "Performs its inner operators until some condition is met."
+     group       = "Meta"/>
+          
+  <operator 
+     name        = "IteratingOperatorChain"     
+     class       = "edu.udo.cs.yale.operator.meta.IteratingOperatorChain"
+     description = "Performs its inner operators k times."
+     group       = "Meta"/>
+
+  <operator 
+     name        = "RandomOptimizer"     
+     class       = "edu.udo.cs.yale.operator.meta.RandomOptimizationChain"
+     description = "Performs its inner operators k times and returns the best results."
+     group       = "Meta"/>
+
+  <operator 
+     name        = "ParameterSetter"
+     class       = "edu.udo.cs.yale.operator.meta.ParameterSetter"
+     description = "Applies a set of parameters. Operator names may be remapped."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "ParameterCloner"
+     class       = "edu.udo.cs.yale.operator.meta.ParameterCloner"
+     description = "Applies a set of parameters of a source operator on a target operator."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "GridParameterOptimization"     
+     class       = "edu.udo.cs.yale.operator.meta.GridSearchParameterOptimizationOperator"
+     description = "This operator finds the optimal values for parameters."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "QuadraticParameterOptimization"     
+     class       = "edu.udo.cs.yale.operator.meta.QuadraticParameterOptimizationOperator"
+     description = "This operator finds the optimal values for parameters using a quadratic interaction model."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "EvolutionaryParameterOptimization"
+     class       = "edu.udo.cs.yale.operator.meta.EvolutionaryParameterOptimizationOperator"
+     description = "This operator finds the optimal values for parameters using an evolutionary computation approach."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "ParameterIteration"     
+     class       = "edu.udo.cs.yale.operator.meta.ParameterIteration"
+     description = "This operator just iterates through all defined parameter combinations."
+     group       = "Meta.Parameter"/>
+
+  <operator 
+     name        = "AverageBuilder"     
+     class       = "edu.udo.cs.yale.operator.meta.AverageBuilder"
+     description = "Builds the average of input average vectors (e.g. performance) of the same type."
+     group       = "Meta"/>
+
+  <operator 
+     name        = "XVPrediction"     
+     class       = "edu.udo.cs.yale.operator.meta.XVPrediction"
+     description = "Predicts the examples in a cross-validation-like fashion."
+     group       = "Meta"/>
+</operators>
