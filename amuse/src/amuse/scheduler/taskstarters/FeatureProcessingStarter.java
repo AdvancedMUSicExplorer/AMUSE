@@ -88,10 +88,10 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
             if (oneTaskConfigs.size() > 0) {
                 ProcessingConfiguration pc = oneTaskConfigs.get(0);
                 if(!pc.getFeatureDescription().trim().equals(new String(""))) {
-				ph.appendLine(pc.getReductionSteps() + "_" + pc.getConversionStep() + "_" + pc.getPartitionSize() + "ms_" +
+				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getPartitionSize() + "ms_" +
 						pc.getPartitionOverlap() + "ms_" + pc.getFeatureDescription());
 			} else {
-				ph.appendLine(pc.getReductionSteps() + "_" + pc.getConversionStep() + "_" + pc.getPartitionSize() + "ms_" +
+				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getPartitionSize() + "ms_" +
 						pc.getPartitionOverlap() + "ms");
 			}
             }
