@@ -109,7 +109,7 @@ public enum KeysIntValue {
 		Map<String, String> map = new HashMap<String, String>();
 		map.put(MAX_NUMBER_OF_TASK_THREADS.toString(), "Maximum number of parallel task threads:");
 		map.put(NUMBER_OF_JOBS_PER_GRID_MACHINE.toString(), "Number of Amuse jobs to proceed on one grid machine (one grid job):");
-		map.put(GUI_LOG_LEVEL.toString(), "Log level of GUI (0 == DEBUG, 1 == Info, 2 == Quiet)");
+		map.put(GUI_LOG_LEVEL.toString(), "Log level of GUI (0 == Debug, 1 == Info, 2 == Quiet)");
 		map.put(SPLIT_SIZE_IN_KB.toString(), "Size in KB to split music files at.");
                 map.put(DOWNSAMPLING_TARGET_SIZE_IN_HZ.toString(), "Target sampling rate of wave file. (0 = 44000Hz, 1 = 22050Hz, 2 = 11025HZ");
 		return map;
