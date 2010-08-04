@@ -128,6 +128,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         btnSaveTasks.setEnabled(false);
         add(btnCheckTasks, "right");
         add(btnSaveTasks);
+	btnCheckTasks.setVisible(false);
+	btnSaveTasks.setVisible(false);
     }
 
     private void showPopupMenu() {
