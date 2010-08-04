@@ -97,6 +97,11 @@ public enum KeysStringValue {
                 return true;
             case CATEGORY_DATABASE:
             	return new File(value).isFile();
+
+	    case JAVA_PATH:
+		return true;
+	    case MATLAB_PATH:
+		return true;
             default:
                 AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
                 // If NoValue String is passed return false otherwise return true.

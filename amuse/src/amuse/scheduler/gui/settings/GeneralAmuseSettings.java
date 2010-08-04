@@ -73,6 +73,18 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
                 // New Section:
 		settings.clear();
 		internalPanel = new JPanel(new MigLayout("fillx"));
+		internalPanel.setBorder(new TitledBorder("External Tools"));
+		internalPanel.setLayout(new BoxLayout(internalPanel, BoxLayout.Y_AXIS));
+		settings.add(new PathSelectionPanel("Java Executable:", KeysStringValue.JAVA_PATH));
+		settings.add(new PathSelectionPanel("MatLab Executable:", KeysStringValue.MATLAB_PATH));
+                for (EditableAmuseSettingInterface singlePref : settings) {
+			internalPanel.add(singlePref.getPanel(), "wrap");
+			watchForChanges(singlePref);
+		}
+		panel.add(internalPanel, "grow x, wrap");
+		// New Section:
+		settings.clear();
+		internalPanel = new JPanel(new MigLayout("fillx"));
 		internalPanel.setBorder(new TitledBorder("Wave-Sampling Settings"));
 		layout = new BoxLayout(internalPanel, BoxLayout.Y_AXIS);
                 settings.add(new BooleanSelectionPanel("Use Downsamling", KeysBooleanValue.USE_DOWNSAMPLING));
