@@ -94,26 +94,36 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
      */
     private boolean isToBeDisplayed(Level level) {
 	int logLevel = AmusePreferences.getInt(KeysIntValue.GUI_LOG_LEVEL);
-	boolean display = true;
-	if (logLevel == 1) {
-	    if (level.toInt() == Level.DEBUG_INT) {
-		display = false;
-	    }
-	} else if (logLevel == 2) {
-	    if (level.toInt() == Level.DEBUG_INT) {
-		display = false;
-	    } else if (level.toInt() == Level.ERROR_INT) {
-		display = false;
-	    }
+	Level selectedLevel = Level.ALL;
+	switch (logLevel) {
+	    case 0:
+		selectedLevel = Level.ALL;
+		break;
+	    case 1:
+		selectedLevel = Level.INFO;
+		break;
+	    case 2:
+		selectedLevel = Level.WARN;
+		break;
+	    default:
+		selectedLevel = Level.ALL;
 	}
-	return display;
-    }
-
-    public enum logLevels {
-
-	Debug,
-	Warn,
-	Quiet;
+	if (level == Level.ERROR) {
+	    return true;
+	}
+	if (level == Level.FATAL) {
+	    return true;
+	}
+	if (level == Level.WARN) {
+	    return true;
+	}
+	if (level == Level.DEBUG && selectedLevel == Level.DEBUG) {
+	    return true;
+	}
+	if (level == Level.INFO && (selectedLevel == Level.DEBUG || selectedLevel == Level.INFO)) {
+	    return true;
+	}
+	return false;
     }
 
     private static class ComponentListenerImpl implements ComponentListener {
