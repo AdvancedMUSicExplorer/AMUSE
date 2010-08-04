@@ -102,7 +102,7 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		internalPanel.setBorder(new TitledBorder("Miscellaneous Settings"));
 		layout = new BoxLayout(internalPanel, BoxLayout.Y_AXIS);
 		// Add Miscellanious Settings Components
-		String[] values = {"Debug", "Warn", "Info"};
+		String[] values = {"Debug", "Info", "Quiet"};
 		settings.add(new ListSelectionPanel("Log Level", values, KeysIntValue.GUI_LOG_LEVEL));
 		settings.add(new SliderIntSelectionPanel("Max number of Task Threads", 1, 10, KeysIntValue.MAX_NUMBER_OF_TASK_THREADS));
                for (EditableAmuseSettingInterface singlePref : settings) {
