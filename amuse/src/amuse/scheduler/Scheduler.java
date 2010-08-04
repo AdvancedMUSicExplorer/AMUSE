@@ -286,25 +286,29 @@ public class Scheduler implements Runnable {
 				else {
 					for(int j=0;j<inputDir.listFiles().length;j++) {
 						String fileName = inputDir.listFiles()[j].getPath();
-						// TODO extract the exact Amuse job ID 
-						AmuseLogger.write(this.getClass().getName(),Level.INFO,
-							"Job " + fileName/*.substring(fileName.lastIndexOf(".")+1)*/ + " ready");
-
-						// TODO RELEASE 0.2 The log results from nodes can be saved somewhere if required...
 						
-						// Delete logs
-						if(!inputDir.listFiles()[j].delete()) {
-							AmuseLogger.write(this.getClass().getName(),Level.FATAL,
-									"Log of job " + fileName.substring(fileName.lastIndexOf(".")+1) + 
-									" could not be deleted; Can't calculate properly if all jobs have been finished!");
-							System.exit(1);
-						}
-						// Update the number of currently running jobs
-						numberOfJobsToWaitFor--;
+						if(!fileName.substring(fileName.lastIndexOf(File.separator)+1,fileName.length()).startsWith(".")) {
 						
-						// Are all extraction jobs ready? If yes, finish Amuse
-						if(numberOfJobsToWaitFor == 0l) {
-							isReady = true;
+							// TODO extract the exact Amuse job ID 
+							AmuseLogger.write(this.getClass().getName(),Level.INFO,
+								"Job " + fileName/*.substring(fileName.lastIndexOf(".")+1)*/ + " ready");
+	
+							// TODO RELEASE 0.2 The log results from nodes can be saved somewhere if required...
+							
+							// Delete logs
+							if(!inputDir.listFiles()[j].delete()) {
+								AmuseLogger.write(this.getClass().getName(),Level.FATAL,
+										"Log of job " + fileName.substring(fileName.lastIndexOf(".")+1) + 
+										" could not be deleted; Can't calculate properly if all jobs have been finished!");
+								System.exit(1);
+							}
+							// Update the number of currently running jobs
+							numberOfJobsToWaitFor--;
+							
+							// Are all extraction jobs ready? If yes, finish Amuse
+							if(numberOfJobsToWaitFor == 0l) {
+								isReady = true;
+							}
 						}
 					}
 				}
