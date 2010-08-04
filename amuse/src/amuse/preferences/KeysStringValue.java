@@ -39,7 +39,7 @@ import amuse.util.AmuseLogger;
 public enum KeysStringValue {
 
     AMUSE_PATH, AMUSE_VERSION, MUSIC_DATABASE, FEATURE_DATABASE, PROCESSED_FEATURE_DATABASE, CATEGORY_DATABASE, MODEL_DATABASE, METRIC_DATABASE, OPTIMIZATION_DATABASE,
-    GRID_SCRIPT_EXTRACTOR, GRID_SCRIPT_PROCESSOR, GRID_SCRIPT_TRAINER, GRID_SCRIPT_CLASSIFIER, GRID_SCRIPT_VALIDATOR, GRID_SCRIPT_OPTIMIZER, JAVA_PATH;
+    GRID_SCRIPT_EXTRACTOR, GRID_SCRIPT_PROCESSOR, GRID_SCRIPT_TRAINER, GRID_SCRIPT_CLASSIFIER, GRID_SCRIPT_VALIDATOR, GRID_SCRIPT_OPTIMIZER, JAVA_PATH, MATLAB_PATH;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -50,8 +50,10 @@ public enum KeysStringValue {
     	// Currently no default values for string keys are available!
     	switch (this) {
 	    case JAVA_PATH:
-		return "java";
-            case AMUSE_PATH:
+	    	return "java";
+	    case MATLAB_PATH:
+	    	return "matlab";
+        case AMUSE_PATH:
                 return System.getenv("AMUSEHOME");
             default:
                 //AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
@@ -147,6 +149,7 @@ public enum KeysStringValue {
 		map.put(GRID_SCRIPT_TRAINER.toString(), "Batch command to proceed classification trainer task in grid:");
 		map.put(GRID_SCRIPT_VALIDATOR.toString(), "Batch command to proceed validator task in grid:");
 		map.put(JAVA_PATH.toString(), "Path to your local java executable:");
+		map.put(MATLAB_PATH.toString(), "Path to your local Matlab executable:");
 		return map;
 	}
 }
