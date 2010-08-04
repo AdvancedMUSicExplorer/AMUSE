@@ -26,6 +26,7 @@ package amuse.scheduler.gui.classifier;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -68,7 +69,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         targetPathSelectionPanel.add(selectAverageCalculation, "growx, wrap");
         targetPathSelectionPanel.add(new JLabel("Enter Filename for Result:"), "wrap");
         targetPathSelectionPanel.add(txtTargetFilePath, "growx");
-        txtTargetFilePath.setText(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/experiments/");
+        txtTargetFilePath.setText(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "experiments" + 
+        		File.separator);
         targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
         targetPathSelectionPanel.setBorder(pathSelectionTitle);
         btnSelectFolder.addActionListener(new SelectFolderListener());
