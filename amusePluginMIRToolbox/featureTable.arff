@@ -1,0 +1,55 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+
+@DATA
+% Timbre features
+
+11, "RMS peak number in 3 seconds", 4, 66150, 1
+12, "RMS peak number above half of maximum peak in 3 seconds", 4, 66150, 1
+15, "Spectral irregularity", 4, 512, 1
+23, "Spectral brightness", 4, 512, 1
+24, "Sensory roughness", 4, 1024, 1
+39, "Mel frequency cepstral coefficients - MIR Toolbox", 4, 512, 13
+40, "Bark scale magnitudes", 4, 512, 23
+48, "Delta MFCCs - MIR Toolbox", 4, 512, 13
+60, "Zero-crossing rate for ERB bands", 4, 512, 10
+61, "Root mean square for ERB bands", 4, 512, 10
+62, "Spectral centroid for ERB bands", 4, 512, 10
+
+% Harmony and melody features
+
+201, "Inharmonicity", 4, 512, 1
+202, "Key and its clarity", 4, 512, 2
+203, "Major/minor alignment", 4, 512, 1
+206, "Chroma vector - MIR Toolbox", 4, 512, 12
+209, "Strengths of major keys", 4, 512, 12
+210, "Strengths of minor keys", 4, 512, 12
+216, "Tonal centroid vector", 4, 512, 6
+217, "Harmonic change detection function", 4, 512, 1
+
+% Tempo features
+
+418, "Rhythmic clarity", 4, 66150, 1
+419, "Onset times", 4, -1, 1
+420, "Estimated onset number per minute", 4, 229376, 1
+423, "Attack times", 4, -1, 1
+424, "Release times", 4, -1, 1
+425, "Tempo based on onset times", 4, 66150, 1
+426, "Attack slopes", 4, -1, 1
+427, "Five peaks of fluctuation curves summed across all bands", 4, 229376, 5
