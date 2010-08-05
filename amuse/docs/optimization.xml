@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<esConfiguration>
+
+<!--#################################################-->
+<!-- Constant parameters of the optimization problem -->
+<!--#################################################-->
+<problemParametersConstant>
+  <FE>
+    <extractionParameter name="Feature table" fileValue = "C:\\Java\\amuse\\experiments\\featurelists\\featureTable.arff"/>
+  </FE>
+  <FP>
+    <processingParameter name="Processing steps" stringValue="1-9-4[10]"/>
+    <processingParameter name="Conversion steps" stringValue="0[true_true]"/> 
+    <processingParameter name="Partition size" intValue="5000"/> 
+    <processingParameter name="Partition overlap" intValue="2500"/> 
+    <processingParameter name="Processing description" stringValue=""/> 
+  </FP>
+  <C>
+    <classificationParameter name="Classifier configuration" stringValue="0"/>
+    <classificationParameter name="Classifier preprocessing" stringValue="-1"/> 
+  </C>
+  <V>
+    <validationParameter name="Metric table" fileValue = "C:\\Java\\amuse\\experiments\\metricTable.arff"/>
+  </V>
+</problemParametersConstant>
+
+<!--############################################-->
+<!-- Parameters which should be optimized by ES -->
+<!--############################################-->
+<problemParametersToOptimize>
+  <FS>
+    <processingParameter name="Selected features" classValue="amuse.nodes.optimizer.methods.es.parameters.processing.SelectedFeatures">
+      <optimizationParameter name="Maximum factor of generated features related to initial raw feature set" intValue="2" description="The length of binary feature vector (ind
+      ividual representation is set to this number multiplied by the number of raw features"/>
+    </processingParameter>
+  </FS>
+</problemParametersToOptimize>
+
+<!--##################-->
+<!-- ES configuration -->
+<!--##################-->
+<esParameters>
+  <optimizationParameter name="Population strategy" stringValue="1+1"/>
+  <optimizationParameter name="Random seed" longValue="1"/>
+  <optimizationParameter name="Apply VNS only after successful mutations" booleanValue="true"/>
+  <operators>
+    <selection name="List with selection operators">
+      <selectionOperator name="Random selection" classValue="amuse.nodes.optimizer.methods.es.operators.selection.RandomSelection"/>
+    </selection>
+    <mutation name="List with mutation operators">
+      <parameterToOptimize name="Selected features">
+	<mutationOperator name="Asymmetric bit flip" classValue="amuse.nodes.optimizer.methods.es.operators.mutation.AsymmetricBitFlip">
+	  <mutationOperatorParameter name="gamma" doubleValue="32.0"/>
+	  <mutationOperatorParameter name="p_01" doubleValue="0.10"/>
+	  <mutationOperatorParameter name="p_10" doubleValue="0.90"/>
+	</mutationOperator>
+      </parameterToOptimize>
+    </mutation>
+    <crossover name="List with crossover operators">
+    </crossover>
+    <localSearch name="List with VNS operators">
+      <parameterToOptimize name="Selected features">
+	<mutationOperator name="Add least correlated feature" classValue="amuse.nodes.optimizer.methods.es.operators.mutation.AddLeastCorrelatedFeature">
+	  <mutationOperatorParameter name="Path to correlation table" fileValue="featureCorrelation.arff"/>
+	</mutationOperator>
+      </parameterToOptimize>
+      <parameterToOptimize name="Selected features">
+	<mutationOperator name="Remove most correlated feature" classValue="amuse.nodes.optimizer.methods.es.operators.mutation.RemoveMostCorrelatedFeature">
+	  <mutationOperatorParameter name="Path to correlation table" fileValue="featureCorrelation.arff"/>
+	</mutationOperator>
+      </parameterToOptimize>
+    </localSearch>
+  </operators>
+  <stoppingCriterions>
+    <optimizationParameter name="Number of generations" intValue="1000"/>
+    <optimizationParameter name="Number of evaluations" intValue="200"/>
+    <optimizationParameter name="Runtime in milliseconds" intValue="3600000"/>
+  </stoppingCriterions>
+</esParameters>
+
+<!--###########################-->
+<!-- ARFF output configuration -->
+<!--###########################-->
+<output>
+  <optimizationParameter name="Logging interval" intValue="1"/>
+  <optimizationParameter name="Generation number" booleanValue="true"/>
+  <optimizationParameter name="Evaluation number" booleanValue="true"/>
+  <optimizationParameter name="Complete population representations" booleanValue = "true"/>
+  <optimizationParameter name="Complete population fitness values" booleanValue = "true"/>
+  <optimizationParameter name="Complete population fitness values on test set" booleanValue = "true"/>
+  <optimizationParameter name="Complete offspring population representations" booleanValue = "true"/>
+  <optimizationParameter name="Complete offspring population fitness values" booleanValue = "true"/>
+  <optimizationParameter name="Complete offspring population fitness values on test set" booleanValue = "true"/>
+  <optimizationParameter name="Current best individual representation"/>
+  <optimizationParameter name="Current best individual fitness"/>
+  <optimizationParameter name="Best offspring individual representation"/>
+  <optimizationParameter name="Best offspring individual fitness"/>
+  <optimizationParameter name="Counter of previous successes"/>
+  <optimizationParameter name="Expected step size"/>
+</output>
+</esConfiguration>
+
