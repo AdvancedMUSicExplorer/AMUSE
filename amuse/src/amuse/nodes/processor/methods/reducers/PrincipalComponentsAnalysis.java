@@ -23,14 +23,12 @@
  */
 package amuse.nodes.processor.methods.reducers;
 
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Level;
 
-import com.rapidminer.RapidMiner;
 import com.rapidminer.example.Attribute;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.table.AttributeFactory;
@@ -51,6 +49,7 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.util.AmuseLogger;
+import amuse.util.LibraryInitializer;
 
 /**
  * Performs principal components analysis of the given features
@@ -76,11 +75,9 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 	 * @see amuse.interfaces.AmuseTaskInterface#initialize()
 	 */
 	public void initialize() throws NodeException {
-		FileInputStream fis;
 		try {
-			fis = new FileInputStream(properties.getProperty("homeFolder") + "/operatorsPCA.xml");
-			RapidMiner.init(fis,false,false,false,false);
-		} catch(Exception e) {
+			LibraryInitializer.initializeRapidMiner(properties.getProperty("processorFolder") + "/operatorsClassification.xml");
+		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}
 	}
