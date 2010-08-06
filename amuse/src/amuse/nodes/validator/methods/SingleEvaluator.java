@@ -318,10 +318,12 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			boolean saveHeader = false;
 			
 			// If no metric file is there, save header
-			if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
+			// FIXME Currently the file is overwritten each time for Windows compatibility during optimization task
+			//if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
 				saveHeader = true;
-			}
-			FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
+			//}
+			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
+			FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff");
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
 			
