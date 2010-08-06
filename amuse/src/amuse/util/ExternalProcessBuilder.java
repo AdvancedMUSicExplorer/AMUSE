@@ -21,7 +21,6 @@
  *
  * Creation date: 18.07.2010
  */
-
 package amuse.util;
 
 import amuse.preferences.AmusePreferences;
@@ -33,8 +32,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * This class starts other processes
  *
  * @author waeltken
+ * @version $Id: $
  */
 public class ExternalProcessBuilder {
 
@@ -62,25 +63,26 @@ public class ExternalProcessBuilder {
     }
 
     public static ExternalProcessBuilder buildJavaProcess(List<String> javaProperties, List<String> classPath, List<String> command) {
-	OSType os = determineOS();
-	String delim = ":";
-	if (os == OSType.Windows) {
-	    delim = ";";
-	}
-	String classpaths = "";
-	for (String jar:classPath) {
-	    classpaths += jar + delim;
-	}
-	// Delete last delimiter
-	classpaths = classpaths.substring(0, classpaths.length()-1);
-	String java = AmusePreferences.get(KeysStringValue.JAVA_PATH);
-	List<String> commandList = new ArrayList<String>();
-	commandList.add(java);
-	commandList.addAll(javaProperties);
-	commandList.add("-classpath");
-	commandList.add(classpaths);
-	commandList.addAll(command);
-	return new ExternalProcessBuilder(commandList);
+		OSType os = determineOS();
+		String delim = ":";
+		if (os == OSType.Windows) {
+		    delim = ";";
+		}
+		String classpaths = "";
+		for (String jar:classPath) {
+		    classpaths += jar + delim;
+		}
+		
+		// Delete last delimiter
+		classpaths = classpaths.substring(0, classpaths.length()-1);
+		String java = AmusePreferences.get(KeysStringValue.JAVA_PATH);
+		List<String> commandList = new ArrayList<String>();
+		commandList.add(java);
+		commandList.addAll(javaProperties);
+		commandList.add("-classpath");
+		commandList.add(classpaths);
+		commandList.addAll(command);
+		return new ExternalProcessBuilder(commandList);
     }
 
     private enum OSType {
@@ -107,7 +109,7 @@ public class ExternalProcessBuilder {
     }
 
     /**
-     * Add enviroment varible to this process.
+     * Add environment variable to this process.
      * @param key
      * @param value
      */
