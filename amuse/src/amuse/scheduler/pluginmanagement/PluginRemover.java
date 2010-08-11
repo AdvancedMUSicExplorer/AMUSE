@@ -512,7 +512,8 @@ public class PluginRemover {
 		
 			PluginInstallerInterface pluginInstaller = null;
 			try {
-				URL path = new URL("file://" + System.getenv("AMUSEHOME") + "/config/plugininfo/" + removeProperties.getProperty("ID") + "/pluginManager.jar");
+				File remover = new File(System.getenv("AMUSEHOME") + "/config/plugininfo/" + removeProperties.getProperty("ID") + "/pluginManager.jar");
+				URL path = remover.toURI().toURL();
 				JarClassLoader loader = new JarClassLoader(path);
 				Class<?> c = loader.loadClass(loader.getMainClassName());
 				pluginInstaller = (PluginInstallerInterface)c.newInstance(); 

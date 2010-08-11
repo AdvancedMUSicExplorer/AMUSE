@@ -925,7 +925,8 @@ public class PluginInstaller {
 		
 			PluginInstallerInterface pluginInstaller = null;
 			try {
-				URL path = new URL("file://" + pathToPluginFolder + "/pluginManager.jar");
+				File installer = new File(pathToPluginFolder + "/pluginManager.jar");
+				URL path = installer.toURI().toURL();
 				JarClassLoader loader = new JarClassLoader(path);
 				Class<?> c = loader.loadClass(loader.getMainClassName());
 				pluginInstaller = (PluginInstallerInterface)c.newInstance(); 
