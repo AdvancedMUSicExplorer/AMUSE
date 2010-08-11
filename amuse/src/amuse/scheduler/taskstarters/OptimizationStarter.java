@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -129,13 +130,15 @@ public class OptimizationStarter extends AmuseTaskStarter {
 				OptimizerNodeScheduler optimizerThread = null;
 				try {
 					optimizerThread = new OptimizerNodeScheduler(System.getenv("AMUSEHOME") + 
-							"/config/node/optimizer/input/task_" + this.jobCounter);
+							File.separator + "config" + File.separator + "node" + File.separator + 
+							"optimizer" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Optimizer node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare optimizer node scheduler arguments and start it as thread
-	   	    	optimizerThread.setThreadParameters(System.getenv("AMUSEHOME") + "/config/node/optimizer", this.jobCounter, optimizerConfig);
+	   	    	optimizerThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + 
+	   	    			File.separator + "node" + File.separator + "optimizer", this.jobCounter, optimizerConfig);
 			    Thread newOptimizerThread = new Thread(optimizerThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {
