@@ -86,12 +86,12 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 				relativeName = currentBeatFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/")) + "_408.arff";
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_408.arff";
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName + "_408.arff";
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					File.separator + relativeName + "_408.arff";
 			}	
 			
 			ArffLoader beatArffLoader = new ArffLoader();
