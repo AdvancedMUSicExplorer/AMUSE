@@ -86,12 +86,12 @@ public class OnsetPruner extends AmuseTask implements DimensionProcessorInterfac
 				relativeName = currentOnsetFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/")) + "_419.arff";
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_419.arff";
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName + "_419.arff";
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					File.separator + relativeName + "_419.arff";
 			}	
 			
 			ArffLoader onsetArffLoader = new ArffLoader();
