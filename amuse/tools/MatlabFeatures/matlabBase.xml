@@ -106,7 +106,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 res = f_400_duration(input_file);
 
 % save the results
-arff_saver([output_file_prefix,'400.arff'],'Duration',res);
+arff_saver([output_file_prefix,'400.arff'],'Duration',res,-1);
 </text>
 </amuseEnableFeature>
 
