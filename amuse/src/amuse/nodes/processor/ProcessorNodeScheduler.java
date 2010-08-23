@@ -85,10 +85,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	private long initialNumberOfFeatureMatrixEntries = 0;
 	private long finalNumberOfFeatureMatrixEntries = 0;
 	
-	/** Number of time windows after processing, used for the calculation of used time windows ratio metric */
-	@Deprecated
-	private long finalNumberOfUsedTimeWindows = 0;
-	
 	/**
 	 * Constructor
 	 */
@@ -307,47 +303,56 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		this.initialNumberOfUsedRawTimeWindows = 0;
 		
-		// FIXME only for bpm!
-		this.minimalFrameSize = 512;
-		
 		// Change the feature vectors if the corresponding feature is created from larger frames as the minimal frame
 		for(int i=0;i<features.size();i++) {
 			int actualFrameSize = features.get(i).getSourceFrameSize();
 			featureIdToSourceFrameSize.put(features.get(i).getId(), features.get(i).getSourceFrameSize());
 			
+			// If the complete song is used as source..
+			if(actualFrameSize == -1) {
+				actualFrameSize = features.get(exampleOfFeatureWithMinimalFrame).getWindows().size() * minimalFrameSize;
+				features.get(i).getWindows().set(0,1d);
+			}
+			
 			if(actualFrameSize > minimalFrameSize) {
 				
 				featureIdToWindowNumber.put(features.get(i).getId(), new Long(features.get(i).getValues().size()));
 				initialNumberOfUsedRawTimeWindows += (features.get(i).getValues().size() * (new Double(actualFrameSize) / minimalFrameSize));
-				ArrayList<Double[]> newValues = new ArrayList<Double[]>();
-				ArrayList<Double> newWindows = new ArrayList<Double>();
-				int numberOfSmallWindow = 0;
-				int numberOfCorrespondingLargerWindow = 0;
+				ArrayList<Double[]> newValues = new ArrayList<Double[]>(features.get(exampleOfFeatureWithMinimalFrame).getWindows().size());
+				ArrayList<Double> newWindows = new ArrayList<Double>(features.get(exampleOfFeatureWithMinimalFrame).getWindows().size());
+				int numberOfCurrentSmallWindow = 0;
 				
-				// Proceed as long as data is available
-				while(numberOfCorrespondingLargerWindow < features.get(i).getWindows().size()) {
-					Double[] currentVals = new Double[features.get(i).getValues().get(numberOfCorrespondingLargerWindow).length];
+				// Proceed the larger time frames and map them to the smallest time frame
+				for(int indexOfLargeWindow = 0; indexOfLargeWindow < features.get(i).getWindows().size(); indexOfLargeWindow++) {
+					Double[] currentVals = new Double[features.get(i).getValues().get(indexOfLargeWindow).length];
 					for(int b=0;b<currentVals.length;b++) {
-						currentVals[b] = new Double(features.get(i).getValues().get(numberOfCorrespondingLargerWindow)[b]);
+						currentVals[b] = new Double(features.get(i).getValues().get(indexOfLargeWindow)[b]);
 					}
-					newValues.add(currentVals);
-					newWindows.add(new Double(numberOfSmallWindow+1)); // Time windows are counted up from 1, not 0!
 					
-					// Go to the next small time window and look for the corresponding larger time window
-					numberOfSmallWindow++;
-					numberOfCorrespondingLargerWindow = new Double(Math.ceil((new Double(numberOfSmallWindow)+1)*
-							minimalFrameSize / actualFrameSize ) - 1).intValue();
+					// Time window numbers can be doubles e.g. for CENS features
+					double numberOfLargeTimeWindow = features.get(i).getWindows().get(indexOfLargeWindow);
+					
+					// The last small time window which correspond to the large time window
+					int numberOfLastSmallTWForThisLargeTW = new Double(Math.ceil(numberOfLargeTimeWindow * (double)actualFrameSize / 
+							(double)minimalFrameSize)).intValue();
+					
+					for(int smallTWCounter = numberOfCurrentSmallWindow; smallTWCounter < numberOfLastSmallTWForThisLargeTW;
+						smallTWCounter++) {
+						newValues.add(currentVals);
+						newWindows.add(new Double(smallTWCounter + 1)); // Time windows are counted up from 1, not 0!
+					}
+					numberOfCurrentSmallWindow = numberOfLastSmallTWForThisLargeTW;
 				}
 				
 				// The number of values in the updated feature should be equal to the number of values for all
 				// features with minimal frame length. However the features from longer source frames will not 
 				// achieve the end of music file so precise as the features from smaller source frames and we
 				// must fill some windows with NaN values
-				for(;numberOfSmallWindow < features.get(exampleOfFeatureWithMinimalFrame).getWindows().size();numberOfSmallWindow++) {
+				for(;numberOfCurrentSmallWindow < features.get(exampleOfFeatureWithMinimalFrame).getWindows().size();numberOfCurrentSmallWindow++) {
 					Double[] vals = new Double[features.get(i).getValues().get(0).length];
 					for(int k=0;k<vals.length;k++) vals[k] = Double.NaN;
 					newValues.add(vals);
-					newWindows.add(new Double(numberOfSmallWindow+1)); // Time windows are counted up from 1, not 0!
+					newWindows.add(new Double(numberOfCurrentSmallWindow + 1)); // Time windows are counted up from 1, not 0!
 				}
 				
 				// Replace the old feature with adapted feature
@@ -475,44 +480,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		
 		// Calculate the data for pruning rates of raw features usage and matrix processing
 		calculateFinalUsedWindowNumbers(rawFeatures);
-		
-		
-		
-		// @deprecated - OLD calculation for final tw number
-		// Calculate the final number of used time windows for the corresponding metric
-		// This method calculated the old pruning ratio
-		finalNumberOfUsedTimeWindows = 0;
-		/*for(int i=0;i<rawFeatures.size();i++) {
-			if(rawFeatures.get(i).getSourceFrameSize() == minimalFrameSize) {
-				finalNumberOfUsedTimeWindows += rawFeatures.get(i).getValues().size();
-			} else {
-				int numberOfUsedLargeTimeWindows = 1;
-				int previousLargeWindow = 0;
-				int actualLargeWindow = 0;
-				int sourceFrameSize = rawFeatures.get(i).getSourceFrameSize(); 
-				for(int j=0;j<rawFeatures.get(i).getWindows().size();j++) {
-					// Get the number of the corresponding large time window
-					double actualSmallWindow = rawFeatures.get(i).getWindows().get(j);
-					actualLargeWindow = new Double(actualSmallWindow / 
-							((new Double(sourceFrameSize) / minimalFrameSize))).intValue();
-					
-					// If we get large windows which were not initially used (at conversion of feature vectors from smaller number of
-					// values to the larger number some values at the end of the vector are filled with NaNs and they actually do
-					// not correspond to a real large window), they should not be counted!
-					if(actualLargeWindow > featureIdToWindowNumber.get(rawFeatures.get(i).getId())) {
-						numberOfUsedLargeTimeWindows--;
-						break;
-					}
-
-					if(actualLargeWindow != previousLargeWindow) {
-						numberOfUsedLargeTimeWindows++;
-						previousLargeWindow = actualLargeWindow;
-					}
-				}
-				finalNumberOfUsedTimeWindows += (numberOfUsedLargeTimeWindows * (new Double(rawFeatures.get(i).
-						getSourceFrameSize()) / minimalFrameSize));
-			}
-		}*/
 	}
 
 	/**
@@ -609,7 +576,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	    }
 		
 		// Start the adapter
-	    // TODO Currently only ms are supported, no samples!
 		// FIXME taskId must be removed!!
 		return mtvci.runConversion(features, ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize(), 
 				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap(), 
@@ -723,9 +689,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					// [0] since the converted features must be single-dimensional!
 					values_writer.writeBytes(features.get(j).getValues().get(i)[0].toString() + ",");
 				}
-				// TODO 512 und 22050 errechnen
-				values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*(512d/22050d*1000d) + "," + 
-					(features.get(0).getWindows().get(i)*(512d/22050d*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+				
+				// TODO Currently only 22050 sampling rate is supported!
+				values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/22050d*1000d) + "," + 
+					(features.get(0).getWindows().get(i)*((double)minimalFrameSize/22050d*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
 			} 
 			values_writer.close();
 		} catch(IOException e) {
@@ -802,7 +769,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	
 	// TODO Used only for metrics for StructurePruner
 	@Deprecated
-	public void setFinalWindows(ArrayList<Integer> usedTimeWindows, ArrayList<Feature> features) {
+	public void setFinalWindows(ArrayList<Double> usedTimeWindows, ArrayList<Feature> features) {
 		// Calculate the pruning rates for raw features and for matrix processing
 		ArrayList<Integer> usedRawFeatures = new ArrayList<Integer>();
 		for(Feature currentFeature: features) {
@@ -857,6 +824,13 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			numberOfAllFeatureDimensions += f.getDimension();
 		}
 		finalNumberOfFeatureMatrixEntries = numberOfAllFeatureDimensions * features.get(0).getWindows().size();
+	}
+
+	/**
+	 * @return the minimalFrameSize
+	 */
+	public int getMinimalFrameSize() {
+		return minimalFrameSize;
 	}
 	
 
