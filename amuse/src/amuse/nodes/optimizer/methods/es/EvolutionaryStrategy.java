@@ -120,7 +120,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			
 			// Set the optimization category id (if n-fold optimization is used, it is equal to learning category)
 			String optimizationCategoryId = new String(
-					(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryOptimizationId() != -1) ? 
+					(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryOptimizationId() >= 0) ? 
 					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryOptimizationId().toString() 
 					: 
 					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryLearningId().toString());
