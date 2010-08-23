@@ -37,6 +37,7 @@ import amuse.data.Feature;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -105,9 +106,9 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 			}
 			tatumArffLoader.reset();
 				
-			// FIXME kommt in Feature
+			// TODO Currently only 22050 sampling rate is supported!
 			int sampleRate = 22050;
-			int windowSize = 512;
+			int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 			
 			
 			// Go through features

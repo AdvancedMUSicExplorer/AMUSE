@@ -61,17 +61,14 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 	}
 	
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
-
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on song structure information...");
 		
-		
-//		 FIXME kommt in Feature, hier soll das minimale Zeitfenster aller ursprünglichen Merkmale stehen, also darf man nicht
-		// einfach aus Feature ablesen!!!
+		// TODO Currently only 22050 sampling rate is supported!
 		int sampleRate = 22050;
-		int windowSize = 512;
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 		
-		// TODO F�r Metrik-Berechnung, auslagern!!
-		ArrayList<Integer> usedTimeWindows = new ArrayList<Integer>();
+		// TODO Fuer Metrik-Berechnung, auslagern!!
+		ArrayList<Double> usedTimeWindows = new ArrayList<Double>();
 		
 		// Single features used as classifier input vector
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();
@@ -190,10 +187,10 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 					}
 					
 					// Create a list with time windows which are in the current partition
-					ArrayList<Integer> windowsOfCurrentPartition = new ArrayList<Integer>();
+					ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
 					while(features.get(i).getWindows().get(currentWindow) >= partitionStart && 
 							features.get(i).getWindows().get(currentWindow) < partitionEnd) {
-						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow).intValue());
+						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow));
 						
 						// The last existing window is achieved
 						if(currentWindow == features.get(i).getWindows().size() - 1) {
@@ -224,11 +221,11 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 						// Calculate mean and variance
 						Double mean = 0d;
 						Double variance = 0d;
-						for(Integer l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentPartition) {
 							mean += features.get(i).getValuesFromWindow(l)[k];
 						}
 						mean /= windowsOfCurrentPartition.size();
-						for(Integer l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentPartition) {
 							variance += Math.pow((Double)features.get(i).getValuesFromWindow(l)[k]-mean,2);
 						}
 						variance /= windowsOfCurrentPartition.size();
