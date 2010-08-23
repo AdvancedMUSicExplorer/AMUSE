@@ -248,6 +248,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 
 		// Create a HashMap which maps song ids to the corresponding partition for faster search later
 		HashMap<Integer,Integer> songIdToPartition = new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> songIdToSongNumber = new HashMap<Integer,Integer>();
 		
 		// Create n partitions with the equal partition size 
 		int partitionSize = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size() / this.n;
@@ -262,9 +263,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				}
 				int songNumber = partitionsToDistribute.get(songPosition);
 				partitionsToDistribute.remove(songPosition);
-				currentPartition[j] = songNumber;
 				Integer idOfCurrentSong = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(songNumber).getSongId();
+				currentPartition[j] = idOfCurrentSong;
 				songIdToPartition.put(idOfCurrentSong, i);
+				songIdToSongNumber.put(idOfCurrentSong,songNumber);
 			}
 			partitions.add(currentPartition);
 		}
@@ -298,37 +300,50 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			// Save the ground truth for the validation set
 			ArrayList<Double> songRelationshipsValidationSet = new ArrayList<Double>();
 			for(int v=0;v<partitionSize;v++) {
-				int currentSong = partitions.get(i)[0];
-				songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledAverageSongRelationships().get(currentSong));
+				int currentSong = partitions.get(i)[v];
+				int numberOfThisSong = songIdToSongNumber.get(currentSong);
+				songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledAverageSongRelationships().get(numberOfThisSong));
 			}
 			
-			// Go through all partitions
-			for(int j=0;j<allPartitions.getValueCount();j++) {
-				int currentSongId = new Double(allPartitions.getAttribute("Id").getValueAt(j).toString()).intValue();
+			// Fill the validation set (with songs which belong to current partition)
+			for(int j=0;j<partitions.get(i).length;j++) {
+				int currentSongIdToSearch = partitions.get(i)[j];
 				
-				// If the current partition belongs to the song which is not selected by cross-validation
-				// (e.g. if 10-fold CV is applied on 21 songs, one song is omitted), then ignore it!
-				if(!songIdToPartition.containsKey(currentSongId)) {
-					continue;
-				}
-				
-				int partitionOfTheCurrentSong = songIdToPartition.get(currentSongId);
-				
-				// Update the validation set if this song belongs to the validation partition
-				if(partitionOfTheCurrentSong == i) {
+				// Search for partitions which belong to this song going through all given partitions
+				for(int k=0;k<allPartitions.getValueCount();k++) {
+					int currentSongId = new Double(allPartitions.getAttribute("Id").getValueAt(k).toString()).intValue();
 					
-					// Go through all attributes and add the values of this partition
-					for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-						validationSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(j));
+					// Is it found?
+					if(currentSongId == currentSongIdToSearch) {
+						
+						// Go through all attributes and add the values of this partition
+						for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
+							validationSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(k));
+						}
 					}
-				} 
+				}
+			}
+			
+			// Fill the training set (with songs which does not belong to current partition)
+			for(int p=0;p<this.n;p++) {
 				
-				// Update the training set if this song belongs to the training partition
-				else {
+				if(p==i) continue;
+				
+				for(int j=0;j<partitions.get(p).length;j++) {
+					int currentSongIdToSearch = partitions.get(p)[j];
 					
-					// Go through all attributes and add the values of this partition
-					for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-						trainingSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(j));
+					// Search for partitions which belong to this song going through all given partitions
+					for(int k=0;k<allPartitions.getValueCount();k++) {
+						int currentSongId = new Double(allPartitions.getAttribute("Id").getValueAt(k).toString()).intValue();
+						
+						// Is it found?
+						if(currentSongId == currentSongIdToSearch) {
+							
+							// Go through all attributes and add the values of this partition
+							for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
+								trainingSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(k));
+							}
+						}
 					}
 				}
 			}
