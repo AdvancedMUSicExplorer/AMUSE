@@ -144,7 +144,7 @@ public class Feature implements Serializable {
 	 * Returns the values of the given time window; returns null if this time window is not found
 	 * @param window The given time window
 	 */
-	public Double[] getValuesFromWindow(int window) {
+	public Double[] getValuesFromWindow(double window) {
 		for(int i=0;i<windows.size();i++) {
 			if(windows.get(i) == window) {
 				return values.get(i);
