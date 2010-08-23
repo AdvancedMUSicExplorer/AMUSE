@@ -109,7 +109,11 @@ public class ArffFeatureLoader {
 					}
 					
 					// Add time window of this feature (last attribute)
-					windows.add(new Double(t.nextToken()));
+					if(windowNumberAttributeExisting) {
+						windows.add(new Double(t.nextToken()));
+					} else {
+						windows.add(-1d);
+					}
 					values.add(valuesOfCurrentWindow);
 				}
 				line = featureReader.readLine();
