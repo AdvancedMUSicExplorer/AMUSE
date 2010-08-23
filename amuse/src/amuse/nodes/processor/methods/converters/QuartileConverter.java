@@ -30,6 +30,7 @@ import org.apache.log4j.Level;
 import amuse.data.Feature;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.util.AmuseLogger;
 
@@ -63,12 +64,10 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the quartile conversion...");
 		
-		
-//		 FIXME kommt in Feature, hier soll das minimale Zeitfenster aller ursprünglichen Merkmale stehen, also darf man nicht
-		// einfach aus Feature ablesen!!!
+		// TODO Currently only 22050 sampling rate is supported!
 		int sampleRate = 22050;
-		int windowSize = 512;//new Integer(this.getProperties().getProperty("minimalFrameSize"));
-		
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+				
 		// Single features used as classifier input vector
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();
 		
@@ -158,10 +157,10 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 					}
 					
 					// Create a list with time windows which are in the current partition
-					ArrayList<Integer> windowsOfCurrentPartition = new ArrayList<Integer>();
+					ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
 					while(features.get(i).getWindows().get(currentWindow) >= partitionStart && 
 							features.get(i).getWindows().get(currentWindow) < partitionEnd) {
-						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow).intValue());
+						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow));
 						
 						// The last existing window is achieved
 						if(currentWindow == features.get(i).getWindows().size() - 1) {
@@ -181,7 +180,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 						
 						// Save the feature values for this partition here for sorting
 						ArrayList<Double> featureValuesForThisPartition = new ArrayList<Double>();
-						for(Integer l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentPartition) {
 							featureValuesForThisPartition.add(features.get(i).getValuesFromWindow(l)[k]);
 						}
 						

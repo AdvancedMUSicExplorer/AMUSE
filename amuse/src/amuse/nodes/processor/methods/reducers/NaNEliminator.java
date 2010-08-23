@@ -23,21 +23,13 @@
  */
 package amuse.nodes.processor.methods.reducers;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 
 import amuse.data.Feature;
-import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
+import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.util.AmuseLogger;
 

@@ -31,6 +31,7 @@ import org.apache.log4j.Level;
 import amuse.data.Feature;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.util.AmuseLogger;
 
@@ -67,14 +68,11 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 	}
 	
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
-
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
-		
-//		 FIXME kommt in Feature, hier soll das minimale Zeitfenster aller urspruenglichen Merkmale stehen, also darf man nicht
-		// einfach aus Feature ablesen!!!
+		// TODO Currently only 22050 sampling rate is supported!
 		int sampleRate = 22050;
-		int windowSize = 512;//new Integer(this.getProperties().getProperty("minimalFrameSize"));
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 		
 		// Single features used as classifier input vector
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();
@@ -130,7 +128,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 					throw new NodeException("Partition size too large");
 				}
 				
-								// TODO Consider only the first 6 minutes of a music track; should be a parameter?
+			    // TODO Consider only the first 6 minutes of a music track; should be a parameter?
 				// FUNKTIONIERT NICHT MIT 30'' PRUNER!!! 
 				/*if(numberOfAllPartitions > 360000/overlap) {
 					//numberOfAllPartitions = 360000/overlap;
@@ -159,10 +157,10 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 					}
 					
 					// Create a list with time windows which are in the current partition
-					ArrayList<Integer> windowsOfCurrentPartition = new ArrayList<Integer>();
+					ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
 					while(features.get(i).getWindows().get(currentWindow) >= partitionStart && 
 							features.get(i).getWindows().get(currentWindow) < partitionEnd) {
-						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow).intValue());
+						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow));
 						
 						// The last existing window is achieved
 						if(currentWindow == features.get(i).getWindows().size() - 1) {
@@ -186,14 +184,14 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						// Calculate mean and variance
 						Double mean = 0d;
 						Double variance = 0d;
-						for(Integer l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentPartition) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								mean += features.get(i).getValuesFromWindow(l)[k];
 								valueNumber++;
 							}
 						}
 						mean /= valueNumber;
-						for(Integer l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentPartition) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								variance += Math.pow((Double)features.get(i).getValuesFromWindow(l)[k]-mean,2);
 							}
@@ -204,10 +202,6 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						if(numberOfCurrentPartition < numberOfAllPartitions) {
 							Double[] meanD = new Double[1]; meanD[0] = mean;
 							Double[] stddevD = new Double[1]; stddevD[0] = variance;
-							/*newFeatures.get(2*k).getValues().add(meanD);
-							newFeatures.get(2*k).getWindows().add(new Double(partitionStart));
-							newFeatures.get(2*k+1).getValues().add(stddevD);
-							newFeatures.get(2*k+1).getWindows().add(new Double(partitionStart));*/
 							if(saveMeanValues) {
 								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getValues().add(meanD);
 								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getWindows().add(new Double(partitionStart));

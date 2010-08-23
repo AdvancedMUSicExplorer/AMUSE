@@ -30,6 +30,7 @@ import org.apache.log4j.Level;
 import amuse.data.Feature;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.util.AmuseLogger;
 
@@ -71,8 +72,10 @@ public class IntervalSelector extends AmuseTask implements DimensionProcessorInt
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting interval selection...");
 		
 		int startWindow, endWindow;
-		//Double minimalFrameSize = new Double(this.getProperties().getProperty("minimalFrameSize"));
-		Double d = (22050d/512d)*this.msNumber/1000;
+		
+		// TODO Currently only 22050 sampling rate is supported!
+		Double d = (22050d / 
+				(double)((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize()) * this.msNumber/1000;
 		if(this.selectFromTheBeginning) {
 			startWindow = 0;
 			endWindow = d.intValue();
