@@ -400,58 +400,103 @@ public class FitnessEvaluator {
 			}
 		}
 		
-		// --------------------------------------
-		// (IV) Train the classification models..
-		// --------------------------------------
+		// ---------------------------------------------------
+		// (IV) Train and validate the classification models..
+		// ---------------------------------------------------
 		// (a) ..building n models using n-fold cross-validation process on training set
 		if(categoryForOptimizationDescription.startsWith("-")) {
 			
-			// Create n models during n-fold CV
-			ValidationConfiguration vConf;
-				
-			// Validate the model only with the features selected by EA
-			DataSet optimizationDataWithOnlySelectedFeatures = new DataSet("OptimizationSet");
-			int indexOfSelectedFeaturesRepresentation = 0;
-			for(int j=0;j<individual.getRepresentationList().size();j++) {
-				if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
-					indexOfSelectedFeaturesRepresentation = j;
-					break;
-				}
-			}
-			for(int i=0;i<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-					getValue().length;i++) {
-				if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-					getValue()[i]) {
-					optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(i));
-				}
-			}
-				
-			// Add id and category attributes
-			optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-2));
-			optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
-				
 			// Create n models from the training set using a n-fold cross-validation procedure
-			// TODO 10-fold -> n-fold (parameter)
-			vConf = new ValidationConfiguration("1[10_0]",metricTable, 
-					processedModel, 
-					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
-						getAttributes().getNamedItem("stringValue").getNodeValue(), 
-					new DataSetInput(optimizationDataWithOnlySelectedFeatures), ValidationConfiguration.
-					GroundTruthSourceType.READY_INPUT);
-			vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
-			vConf.setModelDatabase(pathToModelDatabase);
-			vConf.setMetricDatabase(pathToMetricDatabase);
-			ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
-				getCorrespondingScheduler().getHomeFolder() + "/input/task_" + 
-				individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + "/validator");
-			vs.setCleanInputFolder(false);
-			vs.setCategoryDescription(categoryForLearningDescription);
-			vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
-					new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf);
-			
-			// If the metrics for all n models should be calculated using an independent test set..
-			if(isEvaluatedOnIndependentTestSet) {
+			// and deliver mean metrics as fitness value(s)
+			if(!isEvaluatedOnIndependentTestSet) {
+
+				// Create n models during n-fold CV
+				ValidationConfiguration vConf;
+					
+				// Validate the model only with the features selected by EA
+				DataSet optimizationDataWithOnlySelectedFeatures = new DataSet("OptimizationSet");
+				int indexOfSelectedFeaturesRepresentation = 0;
+				for(int j=0;j<individual.getRepresentationList().size();j++) {
+					if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+						indexOfSelectedFeaturesRepresentation = j;
+						break;
+					}
+				}
+				for(int i=0;i<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+						getValue().length;i++) {
+					if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+						getValue()[i]) {
+						optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(i));
+					}
+				}
+					
+				// Add id and category attributes
+				optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-2));
+				optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 				
+				// Start n-fold validation (the optimization category must be set to "-n")
+				vConf = new ValidationConfiguration("1[" + categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]",metricTable, 
+						processedModel, 
+						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
+							getAttributes().getNamedItem("stringValue").getNodeValue(), 
+						new DataSetInput(optimizationDataWithOnlySelectedFeatures), ValidationConfiguration.
+						GroundTruthSourceType.READY_INPUT);
+				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
+				vConf.setModelDatabase(pathToModelDatabase);
+				vConf.setMetricDatabase(pathToMetricDatabase);
+				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
+					getCorrespondingScheduler().getHomeFolder() + "/input/task_" + 
+					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + "/validator");
+				vs.setCleanInputFolder(false);
+				vs.setCategoryDescription(categoryForLearningDescription);
+				vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
+						new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf);
+			}
+			
+			// If an independent test set must be used..
+			else {
+				
+				String pathToModels = new String(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
+						individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator +"Models"+ File.separator +
+						categoryForLearningDescription + "/" + classifierDescription + File.separator + processedModel);
+					
+				// Train the model only with the features selected by EA
+				DataSet trainingDataWithOnlySelectedFeatures = new DataSet("TrainingSet");
+				int indexOfSelectedFeaturesRepresentation = 0;
+				for(int j=0;j<individual.getRepresentationList().size();j++) {
+					if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+						indexOfSelectedFeaturesRepresentation = j;
+						break;
+					}
+				}
+				for(int i=0;i<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+						getValue().length;i++) {
+					if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+						getValue()[i]) {
+						trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(i));
+					}
+				}
+					
+				// Add id and category attributes
+				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-2));
+				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
+			
+				TrainingConfiguration tConf = new TrainingConfiguration(processedModel, 
+						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
+							getAttributes().getNamedItem("stringValue").getNodeValue(), 
+						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
+							getAttributes().getNamedItem("stringValue").getNodeValue(),
+						new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT,
+						pathToModels + File.separator + "model.mod");
+				tConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
+				tConf.setModelDatabase(pathToModelDatabase);
+				TrainerNodeScheduler ts = new TrainerNodeScheduler(individual.getCorrespondingES().
+					getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
+					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator + "trainer");
+				ts.setCleanInputFolder(false);
+				ts.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
+					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId(), tConf);
+					
 				// Validate the model only with the features selected by EA
 				DataSet testDataWithOnlySelectedFeatures = new DataSet("TestSet");
 				indexOfSelectedFeaturesRepresentation = 0;
@@ -468,16 +513,12 @@ public class FitnessEvaluator {
 						testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(i));
 					}
 				}
-				
+					
 				// Add id and category attributes
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-2));
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-1));
 				
-				String pathToModels = new String(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + "/input/task_" + 
-						individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + "/Models/" +
-						categoryForLearningDescription + "/" + classifierDescription + "/" + processedModel + "/" + 
-						"1[10_0]-n-Fold_Cross-Validation");
-				vConf = new ValidationConfiguration("0[" + pathToModels + "]",metricTable, 
+				ValidationConfiguration vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
@@ -486,9 +527,9 @@ public class FitnessEvaluator {
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
 				vConf.setMetricDatabase(pathToMetricDatabase);
-				vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
+				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
 					getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
-					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator +"validator");
+					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator + "validator");
 				vs.setCleanInputFolder(false);
 				vs.setCategoryDescription(categoryForTestDescription);
 				vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
@@ -609,27 +650,35 @@ public class FitnessEvaluator {
 		DataSetAbstract calculatedMetricSet;
 		try {
 				
-			// (a) ..metrics from n models using n-fold cross-validation process on training set
+			// (a) ..metrics using n-fold cross-validation process on training set
 			if(categoryForOptimizationDescription.startsWith("-")) {
-				
-				// TODO n -> Parameter
 				if(!isEvaluatedOnIndependentTestSet) {
 					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + File.separator + categoryForLearningDescription
-						+ File.separator + classifierDescription + File.separator + processedModel + File.separator + "1[10_0]-n-Fold_Cross-Validation" + File.separator + "metrics.arff"));
+						+ File.separator + classifierDescription + File.separator + processedModel + File.separator + "1[" + 
+						categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]-n-Fold_Cross-Validation" + File.separator + "metrics.arff"));
 				} else {
-					// FIXME current todo
-					calculatedMetricSet = null;
+					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + "/" + categoryForTestDescription
+							+ "/" + classifierDescription + "/" + processedModel + "/0-Single_Evaluator/metrics.arff"));
 				}
 				
 				for(int i=0;i<calculatedMetricSet.getValueCount();i++) {
 					ValidationMetricDouble currentMetric = new ValidationMetricDouble();
 					
-					// List of correctly identified songs is not a double value metric; only mean metrics over n models are saved
-					if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114) &&
-							calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString().startsWith("mean(")) {
-						currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
-						currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
-						metrics.add(currentMetric);
+					if(!isEvaluatedOnIndependentTestSet) {
+					
+						// List of correctly identified songs is not a double value metric; only mean metrics over n models are saved
+						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114) &&
+								calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString().startsWith("mean(")) {
+							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
+							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
+							metrics.add(currentMetric);
+						}
+					} else {
+						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114)) {
+							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
+							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
+							metrics.add(currentMetric);
+						}
 					}
 				}
 			} 
