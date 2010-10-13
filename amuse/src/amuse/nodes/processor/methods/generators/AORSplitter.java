@@ -35,6 +35,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -96,7 +97,7 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 		
 		// FIXME kommt in Feature
 		int sampleRate = 22050;
-		int windowSize = 512;
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 			
 		ArrayList<Feature> newFeatures = new ArrayList<Feature>();
 			
