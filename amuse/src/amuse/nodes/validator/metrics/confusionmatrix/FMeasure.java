@@ -116,7 +116,7 @@ public class FMeasure extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] fMeasureMetric = new ValidationMetricDouble[1];
-		fMeasureMetric[0] = new ValidationMetricDouble();
+		fMeasureMetric[0] = new ValidationMetricDouble(false);
 		fMeasureMetric[0].setId(108);
 		fMeasureMetric[0].setName("F-measure on song level");
 		fMeasureMetric[0].setValue(new Double(fMeasure));
@@ -142,7 +142,7 @@ public class FMeasure extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] fMeasureMetric = new ValidationMetricDouble[1];
-		fMeasureMetric[0] = new ValidationMetricDouble();
+		fMeasureMetric[0] = new ValidationMetricDouble(false);
 		fMeasureMetric[0].setId(108);
 		fMeasureMetric[0].setName("F-measure on partition level");
 		fMeasureMetric[0].setValue(new Double(fMeasure));

@@ -118,7 +118,7 @@ public class Recall extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] recallMetric = new ValidationMetricDouble[1];
-		recallMetric[0] = new ValidationMetricDouble();
+		recallMetric[0] = new ValidationMetricDouble(false);
 		recallMetric[0].setId(106);
 		recallMetric[0].setName("Recall on song level");
 		recallMetric[0].setValue(new Double(recall));
@@ -144,7 +144,7 @@ public class Recall extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] recallMetric = new ValidationMetricDouble[1];
-		recallMetric[0] = new ValidationMetricDouble();
+		recallMetric[0] = new ValidationMetricDouble(false);
 		recallMetric[0].setId(106);
 		recallMetric[0].setName("Recall on partition level");
 		recallMetric[0].setValue(new Double(recall));

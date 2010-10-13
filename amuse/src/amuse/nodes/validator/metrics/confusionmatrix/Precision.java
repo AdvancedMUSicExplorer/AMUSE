@@ -118,7 +118,7 @@ public class Precision extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] precisionMetric = new ValidationMetricDouble[1];
-		precisionMetric[0] = new ValidationMetricDouble();
+		precisionMetric[0] = new ValidationMetricDouble(false);
 		precisionMetric[0].setId(105);
 		precisionMetric[0].setName("Precision on song level");
 		precisionMetric[0].setValue(new Double(precision));
@@ -144,7 +144,7 @@ public class Precision extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] precisionMetric = new ValidationMetricDouble[1];
-		precisionMetric[0] = new ValidationMetricDouble();
+		precisionMetric[0] = new ValidationMetricDouble(false);
 		precisionMetric[0].setId(105);
 		precisionMetric[0].setName("Precision on partition level");
 		precisionMetric[0].setValue(new Double(precision));

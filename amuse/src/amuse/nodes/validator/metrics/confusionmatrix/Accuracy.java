@@ -134,7 +134,7 @@ public class Accuracy extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] accuracyMetric = new ValidationMetricDouble[1];
-		accuracyMetric[0] = new ValidationMetricDouble();
+		accuracyMetric[0] = new ValidationMetricDouble(false);
 		accuracyMetric[0].setId(104);
 		accuracyMetric[0].setName("Accuracy on song level");
 		accuracyMetric[0].setValue(accuracy);
@@ -160,7 +160,7 @@ public class Accuracy extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] accuracyMetric = new ValidationMetricDouble[1];
-		accuracyMetric[0] = new ValidationMetricDouble();
+		accuracyMetric[0] = new ValidationMetricDouble(false);
 		accuracyMetric[0].setId(104);
 		accuracyMetric[0].setName("Accuracy on partition level");
 		accuracyMetric[0].setValue(accuracy);

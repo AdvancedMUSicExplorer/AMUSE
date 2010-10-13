@@ -169,7 +169,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityMetricCalcu
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(302);
 		correlationMetric[0].setName("Kendall's tau rank correlation coefficient on song level");
 		correlationMetric[0].setValue(corrCoef);
@@ -253,7 +253,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityMetricCalcu
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(302);
 		correlationMetric[0].setName("Kendall's tau rank correlation coefficient on partition level");
 		correlationMetric[0].setValue(corrCoef);

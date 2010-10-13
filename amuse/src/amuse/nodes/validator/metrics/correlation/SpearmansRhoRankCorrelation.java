@@ -191,7 +191,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityMetricCalc
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(301);
 		correlationMetric[0].setName("Speraman's rank correlation coefficient on song level");
 		correlationMetric[0].setValue(corrCoef);
@@ -285,7 +285,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityMetricCalc
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(301);
 		correlationMetric[0].setName("Speraman's rank correlation coefficient on partition level");
 		correlationMetric[0].setValue(corrCoef);

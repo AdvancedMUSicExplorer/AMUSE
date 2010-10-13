@@ -118,7 +118,7 @@ public class DiscriminantPower extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] discriminantPowerMetric = new ValidationMetricDouble[1];
-		discriminantPowerMetric[0] = new ValidationMetricDouble();
+		discriminantPowerMetric[0] = new ValidationMetricDouble(false);
 		discriminantPowerMetric[0].setId(112);
 		discriminantPowerMetric[0].setName("Discriminant power on song level");
 		discriminantPowerMetric[0].setValue(new Double(dp));
@@ -145,7 +145,7 @@ public class DiscriminantPower extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] discriminantPowerMetric = new ValidationMetricDouble[1];
-		discriminantPowerMetric[0] = new ValidationMetricDouble();
+		discriminantPowerMetric[0] = new ValidationMetricDouble(false);
 		discriminantPowerMetric[0].setId(112);
 		discriminantPowerMetric[0].setName("Discriminant power on partition level");
 		discriminantPowerMetric[0].setValue(new Double(dp));
