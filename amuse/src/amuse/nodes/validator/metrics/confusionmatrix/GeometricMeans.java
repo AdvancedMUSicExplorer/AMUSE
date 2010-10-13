@@ -116,7 +116,7 @@ public class GeometricMeans extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] geometricMeansMetric = new ValidationMetricDouble[1];
-		geometricMeansMetric[0] = new ValidationMetricDouble();
+		geometricMeansMetric[0] = new ValidationMetricDouble(false);
 		geometricMeansMetric[0].setId(113);
 		geometricMeansMetric[0].setName("Geometric means on song level");
 		geometricMeansMetric[0].setValue(new Double(gm));
@@ -140,7 +140,7 @@ public class GeometricMeans extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] geometricMeansMetric = new ValidationMetricDouble[1];
-		geometricMeansMetric[0] = new ValidationMetricDouble();
+		geometricMeansMetric[0] = new ValidationMetricDouble(false);
 		geometricMeansMetric[0].setId(113);
 		geometricMeansMetric[0].setName("Geometric means on partition level");
 		geometricMeansMetric[0].setValue(new Double(gm));

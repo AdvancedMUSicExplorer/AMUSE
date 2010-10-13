@@ -145,7 +145,7 @@ public class StandardCorrelationCoefficient extends ClassificationQualityMetricC
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(300);
 		correlationMetric[0].setName("Standard correlation coefficient on song level");
 		correlationMetric[0].setValue(corrCoef);
@@ -195,7 +195,7 @@ public class StandardCorrelationCoefficient extends ClassificationQualityMetricC
 		
 		// Prepare the result
 		ValidationMetricDouble[] correlationMetric = new ValidationMetricDouble[1];
-		correlationMetric[0] = new ValidationMetricDouble();
+		correlationMetric[0] = new ValidationMetricDouble(false);
 		correlationMetric[0].setId(300);
 		correlationMetric[0].setName("Standard correlation coefficient on partition level");
 		correlationMetric[0].setValue(corrCoef);

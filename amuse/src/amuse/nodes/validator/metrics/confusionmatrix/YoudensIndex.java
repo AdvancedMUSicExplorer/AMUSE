@@ -115,7 +115,7 @@ public class YoudensIndex extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] youdenxIndexMetric = new ValidationMetricDouble[1];
-		youdenxIndexMetric[0] = new ValidationMetricDouble();
+		youdenxIndexMetric[0] = new ValidationMetricDouble(false);
 		youdenxIndexMetric[0].setId(110);
 		youdenxIndexMetric[0].setName("Youden's index on song level");
 		youdenxIndexMetric[0].setValue(new Double(index));
@@ -139,7 +139,7 @@ public class YoudensIndex extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] youdenxIndexMetric = new ValidationMetricDouble[1];
-		youdenxIndexMetric[0] = new ValidationMetricDouble();
+		youdenxIndexMetric[0] = new ValidationMetricDouble(false);
 		youdenxIndexMetric[0].setId(110);
 		youdenxIndexMetric[0].setName("Youden's index on partition level");
 		youdenxIndexMetric[0].setValue(new Double(index));

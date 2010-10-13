@@ -118,7 +118,7 @@ public class Specificity extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] specificityMetric = new ValidationMetricDouble[1];
-		specificityMetric[0] = new ValidationMetricDouble();
+		specificityMetric[0] = new ValidationMetricDouble(false);
 		specificityMetric[0].setId(107);
 		specificityMetric[0].setName("Specificity on song level");
 		specificityMetric[0].setValue(new Double(specificity));
@@ -144,7 +144,7 @@ public class Specificity extends ClassificationQualityMetricCalculator {
 		
 		// Prepare the result
 		ValidationMetricDouble[] specificityMetric = new ValidationMetricDouble[1];
-		specificityMetric[0] = new ValidationMetricDouble();
+		specificityMetric[0] = new ValidationMetricDouble(false);
 		specificityMetric[0].setId(107);
 		specificityMetric[0].setName("Specificity on partition level");
 		specificityMetric[0].setValue(new Double(specificity));
