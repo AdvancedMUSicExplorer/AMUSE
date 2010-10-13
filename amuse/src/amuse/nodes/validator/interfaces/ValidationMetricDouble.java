@@ -31,6 +31,24 @@ package amuse.nodes.validator.interfaces;
  */
 public class ValidationMetricDouble extends ValidationMetric {
 	
+	/** Should this metric be minimized (for better solutions)? */
+	protected boolean isForMinimizing = true;
+	
+	/**
+	 * Standard constructor
+	 */
+	public ValidationMetricDouble() {
+		super();
+	}
+	
+	/**
+	 * Constructor with setting of isForMinimizing
+	 */
+	public ValidationMetricDouble(boolean isForMinimizing) {
+		super();
+		this.isForMinimizing = isForMinimizing;
+	}
+	
 	/**
 	 * Gets metric value
 	 * @return Metric value
@@ -45,6 +63,20 @@ public class ValidationMetricDouble extends ValidationMetric {
 	 */
 	public void setValue(Double value) {
 		this.value = value;
+	}
+
+	/**
+	 * @return the isForMinimizing
+	 */
+	public boolean isForMinimizing() {
+		return isForMinimizing;
+	}
+
+	/**
+	 * @param isForMinimizing True if this metric should be minimized (for better solutions)
+	 */
+	public void setForMinimizing(boolean isForMinimizing) {
+		this.isForMinimizing = isForMinimizing;
 	}
 	
 }
