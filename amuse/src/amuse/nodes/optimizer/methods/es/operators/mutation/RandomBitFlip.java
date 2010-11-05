@@ -46,6 +46,13 @@ public class RandomBitFlip extends AbstractMutation {
 
 	/** Parameters from ESConfiguration which are saved here for faster processing */
 	double gamma;
+	double alpha = -1;
+	double boundaryForSelfAdaptation;
+	boolean increaseForHigherSuccessRate;
+	int intervalForSuccessRateCalculation;
+	
+	/** Depending on the previous successes, the bit flip probability is multiplied by this factor */
+	double selfAdaptationFactor;
 	
 	/*
 	 * (non-Javadoc)
@@ -56,7 +63,8 @@ public class RandomBitFlip extends AbstractMutation {
 		if(representation instanceof BinaryVector) {
 			BinaryVector valueToMutate = (BinaryVector)representation;
 			Random rand = new Random();
-			double mutationProbability = gamma / valueToMutate.getValue().length;
+			double mutationProbability = this.selfAdaptationFactor * gamma / valueToMutate.getValue().length;
+			selfAdaptation();
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Current value: " + valueToMutate.toString());
 			for(int i=0;i<valueToMutate.getValue().length;i++) {
 				
@@ -88,13 +96,38 @@ public class RandomBitFlip extends AbstractMutation {
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Random bit flip mutation finished");
 	}
+	
+	/**
+	 * Adjust the mutation probability due to self-adaptation concept
+	 */
+	protected void selfAdaptation() {
+		if(alpha != -1 && (correspondingES.currentGeneration + 1) % intervalForSuccessRateCalculation == 0) {
+			double successRate = ((Integer)correspondingES.currentSuccessCounter).doubleValue() / 
+				(((Integer)intervalForSuccessRateCalculation).doubleValue()*correspondingES.offspringPopSize);
+			
+			// Increase or decrease the mutation probability?
+			if(increaseForHigherSuccessRate) {
+				if(successRate > boundaryForSelfAdaptation) {
+					selfAdaptationFactor *= alpha;
+				} else if(successRate < boundaryForSelfAdaptation) {
+					selfAdaptationFactor /= alpha;
+				}
+			} else {
+				if(successRate > boundaryForSelfAdaptation) {
+					selfAdaptationFactor /= alpha;
+				} else if(successRate < boundaryForSelfAdaptation) {
+					selfAdaptationFactor *= alpha;
+				}
+			}
+			correspondingES.currentSuccessCounter = 0;
+		}
+	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.nodes.optimizer.methods.es.operators.mutation.MutationInterface#setParameters(org.w3c.dom.NodeList)
 	 */
 	public void setParameters(NodeList parameters, EvolutionaryStrategy correspondingStrategy) throws NodeException {
-		
 		this.correspondingES = correspondingStrategy;
 		
 		for(int i=0;i<parameters.getLength();i++) {
@@ -102,9 +135,18 @@ public class RandomBitFlip extends AbstractMutation {
 				String parameterName = parameters.item(i).getAttributes().getNamedItem("name").getNodeValue();
 				if(parameterName.equals(new String("gamma"))) {
 					gamma = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
-				} 
+				} else if(parameterName.equals(new String("alpha"))) {
+					alpha = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
+				} else if(parameterName.equals(new String("boundaryForSelfAdaptation"))) {
+					boundaryForSelfAdaptation = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
+				} else if(parameterName.equals(new String("increaseForHigherSuccessRate"))) {
+					increaseForHigherSuccessRate = new Boolean(parameters.item(i).getAttributes().getNamedItem("booleanValue").getNodeValue());
+				} else if(parameterName.equals(new String("intervalForSuccessRateCalculation"))) {
+					intervalForSuccessRateCalculation = new Integer(parameters.item(i).getAttributes().getNamedItem("intValue").getNodeValue());
+				}
 			}
 		}
+		this.selfAdaptationFactor = 1d;
 	}
 
 }

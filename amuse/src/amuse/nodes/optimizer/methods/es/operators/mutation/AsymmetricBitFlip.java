@@ -31,7 +31,6 @@ import org.w3c.dom.NodeList;
 
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
-import amuse.nodes.optimizer.methods.es.operators.mutation.interfaces.AbstractMutation;
 import amuse.nodes.optimizer.methods.es.representation.BinaryVector;
 import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
 import amuse.util.AmuseLogger;
@@ -42,10 +41,9 @@ import amuse.util.AmuseLogger;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class AsymmetricBitFlip extends AbstractMutation {
+public class AsymmetricBitFlip extends RandomBitFlip {
 
 	/** Parameters from ESConfiguration which are saved here for faster processing */
-	double gamma;
 	double p_01;
 	double p_10;
 	
@@ -58,6 +56,7 @@ public class AsymmetricBitFlip extends AbstractMutation {
 		if(representation instanceof BinaryVector) {
 			BinaryVector valueToMutate = (BinaryVector)representation;
 			Random rand = new Random();
+			selfAdaptation();
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Current value: " + valueToMutate.toString());
 			for(int i=0;i<valueToMutate.getValue().length;i++) {
 				
@@ -101,15 +100,11 @@ public class AsymmetricBitFlip extends AbstractMutation {
 	 * @see amuse.nodes.optimizer.methods.es.operators.mutation.MutationInterface#setParameters(org.w3c.dom.NodeList)
 	 */
 	public void setParameters(NodeList parameters, EvolutionaryStrategy correspondingStrategy) throws NodeException {
-		
-		this.correspondingES = correspondingStrategy;
-		
+		super.setParameters(parameters, correspondingStrategy);
 		for(int i=0;i<parameters.getLength();i++) {
 			if(parameters.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				String parameterName = parameters.item(i).getAttributes().getNamedItem("name").getNodeValue();
-				if(parameterName.equals(new String("gamma"))) {
-					gamma = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
-				} else if(parameterName.equals(new String("p_01"))) {
+				if(parameterName.equals(new String("p_01"))) {
 					p_01 = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
 				} else if(parameterName.equals(new String("p_10"))) {
 					p_10 = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
