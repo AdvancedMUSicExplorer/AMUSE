@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.log4j.Level;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import weka.core.Attribute;
@@ -43,7 +42,6 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
-import amuse.nodes.optimizer.methods.es.operators.mutation.interfaces.AbstractMutation;
 import amuse.nodes.optimizer.methods.es.representation.BinaryVector;
 import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
 import amuse.preferences.AmusePreferences;
@@ -63,13 +61,8 @@ import amuse.util.AmuseLogger;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class AsymmetricBitFlipWithCorrelationToTarget extends AbstractMutation {
+public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip {
 
-	/** Parameters from ESConfiguration which are saved here for faster processing */
-	double gamma;
-	double p_01;
-	double p_10;
-	
 	/** List with correlation coefficients of singular features to the label */
 	double[] correlationList;
 	
@@ -82,6 +75,7 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AbstractMutation {
 		if(representation instanceof BinaryVector) {
 			BinaryVector valueToMutate = (BinaryVector)representation;
 			Random rand = new Random();
+			selfAdaptation();
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Current value: " + valueToMutate.toString());
 			for(int i=0;i<valueToMutate.getValue().length;i++) {
 				
@@ -127,20 +121,7 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AbstractMutation {
 	 * @see amuse.nodes.optimizer.methods.es.operators.mutation.MutationInterface#setParameters(org.w3c.dom.NodeList)
 	 */
 	public void setParameters(NodeList parameters, EvolutionaryStrategy correspondingStrategy) throws NodeException {
-		this.correspondingES = correspondingStrategy;
-		
-		for(int i=0;i<parameters.getLength();i++) {
-			if(parameters.item(i).getNodeType() == Node.ELEMENT_NODE) {
-				String parameterName = parameters.item(i).getAttributes().getNamedItem("name").getNodeValue();
-				if(parameterName.equals(new String("gamma"))) {
-					gamma = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
-				} else if(parameterName.equals(new String("p_01"))) {
-					p_01 = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
-				} else if(parameterName.equals(new String("p_10"))) {
-					p_10 = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
-				}
-			}
-		}
+		super.setParameters(parameters, correspondingStrategy);
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Calculation of the correlation between features and label started...");
 		
