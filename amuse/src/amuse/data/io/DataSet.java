@@ -103,9 +103,10 @@ public class DataSet extends DataSetAbstract {
 		}
 
 		// Load the values
-		for (int i = 0; i < exampleSet.getExampleTable().getAttributeCount(); i++) {
-			com.rapidminer.example.Attribute a = exampleSet.getExampleTable()
-					.getAttribute(i);
+		it = exampleSet.getAttributes().allAttributes();
+		int i=0;
+		while(it.hasNext()) {
+			com.rapidminer.example.Attribute a = it.next();
 			for (int j = 0; j < exampleSet.size(); j++) {
 				if (a.isNumerical()) {
 					attributes.get(i).addValue(exampleSet.getExample(j).getValue(a));
@@ -114,6 +115,7 @@ public class DataSet extends DataSetAbstract {
 					attributes.get(i).addValue(s);
 				}
 			}
+			i++;
 		}
 	}
 
