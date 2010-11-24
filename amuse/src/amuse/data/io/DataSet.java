@@ -26,6 +26,7 @@ package amuse.data.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -91,8 +92,9 @@ public class DataSet extends DataSetAbstract {
 		this.name = exampleSet.getName();
 
 		// Create the attributes
-		for (int i = 0; i < exampleSet.getExampleTable().getAttributeCount(); i++) {
-			com.rapidminer.example.Attribute a = exampleSet.getExampleTable().getAttribute(i);
+		Iterator<com.rapidminer.example.Attribute> it = exampleSet.getAttributes().allAttributes();
+		while(it.hasNext()) {
+			com.rapidminer.example.Attribute a = it.next();
 			if (a.isNumerical()) {
 				attributes.add(new NumericAttribute(a.getName(),new ArrayList<Double>()));
 			} else {
