@@ -109,8 +109,10 @@ public class LOFOutlierDetectorAdapter extends AmuseTask implements Classificati
 			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
 			process.getRootOperator().addOperator(exampleWriter);
 			
-			// (4) Run the process
-			process.run(new IOContainer(new IOObject[]{exampleSet}));
+			// (4) Run the process and update the example set (removing the outliers)
+			IOContainer container = process.run(new IOContainer(new IOObject[]{exampleSet}));
+			exampleSet = container.get(ExampleSet.class);
+			exampleSet.getAttributes().remove(exampleSet.getAttributes().getOutlier());
 			
 			// (5) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
