@@ -94,11 +94,6 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			ExampleSet exampleSet = ((DataSetInput)((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).
 					getGroundTruthSource()).getDataSet().convertToRapidMinerExampleSet();
 			
-			/* old code
-			Operator exampleSource = OperatorService.createOperator(ArffExampleSource.class);
-			exampleSource.setParameter("data_file", new String(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
-			process.getRootOperator().addOperator(exampleSource);*/
-			
 			// (2) Find outliers
 			Operator outlierDetector = OperatorService.createOperator(DKNOutlierOperator.class);
 			outlierDetector.setParameter("number_of_outliers", outlierNumber.toString());
@@ -116,8 +111,10 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
 			process.getRootOperator().addOperator(exampleWriter);
 			
-			// (4) Run the process
-			process.run(new IOContainer(new IOObject[]{exampleSet}));
+			// (4) Run the process and update the example set (removing the outliers)
+			IOContainer container = process.run(new IOContainer(new IOObject[]{exampleSet}));
+			exampleSet = container.get(ExampleSet.class);
+			exampleSet.getAttributes().remove(exampleSet.getAttributes().getOutlier());
 			
 			// (5) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
