@@ -92,14 +92,11 @@ public class DataSet extends DataSetAbstract {
 
 		// Create the attributes
 		for (int i = 0; i < exampleSet.getExampleTable().getAttributeCount(); i++) {
-			com.rapidminer.example.Attribute a = exampleSet.getExampleTable()
-					.getAttribute(i);
+			com.rapidminer.example.Attribute a = exampleSet.getExampleTable().getAttribute(i);
 			if (a.isNumerical()) {
-				attributes.add(new NumericAttribute(a.getName(),
-						new ArrayList<Double>()));
+				attributes.add(new NumericAttribute(a.getName(),new ArrayList<Double>()));
 			} else {
-				attributes.add(new StringAttribute(a.getName(),
-						new ArrayList<String>()));
+				attributes.add(new StringAttribute(a.getName(),new ArrayList<String>()));
 			}
 		}
 
@@ -107,14 +104,11 @@ public class DataSet extends DataSetAbstract {
 		for (int i = 0; i < exampleSet.getExampleTable().getAttributeCount(); i++) {
 			com.rapidminer.example.Attribute a = exampleSet.getExampleTable()
 					.getAttribute(i);
-			for (int j = 0; j < exampleSet.getExampleTable().size(); j++) {
+			for (int j = 0; j < exampleSet.size(); j++) {
 				if (a.isNumerical()) {
-					attributes.get(i).addValue(
-							exampleSet.getExample(j).getValue(a));
+					attributes.get(i).addValue(exampleSet.getExample(j).getValue(a));
 				} else {
-					String s = a.getMapping().mapIndex(
-							new Double(exampleSet.getExample(j).getValue(a))
-									.intValue());
+					String s = a.getMapping().mapIndex(new Double(exampleSet.getExample(j).getValue(a)).intValue());
 					attributes.get(i).addValue(s);
 				}
 			}
