@@ -61,7 +61,6 @@ import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
 import amuse.util.AmuseLogger;
 import amuse.util.ExternalProcessBuilder;
-import amuse.util.ExternalToolAdapter;
 import java.io.InputStreamReader;
 import java.util.List;
 
@@ -488,7 +487,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 			// Yale blocks if u dont read error output!
 			while ((s = stdError.readLine()) != null) {
 				if (debug)
-					AmuseLogger.write(ExternalToolAdapter.class.getName(),
+					AmuseLogger.write(ExternalProcessBuilder.class.getName(),
 							Level.INFO, s);
 			}
 
