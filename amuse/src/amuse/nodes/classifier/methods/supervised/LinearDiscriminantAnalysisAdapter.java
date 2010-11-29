@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
@@ -36,7 +37,9 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
-import amuse.util.ExternalToolAdapter;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
+import amuse.util.ExternalProcessBuilder;
 
 /**
  * Adapter for Matlab Linear Discriminant Analysis. 
@@ -78,7 +81,7 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 		}
 		
 		// (2) Run Matlab LDA
-		try {
+		/* OLD try {
 			ExternalToolAdapter.runBatch(properties.getProperty("classifierFolder") + "/" + properties.getProperty("startScript"), 
 				// ARFF input for LDA classification
 				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff" + " " + 
@@ -88,7 +91,35 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/output.arff");
 		} catch (NodeException e) {
 			throw new NodeException("Classification with Matlab failed: " + e.getMessage());
-		}
+		}*/
+		try {
+			List<String> commands = new ArrayList<String>();
+			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
+			commands.add("-nodisplay");
+			commands.add("-nosplash");
+			commands.add("-nojvm");
+			commands.add("-r");
+			commands.add("matlabLDA('" + 
+				// ARFF input for LDA classification
+				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff" + "','" + 
+				// Model (here the training set)
+				pathToModelFile + "','" + 
+				// Temporal output
+				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/output.arff" + "')");
+			commands.add("-logfile");
+			commands.add("\"" + properties.getProperty("classifierFolder") + File.separator + "MatlabClassification.log\"");
+			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
+			matlab.setWorkingDirectory(new File(properties.getProperty("classifierFolder")));
+			matlab.setEnv("MATLABPATH", properties.getProperty("classifierFolder"));
+			Process pc = matlab.start();
+			
+		    pc.waitFor();
+		} catch (IOException e) {
+        	throw new NodeException("Classification with Matlab failed: " + e.getMessage());
+        } catch (InterruptedException e) {
+            throw new NodeException("Classification with Matlab interrupted! " + e.getMessage());
+        }
+		
 		
 		// (3) Convert the results to AMUSE format
 		try {

@@ -60,9 +60,6 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 import amuse.util.ExternalProcessBuilder;
-import amuse.util.ExternalToolAdapter;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.List;
 
 /**
@@ -288,17 +285,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    ExternalProcessBuilder jAudio = ExternalProcessBuilder.buildJavaProcess(javaParameters, libs, commands);
 		    jAudio.setWorkingDirectory(new File(amuse + File.separator +"tools"+ File.separator + "jAudio"));
 		    Process pc = jAudio.start();
-		    if (false) { // DEBUG Show the runtime outputs
-			String s = null ;
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(pc.getInputStream()));
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(pc.getErrorStream()));
-			AmuseLogger.write(this.getClass().getName(), Level.INFO,"\nHere is the standard output of the command:\n");
-			while ((s = stdInput.readLine()) != null) { AmuseLogger.write(ExternalToolAdapter.class.getName(), Level.INFO,s); }
-			AmuseLogger.write(this.getClass().getName(), Level.INFO,"\n+Here is the standard error of the command (if any):\n");
-			while ((s = stdError.readLine()) != null) {	AmuseLogger.write(ExternalToolAdapter.class.getName(), Level.INFO,s); }
-			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
-		    }
-                    pc.waitFor();
+            pc.waitFor();
 		    convertOutput();
 		} catch (InterruptedException e) {
                         throw new NodeException("Extraciton with jAudio interrupted! " + e.getMessage());
