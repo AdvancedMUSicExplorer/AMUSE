@@ -44,8 +44,10 @@ import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
-import amuse.util.ExternalToolAdapter;
+import amuse.util.ExternalProcessBuilder;
 
 /**
  * Adapter to MIR Toolbox as feature extractor
@@ -228,19 +230,28 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 					folder.toString());
 		}
 				
-		// Start MIRToolbox
+		// Start MIR Toolbox
 		try {
-			ExternalToolAdapter.runBatch(properties.getProperty("extractorFolder") +  
-					"/"	+ properties.getProperty("extractorStartScript"),
-					// Music file name for Matlab script
-					this.musicFile + " " + 
-					// Temp folder for features before they are copied to feature database
-					folder  + " " + 0);
+			List<String> commands = new ArrayList<String>();
+			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
+			commands.add("-nodisplay");
+			commands.add("-nosplash");
+			commands.add("-nojvm");
+			commands.add("-r");
+			commands.add("MIRToolboxBaseModified('" + this.musicFile + "','" + folder + "')");
+			commands.add("-logfile");
+			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MIRToolbox.log\"");
+			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
+			matlab.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
+			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
+			Process pc = matlab.start();
 			
-			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
-		} catch (NodeException e) {
-			throw new NodeException("Extraction with MIR Toolbox failed: " + e.getMessage());
-		}
+		    pc.waitFor();
+		} catch (IOException e) {
+        	throw new NodeException("Extraction with MIR Toolbox failed: " + e.getMessage());
+        } catch (InterruptedException e) {
+            throw new NodeException("Extraction with MIR Toolbox interrupted! " + e.getMessage());
+        }
 	}
 	
 	/*
@@ -265,10 +276,5 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void setParameters(String parameterString) throws NodeException {
 		// Do nothing, since initialization is not required	
-	}
-
-	public void setFeaturesIds(List<Integer> featureIds) {
-		// TODO Auto-generated method stub
-		
 	}
 }
