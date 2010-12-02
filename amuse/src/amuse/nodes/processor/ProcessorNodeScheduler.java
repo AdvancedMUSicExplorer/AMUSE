@@ -286,6 +286,16 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			}
 		}
 		
+		// Check if the all features have been extracted using the same sample rate
+		// TODO v0.x This limitation may disappear in one of the future AMUSE versions
+		int firstSampleRate = features.get(0).getSampleRate();
+		for(Feature currentFeature : features) {
+			if(currentFeature.getSampleRate() != firstSampleRate) {
+				throw new NodeException("Feature used for processing have different sampling rates (" + 
+						firstSampleRate + " and " + currentFeature.getSampleRate() + "; it is not currently supported!");
+			}
+		}
+		
 		// If the features to process have different source time windows (e.g. mfccs for each 512 samples
 		// and fluctuation patterns for each 32768 samples), the feature vectors must be adjusted according to the
 		// smallest window size. The reason is that the processor methods should operate on the vectors of equal length
