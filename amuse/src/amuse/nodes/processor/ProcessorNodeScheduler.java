@@ -699,10 +699,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					// [0] since the converted features must be single-dimensional!
 					values_writer.writeBytes(features.get(j).getValues().get(i)[0].toString() + ",");
 				}
-				
-				// TODO Currently only 22050 sampling rate is supported!
-				values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/22050d*1000d) + "," + 
-					(features.get(0).getWindows().get(i)*((double)minimalFrameSize/22050d*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+				double sampleRate = new Integer(features.get(0).getSampleRate()).doubleValue();
+				values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
+					(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
 			} 
 			values_writer.close();
 		} catch(IOException e) {
