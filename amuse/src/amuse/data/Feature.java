@@ -51,6 +51,9 @@ public class Feature implements Serializable {
 	/** Time window size in samples, from which the feature was extracted, e.g. 512 samples */
 	private int sourceFrameSize;
 	
+	/** The number of samples per second */
+	private int sampleRate;
+	
 	/** For processed features, here the performed steps are saved.
 	 *  First step = original name of the feature */
 	private ArrayList<String> history;
@@ -206,5 +209,13 @@ public class Feature implements Serializable {
 		} else {
 			return "Name: " + this.description + " Dimension: " + this.dimension;
 		}
+	}
+
+	public void setSampleRate(int sampleRate) {
+		this.sampleRate = sampleRate;
+	}
+
+	public int getSampleRate() {
+		return sampleRate;
 	}
 }
