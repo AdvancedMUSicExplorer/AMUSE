@@ -24,18 +24,15 @@
 package amuse.nodes.processor.methods.reducers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
-
 import amuse.data.Feature;
-import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.NodeException;
+import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
@@ -73,10 +70,89 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting tatum reduction...");
 		
-		try {
+		// Load the tatum times for this file, using the file name of the first feature
+		// for finding the path to tatum times file (ID = 416)
+		Double[] tatumTimes = loadTatumTimes();
 		
-			// (1) Load the tatum times for this file, using the file name of the first feature
-			// for finding the path to tatum times file (ID = 416)
+		// TODO Currently only 22050 sampling rate is supported!
+		int sampleRate = 22050;
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+			
+		// Go through features
+		for(int j=0;j<features.size();j++) {
+			   	
+			if(this.useTatumWindows) {
+				features.get(j).getHistory().add(new String("Tatum_reduced"));
+			} else {
+				features.get(j).getHistory().add(new String("Between_tatum_reduced"));
+			}
+
+			// Go through all features values and save only the features from windows containing tatum times
+			int currentTatumTimeNumber = 0;
+			int windowOfCurrentTatum = 0;
+			if(this.useTatumWindows) {
+				windowOfCurrentTatum = new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue();
+			} else {
+				windowOfCurrentTatum = new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue()/2;
+			}
+					
+			// Go through all time windows
+			for(int k=0;k<features.get(j).getWindows().size();k++) {
+			
+				int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
+						
+				// The value remains
+				if(windowOfCurrentTatum == currentWindow) {
+							
+					// Go to the next tatum time. If the next tatum times corresponds to the
+					// same time window, proceed further!
+					while(currentTatumTimeNumber < tatumTimes.length-1) {
+						currentTatumTimeNumber++;
+						int windowOfNextTatum;
+						if(this.useTatumWindows) {
+							windowOfNextTatum = new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue();
+						} else {
+							windowOfNextTatum = (new Double(Math.floor(tatumTimes[currentTatumTimeNumber-1]*sampleRate/windowSize)).intValue() +
+												new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue())/2;
+						}
+						if(windowOfCurrentTatum != windowOfNextTatum) {
+							windowOfCurrentTatum = windowOfNextTatum;
+							break;
+						}
+						if(this.useTatumWindows) {
+							windowOfCurrentTatum = new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue();
+						} else {
+							windowOfCurrentTatum = (new Double(Math.floor(tatumTimes[currentTatumTimeNumber-1]*sampleRate/windowSize)).intValue() +
+									new Double(Math.floor(tatumTimes[currentTatumTimeNumber]*sampleRate/windowSize)).intValue())/2;
+						}
+					} 
+				} 
+					
+				// Remove features from tatum or between tatum windows
+				else {
+					features.get(j).getValues().remove(k);
+					features.get(j).getWindows().remove(k);
+					k--;
+				}
+		    }
+		}
+		
+		AmuseLogger.write(this.getClass().getName(), Level.INFO, "...reduction succeeded");
+	}
+	
+	/**
+	 * Loads the tatum times
+	 * @return Double array with time values in ms
+	 */
+	private Double[] loadTatumTimes() throws NodeException {
+		Double[] eventTimes = null;
+		
+		String idPostfix = new String("_416.arff");
+
+		try {
+			
+			// Load the tatum times, using the file name of the first feature
+			// for finding the path to feature files (ID = 416)
 			String currentTatumFile = ((ProcessingConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
 				
 			// Calculate the path to tatum file
@@ -87,95 +163,23 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 				relativeName = currentTatumFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf(File.separator) != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_416.arff";
+			if(relativeName.lastIndexOf("/") != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf("/")) + idPostfix;
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-					File.separator + relativeName + "_416.arff";
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
+						"/" + relativeName + idPostfix;
 			}	
 			
-			ArffLoader tatumArffLoader = new ArffLoader();
-			tatumArffLoader.setFile(new File(relativeName));
-			Attribute tatumTimesAttribute = tatumArffLoader.getStructure().attribute("Tatum times");
-			Instance tatumInstance = tatumArffLoader.getNextInstance(tatumArffLoader.getStructure());
-			ArrayList<Double> tatumTimes = new ArrayList<Double>();
-			while(tatumInstance != null) {
-				tatumTimes.add(tatumInstance.value(tatumTimesAttribute));
-				tatumInstance = tatumArffLoader.getNextInstance(tatumArffLoader.getStructure());
+			DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));
+			eventTimes = new Double[eventTimesSet.getValueCount()];
+			for(int i=0;i<eventTimes.length;i++) {
+				eventTimes[i] = new Double(eventTimesSet.getAttribute("Tatum times").getValueAt(i).toString());
 			}
-			tatumArffLoader.reset();
-				
-			// TODO Currently only 22050 sampling rate is supported!
-			int sampleRate = 22050;
-			int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
-			
-			
-			// Go through features
-			for(int j=0;j<features.size();j++) {
-			   	
-				if(this.useTatumWindows) {
-					features.get(j).getHistory().add(new String("Tatum_reduced"));
-				} else {
-					features.get(j).getHistory().add(new String("Between_tatum_reduced"));
-				}
-
-				// Go through all features values and save only the features from windows containing tatum times
-				int currentTatumTimeNumber = 0;
-				int windowOfCurrentTatum = 0;
-				if(this.useTatumWindows) {
-					windowOfCurrentTatum = new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue();
-				} else {
-					windowOfCurrentTatum = new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue()/2;
-				}
-					
-				// Go through all time windows
-				for(int k=0;k<features.get(j).getWindows().size();k++) {
-				
-					int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
-						
-					// The value remains
-					if(windowOfCurrentTatum == currentWindow) {
-							
-						// Go to the next tatum time. If the next tatum times corresponds to the
-						// same time window, proceed further!
-						while(currentTatumTimeNumber < tatumTimes.size()-1) {
-							currentTatumTimeNumber++;
-							int windowOfNextTatum;
-							if(this.useTatumWindows) {
-								windowOfNextTatum = new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue();
-							} else {
-								windowOfNextTatum = (new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber-1)*sampleRate/windowSize)).intValue() +
-													new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue())/2;
-							}
-							if(windowOfCurrentTatum != windowOfNextTatum) {
-								windowOfCurrentTatum = windowOfNextTatum;
-								break;
-							}
-							if(this.useTatumWindows) {
-								windowOfCurrentTatum = new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue();
-							} else {
-								windowOfCurrentTatum = (new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber-1)*sampleRate/windowSize)).intValue() +
-										new Double(Math.floor(tatumTimes.get(currentTatumTimeNumber)*sampleRate/windowSize)).intValue())/2;
-							}
-						} 
-						
-					} 
-					
-					// Remove features from tatum or between tatum windows
-					else {
-						features.get(j).getValues().remove(k);
-						features.get(j).getWindows().remove(k);
-						k--;
-					}
-			    }
-			}
-		} catch(IOException e) {
-			e.printStackTrace();
-			throw new NodeException("Problem occured during feature reduction: " + e.getMessage());
+		} catch(Exception e) {
+			throw new NodeException("Could not load the time events: " + e.getMessage());
 		}
-		
-		AmuseLogger.write(this.getClass().getName(), Level.INFO, "...reduction succeeded");
+		return eventTimes;
 	}
 	
 	/*

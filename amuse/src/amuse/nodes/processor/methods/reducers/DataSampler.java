@@ -31,10 +31,9 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
-
 import amuse.data.Feature;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.ProcessingConfiguration;
@@ -132,14 +131,8 @@ public class DataSampler extends AmuseTask implements DimensionProcessorInterfac
 				
 				// If no columns attribute was available, count the event number manually
 				if(!attrFound) {
-					ArffLoader infoArffLoader = new ArffLoader();
-					infoArffLoader.setFile(new File(relativeName));
-					Instance eventInstance = infoArffLoader.getNextInstance(infoArffLoader.getStructure());
-					while(eventInstance != null) {
-						eventTimesNumber++;
-						eventInstance = infoArffLoader.getNextInstance(infoArffLoader.getStructure());
-					}
-					infoArffLoader.reset();
+					DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));
+					eventTimesNumber = eventTimesSet.getValueCount();
 				}
 				
 				// Set the step size

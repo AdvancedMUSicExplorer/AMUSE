@@ -24,18 +24,15 @@
 package amuse.nodes.processor.methods.reducers;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
-
 import amuse.data.Feature;
-import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.NodeException;
+import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
@@ -73,13 +70,92 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting beat reduction...");
 		
-		try {
+		// Load the beat times for this file, using the file name of the first feature
+		// for finding the path to beat times file (ID = 408)
+		Double[] beatTimes = loadBeatTimes();
+
+		// TODO Currently only 22050 sampling rate is supported!
+		int sampleRate = 22050;
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+			
+		// Go through features
+		for(int j=0;j<features.size();j++) {
+			   	
+			if(this.useBeatWindows) {
+				features.get(j).getHistory().add(new String("Beat_reduced"));
+			} else {
+				features.get(j).getHistory().add(new String("Between_beat_reduced"));
+			}
+
+			// Go through all features values and save only the features from windows containing beat times
+			int currentBeatTimeNumber = 0;
+			int windowOfCurrentBeat = 0;
+			if(this.useBeatWindows) {
+				windowOfCurrentBeat = new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue();
+			} else {
+				windowOfCurrentBeat = new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue()/2;
+			}
+					
+			// Go through all time windows
+			for(int k=0;k<features.get(j).getWindows().size();k++) {
+				
+				int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
+					
+				// The value remains
+				if(windowOfCurrentBeat == currentWindow) {
+							
+					// Go to the next beat time. If the next beat times corresponds to the
+					// same time window, proceed further!
+					while(currentBeatTimeNumber < beatTimes.length-1) {
+						currentBeatTimeNumber++;
+						int windowOfNextBeat;
+						if(this.useBeatWindows) {
+							windowOfNextBeat = new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue();
+						} else {
+							windowOfNextBeat = (new Double(Math.floor(beatTimes[currentBeatTimeNumber-1]*sampleRate/windowSize)).intValue() +
+												new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue())/2;
+						}
+						if(windowOfCurrentBeat != windowOfNextBeat) {
+							windowOfCurrentBeat = windowOfNextBeat;
+							break;
+						}
+						if(this.useBeatWindows) {
+							windowOfCurrentBeat = new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue();
+						} else {
+							windowOfCurrentBeat = (new Double(Math.floor(beatTimes[currentBeatTimeNumber-1]*sampleRate/windowSize)).intValue() +
+									new Double(Math.floor(beatTimes[currentBeatTimeNumber]*sampleRate/windowSize)).intValue())/2;
+						}
+					} 
+				} 
+					
+				// Remove features from beat or between beat windows
+				else {
+					features.get(j).getValues().remove(k);
+					features.get(j).getWindows().remove(k);
+					k--;
+				}
+		    }
+		}
 		
-			// (1) Load the beat times for this file, using the file name of the first feature
-			// for finding the path to beat times file (ID = 408)
+		AmuseLogger.write(this.getClass().getName(), Level.INFO, "...reduction succeeded");
+	}
+	
+	/**
+	 * Loads the beat times
+	 * @return Double array with time values in ms
+	 */
+	private Double[] loadBeatTimes() throws NodeException {
+		Double[] eventTimes = null;
+		
+		String idPostfix = new String("_408.arff");
+
+		try {
+			
+			// Load the beat times, using the file name of the first feature
+			// for finding the path to feature files (ID = 408)
 			String currentBeatFile = ((ProcessingConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
 				
-			// Calculate the path to beat file
+			// Calculate the path to onset file
 			String relativeName = new String();
 			if(currentBeatFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 				relativeName = currentBeatFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
@@ -87,93 +163,23 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 				relativeName = currentBeatFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf(File.separator) != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_408.arff";
+			if(relativeName.lastIndexOf("/") != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf("/")) + idPostfix;
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
-					File.separator + relativeName + "_408.arff";
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
+						"/" + relativeName + idPostfix;
 			}	
 			
-			ArffLoader beatArffLoader = new ArffLoader();
-			beatArffLoader.setFile(new File(relativeName));
-			Attribute beatTimesAttribute = beatArffLoader.getStructure().attribute("Beat times");
-			Instance beatInstance = beatArffLoader.getNextInstance(beatArffLoader.getStructure());
-			ArrayList<Double> beatTimes = new ArrayList<Double>();
-			while(beatInstance != null) {
-				beatTimes.add(beatInstance.value(beatTimesAttribute));
-				beatInstance = beatArffLoader.getNextInstance(beatArffLoader.getStructure());
+			DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));
+			eventTimes = new Double[eventTimesSet.getValueCount()];
+			for(int i=0;i<eventTimes.length;i++) {
+				eventTimes[i] = new Double(eventTimesSet.getAttribute("Beat times").getValueAt(i).toString());
 			}
-			beatArffLoader.reset();
-				
-			// TODO Currently only 22050 sampling rate is supported!
-			int sampleRate = 22050;
-			int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
-			
-			// Go through features
-			for(int j=0;j<features.size();j++) {
-			   	
-				if(this.useBeatWindows) {
-					features.get(j).getHistory().add(new String("Beat_reduced"));
-				} else {
-					features.get(j).getHistory().add(new String("Between_beat_reduced"));
-				}
-
-				// Go through all features values and save only the features from windows containing beat times
-				int currentBeatTimeNumber = 0;
-				int windowOfCurrentBeat = 0;
-				if(this.useBeatWindows) {
-					windowOfCurrentBeat = new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue();
-				} else {
-					windowOfCurrentBeat = new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue()/2;
-				}
-					
-				// Go through all time windows
-				for(int k=0;k<features.get(j).getWindows().size();k++) {
-				
-					int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
-						
-					// The value remains
-					if(windowOfCurrentBeat == currentWindow) {
-							
-						// Go to the next beat time. If the next beat times corresponds to the
-						// same time window, proceed further!
-						while(currentBeatTimeNumber < beatTimes.size()-1) {
-							currentBeatTimeNumber++;
-							int windowOfNextBeat;
-							if(this.useBeatWindows) {
-								windowOfNextBeat = new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue();
-							} else {
-								windowOfNextBeat = (new Double(Math.floor(beatTimes.get(currentBeatTimeNumber-1)*sampleRate/windowSize)).intValue() +
-													new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue())/2;
-							}
-							if(windowOfCurrentBeat != windowOfNextBeat) {
-								windowOfCurrentBeat = windowOfNextBeat;
-								break;
-							}
-							if(this.useBeatWindows) {
-								windowOfCurrentBeat = new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue();
-							} else {
-								windowOfCurrentBeat = (new Double(Math.floor(beatTimes.get(currentBeatTimeNumber-1)*sampleRate/windowSize)).intValue() +
-										new Double(Math.floor(beatTimes.get(currentBeatTimeNumber)*sampleRate/windowSize)).intValue())/2;
-							}
-						} 
-						
-					} 
-					
-					// Remove features from beat or between beat windows
-					else {
-						features.get(j).getValues().remove(k);
-						features.get(j).getWindows().remove(k);
-						k--;
-					}
-			    }
-			}
-		} catch(IOException e) {
-			throw new NodeException("Problem occured during feature reduction: " + e.getMessage());
+		} catch(Exception e) {
+			throw new NodeException("Could not load the time events: " + e.getMessage());
 		}
-		
-		AmuseLogger.write(this.getClass().getName(), Level.INFO, "...reduction succeeded");
+		return eventTimes;
 	}
 	
 	/*
