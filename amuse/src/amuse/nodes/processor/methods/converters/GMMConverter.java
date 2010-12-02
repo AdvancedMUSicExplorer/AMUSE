@@ -70,8 +70,6 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 		
 		// Single features used as classifier input vector
@@ -81,6 +79,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 
 			// Go through music features
 			for(int i=0;i<features.size();i++) {
+				int sampleRate = features.get(i).getSampleRate();
 				int numberOfAllSingleFeatures = features.get(i).getValues().get(0).length;
 				
 				ArrayList<Feature> newFeatures = new ArrayList<Feature>(numberOfAllSingleFeatures * 
@@ -90,12 +89,14 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						Feature meanOfCurrentSingleFeature = new Feature(-1);
 						meanOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 						meanOfCurrentSingleFeature.getHistory().add("Mean_" + (j+1));
+						meanOfCurrentSingleFeature.setSampleRate(sampleRate);
 						newFeatures.add(meanOfCurrentSingleFeature);
 					}
 					if(saveStddevValues) {
 						Feature stdDevOfCurrentSingleFeature = new Feature(-1);
 						stdDevOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 						stdDevOfCurrentSingleFeature.getHistory().add("Std_dev_" + (j+1));
+						stdDevOfCurrentSingleFeature.setSampleRate(sampleRate);
 						newFeatures.add(stdDevOfCurrentSingleFeature);
 					}
 				}

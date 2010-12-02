@@ -88,6 +88,7 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 	 */
 	public void runDimensionProcessing(ArrayList<Feature> features) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting principal components analysis...");
+		int sampleRate = features.get(0).getSampleRate();
 		
 		// -------------------------------
 		// (I) Prepare data for RapidMiner
@@ -177,7 +178,9 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 				Double[] cVal = {exampleSet.getExample(i).getValue(exampleSet.getAttributes().get("pc_" + (currentComponent+1)))}; 
 				values.add(cVal);
 			}
-			features.add(new Feature(requiredFeatures, "PCA_component_" + (currentComponent+1) + "_of_" + attributes.size(),values,windows));
+			Feature newFeature = new Feature(requiredFeatures, "PCA_component_" + (currentComponent+1) + "_of_" + attributes.size(),values,windows);
+			newFeature.setSampleRate(sampleRate);
+			features.add(newFeature);
 		}
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "...reduction succeeded");

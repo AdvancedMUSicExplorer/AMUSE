@@ -64,8 +64,6 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the quartile conversion...");
 		
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 				
 		// Single features used as classifier input vector
@@ -75,6 +73,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 
 			// Go through music features
 			for(int i=0;i<features.size();i++) {
+				int sampleRate = features.get(i).getSampleRate();
 				int numberOfAllSingleFeatures = features.get(i).getValues().get(0).length;
 				
 				ArrayList<Feature> newFeatures = new ArrayList<Feature>(numberOfAllSingleFeatures*5);
@@ -82,18 +81,23 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 					Feature minOfCurrentSingleFeature = new Feature(-1);
 					minOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 					minOfCurrentSingleFeature.getHistory().add("Min_" + (j+1));
+					minOfCurrentSingleFeature.setSampleRate(sampleRate);
 					Feature firstQBoundOfCurrentSingleFeature = new Feature(-1);
 					firstQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 					firstQBoundOfCurrentSingleFeature.getHistory().add("1st_quartile_bound" + (j+1));
+					firstQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
 					Feature secondQBoundOfCurrentSingleFeature = new Feature(-1);
 					secondQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 					secondQBoundOfCurrentSingleFeature.getHistory().add("2nd_quartile_bound" + (j+1));
+					secondQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
 					Feature thirdQBoundOfCurrentSingleFeature = new Feature(-1);
 					thirdQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 					thirdQBoundOfCurrentSingleFeature.getHistory().add("3rd_quartile_bound" + (j+1));
+					thirdQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
 					Feature maxOfCurrentSingleFeature = new Feature(-1);
 					maxOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
 					maxOfCurrentSingleFeature.getHistory().add("Max_" + (j+1));
+					maxOfCurrentSingleFeature.setSampleRate(sampleRate);
 					newFeatures.add(minOfCurrentSingleFeature);
 					newFeatures.add(firstQBoundOfCurrentSingleFeature);
 					newFeatures.add(secondQBoundOfCurrentSingleFeature);

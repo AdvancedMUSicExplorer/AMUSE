@@ -74,12 +74,11 @@ public class OnsetPruner extends AmuseTask implements DimensionProcessorInterfac
 		// for finding the path to onset times file (ID = 419)
 		Double[] onsetTimes = loadOnsetTimes();
 			
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
 			   	
 			if(this.useOnsetWindows) {
 				features.get(j).getHistory().add(new String("Onset_reduced"));

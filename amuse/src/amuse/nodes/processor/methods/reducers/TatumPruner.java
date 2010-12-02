@@ -74,12 +74,11 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 		// for finding the path to tatum times file (ID = 416)
 		Double[] tatumTimes = loadTatumTimes();
 		
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
 			   	
 			if(this.useTatumWindows) {
 				features.get(j).getHistory().add(new String("Tatum_reduced"));

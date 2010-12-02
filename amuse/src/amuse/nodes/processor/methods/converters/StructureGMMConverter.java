@@ -63,8 +63,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on song structure information...");
 		
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
+		int sampleRate = features.get(0).getSampleRate();
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 		
 		// TODO Fuer Metrik-Berechnung, auslagern!!

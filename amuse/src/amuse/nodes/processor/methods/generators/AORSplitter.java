@@ -95,14 +95,13 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 		Double[] attackBeginTimes = loadEventTimes("attack");
 		Double[] releaseEndTimes = loadEventTimes("release");
 		
-		// FIXME kommt in Feature
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
-			
 		ArrayList<Feature> newFeatures = new ArrayList<Feature>();
 			
 	    // Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
+
 			Feature AWindowsFeature = null;
 			Feature AOWindowsFeature = null;
 			Feature OWindowsFeature = null;
@@ -114,30 +113,35 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 						features.get(j).getDimension());
 				AWindowsFeature.setHistory(features.get(j).getHistory());
 				AWindowsFeature.getHistory().add(new String("Only_attack_start_windows"));
+				AWindowsFeature.setSampleRate(sampleRate);
 			}
 			if(this.saveAOWindows) {
 				AOWindowsFeature = new Feature(features.get(j).getIds(),features.get(j).getDescription(),
 						features.get(j).getDimension());
 				AOWindowsFeature.setHistory(features.get(j).getHistory());
 				AOWindowsFeature.getHistory().add(new String("Only_attack_interval_middle_windows"));
+				AOWindowsFeature.setSampleRate(sampleRate);
 			}
 			if(this.saveOWindows) {
 				OWindowsFeature = new Feature(features.get(j).getIds(),features.get(j).getDescription(),
 						features.get(j).getDimension());
 				OWindowsFeature.setHistory(features.get(j).getHistory());
 				OWindowsFeature.getHistory().add(new String("Only_onset_windows"));
+				OWindowsFeature.setSampleRate(sampleRate);
 			}
 			if(this.saveORWindows) {
 				ORWindowsFeature = new Feature(features.get(j).getIds(),features.get(j).getDescription(),
 						features.get(j).getDimension());
 				ORWindowsFeature.setHistory(features.get(j).getHistory());
 				ORWindowsFeature.getHistory().add(new String("Only_release_interval_middle_windows"));
+				ORWindowsFeature.setSampleRate(sampleRate);
 			}
 			if(this.saveRWindows) {
 				RWindowsFeature = new Feature(features.get(j).getIds(),features.get(j).getDescription(),
 						features.get(j).getDimension());
 				RWindowsFeature.setHistory(features.get(j).getHistory());
 				RWindowsFeature.getHistory().add(new String("Only_release_end_windows"));
+				RWindowsFeature.setSampleRate(sampleRate);
 			}
 
 			// Go through all features values and save only the features from windows containing onset times
@@ -160,7 +164,6 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 				int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
 				
 				// If the last release is too far away
-				// TODO Number of time frames is different for MFCCs and Delta-MFCCs!
 				if(windowOfCurrentReleaseMiddle > features.get(j).getWindows().size()-1) {
 					windowOfCurrentReleaseMiddle = features.get(j).getWindows().size()-1;
 				}
