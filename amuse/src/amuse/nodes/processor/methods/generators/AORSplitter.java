@@ -299,8 +299,7 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 	 * @param string Event description (onset, attack or release)
 	 * @return Double array with time values in ms
 	 */
-	// TODO similar for onset prunter etc. -> no weka arff loader is required!
-	private Double[] loadEventTimes(String string) {
+	private Double[] loadEventTimes(String string) throws NodeException {
 		Double[] eventTimes = null;
 		
 		String idPostfix = null;
@@ -316,14 +315,14 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 			
 			// Load the attack, onset or release times, using the file name of the first feature
 			// for finding the path to feature files (ID = 419, 423 and 424)
-			String currentOnsetFile = ((ProcessingConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
+			String currentTimeEventFile = ((ProcessingConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
 				
-			// Calculate the path to onset file
+			// Calculate the path to file with time events
 			String relativeName = new String();
-			if(currentOnsetFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentOnsetFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+			if(currentTimeEventFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
 			} else {
-				relativeName = currentOnsetFile;
+				relativeName = currentTimeEventFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf("/") != -1) {
@@ -352,12 +351,12 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 				} 
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			throw new NodeException("Could not load the time events: " + e.getMessage());
 		}
 		return eventTimes;
 	}
 
-	private Double[] loadEventTimesBasedOnRMS(String string) {
+	private Double[] loadEventTimesBasedOnRMS(String string) throws NodeException {
 		Double[] eventTimes = null;
 		
 		String idPostfix = new String("_4.arff");
@@ -417,7 +416,7 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 				eventTimes[0] = new Double(approxReleaseEndMs/1000d); // Convert to seconds
 			} 
 		} catch(Exception e) {
-			e.printStackTrace();
+			throw new NodeException("Could not load the time events: " + e.getMessage());
 		}
 		return eventTimes;
 	}
