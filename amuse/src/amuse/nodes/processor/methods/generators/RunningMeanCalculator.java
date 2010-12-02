@@ -66,6 +66,7 @@ public class RunningMeanCalculator extends AmuseTask implements DimensionProcess
 		
 		// Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
 			
 			// Calculate the running mean values
 			ArrayList<Double[]> valuesOfRunningMeans = new ArrayList<Double[]>(features.get(j).getValues().size());
@@ -105,6 +106,7 @@ public class RunningMeanCalculator extends AmuseTask implements DimensionProcess
 					valuesOfRunningMeans,features.get(j).getWindows());
 			currentRunningMean.setHistory(features.get(j).getHistory());
 			currentRunningMean.getHistory().add(new String("Running_mean_with_subset_size_" + subsetSize));
+			currentRunningMean.setSampleRate(sampleRate);
 			newFeaturesRunningMeans.add(currentRunningMean);
 		}
 				

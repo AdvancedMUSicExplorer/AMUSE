@@ -87,6 +87,7 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 		
 		// Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
 			
 			// Calculate the 1st derivation, it must be done in each case (also if only 2nd derivation is saved as feature)
 			ArrayList<Double[]> valuesOf1stDerivation = new ArrayList<Double[]>(features.get(j).getValues().size());
@@ -132,6 +133,7 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 						valuesOf1stDerivation,features.get(j).getWindows());
 				currentDer.setHistory(features.get(j).getHistory());
 				currentDer.getHistory().add(new String("1st_derivation"));
+				currentDer.setSampleRate(sampleRate);
 				newFeatures1stDerivation.add(currentDer);
 			}
 			if(calculateSecondDerivation) {
@@ -139,6 +141,7 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 						valuesOf2ndDerivation,features.get(j).getWindows());
 				currentDer.setHistory(features.get(j).getHistory());
 				currentDer.getHistory().add(new String("2nd_derivation"));
+				currentDer.setSampleRate(sampleRate);
 				newFeatures2ndDerivation.add(currentDer);
 			}
 		}

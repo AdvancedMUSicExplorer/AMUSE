@@ -74,12 +74,11 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 		// for finding the path to beat times file (ID = 408)
 		Double[] beatTimes = loadBeatTimes();
 
-		// TODO Currently only 22050 sampling rate is supported!
-		int sampleRate = 22050;
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {
+			int sampleRate = features.get(j).getSampleRate();
 			   	
 			if(this.useBeatWindows) {
 				features.get(j).getHistory().add(new String("Beat_reduced"));

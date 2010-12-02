@@ -73,8 +73,8 @@ public class IntervalSelector extends AmuseTask implements DimensionProcessorInt
 		
 		int startWindow, endWindow;
 		
-		// TODO Currently only 22050 sampling rate is supported!
-		Double d = (22050d / 
+		int sampleRate = features.get(0).getSampleRate();
+		Double d = (new Double(sampleRate) / 
 				(double)((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize()) * this.msNumber/1000;
 		if(this.selectFromTheBeginning) {
 			startWindow = 0;
