@@ -338,11 +338,6 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 			
 			DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));
 			
-			// TODO Current implementation for the cases if MIR Toolbox extracts none or more than one onset for instrument tones
-			if(eventTimesSet.getValueCount() != 1) {
-				return loadEventTimesBasedOnRMS(string);
-			}
-			
 			eventTimes = new Double[eventTimesSet.getValueCount()];
 			for(int i=0;i<eventTimes.length;i++) {
 				if(string.equals(new String("onset"))) {
@@ -353,71 +348,6 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 					eventTimes[i] = new Double(eventTimesSet.getAttribute("End points of release intervals").getValueAt(i).toString());
 				} 
 			}
-		} catch(Exception e) {
-			throw new NodeException("Could not load the time events: " + e.getMessage());
-		}
-		return eventTimes;
-	}
-
-	private Double[] loadEventTimesBasedOnRMS(String string) throws NodeException {
-		Double[] eventTimes = null;
-		
-		String idPostfix = new String("_4.arff");
-
-		try {
-			
-			// Load the RMS using the file name of the first feature
-			String currentRMSFile = ((ProcessingConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
-				
-			// Calculate the path to onset file
-			String relativeName = new String();
-			if(currentRMSFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentRMSFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
-			} else {
-				relativeName = currentRMSFile;
-			}
-			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/")) + idPostfix;
-			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName + idPostfix;
-			}	
-			
-			DataSetAbstract rmsSet = new ArffDataSet(new File(relativeName));
-			
-			// FIXME Hack for instrument detection
-			int windowOfRmsMax = 0;
-			double currentMax = 0d;
-			for(int i=0;i<rmsSet.getValueCount();i++) {
-				double r = new Double(rmsSet.getAttribute("Root mean square").getValueAt(i).toString());
-				if(r > currentMax) {
-					windowOfRmsMax = i+1;
-					currentMax = r;
-				}
-			}
-			double approxOnsetMs = (new Double(windowOfRmsMax)-1d)*23.2199546485 + 11.6099773243;
-			
-			int windowOfReleaseEnd = rmsSet.getValueCount();
-			for(int i=windowOfRmsMax;i<rmsSet.getValueCount();i++) {
-				double r = new Double(rmsSet.getAttribute("Root mean square").getValueAt(i).toString());
-				if(r == 0) {
-					windowOfReleaseEnd = i+1;
-					break;
-				}
-			}
-			double approxReleaseEndMs = (new Double(windowOfReleaseEnd)-1d)*23.2199546485 + 11.6099773243;
-						
-			// FIXME Hack for instrument detection
-			eventTimes = new Double[1];
-			if(string.equals(new String("onset"))) {
-				eventTimes[0] = new Double(approxOnsetMs/1000d); // Convert to seconds
-			} else if(string.equals(new String("attack"))) {
-				eventTimes[0] = new Double(0);
-			} if(string.equals(new String("release"))) {
-				eventTimes[0] = new Double(approxReleaseEndMs/1000d); // Convert to seconds
-			} 
 		} catch(Exception e) {
 			throw new NodeException("Could not load the time events: " + e.getMessage());
 		}
