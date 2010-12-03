@@ -586,13 +586,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	    }
 		
 		// Start the adapter
-		// FIXME taskId must be removed!!
 		return mtvci.runConversion(features, ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize(), 
 				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap(), 
 				((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "_" + 
 				((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "_" + 
 				((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() + "ms_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap() + "ms", this.jobId);
+				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap() + "ms");
 	}
 	
 	/**

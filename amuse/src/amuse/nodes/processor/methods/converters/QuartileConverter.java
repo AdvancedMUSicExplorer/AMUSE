@@ -61,7 +61,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 	 * (non-Javadoc)
 	 * @see amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface#runConversion(java.util.ArrayList, java.lang.Integer, java.lang.Integer, java.lang.String, long)
 	 */
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the quartile conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
