@@ -67,7 +67,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 		}
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();

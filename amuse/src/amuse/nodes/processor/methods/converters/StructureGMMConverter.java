@@ -60,7 +60,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 		this.numberOfPartitionsToSelect = new Integer(parameterString);
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on song structure information...");
 		
 		int sampleRate = features.get(0).getSampleRate();

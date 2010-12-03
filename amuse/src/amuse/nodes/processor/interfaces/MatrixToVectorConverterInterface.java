@@ -49,6 +49,6 @@ public interface MatrixToVectorConverterInterface  {
 	 * @param features Features to run conversion on
 	 * @throws NodeException
 	 */
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel, long taskId) throws NodeException;
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException;
 
 }
