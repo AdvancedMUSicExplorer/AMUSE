@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="amusePluginChromaToolbox.jar"/>
+	<classpathentry kind="lib" path="pluginManager.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/amuse/lib/amuse-frame.jar"/>
+	<classpathentry kind="lib" path="/amuse/lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="/amuse/config/node/extractor/extractorNode.jar"/>
+	<classpathentry kind="lib" path="/amuse/lib/amuse-utils.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
