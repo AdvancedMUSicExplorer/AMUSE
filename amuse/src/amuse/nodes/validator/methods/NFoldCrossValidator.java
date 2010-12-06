@@ -351,25 +351,25 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			// Train the model
 			// FIXME Classification preprocessing is not currently supported!
 			TrainingConfiguration tConf = new TrainingConfiguration(
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
-					"-1",
-					new DataSetInput(trainingSet),
-					TrainingConfiguration.GroundTruthSourceType.READY_INPUT, 
-					this.folderForModels + "/model_" + i + ".mod");
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
+				"-1",
+				new DataSetInput(trainingSet),
+				TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
+			tConf.setPathToOutputModel(this.folderForModels + "/model_" + i + ".mod");
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);
 			
 			// Classify the validation set
 			ClassificationConfiguration cConf = new ClassificationConfiguration(
-					new DataSetInput(validationSet),
-					ClassificationConfiguration.InputSourceType.READY_INPUT,
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
-					new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
-							((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff",
-					this.folderForModels + "/model_" + i + ".mod");
+				new DataSetInput(validationSet),
+				ClassificationConfiguration.InputSourceType.READY_INPUT,
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
+				new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
+						((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
+			cConf.setPathToInputModel(this.folderForModels + "/model_" + i + ".mod");
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
 			ArrayList<ClassifiedSongPartitionsDescription> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);

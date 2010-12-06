@@ -35,7 +35,6 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -65,7 +64,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Description of the processed features model */
 	private final String processedFeaturesModelName;
 	
-	/** ID of classification algorithm from classifierTable.arff 
+	/** Id of classification algorithm from classifierTable.arff 
 	 * (optionally with parameters listed in brackets) */
 	private final String algorithmDescription;
 	
@@ -81,89 +80,46 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Alternative path for classification model(s) (e.g. an optimization task may train
 	 * different models and compare their performance; here the models can't be loaded from
 	 * Amuse model database!) */
-	private final String pathToInputModel;
+	private String pathToInputModel;
 	
 	/** Folder to load the processed features from (default: Amuse processed feature database) */
 	private String processedFeatureDatabase;
 	
 
+	/**
+	 * Standard constructor
+	 * @param inputToClassify Input to classify
+	 * @param inputSourceType Defines the input source type
+	 * @param processedFeaturesModelName Description of the processed features model
+	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
+	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
+	 * @param classificationOutput Destination for classification output
+	 */
 	public ClassificationConfiguration(DataInputInterface inputToClassify, InputSourceType inputSourceType, 
 			String processedFeaturesModelName, String algorithmDescription, Integer mergeSongResults,
-			String classificationOutput, String pathToInputModel) {
+			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
-		this.pathToInputModel = pathToInputModel;
 		this.categoryId = null;
 	}
 	
 	/**
-	 * Standard constructor 
-	 * TODO Too much constructors
+	 * Alternative constructor if the song list to classify is loaded by the category id
 	 * @param inputSourceType Defines the input source type
-	 * @param pathToInputSource Path to input for classification
+	 * @param pathToInputSource Input for classification
 	 * @param processedFeaturesModelName Description of the processed features model
-	 * @param algorithmDescription ID of classification algorithm from classifierTable.arff
-	 * @param categoryId Id of the music category which describes the music category
+	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
+	 * @param categoryId Id of the music category
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
-	 * @param pathToInputModel Alternative path for classification model(s)
 	 */
 	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
 			String algorithmDescription, Integer categoryId, Integer mergeSongResults,
 			String classificationOutput) {
-		
-		this(inputSourceType, pathToInputSource, processedFeaturesModelName,
-				algorithmDescription, categoryId, mergeSongResults,
-				classificationOutput, null, new String("-1"));
-	}
-	
-	/**
-	 * Alternative constructor (I) if the descriptions of data instances must be set (input source
-	 * is equal to READY_INPUT)
-	 * @param inputSourceType Defines the input source type
-	 * @param pathToInputSource Input for classification
-	 * @param processedFeaturesModelName Description of the processed features model
-	 * @param algorithmDescription ID of classification algorithm from classifierTable.arff
-	 * @param categoryId Id of the music category which describes the music category
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
-	 * @param classificationOutput Destination for classification output
-	 * @param pathToInputModel Alternative path for classification model(s)
-	 */
-	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, Integer categoryId, Integer mergeSongResults,
-			String classificationOutput, ArrayList<SongPartitionsDescription> descriptionOfClassifierInput) {
-		this(inputSourceType, pathToInputSource, processedFeaturesModelName,
-				algorithmDescription, categoryId, mergeSongResults,
-				classificationOutput, descriptionOfClassifierInput, new String("-1"));
-		
-		// If the ready input must be classified (e.g. previously prepared by validator), its description
-		// (what songs, what intervals) must be provided!
-		if(descriptionOfClassifierInput == null && inputSourceType.equals(ClassificationConfiguration.InputSourceType.READY_INPUT)) {
-			throw new RuntimeException("Could not instantiate ClassificationConfiguration for READY_INPUT source: " + 
-					"descriptions of data instances are not provided!");
-		}
-	}
-	
-	/**
-	 * Alternative constructor (II) if pathToInputModel must be set (e.g. for validator or optimizer)
-	 * @param inputSourceType Defines the input source type
-	 * @param pathToInputSource Input for classification
-	 * @param processedFeaturesModelName Description of the processed features model
-	 * @param algorithmDescription ID of classification algorithm from classifierTable.arff
-	 * @param categoryId Id of the music category which describes the music category
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
-	 * @param classificationOutput Destination for classification output
-	 * @param pathToInputModel Alternative path for classification model(s)
-	 */
-	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, Integer categoryId, Integer mergeSongResults,
-			String classificationOutput, ArrayList<SongPartitionsDescription> descriptionOfClassifierInput,
-			String pathToInputModel) {
-		this.inputSourceType = inputSourceType;
 		List<File> input;
 		List<Integer> ids = null;
 		if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
@@ -183,44 +139,17 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		} else {
 			input = new ArrayList<File>(1);
 			input.add(new File(pathToInputSource));
-		}	
+		}
+		this.inputSourceType = inputSourceType;
 		this.inputToClassify = new FileListInput(input,ids);
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.categoryId = categoryId;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
-		this.pathToInputModel = pathToInputModel;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 	}
 
-	/**
-	 * Alternative constructor (III) -> equals to (II) but uses List<File> as inputSource
-	 * @param inputSourceType Defines the input source type
-	 * @param pathToInputSource Input for classification
-	 * @param processedFeaturesModelName Description of the processed features model
-	 * @param algorithmDescription ID of classification algorithm from classifierTable.arff
-	 * @param categoryId Id of the music category which describes the music category
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
-	 * @param classificationOutput Destination for classification output
-	 * @param pathToInputModel Alternative path for classification model(s)
-	 */
-	public ClassificationConfiguration(InputSourceType inputSourceType, List<File> inputSource, List<Integer> inputSourceIds, String processedFeaturesModelName,
-			String algorithmDescription, Integer categoryId, Integer mergeSongResults,
-			String classificationOutput, ArrayList<SongPartitionsDescription> descriptionOfClassifierInput,
-			String pathToInputModel) {
-		this.inputSourceType = inputSourceType;
-		this.inputToClassify = new FileListInput(inputSource, inputSourceIds);
-		this.processedFeaturesModelName = processedFeaturesModelName;
-		this.algorithmDescription = algorithmDescription;
-		this.categoryId = categoryId;
-		this.mergeSongResults = mergeSongResults;
-		this.classificationOutput = classificationOutput;
-		this.pathToInputModel = pathToInputModel;
-		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
-	}
-	
-	
 	/**
 	 * Returns an array of ClassificationConfigurations from the given data set
 	 * @param classifierConfig Data set with configurations for one or more processing tasks
@@ -361,6 +290,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public void setInputToClassify(DataInputInterface inputToClassify) {
 		this.inputToClassify = inputToClassify;
+	}
+
+	/**
+	 * @param pathToInputModel the pathToInputModel to set
+	 */
+	public void setPathToInputModel(String pathToInputModel) {
+		this.pathToInputModel = pathToInputModel;
 	}
 
 
