@@ -1,0 +1,57 @@
+<amuseMatlabScript>
+<text>
+%
+% ChromaToolboxBase.m
+%%%%%%%%%%%%%%%%%%%
+% This file is part of AMUSE framework (Advanced MUsic Explorer).
+% 
+% Copyright 2006-2010 by code authors
+% 
+% Created at TU Dortmundy, Chair of Algorithm Engineering
+% (Contact: http://ls11-www.cs.tu-dortmund.de) 
+%
+% AMUSE is free software: you can redistribute it and/or modify
+% it under the terms of the GNU Lesser General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% AMUSE is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+% GNU Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public License
+% along with AMUSE. If not, see: http://www.gnu.org/licenses/.
+% 
+% Created on 15.12.2009 by Igor Vatolkin
+% Last modified on 17.05.2010 by Igor Vatolkin
+% $Id: $
+function ChromaToolboxBase(input_file,output_dir)
+
+% Add the path to Chroma Toolbox
+addpath('%AMUSEHOME%/tools/ChromaToolbox');
+
+% define window length of analysis window in number of samples
+wlength = 512;
+% define window offset in number of samples
+woffset = wlength;
+
+% create prefix for AMUSE ARFF feature file
+p=strfind(input_file,'/');
+k=strfind(input_file,'.');
+output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
+</text>
+	
+<amuseEnableFeature id="218" dimensions="12">
+	<text>
+	  [f_pitch,sideinfo] = main_audio_to_pitchSTMSP(input_file);
+          f_CENS_cell = main_STMSP_to_CENS(f_pitch,sideinfo);
+          arff_saver_with_windows_number_forCENS([output_file_prefix,'218.arff'],'Chroma Energy Normalized Statistics',f_CENS_cell',11025);
+	</text>
+</amuseEnableFeature>
+
+<text>
+	exit
+</text>
+
+</amuseMatlabScript>
