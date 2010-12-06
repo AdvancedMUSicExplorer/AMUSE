@@ -170,7 +170,7 @@ public class FitnessEvaluator {
 		
 		processedModel = new String(
 			strategy.getConfiguration().getConstantParameterByName("Processing steps").
-				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" +
+				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
 			strategy.getConfiguration().getConstantParameterByName("Conversion steps").
 				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
 			strategy.getConfiguration().getConstantParameterByName("Partition size").
@@ -206,6 +206,17 @@ public class FitnessEvaluator {
 		} catch(NodeException e) {
 			throw new RuntimeException("Could not initialize FitnessEvaluator: " + e.getMessage());
 		}
+		
+		/*try {
+			trainingData.saveToArffFile(new File("/home/vatol/instrumentsTraining.arff"));
+			testData.saveToArffFile(new File("/home/vatol/instrumentsTest.arff"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("ha");
+		*/
 	}
 	
 	/**
@@ -486,8 +497,8 @@ public class FitnessEvaluator {
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
 							getAttributes().getNamedItem("stringValue").getNodeValue(),
-						new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT,
-						pathToModels + File.separator + "model.mod");
+						new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
+				tConf.setPathToOutputModel(pathToModels + File.separator + "model.mod");
 				tConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				tConf.setModelDatabase(pathToModelDatabase);
 				TrainerNodeScheduler ts = new TrainerNodeScheduler(individual.getCorrespondingES().
@@ -570,8 +581,8 @@ public class FitnessEvaluator {
 						getAttributes().getNamedItem("stringValue").getNodeValue(), 
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
 						getAttributes().getNamedItem("stringValue").getNodeValue(),
-					new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT,
-					pathToModels + File.separator + "model.mod");
+					new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
+			tConf.setPathToOutputModel(pathToModels + File.separator + "model.mod");
 			tConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 			tConf.setModelDatabase(pathToModelDatabase);
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(individual.getCorrespondingES().
@@ -645,7 +656,7 @@ public class FitnessEvaluator {
 		// ---------------------------------------
 		// (VI) Load the metric (ES fitness value)
 		// ---------------------------------------
-		// TODO Metriken auch als Objekt zurueck geben!
+		// TODO Metriken auch als Objekt zurueck geben! -> dann kann man auch direkt isForMinimizing nutzen
 		ArrayList<ValidationMetricDouble> metrics = new ArrayList<ValidationMetricDouble>();
 		DataSetAbstract calculatedMetricSet;
 		try {
@@ -669,14 +680,74 @@ public class FitnessEvaluator {
 						// List of correctly identified songs is not a double value metric; only mean metrics over n models are saved
 						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114) &&
 								calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString().startsWith("mean(")) {
+							currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
 							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
 							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
+							
+							// FIXME !!!
+							if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
+									|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
+									|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
+									|| currentMetric.getId() == 113) {
+								currentMetric.setForMinimizing(false);
+							}
+							// TODO Calculate the feature selection rate
+							if(currentMetric.getId() == 203) {
+								int indexOfSelectedFeaturesRepresentation = 0;
+								int number = 0;
+								for(int j=0;j<individual.getRepresentationList().size();j++) {
+									if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+										indexOfSelectedFeaturesRepresentation = j;
+										break;
+									}
+								}
+								for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue().length;k++) {
+									if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue()[k]) {
+										number++;
+									}
+								}
+								currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue().length);
+							}
+							
 							metrics.add(currentMetric);
 						}
 					} else {
 						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114)) {
+							currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
 							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
 							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
+							
+							// FIXME !!!
+							if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
+									|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
+									|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
+									|| currentMetric.getId() == 113) {
+								currentMetric.setForMinimizing(false);
+							}
+							// TODO Calculate the feature selection rate
+							if(currentMetric.getId() == 203) {
+								int indexOfSelectedFeaturesRepresentation = 0;
+								int number = 0;
+								for(int j=0;j<individual.getRepresentationList().size();j++) {
+									if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+										indexOfSelectedFeaturesRepresentation = j;
+										break;
+									}
+								}
+								for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue().length;k++) {
+									if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue()[k]) {
+										number++;
+									}
+								}
+								currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+										getValue().length);
+							}
+							
 							metrics.add(currentMetric);
 						}
 					}
@@ -700,8 +771,39 @@ public class FitnessEvaluator {
 					
 					// List of correctly identified songs is not a double value metric!
 					if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114)) {
+						currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
 						currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
 						currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
+						
+						// FIXME !!!
+						if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
+								|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
+								|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
+								|| currentMetric.getId() == 113) {
+							currentMetric.setForMinimizing(false);
+						}
+						
+						// TODO Calculate the feature selection rate
+						if(currentMetric.getId() == 203) {
+							int indexOfSelectedFeaturesRepresentation = 0;
+							int number = 0;
+							for(int j=0;j<individual.getRepresentationList().size();j++) {
+								if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+									indexOfSelectedFeaturesRepresentation = j;
+									break;
+								}
+							}
+							for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue().length;k++) {
+								if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue()[k]) {
+									number++;
+								}
+							}
+							currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue().length);
+						}
+						
 						metrics.add(currentMetric);
 					}
 				}

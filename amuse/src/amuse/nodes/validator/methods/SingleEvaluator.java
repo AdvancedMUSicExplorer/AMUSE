@@ -255,8 +255,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				0,
-				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff",
-				modelsToEvaluate.get(i).getAbsolutePath());
+				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
+			cConf.setPathToInputModel(modelsToEvaluate.get(i).getAbsolutePath());
 				
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);

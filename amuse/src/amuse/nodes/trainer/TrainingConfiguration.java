@@ -74,7 +74,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Alternative path for saving of training model(s) (e.g. an optimization task may train
 	 * different models and compare their performance; here it is not required to save them to
 	 * the central Amuse model database!) */
-	private final String pathToOutputModel;
+	private String pathToOutputModel;
 	
 	/** Folder to load the processed features from (default: Amuse processed feature database) */
 	private String processedFeatureDatabase;
@@ -92,36 +92,15 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth 
-	 * @param pathToOutputModel Alternative path for saving of training model(s)
-	 * (three possibilities are given above) 
-	 */
-	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription, 
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType) {
-		this(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource,
-				groundTruthSourceType, new String("-1"));
-	}
-	
-	/**
-	 * Alternative constructor if pathToInputModel must be set (e.g. for validator or optimizer)
-	 * @param processedFeaturesModelName Description of the processed features model
- 	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
-	 * @param groundTruthSource Source with ground truth for model training. Can be either
-	 * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
-	 * - Path to the labeled file list or
-	 * - Path to the ready training input (prepared e.g. by a validator method)
-	 * - Ready input (as EditableDataSet)
-	 * @param groundTruthSourceType Describes the source type of ground truth 
-	 * @param pathToOutputModel Alternative path for saving of training model(s)
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType/*, String pathToOutputModel*/) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = groundTruthSourceType;
-		this.pathToOutputModel = pathToOutputModel;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 	}
@@ -151,8 +130,11 @@ public class TrainingConfiguration extends TaskConfiguration {
 			}
 				
 			// Create a training task
-		    taskConfigurations.add(new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst,currentPathToOutputModel));
+			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst);
+			trConfig.setPathToOutputModel(currentPathToOutputModel);
+			taskConfigurations.add(trConfig);
+
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
 					"Training task for ground truth source " + 
 					currentGroundTruthSource + " loaded");
@@ -270,5 +252,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public void setGroundTruthSource(DataInputInterface groundTruthSource) {
 		this.groundTruthSource = groundTruthSource;
+	}
+
+	/**
+	 * @param pathToOutputModel the pathToOutputModel to set
+	 */
+	public void setPathToOutputModel(String pathToOutputModel) {
+		this.pathToOutputModel = pathToOutputModel;
 	}
 }
