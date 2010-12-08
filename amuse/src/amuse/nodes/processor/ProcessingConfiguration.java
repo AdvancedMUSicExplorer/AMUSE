@@ -31,9 +31,7 @@ import org.apache.log4j.Level;
 
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
-import amuse.data.ProcessingHistory;
-import amuse.data.io.ArffDataSet;
-import amuse.data.io.DataSetAbstract;
+import amuse.data.datasets.ProcessorConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -123,18 +121,18 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param processingConfig Data set with configurations for one or more processing tasks
 	 * @return ProcessorConfigurations
 	 */
-	public static ProcessingConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract processingConfig) throws IOException {
+	public static ProcessingConfiguration[] loadConfigurationsFromDataSet(ProcessorConfigSet processingConfig) throws IOException {
 		ArrayList<ProcessingConfiguration> taskConfigurations = new ArrayList<ProcessingConfiguration>();
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<processingConfig.getValueCount();i++) {
-			String currentMusicFileList = processingConfig.getAttribute("FileList").getValueAt(i).toString();
-			String currentFeatureList = processingConfig.getAttribute("FeatureList").getValueAt(i).toString();
-			String currentReductionSteps = processingConfig.getAttribute("ReductionSteps").getValueAt(i).toString();
-			Integer currentPartitionSize = (new Double(processingConfig.getAttribute("PartitionSize").getValueAt(i).toString())).intValue();
-			Integer currentPartitionOverlap = (new Double(processingConfig.getAttribute("PartitionOverlap").getValueAt(i).toString())).intValue();
-			String currentMatrixToVectorMethod = processingConfig.getAttribute("MatrixToVectorMethod").getValueAt(i).toString();
-			String currentFeatureDescription = processingConfig.getAttribute("FeatureDescription").getValueAt(i).toString();
+			String currentMusicFileList = processingConfig.getMusicFileListAttribute().getValueAt(i).toString();
+			String currentFeatureList = processingConfig.getFeatureListAttribute().getValueAt(i).toString();
+			String currentReductionSteps = processingConfig.getReductionStepsAttribute().getValueAt(i).toString();
+			Integer currentPartitionSize = (new Double(processingConfig.getPartitionSizeAttribute().getValueAt(i).toString())).intValue();
+			Integer currentPartitionOverlap = (new Double(processingConfig.getPartitionOverlapAttribute().getValueAt(i).toString())).intValue();
+			String currentMatrixToVectorMethod = processingConfig.getMatrixToVectorMethodAttribute().getValueAt(i).toString();
+			String currentFeatureDescription = processingConfig.getFeatureDescriptionAttribute().getValueAt(i).toString();
 	
 			// Proceed music files from the current file list
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
@@ -157,7 +155,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @return ProcessorConfigurations
 	 */
 	public static ProcessingConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-		DataSetAbstract processingConfig = new ArffDataSet(configurationFile);
+		ProcessorConfigSet processingConfig = new ProcessorConfigSet(configurationFile);
 		return loadConfigurationsFromDataSet(processingConfig);
 	}
 

@@ -29,9 +29,8 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import amuse.data.io.ArffDataSet;
+import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
-import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
@@ -110,20 +109,20 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param trainingConfig Data set with configurations for one or more training tasks
 	 * @return TrainingConfigurations
 	 */
-	public static TrainingConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract trainingConfig) throws IOException {
+	public static TrainingConfiguration[] loadConfigurationsFromDataSet(TrainingConfigSet trainingConfig) throws IOException {
 		ArrayList<TrainingConfiguration> taskConfigurations = new ArrayList<TrainingConfiguration>();
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<trainingConfig.getValueCount();i++) {
-			String currentProcessedFeaturesModelName = trainingConfig.getAttribute("ProcessedFeaturesDescription").getValueAt(i).toString();
-			String currentAlgorithmDescription = trainingConfig.getAttribute("AlgorithmId").getValueAt(i).toString();
-			String currentPreprocessingAlgorithmDescription = trainingConfig.getAttribute("PreprocessingAlgorithmId").getValueAt(i).toString();
-			String currentGroundTruthSource = trainingConfig.getAttribute("GroundTruthSource").getValueAt(i).toString();
-			String currentPathToOutputModel = trainingConfig.getAttribute("PathToOutputModel").getValueAt(i).toString();
+			String currentProcessedFeaturesModelName = trainingConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentAlgorithmDescription = trainingConfig.getAlgorithmIdAttribute().getValueAt(i).toString();
+			String currentPreprocessingAlgorithmDescription = trainingConfig.getPreprocessingAlgorithmIdAttribute().getValueAt(i).toString();
+			String currentGroundTruthSource = trainingConfig.getGroundTruthSourceAttribute().getValueAt(i).toString();
+			String currentPathToOutputModel = trainingConfig.getPathToOutputModelAttribute().getValueAt(i).toString();
 			GroundTruthSourceType gtst;
-			if(trainingConfig.getAttribute("GroundTruthSourceType").getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
+			if(trainingConfig.getGroundTruthSourceTypeAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
-			} else if(trainingConfig.getAttribute("GroundTruthSourceType").getValueAt(i).toString().equals(new String("FILE_LIST"))) {
+			} else if(trainingConfig.getGroundTruthSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
 				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
@@ -155,7 +154,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @throws IOException 
 	 */
 	public static TrainingConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-		DataSetAbstract trainingConfig = new ArffDataSet(configurationFile);
+		TrainingConfigSet trainingConfig = new TrainingConfigSet(configurationFile);
 		return loadConfigurationsFromDataSet(trainingConfig);
 	}
 	

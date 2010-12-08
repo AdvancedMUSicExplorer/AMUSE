@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import org.apache.log4j.Level;
 
 import amuse.data.MetricTable;
+import amuse.data.datasets.ValidatorConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
@@ -118,18 +119,18 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @param validatorConfig Data set with configurations for one or more processing tasks
 	 * @return ValidationConfigurations
 	 */
-	public static ValidationConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract validatorConfig) throws IOException {
+	public static ValidationConfiguration[] loadConfigurationsFromDataSet(ValidatorConfigSet validatorConfig) throws IOException {
 		ArrayList<ValidationConfiguration> taskConfigurations = new ArrayList<ValidationConfiguration>();
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<validatorConfig.getValueCount();i++) {
-			String currentValidationMethodId = validatorConfig.getAttribute("ValidationMethodId").getValueAt(i).toString();
-			String currentMetricList = validatorConfig.getAttribute("MetricList").getValueAt(i).toString();
-			String currentProcessedFeaturesModelName = validatorConfig.getAttribute("ProcessedFeaturesDescription").getValueAt(i).toString();
-			String currentClassificationAlgorithmDescription = validatorConfig.getAttribute("ClassificationAlgorithmId").getValueAt(i).toString();
-			String currentInputToValidate = validatorConfig.getAttribute("InputToValidate").getValueAt(i).toString();
+			String currentValidationMethodId = validatorConfig.getValidationMethodIdAttribute().getValueAt(i).toString();
+			String currentMetricList = validatorConfig.getMetricListAttribute().getValueAt(i).toString();
+			String currentProcessedFeaturesModelName = validatorConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentClassificationAlgorithmDescription = validatorConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
+			String currentInputToValidate = validatorConfig.getInputToValidateAttribute().getValueAt(i).toString();
 			GroundTruthSourceType gtst;
-			if(validatorConfig.getAttribute("GroundTruthSourceType").getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
+			if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
 				
 				// Search for the category file
@@ -141,7 +142,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 						break;
 					}
 				}
-			} else if(validatorConfig.getAttribute("GroundTruthSourceType").getValueAt(i).toString().equals(new String("FILE_LIST"))) {
+			} else if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
 				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
@@ -172,7 +173,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @return ValidationConfigurations
 	 */
 	public static ValidationConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-		DataSetAbstract validatorConfig = new ArffDataSet(configurationFile);
+		ValidatorConfigSet validatorConfig = new ValidatorConfigSet(configurationFile);
 		return loadConfigurationsFromDataSet(validatorConfig);
 	}
 	
