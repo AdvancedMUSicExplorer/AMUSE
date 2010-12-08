@@ -29,8 +29,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import amuse.data.io.ArffDataSet;
-import amuse.data.io.DataSetAbstract;
+import amuse.data.datasets.OptimizerConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.util.AmuseLogger;
 
@@ -99,18 +98,18 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	 * @return OptimizationConfigurations
 	 * @throws IOException 
 	 */
-	public static OptimizationConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract optimizerConfig) throws IOException {
+	public static OptimizationConfiguration[] loadConfigurationsFromDataSet(OptimizerConfigSet optimizerConfig) throws IOException {
 		ArrayList<OptimizationConfiguration> taskConfigurations = new ArrayList<OptimizationConfiguration>();
 			
    		// Proceed music file lists one by one
 	    for(int i=0;i<optimizerConfig.getValueCount();i++) {
-			Integer currentCategoryForLearningId = (new Double(optimizerConfig.getAttribute("CategoryId").getValueAt(i).toString())).intValue();
-			Integer currentCategoryForOptimizationId = (new Double(optimizerConfig.getAttribute("CategoryOptimizationId").getValueAt(i).toString())).intValue();
-			Integer currentCategoryForTestId = (new Double(optimizerConfig.getAttribute("CategoryTestId").getValueAt(i).toString())).intValue();
-			String currentAlgorithmDescription = optimizerConfig.getAttribute("AlgorithmId").getValueAt(i).toString();
-			String currentContinueOldExperimentFrom = optimizerConfig.getAttribute("ContinueOldExperimentFrom").getValueAt(i).toString();
+			Integer currentCategoryForLearningId = (new Double(optimizerConfig.getCategoryIdAttribute().getValueAt(i).toString())).intValue();
+			Integer currentCategoryForOptimizationId = (new Double(optimizerConfig.getCategoryOptimizationIdAttribute().getValueAt(i).toString())).intValue();
+			Integer currentCategoryForTestId = (new Double(optimizerConfig.getCategoryTestIdAttribute().getValueAt(i).toString())).intValue();
+			String currentAlgorithmDescription = optimizerConfig.getAlgorithmIdAttribute().getValueAt(i).toString();
+			String currentContinueOldExperimentFrom = optimizerConfig.getContinueOldExperimentFromAttribute().getValueAt(i).toString();
 			if(currentContinueOldExperimentFrom.equals("")) currentContinueOldExperimentFrom = "-1";
-			String currentDestinationFolder = optimizerConfig.getAttribute("DestinationFolder").getValueAt(i).toString();
+			String currentDestinationFolder = optimizerConfig.getDestinationFolderAttribute().getValueAt(i).toString();
 				
 			// Create an optimization task
 		    taskConfigurations.add(new OptimizationConfiguration(currentCategoryForLearningId, currentCategoryForOptimizationId, 
@@ -133,7 +132,7 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	 * @return OptimizationConfigurations
 	 */
 	public static OptimizationConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-		DataSetAbstract optimizerConfig = new ArffDataSet(configurationFile);
+		OptimizerConfigSet optimizerConfig = new OptimizerConfigSet(configurationFile);
 		return loadConfigurationsFromDataSet(optimizerConfig);
 	}
 

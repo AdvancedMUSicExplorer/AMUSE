@@ -41,19 +41,21 @@ import amuse.nodes.trainer.TrainingConfiguration;
  */
 public class TrainingConfigSet extends AbstractArffExperimentSet {
 
+	// Strings which describe ARFF attributes
+	private static final String processedFeatureDescriptionStr = "ProcessedFeaturesDescription";
+    private static final String algorithmIdStr = "AlgorithmId";
+    private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
+    private static final String groundTruthSourceStr = "GroundTruthSource";
+    private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
+    private static final String pathToOutputModelStr = "PathToOutputModel";
+    
+    // ARFF attributes
     private final StringAttribute processedFeatureDescriptionAttribute;
     private final StringAttribute algorithmIdAttribute;
     private final StringAttribute preprocessingAlgorithmIdAttribute;
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
     private final StringAttribute pathToOutputModelAttribute;
-
-    private static final String processedFeatureDescriptionStr = "ProcessedFeaturesDescription";
-    private static final String algorithmIdStr = "AlgorithmId";
-    private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
-    private static final String groundTruthSourceStr = "GroundTruthSource";
-    private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
-    private static final String pathToOutputModelStr = "PathToOutputModel";
 
     private static final String dataSetNameStr = "TrainerConfig";
     private String description = "";
@@ -140,7 +142,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(pathToOutputModelAttribute);
     }
     
-    public StringAttribute getAlgorithmIDAttribute() {
+    public StringAttribute getAlgorithmIdAttribute() {
         return algorithmIdAttribute;
     }
 

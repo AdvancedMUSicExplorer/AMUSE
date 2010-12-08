@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
@@ -153,22 +154,21 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/**
 	 * Returns an array of ClassificationConfigurations from the given data set
 	 * @param classifierConfig Data set with configurations for one or more processing tasks
-	 * TODO use ClassifierConfigDataSet instead of DataSet
 	 * @return ClassificationConfigurations
 	 */
-	public static ClassificationConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract classifierConfig) throws IOException {
+	public static ClassificationConfiguration[] loadConfigurationsFromDataSet(ClassifierConfigSet classifierConfig) throws IOException {
 		ArrayList<ClassificationConfiguration> taskConfigurations = new ArrayList<ClassificationConfiguration>();
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<classifierConfig.getValueCount();i++) {
-			String currentInputFileList = classifierConfig.getAttribute("InputFileList").getValueAt(i).toString();
-			String currentProcessedFeaturesDescription = classifierConfig.getAttribute("ProcessedFeaturesDescription").getValueAt(i).toString();
-			String currentAlgorithmDescription = classifierConfig.getAttribute("AlgorithmId").getValueAt(i).toString();
-			Integer currentCategoryId = (new Double(classifierConfig.getAttribute("CategoryId").getValueAt(i).toString())).intValue();
-			Integer currentMergeSongResults = (new Double(classifierConfig.getAttribute("MergeSongResults").getValueAt(i).toString())).intValue();
-			String currentOutputResult = classifierConfig.getAttribute("OutputResult").getValueAt(i).toString();
+			String currentInputFileList = classifierConfig.getInputFileListAttribute().getValueAt(i).toString();
+			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
+			Integer currentCategoryId = (new Double(classifierConfig.getCategoryIdAttribute().getValueAt(i).toString())).intValue();
+			Integer currentMergeSongResults = (new Double(classifierConfig.getMergeSongResultsAttribute().getValueAt(i).toString())).intValue();
+			String currentOutputResult = classifierConfig.getOutputResultAttribute().getValueAt(i).toString();
 			InputSourceType ist;
-			if(classifierConfig.getAttribute("InputSourceType").getValueAt(i).toString().equals(new String("FILE_LIST"))) {
+			if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
 				ist = InputSourceType.FILE_LIST;
 			} else {
 				ist = InputSourceType.READY_INPUT;
@@ -194,7 +194,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @throws IOException 
 	 */
 	public static ClassificationConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-		DataSetAbstract classifierConfig = new ArffDataSet(configurationFile);
+		ClassifierConfigSet classifierConfig = new ClassifierConfigSet(configurationFile);
     	return loadConfigurationsFromDataSet(classifierConfig);
 	}
 	

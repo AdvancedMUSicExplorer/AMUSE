@@ -41,6 +41,11 @@ import amuse.nodes.extractor.ExtractionConfiguration;
  */
 public class ExtractorConfigSet extends AbstractArffExperimentSet {
 
+	// Strings which describe ARFF attributes
+	private static final String strMusicFileList = "MusicFileList";
+    private static final String strFeatureTable = "FeatureTable";
+    
+    // ARFF attributes
     private final StringAttribute musicFileListAttribute;
     private final StringAttribute featureTableAttribute;
 
@@ -72,8 +77,7 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
 	}
         return musicFileLists;
     }
-    private static final String strMusicFileList = "MUSIC_FILE_LIST";
-    private static final String strFeatureTable = "FEATURE_TABLE";
+
     /**
      * Creates a new ExtractorConfigSet from a file. Validates if the given file contains a ExtractorConfigSet.
      * @param file The file to load form.
@@ -143,10 +147,24 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
 
     @Override
     public TaskConfiguration[] getTaskConfiguration() {
-	try {
-	    return ExtractionConfiguration.loadConfigurationsFromDataSet(this);
-	} catch (IOException ex) {
-	    throw new RuntimeException(ex);
-	}
+    	try {
+    		return ExtractionConfiguration.loadConfigurationsFromDataSet(this);
+    	} catch (IOException ex) {
+    		throw new RuntimeException(ex);
+    	}
     }
+
+	/**
+	 * @return the musicFileListAttribute
+	 */
+	public StringAttribute getMusicFileListAttribute() {
+		return musicFileListAttribute;
+	}
+
+	/**
+	 * @return the featureTableAttribute
+	 */
+	public StringAttribute getFeatureTableAttribute() {
+		return featureTableAttribute;
+	}
 }

@@ -32,8 +32,7 @@ import org.apache.log4j.Level;
 
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
-import amuse.data.io.ArffDataSet;
-import amuse.data.io.DataSetAbstract;
+import amuse.data.datasets.ExtractorConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -75,20 +74,19 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	 * @param extractorConfig Data set with configurations for one or more extraction tasks
 	 * @return ExtractorConfigurations
 	 */
-	public static ExtractionConfiguration[] loadConfigurationsFromDataSet(DataSetAbstract extractorConfig) throws IOException {
+	public static ExtractionConfiguration[] loadConfigurationsFromDataSet(ExtractorConfigSet extractorConfig) throws IOException {
 	    ArrayList<ExtractionConfiguration> taskConfigurations = new ArrayList<ExtractionConfiguration>();
    		
 	    // Proceed music file lists one by one
 	    for(int i=0;i<extractorConfig.getValueCount();i++) {
-			String currentMusicFileList = extractorConfig.getAttribute("MusicFileList").getValueAt(i).toString();
-			String currentFeatureTableString = extractorConfig.getAttribute("FeatureTable").getValueAt(i).toString();
+			String currentMusicFileList = extractorConfig.getMusicFileListAttribute().getValueAt(i).toString();
+			String currentFeatureTableString = extractorConfig.getFeatureTableAttribute().getValueAt(i).toString();
 
 			// Load the file and feature tables
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
 			FeatureTable currentFeatureTable = new FeatureTable(new File(currentFeatureTableString));
 			
 			taskConfigurations.add(new ExtractionConfiguration(currentFileTable,currentFeatureTable));
-			
 			AmuseLogger.write(ExtractionConfiguration.class.getName(), Level.DEBUG, taskConfigurations.size() + " extraction task(s) for " + currentMusicFileList + " loaded");
 		}
 
@@ -106,7 +104,7 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	 * @return ExtractorConfigurations
 	 */
 	public static ExtractionConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
-   		DataSetAbstract extractionConfig = new ArffDataSet(configurationFile);
+		ExtractorConfigSet extractionConfig = new ExtractorConfigSet(configurationFile);
 		return loadConfigurationsFromDataSet(extractionConfig);
     		
 	}
