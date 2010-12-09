@@ -45,11 +45,14 @@ import java.util.logging.Logger;
  * This class provides static methods to do various operations on audio files.
  *
  * @author Clemens Waeltken
- * @version $Id: AudioFileConversion.java 1101 2010-07-01 14:14:50Z vatolkin $
+ * @version $Id$
  */
 public class AudioFileConversion {
 
-    public static void convertWithSettings(File musicFile, File targetFile) throws IOException {
+    private enum KHz {
+	KHz11, KHz22, KHz44
+   }
+    public static void convertFile(File musicFile, File targetFile, KHz khz, boolean reduceToMono, boolean useDownsampling) throws IOException {
         boolean isReduceToMono = AmusePreferences.getBoolean(KeysBooleanValue.REDUCE_TO_MONO);
         boolean isDownSamplingActive = AmusePreferences.getBoolean(KeysBooleanValue.USE_DOWNSAMPLING);
         int targetKHZ = AmusePreferences.getInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ);
@@ -128,6 +131,23 @@ public class AudioFileConversion {
             deleteConvertedFile(wavFile, isOriginal);
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unsupported Audio-File: \"" + ex.getLocalizedMessage() + "\"");
         }
+
+    }
+    public static void convertWithSettings(File musicFile, File targetFile) throws IOException {
+        boolean isReduceToMono = AmusePreferences.getBoolean(KeysBooleanValue.REDUCE_TO_MONO);
+        boolean isDownSamplingActive = AmusePreferences.getBoolean(KeysBooleanValue.USE_DOWNSAMPLING);
+        int targetKHZ = AmusePreferences.getInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ);
+	KHz khz;
+        if (targetKHZ == 0) {
+            khz = KHz.KHz44;
+        } else if (targetKHZ == 1) {
+            khz = KHz.KHz22;
+        } else if (targetKHZ == 2) {
+            khz = KHz.KHz11;
+        } else {
+            khz = KHz.KHz44;
+        }
+	convertFile(musicFile, targetFile, khz, isReduceToMono, isDownSamplingActive);
     }
 
     /**
