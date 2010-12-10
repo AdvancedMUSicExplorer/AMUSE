@@ -49,8 +49,8 @@ import java.util.logging.Logger;
  */
 public class AudioFileConversion {
 
-    private enum KHz {
-	KHz11, KHz22, KHz44
+   public enum KHz {
+	   KHz11, KHz22, KHz44
    }
     public static void convertFile(File musicFile, File targetFile, KHz khz, boolean isReduceToMono, boolean isDownSamplingActive) throws IOException {
 	int targetKHZ;
