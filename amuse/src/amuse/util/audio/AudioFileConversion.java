@@ -52,15 +52,13 @@ public class AudioFileConversion {
     private enum KHz {
 	KHz11, KHz22, KHz44
    }
-    public static void convertFile(File musicFile, File targetFile, KHz khz, boolean reduceToMono, boolean useDownsampling) throws IOException {
-        boolean isReduceToMono = AmusePreferences.getBoolean(KeysBooleanValue.REDUCE_TO_MONO);
-        boolean isDownSamplingActive = AmusePreferences.getBoolean(KeysBooleanValue.USE_DOWNSAMPLING);
-        int targetKHZ = AmusePreferences.getInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ);
-        if (targetKHZ == 0) {
+    public static void convertFile(File musicFile, File targetFile, KHz khz, boolean isReduceToMono, boolean isDownSamplingActive) throws IOException {
+	int targetKHZ;
+        if (khz == KHz.KHz44) {
             targetKHZ = 44100;
-        } else if (targetKHZ == 1) {
+        } else if (khz == KHz.KHz22) {
             targetKHZ = 22050;
-        } else if (targetKHZ == 2) {
+        } else if (khz == KHz.KHz11) {
             targetKHZ = 11025;
         } else {
             targetKHZ = 44100;
