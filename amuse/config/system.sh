@@ -6,12 +6,6 @@ export AMUSEHOME=/home/workspace/amuse
 ### Path to Java
 export JAVAPATH="/usr/share/jdk/1.6/bin/java"
 
-### Path to mpg123
-export MPG123PATH="$AMUSEHOME/tools/mpg123"
-
-### Path to wavsplit
-export WAVSPLITPATH="$AMUSEHOME/tools/wavsplit-1.2.1/wavsplit"
-
 ### Path to Matlab
 export MATLABHOME="/home/matlab/R2009b/bin/matlab"
 
