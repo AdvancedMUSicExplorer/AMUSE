@@ -52,6 +52,7 @@ import amuse.nodes.trainer.TrainerNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
+import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -86,7 +87,6 @@ public class FitnessEvaluator {
 	String pathToFeatureDatabase;
 	String pathToProcessingDatabase;
 	String pathToModelDatabase;
-	String pathToMetricDatabase;
 		
 	/**
 	 * Initializes the Fitness Evaluator with the settings derived from the given individual
@@ -186,9 +186,6 @@ public class FitnessEvaluator {
 		pathToProcessingDatabase = new String(AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE));
 		pathToModelDatabase = new String(strategy.getCorrespondingScheduler().getHomeFolder() +File.separator+ "input" +File.separator +"task_" +
 				strategy.getCorrespondingScheduler().getTaskId() + File.separator+ "Models");
-		pathToMetricDatabase = new String(strategy.getCorrespondingScheduler().getHomeFolder() +File.separator+ "input" +File.separator +"task_" +
-				strategy.getCorrespondingScheduler().getTaskId() + File.separator+ "Metrics");
-
 
 		// Load the processed features directly if no extraction / processing is optimized (only feature selection OR / AND
 		// classification are optimized). It means that the optimization data can be loaded only once for all individuals.
@@ -207,11 +204,12 @@ public class FitnessEvaluator {
 			throw new RuntimeException("Could not initialize FitnessEvaluator: " + e.getMessage());
 		}
 		
-		/*try {
+		/*
+		// TODO v0.2: provide saving of data sets
+		try {
 			trainingData.saveToArffFile(new File("/home/vatol/instrumentsTraining.arff"));
 			testData.saveToArffFile(new File("/home/vatol/instrumentsTest.arff"));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -414,6 +412,7 @@ public class FitnessEvaluator {
 		// ---------------------------------------------------
 		// (IV) Train and validate the classification models..
 		// ---------------------------------------------------
+		ValidationConfiguration vConf = null;
 		// (a) ..building n models using n-fold cross-validation process on training set
 		if(categoryForOptimizationDescription.startsWith("-")) {
 			
@@ -421,9 +420,6 @@ public class FitnessEvaluator {
 			// and deliver mean metrics as fitness value(s)
 			if(!isEvaluatedOnIndependentTestSet) {
 
-				// Create n models during n-fold CV
-				ValidationConfiguration vConf;
-					
 				// Validate the model only with the features selected by EA
 				DataSet optimizationDataWithOnlySelectedFeatures = new DataSet("OptimizationSet");
 				int indexOfSelectedFeaturesRepresentation = 0;
@@ -454,14 +450,13 @@ public class FitnessEvaluator {
 						GroundTruthSourceType.READY_INPUT);
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
-				vConf.setMetricDatabase(pathToMetricDatabase);
 				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
 					getCorrespondingScheduler().getHomeFolder() + "/input/task_" + 
 					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + "/validator");
 				vs.setCleanInputFolder(false);
 				vs.setCategoryDescription(categoryForLearningDescription);
 				vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
-						new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf);
+						new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf, false);
 			}
 			
 			// If an independent test set must be used..
@@ -529,7 +524,7 @@ public class FitnessEvaluator {
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-2));
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-1));
 				
-				ValidationConfiguration vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
+				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
@@ -537,14 +532,13 @@ public class FitnessEvaluator {
 						GroundTruthSourceType.READY_INPUT);
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
-				vConf.setMetricDatabase(pathToMetricDatabase);
 				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
 					getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
 					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator + "validator");
 				vs.setCleanInputFolder(false);
 				vs.setCategoryDescription(categoryForTestDescription);
 				vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
-						new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf);
+						new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf, false);
 			}
 		} 
 		
@@ -595,7 +589,6 @@ public class FitnessEvaluator {
 			// ----------------------------------------
 			// (V) Validate the classification model(s)
 			// ----------------------------------------
-			ValidationConfiguration vConf;
 			
 			// Validate the model only with the features selected by EA
 			DataSet optimizationDataWithOnlySelectedFeatures = new DataSet("OptimizationSet");
@@ -643,145 +636,64 @@ public class FitnessEvaluator {
 			}
 			vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 			vConf.setModelDatabase(pathToModelDatabase);
-			vConf.setMetricDatabase(pathToMetricDatabase);
 			ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
 				getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
 				individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator + "validator");
 			vs.setCleanInputFolder(false);
 			vs.setCategoryDescription(isEvaluatedOnIndependentTestSet ? categoryForTestDescription : categoryForOptimizationDescription);
 			vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
-					new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf);
+					new Long(individual.getCorrespondingES().getCorrespondingScheduler().getTaskId()), vConf, false);
 		}
 			
 		// ---------------------------------------
 		// (VI) Load the metric (ES fitness value)
 		// ---------------------------------------
-		// TODO Metriken auch als Objekt zurueck geben! -> dann kann man auch direkt isForMinimizing nutzen
+		ArrayList<ValidationMetric> metricsAll = vConf.getCalculatedMetrics();
 		ArrayList<ValidationMetricDouble> metrics = new ArrayList<ValidationMetricDouble>();
-		DataSetAbstract calculatedMetricSet;
-		try {
 				
-			// (a) ..metrics using n-fold cross-validation process on training set
-			if(categoryForOptimizationDescription.startsWith("-")) {
+		// (a) ..metrics using n-fold cross-validation process on training set
+		if(categoryForOptimizationDescription.startsWith("-")) {
+			for(int i=0;i<metricsAll.size();i++) {
 				if(!isEvaluatedOnIndependentTestSet) {
-					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + File.separator + categoryForLearningDescription
-						+ File.separator + classifierDescription + File.separator + processedModel + File.separator + "1[" + 
-						categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]-n-Fold_Cross-Validation" + File.separator + "metrics.arff"));
-				} else {
-					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + "/" + categoryForTestDescription
-							+ "/" + classifierDescription + "/" + processedModel + "/0-Single_Evaluator/metrics.arff"));
-				}
 				
-				for(int i=0;i<calculatedMetricSet.getValueCount();i++) {
-					ValidationMetricDouble currentMetric = new ValidationMetricDouble();
-					
-					if(!isEvaluatedOnIndependentTestSet) {
-					
-						// List of correctly identified songs is not a double value metric; only mean metrics over n models are saved
-						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114) &&
-								calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString().startsWith("mean(")) {
-							currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
-							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
-							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
-							
-							// FIXME !!!
-							if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
-									|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
-									|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
-									|| currentMetric.getId() == 113) {
-								currentMetric.setForMinimizing(false);
-							}
-							// TODO Calculate the feature selection rate
-							if(currentMetric.getId() == 203) {
-								int indexOfSelectedFeaturesRepresentation = 0;
-								int number = 0;
-								for(int j=0;j<individual.getRepresentationList().size();j++) {
-									if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
-										indexOfSelectedFeaturesRepresentation = j;
-										break;
-									}
+					// Only double value metrics are proceeded; only mean metrics over n models are saved
+					if(metricsAll.get(i) instanceof ValidationMetricDouble && 
+							metricsAll.get(i).getName().startsWith("mean(")) {
+						ValidationMetricDouble currentMetric = new ValidationMetricDouble();
+						currentMetric.setName(metricsAll.get(i).getName());
+						currentMetric.setId(metricsAll.get(i).getId());
+						currentMetric.setValue(metricsAll.get(i).getValue());
+						currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
+														
+						// TODO Calculate the feature selection rate
+						if(currentMetric.getId() == 203) {
+							int indexOfSelectedFeaturesRepresentation = 0;
+							int number = 0;
+							for(int j=0;j<individual.getRepresentationList().size();j++) {
+								if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+									indexOfSelectedFeaturesRepresentation = j;
+									break;
 								}
-								for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue().length;k++) {
-									if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue()[k]) {
-										number++;
-									}
-								}
-								currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue().length);
 							}
-							
-							metrics.add(currentMetric);
+							for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue().length;k++) {
+								if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue()[k]) {
+									number++;
+								}
+							}
+							currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+									getValue().length);
 						}
-					} else {
-						if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114)) {
-							currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
-							currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
-							currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
-							
-							// FIXME !!!
-							if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
-									|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
-									|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
-									|| currentMetric.getId() == 113) {
-								currentMetric.setForMinimizing(false);
-							}
-							// TODO Calculate the feature selection rate
-							if(currentMetric.getId() == 203) {
-								int indexOfSelectedFeaturesRepresentation = 0;
-								int number = 0;
-								for(int j=0;j<individual.getRepresentationList().size();j++) {
-									if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
-										indexOfSelectedFeaturesRepresentation = j;
-										break;
-									}
-								}
-								for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue().length;k++) {
-									if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue()[k]) {
-										number++;
-									}
-								}
-								currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
-										getValue().length);
-							}
-							
-							metrics.add(currentMetric);
-						}
+						metrics.add(currentMetric);
 					}
-				}
-			} 
-			
-			// (b) ..metrics from 1 model
-			else {
-			
-				// Load metric from validation on independent test set
-				if(!isEvaluatedOnIndependentTestSet) {
-					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + "/" + categoryForOptimizationDescription
-								+ "/" + classifierDescription + "/" + processedModel + "/0-Single_Evaluator/metrics.arff"));
-				} else  {
-					calculatedMetricSet = new ArffDataSet(new File(pathToMetricDatabase + "/" + categoryForTestDescription
-							+ "/" + classifierDescription + "/" + processedModel + "/0-Single_Evaluator/metrics.arff"));
-				}
-	
-				for(int i=0;i<calculatedMetricSet.getValueCount();i++) {
-					ValidationMetricDouble currentMetric = new ValidationMetricDouble();
-					
-					// List of correctly identified songs is not a double value metric!
-					if(!new Integer(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue()).equals(114)) {
-						currentMetric.setId(new Double(calculatedMetricSet.getAttribute("MetricId").getValueAt(i).toString()).intValue());
-						currentMetric.setName(calculatedMetricSet.getAttribute("MetricName").getValueAt(i).toString());
-						currentMetric.setValue(new Double(calculatedMetricSet.getAttribute("MetricValue").getValueAt(i).toString()));
-						
-						// FIXME !!!
-						if(currentMetric.getId() == 100 || currentMetric.getId() == 101 || currentMetric.getId() == 104 
-								|| currentMetric.getId() == 105 || currentMetric.getId() == 106 || currentMetric.getId() == 107 
-								|| currentMetric.getId() == 110 || currentMetric.getId() == 111 || currentMetric.getId() == 112 
-								|| currentMetric.getId() == 113) {
-							currentMetric.setForMinimizing(false);
-						}
+				} else {
+					if(metricsAll.get(i) instanceof ValidationMetricDouble) {
+						ValidationMetricDouble currentMetric = new ValidationMetricDouble();
+						currentMetric.setName(metricsAll.get(i).getName());
+						currentMetric.setId(metricsAll.get(i).getId());
+						currentMetric.setValue(metricsAll.get(i).getValue());
+						currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
 						
 						// TODO Calculate the feature selection rate
 						if(currentMetric.getId() == 203) {
@@ -808,19 +720,59 @@ public class FitnessEvaluator {
 					}
 				}
 			}
-		} catch(IOException e) {
-			throw new NodeException("Could not load the validation results: " + e.getMessage());
+		} 
+			
+		// (b) ..metrics from 1 model
+		else {
+			for(int i=0;i<metricsAll.size();i++) {
+				
+				// Only double value metrics are proceeded
+				if(metricsAll.get(i) instanceof ValidationMetricDouble) {
+					ValidationMetricDouble currentMetric = new ValidationMetricDouble();
+					currentMetric.setName(metricsAll.get(i).getName());
+					currentMetric.setId(metricsAll.get(i).getId());
+					currentMetric.setValue(metricsAll.get(i).getValue());
+					currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
+						
+					// TODO Calculate the feature selection rate
+					if(currentMetric.getId() == 203) {
+						int indexOfSelectedFeaturesRepresentation = 0;
+						int number = 0;
+						for(int j=0;j<individual.getRepresentationList().size();j++) {
+							if(individual.getRepresentationList().get(j) instanceof SelectedFeatures) {
+								indexOfSelectedFeaturesRepresentation = j;
+								break;
+							}
+						}
+						for(int k=0;k<((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+								getValue().length;k++) {
+							if(((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+								getValue()[k]) {
+								number++;
+							}
+						}
+						currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+								getValue().length);
+					}
+					
+					metrics.add(currentMetric);
+				}
+			}
 		}
 		
 		// Clean the generated results
 		FileOperations.delete(new File(pathToModelDatabase),true);
-		FileOperations.delete(new File(pathToMetricDatabase),true);
 		FileOperations.delete(new File(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + 
-			File.separator + "input" +File.separator + "task_" + individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() +  File.separator +"Processed_Features"),true);
+			File.separator + "input" + File.separator + "task_" + individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() +  File.separator +"Processed_Features"),true);
 			
 		ValidationMetricDouble[] metricsAsArray = new ValidationMetricDouble[metrics.size()];
 		for(int i=0;i<metricsAsArray.length;i++) {
-			metricsAsArray[i] = metrics.get(i);
+			if(metrics.get(i) instanceof ValidationMetricDouble) {
+				metricsAsArray[i] = (ValidationMetricDouble)metrics.get(i);
+			} else {
+				throw new NodeException("Only double metrics can be used for optimization; please remove the metric '" + 
+					metrics.get(i).getName() + "'");
+			}
 		}
 		
 		return metricsAsArray;

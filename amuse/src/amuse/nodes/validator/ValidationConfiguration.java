@@ -37,6 +37,7 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -87,6 +88,9 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Folder to store the classification validation results (default: Amuse metric database) */
 	private String metricDatabase;
 	
+	/** Calculated metrics are stored here after the corresponding validation task has been successfully applied */
+	private ArrayList<ValidationMetric> calculatedMetrics;
+	
 	/**
 	 * Standard constructor
 	 * @param validationAlgorithmDescription ID and parameters of validation method
@@ -112,6 +116,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.metricDatabase = AmusePreferences.get(KeysStringValue.METRIC_DATABASE);
+		this.calculatedMetrics = new ArrayList<ValidationMetric>();
 	}
 	
 	/**
@@ -293,6 +298,20 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public void setInputToValidate(DataInputInterface inputToValidate) {
 		this.inputToValidate = inputToValidate;
+	}
+
+	/**
+	 * @return the calculatedMetrics
+	 */
+	public ArrayList<ValidationMetric> getCalculatedMetrics() {
+		return calculatedMetrics;
+	}
+
+	/**
+	 * @param calculatedMetrics the calculatedMetrics to set
+	 */
+	public void setCalculatedMetrics(ArrayList<ValidationMetric> calculatedMetrics) {
+		this.calculatedMetrics = calculatedMetrics;
 	}
 
 }

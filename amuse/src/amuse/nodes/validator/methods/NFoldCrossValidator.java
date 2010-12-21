@@ -23,13 +23,9 @@
  */
 package amuse.nodes.validator.methods;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -84,7 +80,6 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 	private Random random = null;
 	
 	private File folderForModels = null;
-	private File folderForMetrics = null;
 	
 	public void validate() throws NodeException {
 		
@@ -165,20 +160,6 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 					if(!this.folderForModels.exists()) {
 						if(!this.folderForModels.mkdirs()) {
 							throw new NodeException("Could not create the folder for classification models: " + this.folderForModels);
-						}
-					}
-					
-					// Check if the folder for metric file exists; if not create it
-					this.folderForMetrics = new File( 
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getMetricDatabase()
-							+ "/" + ((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription() + 
-							"/" + classifierDescription + "/" + 
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + "/" + 
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getValidationAlgorithmDescription() + 
-							"-" + properties.getProperty("name"));
-					if(!this.folderForMetrics.exists()) {
-						if(!this.folderForMetrics.mkdirs()) {
-							throw new NodeException("Could not create the folder for classifier evaluation metrics: " + this.folderForMetrics);
 						}
 					}
 					break;
@@ -272,7 +253,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 		}
 		
 		// Validation metrics are saved in a list (for each run)
-		ArrayList<ArrayList<ValidationMetricDouble>> metricsOfEveryValidationRun = new ArrayList<ArrayList<ValidationMetricDouble>>();
+		ArrayList<ArrayList<ValidationMetric/*Double*/>> metricsOfEveryValidationRun = new ArrayList<ArrayList<ValidationMetric/*Double*/>>();
 		
 		// Go through all validation runs (equal to partition number), using the current partition as test partition each time
 		for(int i=0;i<this.n;i++) { 
@@ -376,7 +357,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			
 			// Calculate the classifier evaluation metrics for result
 			try {
-				ArrayList<ValidationMetricDouble> metricsOfThisRun = new ArrayList<ValidationMetricDouble>();
+				ArrayList<ValidationMetric> metricsOfThisRun = new ArrayList<ValidationMetric>();
 				for(int currentMetric = 0; currentMetric < this.metricCalculators.size(); currentMetric++) {
 					ValidationMetric[] currMetr = null;
 					if(this.metricCalculators.get(currentMetric) instanceof ClassificationQualityMetricCalculatorInterface) {
@@ -389,11 +370,8 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 						throw new NodeException("Unknown metric: " + this.metricCalculators.get(currentMetric));
 					}
 					
-					// Mean statistics can be done only for ValidationMetricDouble!
-					if(currMetr instanceof ValidationMetricDouble[]) {
-						for(int k=0;k<currMetr.length;k++) {
-							metricsOfThisRun.add((ValidationMetricDouble)currMetr[k]);
-						}
+					for(int k=0;k<currMetr.length;k++) {
+						metricsOfThisRun.add(currMetr[k]);
 					}
 				}
 				metricsOfEveryValidationRun.add(metricsOfThisRun);
@@ -402,71 +380,71 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			}
 		}
 		
-		// For the mean metric values over all validation runs
-		Double[] meanMetrics = new Double[metricsOfEveryValidationRun.get(0).size()];
-		for(int i=0;i<meanMetrics.length;i++) 
-			meanMetrics[i] = 0.0d;
-		
-		// Go through all metrics
+		// Calculate the number of double metrics
+		int numberOfDoubleMetrics = 0;
 		for(int i=0;i<metricsOfEveryValidationRun.get(0).size();i++) {
-			
-			// Go through all runs
-			for(int j=0;j<metricsOfEveryValidationRun.size();j++) {
-				meanMetrics[i] += metricsOfEveryValidationRun.get(j).get(i).getValue();
+			if(metricsOfEveryValidationRun.get(0).get(i) instanceof ValidationMetricDouble) {
+				numberOfDoubleMetrics++;
 			}
-			meanMetrics[i] /= metricsOfEveryValidationRun.size();
 		}
 		
-		try {
-			boolean saveHeader = false;
+		// Calculate the mean metric values only for double metrics over all validation runs
+		Double[] meanMetrics = new Double[numberOfDoubleMetrics];
+		for(int i=0;i<meanMetrics.length;i++) 
+			meanMetrics[i] = 0.0d;
+		int currentIndexOfMeanMetric = 0;
+		for(int i=0;i<metricsOfEveryValidationRun.get(0).size();i++) {
+			if(metricsOfEveryValidationRun.get(0).get(i) instanceof ValidationMetricDouble) {
 			
-			// If no metric file is there, save header
-			if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
-				saveHeader = true;
-			}
-			
-			FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
-			DataOutputStream values_writer = new DataOutputStream(values_to);
-			String sep = System.getProperty("line.separator");
-			
-			// Saves the header
-			if(saveHeader) {
-				values_writer.writeBytes("@RELATION 'Classifier metrics'");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE Time STRING");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricId NUMERIC");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricName STRING");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricValue NUMERIC");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@DATA");
-			}
-			
-			values_writer.writeBytes(sep);
-			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-			
-			// Save the metric values, going through all metrics
-			for(int i=0;i<meanMetrics.length;i++) {
+				// Go through all runs
 				for(int j=0;j<metricsOfEveryValidationRun.size();j++) {
-					values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
-							metricsOfEveryValidationRun.get(0).get(i).getId() + ", " + 
-							"\"run_" + j + "_(" + metricsOfEveryValidationRun.get(0).get(i).getName() + ")\", " + 
-							metricsOfEveryValidationRun.get(j).get(i).getValue());
-					values_writer.writeBytes(sep);
+					meanMetrics[currentIndexOfMeanMetric] += ((ValidationMetricDouble)
+							metricsOfEveryValidationRun.get(j).get(i)).getValue();
 				}
-				
-				values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
-						metricsOfEveryValidationRun.get(0).get(i).getId() + ", " + 
-						"\"mean(" + metricsOfEveryValidationRun.get(0).get(i).getName() + ")\", " + meanMetrics[i]);
-				values_writer.writeBytes(sep);
+				meanMetrics[currentIndexOfMeanMetric] /= metricsOfEveryValidationRun.size();
+				currentIndexOfMeanMetric++;
 			}
-			values_writer.close();
-		} catch(IOException e) {
-			throw new NodeException("Could not save metrics: " + e.getMessage());
+		}
+		
+		// Save the metric values to the list, going through all metrics
+		try {
+			ArrayList<ValidationMetric> metricList = new ArrayList<ValidationMetric>();
+			currentIndexOfMeanMetric = 0;
+			for(int i=0;i<metricsOfEveryValidationRun.get(0).size();i++) {
+			
+				for(int j=0;j<metricsOfEveryValidationRun.size();j++) {
+					Class<?> metricClass = Class.forName(metricsOfEveryValidationRun.get(0).get(i).getClass().getCanonicalName());
+					ValidationMetric m = (ValidationMetric)metricClass.newInstance();
+					m.setValue(metricsOfEveryValidationRun.get(j).get(i).getValue());
+					m.setName("run_" + j + "_(" + metricsOfEveryValidationRun.get(0).get(i).getName() + ")");
+					m.setId(metricsOfEveryValidationRun.get(0).get(i).getId());
+					if(m instanceof ValidationMetricDouble) {
+						((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)
+								metricsOfEveryValidationRun.get(0).get(i)).isForMinimizing());
+					}
+					metricList.add(m);
+				}
+					
+				// Add the mean metric value over all validation runs for double metrics
+				Class<?> metricClass = Class.forName(metricsOfEveryValidationRun.get(0).get(i).getClass().getCanonicalName());
+				ValidationMetric m = (ValidationMetric)metricClass.newInstance();
+				if(m instanceof ValidationMetricDouble) {
+					m.setValue(meanMetrics[currentIndexOfMeanMetric]);
+					m.setName("mean(" + metricsOfEveryValidationRun.get(0).get(i).getName() + ")");
+					m.setId(metricsOfEveryValidationRun.get(0).get(i).getId());
+					((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)metricsOfEveryValidationRun.
+							get(0).get(i)).isForMinimizing());
+					metricList.add(m);
+					currentIndexOfMeanMetric++;
+				}
+			}
+			((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).setCalculatedMetrics(metricList);
+		} catch(ClassNotFoundException e) {
+			throw new NodeException("Could not find the appropriate metric class: " + e.getMessage());
+		} catch(IllegalAccessException e) {
+			throw new NodeException("Could not access the appropriate metric class: " + e.getMessage());
+		} catch(InstantiationException e) {
+			throw new NodeException("Could not instantiate the appropriate metric class: " + e.getMessage());
 		}
 	}
 	

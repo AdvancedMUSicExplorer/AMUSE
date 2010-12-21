@@ -44,6 +44,7 @@ import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.interfaces.OptimizerInterface;
 import amuse.nodes.optimizer.methods.es.operators.mutation.interfaces.MutationInterface;
 import amuse.nodes.optimizer.methods.es.operators.selection.CommaSelection;
+import amuse.nodes.optimizer.methods.es.operators.selection.HypervolumeSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.PlusSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
@@ -65,7 +66,6 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	/** Parameters from ESConfiguration which are saved here for faster processing */
 	public int popSize = 0;
 	public int offspringPopSize = 0;
-	//boolean isPlus = true;
 	public int generationLimit = -1;
 	int evaluationLimit = -1;
 	public boolean isIndependentTestSetUsed = false;
@@ -78,6 +78,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	boolean logOffspringPopulationRepresentations = false;
 	boolean logOffspringPopulationFitness = true;
 	boolean logOffspringPopulationFitnessOnTestSet = false;
+	// FIXME Incompatible for MOO! Must be removed since metric optimization direction is now saved in metric!
 	public boolean isMinimizingFitness = true; // As a default, metric values (fitness) are minimized by optimization
 	
 	/** ES populations */
@@ -102,7 +103,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	/** ES run parameters */
 	public int currentGeneration;
 	public int currentEvaluation;
-	public int currentSuccessCounter;
+	public int currentSuccessCounter; // TODO replace by successHistory: currently IntegerMutation may set this
+	// counter to zero after x (e.g. 5) iterations; if other mutations do this after y (e.g. 10) iterations, it is not counted properly! Also check the update for SMS-EMOA!!
 	ESLogger esLogger;
 	private FitnessEvaluator fitnessEvalualor;
 	
@@ -130,8 +132,22 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			if(!folderForResults.exists()) {
 				folderForResults.mkdirs();
 			}
-			esLogger = new ESLogger(new File(folderForResults + "/optimization_" + 
-					folderForResults.listFiles().length + ".arff"));
+			
+			boolean logCreated = false;
+			File newLog = null;
+			while(!logCreated) {
+				newLog = new File(folderForResults + "/optimization_" + 
+					folderForResults.listFiles().length + "_" + esConfiguration.getESParameterByName("Random seed").getAttributes().getNamedItem("longValue").getNodeValue() + ".arff");
+				try {
+					if(newLog.createNewFile()) {
+						logCreated = true;
+					}
+				} catch(IOException e) {
+					throw new NodeException("Could not create log file '" + newLog.getAbsolutePath() + 
+							"': " + e.getMessage());
+				}
+			}
+			esLogger = new ESLogger(newLog);
 		} else { // ..or continue writing to older log from previous experiment 
 			esLogger = new ESLogger(new File(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom()));
 		}
@@ -367,10 +383,11 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		String strategyString = strategy.getAttributes().getNamedItem("stringValue").getNodeValue();
 		
 		// TODO for sms-emoa
-		/*popSize = new Integer(strategyString.substring(0,strategyString.indexOf("+")));
-		offspringPopSize = new Integer(strategyString.substring(strategyString.indexOf("+")+1));
-		selectionOperator = new HypervolumeSelection(this);*/
-		if(strategyString.indexOf("+") != -1) {
+		if(strategyString.startsWith("sms-emoa")) {
+			popSize = new Integer(strategyString.substring(9,strategyString.indexOf("+")));
+			offspringPopSize = new Integer(1);
+			selectionOperator = new HypervolumeSelection(this);
+		} else if(strategyString.indexOf("+") != -1) {
 			popSize = new Integer(strategyString.substring(0,strategyString.indexOf("+")));
 			offspringPopSize = new Integer(strategyString.substring(strategyString.indexOf("+")+1));
 			selectionOperator = new PlusSelection(this);
