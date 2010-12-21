@@ -23,13 +23,9 @@
  */
 package amuse.nodes.validator.methods;
 
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import org.apache.log4j.Level;
 
@@ -68,113 +64,30 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	/** Ids of metrics to calculate */
 	private ArrayList<Integer> metricIds = new ArrayList<Integer>();
 	
-	/** Folder for models and metrics use the classification algorithm description */
-	private String classifierDescription = null;
-	
 	/** Path to a single model file or folder with several models which should be evaluated */
 	private String pathToModelFile = null;
-	
-	private File folderForMetrics = null;
 	
 	/**
 	 * Performs validation of the given model(s)
 	 */
 	public void validate() throws NodeException {
 		
-		// --------------------------------------
-		// (I) Set the name for the metric folder
-		// --------------------------------------
-		try {
-			setFolderForMetrics();
-		} catch(NodeException e) {
-			throw e;
-		}
-		
-		// ---------------------------------
-		// (II) Configure metric calculators
-		// ---------------------------------
+		// --------------------------------
+		// (I) Configure metric calculators
+		// --------------------------------
 		try {
 			configureMetricCalculators();
 		} catch(NodeException e) {
 			throw e;
 		}
 		
-		// ------------------------
-		// (III) Perform evaluation
-		// ------------------------
+		// -----------------------
+		// (II) Perform evaluation
+		// -----------------------
 		try {
 			performEvaluation();
 		} catch(NodeException e) {
 			throw e;
-		}
-		
-	}
-	
-	/**
-	 * Sets the name of the folder for metrics
-	 * @throws NodeException
-	 */
-	private void setFolderForMetrics() throws NodeException {
-		ArffLoader classificationAlgorithmLoader = new ArffLoader();
-		Instance classificationAlgorithmInstance;
-		boolean classificationMethodFound = false; 
-		int algorithmToSearch;
-		if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription().indexOf("[") == -1) {
-			algorithmToSearch = new Double(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription()).intValue();
-		} else {
-			algorithmToSearch = new Double(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription().substring(0,
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription().indexOf("["))).intValue();
-		}
-		try {
-			if(this.correspondingScheduler.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
-	    	} else {
-	    		classificationAlgorithmLoader.setFile(new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/classifierAlgorithmTable.arff"));
-	    	}
-			Attribute idAttribute = classificationAlgorithmLoader.getStructure().attribute("Id");
-			Attribute nameAttribute = classificationAlgorithmLoader.getStructure().attribute("Name");
-			classificationAlgorithmInstance = classificationAlgorithmLoader.getNextInstance(classificationAlgorithmLoader.getStructure());
-			while(classificationAlgorithmInstance != null) {
-				
-				// If the given classification algorithm is found..
-				if(classificationAlgorithmInstance.value(idAttribute) == algorithmToSearch) {
-					classificationMethodFound = true;
-					
-					// Set the name of folder for models and metrics (combined from
-					// classifier ID, parameters and name)
-					classifierDescription = ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription() + "-" + classificationAlgorithmInstance.stringValue(nameAttribute);
-
-					String validatorMethodId = ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getValidationAlgorithmDescription();
-					if(validatorMethodId.contains("[")) {
-						validatorMethodId = validatorMethodId.substring(0,validatorMethodId.indexOf("["));
-					}
-					
-					// Check if the folder for metric file exists; if not create it
-					this.folderForMetrics = new File(
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getMetricDatabase() + "/" + 
-							((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription() + 
-							File.separator + classifierDescription + File.separator +
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + File.separator +
-							validatorMethodId + 
-							"-" + properties.getProperty("name"));
-					if(!this.folderForMetrics.exists()) {
-						if(!this.folderForMetrics.mkdirs()) {
-							throw new NodeException("Could not create the folder for classifier evaluation metrics: " + this.folderForMetrics);
-						}
-					}
-					break;
-				}
-				classificationAlgorithmInstance = classificationAlgorithmLoader.getNextInstance(classificationAlgorithmLoader.getStructure());
-			}
-		
-			// Check the classification method id
-			if(!classificationMethodFound) {
-				throw new NodeException("Could not find the appropriate classification method for algorithm with ID: " + 
-						properties.getProperty("classificationAlgorithmId"));
-			}
-		
-		} catch(Exception e) {
-			throw new NodeException("Configuration of classifier for validation failed: " + e.getMessage());
 		}
 	}
 	
@@ -287,6 +200,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			}
 		}
 		
+		// Calculate the number of double metrics
 		int numberOfDoubleMetrics = 0;
 		for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
 			if(metricsForEveryModel.get(0).get(i) instanceof ValidationMetricDouble) {
@@ -294,93 +208,75 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			}
 		}
 		
-		// For the mean metric values over all evaluated models TODO see below, currently not supported
-		/*Double[] meanMetrics = new Double[numberOfDoubleMetrics];
+		// Calculate the mean metric values only for double metrics
+		Double[] meanMetrics = new Double[numberOfDoubleMetrics];
 		for(int i=0;i<meanMetrics.length;i++) 
 			meanMetrics[i] = 0.0d;
-		
-		// Go through all metrics
+		int currentIndexOfMeanMetric = 0;
 		for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
-			
-			// Mean metrics can be built only for double metrics
 			if(metricsForEveryModel.get(0).get(i) instanceof ValidationMetricDouble) {
 			
 				// Go through all runs
 				for(int j=0;j<metricsForEveryModel.size();j++) {
-					meanMetrics[i] += ((ValidationMetricDouble)metricsForEveryModel.get(j).get(i)).getValue();
+					meanMetrics[currentIndexOfMeanMetric] += ((ValidationMetricDouble)metricsForEveryModel.get(j).get(i)).getValue();
 				}
-				meanMetrics[i] /= metricsForEveryModel.size();
+				meanMetrics[currentIndexOfMeanMetric] /= metricsForEveryModel.size();
+				currentIndexOfMeanMetric++;
 			}
-		}*/
+		}
 		
-		// Save the metrics
+		// Save the metric values to the list, going through all metrics
 		try {
-			boolean saveHeader = false;
-			
-			// If no metric file is there, save header
-			// FIXME Currently the file is overwritten each time for Windows compatibility during optimization task
-			//if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
-				saveHeader = true;
-			//}
-			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
-			FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff");
-			DataOutputStream values_writer = new DataOutputStream(values_to);
-			String sep = System.getProperty("line.separator");
-			
-			// Saves the header
-			if(saveHeader) {
-				values_writer.writeBytes("@RELATION 'Classifier metrics'");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE Time STRING");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricId NUMERIC");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricName STRING");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricValue STRING");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@DATA");
-			}
-			values_writer.writeBytes(sep);
-			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-			
-			// Save the metric values, going through all metrics
-			for(int i=0;i<metricsForEveryModel.get(0).size()/* TODO see below meanMetrics.length*/;i++) {
+			ArrayList<ValidationMetric> metricList = new ArrayList<ValidationMetric>();
+			currentIndexOfMeanMetric = 0;
+			for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
 				
 				// If only one model was evaluated, write it; if more models were evaluated,
 				// save also the mean metric values across all models
-				
-				// TODO Currently only data of the 1st model is given (restriction for metric "correctly predicted song list" 
-				// where no mean value can be calculated
-				
-				//  if(modelsToEvaluate.size() == 1) {
-					values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
-							metricsForEveryModel.get(0).get(i).getId() + ", " + 
-							"\"" + metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(0).toString() + "\", " + 
-							metricsForEveryModel.get(0).get(i).getValue());
-					values_writer.writeBytes(sep);
-				/*} else {
+				if(modelsToEvaluate.size() == 1) {
+					Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
+					ValidationMetric m = (ValidationMetric)metricClass.newInstance();
+					m.setValue(metricsForEveryModel.get(0).get(i).getValue());
+					m.setName(metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(0).toString());
+					m.setId(metricsForEveryModel.get(0).get(i).getId());
+					if(m instanceof ValidationMetricDouble) {
+						((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)metricsForEveryModel.get(0).get(i)).isForMinimizing());
+					}
+					metricList.add(m);
+				} else {
 					for(int j=0;j<metricsForEveryModel.size();j++) {
-						values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
-								metricsForEveryModel.get(0).get(i).getId() + ", " + 
-								"\"" + metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(j).toString() + "\", " + 
-								metricsForEveryModel.get(j).get(i).getValue());
-						values_writer.writeBytes(sep);
+						Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
+						ValidationMetric m = (ValidationMetric)metricClass.newInstance();
+						m.setValue(metricsForEveryModel.get(j).get(i).getValue());
+						m.setName(metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(j).toString());
+						m.setId(metricsForEveryModel.get(0).get(i).getId());
+						if(m instanceof ValidationMetricDouble) {
+							((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)
+									metricsForEveryModel.get(0).get(i)).isForMinimizing());
+						}
+						metricList.add(m);
 					}
 					
-					values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
-							metricsForEveryModel.get(0).get(i).getId() + ", " + 
-							"\"mean(" + metricsForEveryModel.get(0).get(i).getName() + ")\", " + meanMetrics[i]);
-					values_writer.writeBytes(sep);
-				}*/
+					// Add the mean metric value over all models for double metrics
+					Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
+					ValidationMetric m = (ValidationMetric)metricClass.newInstance();
+					if(m instanceof ValidationMetricDouble) {
+						m.setValue(meanMetrics[currentIndexOfMeanMetric]);
+						m.setName("mean(" + metricsForEveryModel.get(0).get(i).getName() + ")");
+						m.setId(metricsForEveryModel.get(0).get(i).getId());
+						((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)metricsForEveryModel.get(0).get(i)).isForMinimizing());
+						metricList.add(m);
+						currentIndexOfMeanMetric++;
+					}
+				}
 			}
-			
-			values_writer.close();
-		} catch(IOException e) {
-			e.printStackTrace();
-			throw new NodeException("Could not save metrics: " + e.getMessage());
+			((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).setCalculatedMetrics(metricList);
+		} catch(ClassNotFoundException e) {
+			throw new NodeException("Could not find the appropriate metric class: " + e.getMessage());
+		} catch(IllegalAccessException e) {
+			throw new NodeException("Could not access the appropriate metric class: " + e.getMessage());
+		} catch(InstantiationException e) {
+			throw new NodeException("Could not instantiate the appropriate metric class: " + e.getMessage());
 		}
 	}
 

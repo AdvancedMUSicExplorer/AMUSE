@@ -23,11 +23,15 @@
  */ 
 package amuse.nodes.validator;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -48,6 +52,7 @@ import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -117,7 +122,27 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 	}
 	
-	public void proceedTask(String nodeHome, long jobId, TaskConfiguration taskConfiguration) {
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.interfaces.nodes.NodeSchedulerInterface#proceedTask(java.lang.String, long, amuse.interfaces.nodes.TaskConfiguration)
+	 */
+	public void proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration) {
+		
+		// Start the task with the file output
+		try {
+			proceedTask(nodeHome, jobId, classificationConfiguration, true);
+		} catch (NodeException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
+					"Could not proceed validation task: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Proceeds the validation task
+	 * @param saveToFile If true, the metric results are outputted to a file 
+	 */
+	public void proceedTask(String nodeHome, long jobId, TaskConfiguration taskConfiguration, 
+			boolean saveToFile) throws NodeException {
 		
 		// ----------------------------------------
 		// (I): Configure validation node scheduler
@@ -169,9 +194,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		try {
 			this.prepareValidatorInput();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
-					"Validation data could not loaded: " + e.getMessage()); 
-			System.exit(1);
+			throw new NodeException("Validation data could not be loaded: " + e.getMessage()); 
 		}
 		
 		// --------------------------------------
@@ -180,9 +203,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		try {
 			this.configureValidationMethod();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
-					"Configuration of validation method failed: " + e.getMessage()); 
-			System.exit(1);
+			throw new NodeException("Configuration of validation method failed: " + e.getMessage()); 
 		}
 		
 		// -------------------------------------------------------------------------
@@ -201,24 +222,22 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// -------------------------------
 		try {
 			this.vmi.validate();
+			if(saveToFile) {
+				saveMetricsToFile();
+			}
 		} catch(NodeException e) {
-			e.printStackTrace();
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
-					"Validation failed: " + e.getMessage());
-			System.exit(1);
+			throw new NodeException("Validation failed: " + e.getMessage());
 		}
 		
-		// ---------------------------------------------------------------------------------
-		// (V) If started directly, remove generated data and fire event for Amuse scheduler
-		// ---------------------------------------------------------------------------------
+		// ----------------------------------------------------------------------------------
+		// (VI) If started directly, remove generated data and fire event for Amuse scheduler
+		// ----------------------------------------------------------------------------------
 		if(this.directStart) {
 			try {
 				this.cleanInputFolder();
 			} catch(NodeException e) {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-					"Could not remove properly the intermediate results '" + 
+				throw new NodeException("Could not remove properly the intermediate results '" + 
 					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
-				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.VALIDATION_COMPLETED, this));
 		}
@@ -571,6 +590,128 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 	}
 
+	/**
+	 * Saves the calculated metrics to the output file
+	 */
+	private void saveMetricsToFile() throws NodeException {
+		try {
+			
+			// Check if the folder for metric file exists; if not create it
+			File folderForMetrics = createMetricFolder();
+			
+			// If no metric file is there, save header
+			boolean saveHeader = false;
+			// FIXME Currently the file is overwritten each time for Windows compatibility during optimization task
+			//if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
+				saveHeader = true;
+			//}
+			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
+			FileOutputStream values_to = new FileOutputStream(folderForMetrics + "/" + "metrics.arff");
+			DataOutputStream values_writer = new DataOutputStream(values_to);
+			String sep = System.getProperty("line.separator");
+			
+			// Saves the header
+			if(saveHeader) {
+				values_writer.writeBytes("@RELATION 'Classifier metrics'");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("@ATTRIBUTE Time STRING");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("@ATTRIBUTE MetricId NUMERIC");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("@ATTRIBUTE MetricName STRING");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("@ATTRIBUTE MetricValue STRING");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("@DATA");
+			}
+			values_writer.writeBytes(sep);
+			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+			
+			// Save the metric values, going through all metrics
+			for(ValidationMetric m : ((ValidationConfiguration)taskConfiguration).getCalculatedMetrics()) {
+				values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
+							m.getId() + ", " + "\"" + m.getName() + "\", " + 
+							m.getValue());
+				values_writer.writeBytes(sep);
+			}
+			values_writer.close();
+		} catch(IOException e) {
+			throw new NodeException("Could not save metrics: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Sets the name of the folder for metrics and creates this folder
+	 * @throws NodeException
+	 */
+	private File createMetricFolder() throws NodeException {
+		File folderForMetrics = null;
+		String classifierDescription = new String("");
+		ArffLoader classificationAlgorithmLoader = new ArffLoader();
+		Instance classificationAlgorithmInstance;
+		boolean classificationMethodFound = false; 
+		int algorithmToSearch;
+		if(((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription().indexOf("[") == -1) {
+			algorithmToSearch = new Double(((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription()).intValue();
+		} else {
+			algorithmToSearch = new Double(((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription().substring(0,
+					((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription().indexOf("["))).intValue();
+		}
+		try {
+			if(this.getDirectStart()) {
+				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+	    	} else {
+	    		classificationAlgorithmLoader.setFile(new File(this.getHomeFolder() + "/input/task_" + this.getTaskId() + "/classifierAlgorithmTable.arff"));
+	    	}
+			Attribute idAttribute = classificationAlgorithmLoader.getStructure().attribute("Id");
+			Attribute nameAttribute = classificationAlgorithmLoader.getStructure().attribute("Name");
+			classificationAlgorithmInstance = classificationAlgorithmLoader.getNextInstance(classificationAlgorithmLoader.getStructure());
+			while(classificationAlgorithmInstance != null) {
+				
+				// If the given classification algorithm is found..
+				if(classificationAlgorithmInstance.value(idAttribute) == algorithmToSearch) {
+					classificationMethodFound = true;
+					
+					// Set the name of folder for models and metrics (combined from
+					// classifier ID, parameters and name)
+					classifierDescription = ((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription() + "-" + classificationAlgorithmInstance.stringValue(nameAttribute);
+
+					String validatorMethodId = ((ValidationConfiguration)taskConfiguration).getValidationAlgorithmDescription();
+					if(validatorMethodId.contains("[")) {
+						validatorMethodId = validatorMethodId.substring(0,validatorMethodId.indexOf("["));
+					}
+					
+					// Check if the folder for metric file exists; if not create it
+					folderForMetrics = new File(
+							((ValidationConfiguration)taskConfiguration).getMetricDatabase() + "/" + 
+							categoryDescription + 
+							File.separator + classifierDescription + File.separator +
+							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +
+							validatorMethodId + 
+							"-" + ((AmuseTask)vmi).getProperties().getProperty("name"));
+					if(!folderForMetrics.exists()) {
+						if(!folderForMetrics.mkdirs()) {
+							throw new NodeException("Could not create the folder for classifier evaluation metrics: " + folderForMetrics);
+						}
+					}
+					break;
+				}
+				classificationAlgorithmInstance = classificationAlgorithmLoader.getNextInstance(classificationAlgorithmLoader.getStructure());
+			}
+		
+			// Check the classification method id
+			if(!classificationMethodFound) {
+				throw new NodeException("Could not find the appropriate classification method for algorithm with ID: " + 
+						properties.getProperty("classificationAlgorithmId"));
+			}
+		} catch(Exception e) {
+			throw new NodeException("Configuration of classifier for validation failed: " + e.getMessage());
+		}
+		return folderForMetrics;
+	}
+	
 	/**
 	 * @return the labeledSongRelationships
 	 */
