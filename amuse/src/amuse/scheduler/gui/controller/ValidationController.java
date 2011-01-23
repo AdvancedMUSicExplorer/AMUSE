@@ -112,7 +112,7 @@ public class ValidationController extends AbstractController {
         int categoryId = validationView.getSelectedCategoryID();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
         ValidatorConfigSet dataSet = new ValidatorConfigSet(validationMethodId,
-                metricTableFile, processedFeatureDescription, categoryId,
+                metricTableFile, processedFeatureDescription, new Integer(categoryId).toString(), "CATEGORY_ID",
                 classificationAlgorithmId);
         // Create folders...
         metricTableFile.getParentFile().mkdirs();
@@ -139,7 +139,8 @@ public class ValidationController extends AbstractController {
     private void setConfiguration(ValidatorConfigSet set) {
         try {
             validationAlgorithmFacade.setSelectedAlgorithm(set.getValidationMethodIdAttribute().getValueAt(0));
-            validationView.setSelectedCategoryID(set.getCategoryIdAttribute().getValueAt(0).intValue());
+            // FIXME was tun wenn kein Int?
+            validationView.setSelectedCategoryID(new Integer(set.getInputToValidateAttribute().getValueAt(0)));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             metricsView.loadSelection(new File(set.getMetricListAttribute().getValueAt(0)));
         } catch (IOException ex) {
