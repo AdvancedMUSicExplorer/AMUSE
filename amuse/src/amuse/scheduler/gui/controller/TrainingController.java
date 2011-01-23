@@ -106,7 +106,7 @@ public class TrainingController extends AbstractController {
     }
 
     private void setTrainingConfiguration(TrainingConfigSet ttSet) {
-        trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIDAttribute().getValueAt(0));
+        trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
         trainingView.setSelectedCategoryID(new Integer(ttSet.getGroundTruthSourceAttribute().getValueAt(0)));
