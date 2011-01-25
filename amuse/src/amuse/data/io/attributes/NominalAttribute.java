@@ -30,6 +30,7 @@ import java.util.Scanner;
 
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetException;
+import java.util.Arrays;
 
 /**
  * The Nominal Attribute as used in ARFF. Nominal Attributes store any kind of
@@ -133,6 +134,10 @@ public class NominalAttribute extends Attribute {
 		}
 		return new NominalAttribute(name, allowedValues, valuesAsStrings);
 	}
+
+    public NominalAttribute(String name, String[] string) {
+	this(name, Arrays.asList(string));
+    }
 
 	@Override
 	public String getHeaderStr() {

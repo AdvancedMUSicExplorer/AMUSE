@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import amuse.data.io.ArffDataSet;
+import java.util.Arrays;
 
 /**
  * The Numeric Attribute as used in ARFF. Numeric Attributes store any kind of
@@ -77,6 +78,10 @@ public class NumericAttribute extends Attribute {
 	public NumericAttribute(NumericAttribute a) {
 		this(a.name, a.getValues());
 	}
+
+    public NumericAttribute(String name, Double[] aDouble) {
+	this(name, Arrays.asList(aDouble));
+    }
 
 	/**
 	 * This method is used to return a List of all values stored in this
