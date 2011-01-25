@@ -41,6 +41,8 @@ import com.rapidminer.example.table.DoubleArrayDataRow;
 import com.rapidminer.example.table.MemoryExampleTable;
 import com.rapidminer.example.table.NominalMapping;
 import com.rapidminer.tools.Ontology;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * DataSet contains different attributes with values
@@ -50,176 +52,206 @@ import com.rapidminer.tools.Ontology;
  */
 public class DataSet extends DataSetAbstract {
 
-	public DataSet(String name) {
-		this.name = name;
-	}
+    public DataSet(String name) {
+	this.name = name;
+    }
 
-	/**
-	 * Constructor which initializes DataSet from an ARFF file loading the data
-	 * into memory
-	 * 
-	 * @param arffFile
-	 * @param name
-	 * @throws IOException
-	 */
-	public DataSet(File arffFile) throws IOException {
-		super();
-		ArffDataSet fileSet = new ArffDataSet(arffFile, Integer.MAX_VALUE);
-		for (Attribute a : fileSet.attributes) {
-			Attribute newAttr;
-			if (a instanceof NumericAttribute) {
-				newAttr = new NumericAttribute((NumericAttribute) a);
-			} else if (a instanceof StringAttribute) {
-				newAttr = new StringAttribute((StringAttribute) a);
-			} else {
-				newAttr = new NominalAttribute((NominalAttribute) a);
-			}
-			attributes.add(newAttr);
+    /**
+     * Constructor which initializes DataSet from an ARFF file loading the data
+     * into memory
+     *
+     * @param arffFile
+     * @param name
+     * @throws IOException
+     */
+    public DataSet(File arffFile) throws IOException {
+	super();
+	ArffDataSet fileSet = new ArffDataSet(arffFile);
+
+	// Create containers:
+	Object[] values = new Object[fileSet.getAttributeCount()];
+	int aCount = 0;
+	for (Attribute a : fileSet.attributes) {
+	    Attribute newAttr;
+	    if (a instanceof NumericAttribute) {
+		values[aCount] = new Double[fileSet.getValueCount()];
+	    } else if (a instanceof StringAttribute) {
+		values[aCount] = new String[fileSet.getValueCount()];
+	    } else {
+		values[aCount] = new String[fileSet.getValueCount()];
+	    }
+	}
+	// Fill containers:
+	for (int i = 0; i < fileSet.getValueCount(); i++) {
+	    aCount = 0;
+	    for (Attribute a : fileSet.attributes) {
+		if (a instanceof NumericAttribute) {
+		    NumericAttribute atr = (NumericAttribute) a;
+		    Double[] val = (Double[]) values[aCount];
+		    val[i]= (atr.getValueAt(i));
+		} else if (a instanceof StringAttribute) {
+		    StringAttribute atr = (StringAttribute) a;
+		    String[] val = (String[]) values[aCount];
+		    val[i]= (atr.getValueAt(i));
+		} else {
+		    StringAttribute atr = (StringAttribute) a;
+		    String[] val = (String[]) values[aCount];
+		    val[i]= (atr.getValueAt(i));
 		}
+	    }
 	}
 	
-	public DataSet(File arffFile, String name) throws IOException {
-		this(arffFile);
-		this.name = name;
+	// Create the new Attributes
+	aCount = 0;
+	for (Attribute a : fileSet.attributes) {
+	    Attribute newAttr;
+	    if (a instanceof NumericAttribute) {
+		newAttr = new NumericAttribute(a.getName(), (Double[])values[aCount]);
+	    } else if (a instanceof StringAttribute) {
+		newAttr = new StringAttribute(a.getName(), (String[])values[aCount]);
+	    } else {
+		newAttr = new NominalAttribute(a.getName(), (String[])values[aCount]);
+	    }
+	    attributes.add(newAttr);
+	}
+    }
+
+    public DataSet(File arffFile, String name) throws IOException {
+	this(arffFile);
+	this.name = name;
+    }
+
+    /**
+     * Constructor which creates DataSet from RapidMiner object ExampleSet
+     *
+     * @param exampleSet
+     */
+    public DataSet(ExampleSet exampleSet) {
+	this.name = exampleSet.getName();
+
+	// Create the attributes
+	Iterator<com.rapidminer.example.Attribute> it = exampleSet.getAttributes().allAttributes();
+	while (it.hasNext()) {
+	    com.rapidminer.example.Attribute a = it.next();
+	    if (a.isNumerical()) {
+		attributes.add(new NumericAttribute(a.getName(), new ArrayList<Double>()));
+	    } else {
+		attributes.add(new StringAttribute(a.getName(), new ArrayList<String>()));
+	    }
 	}
 
-	/**
-	 * Constructor which creates DataSet from RapidMiner object ExampleSet
-	 * 
-	 * @param exampleSet
-	 */
-	public DataSet(ExampleSet exampleSet) {
-		this.name = exampleSet.getName();
-
-		// Create the attributes
-		Iterator<com.rapidminer.example.Attribute> it = exampleSet.getAttributes().allAttributes();
-		while(it.hasNext()) {
-			com.rapidminer.example.Attribute a = it.next();
-			if (a.isNumerical()) {
-				attributes.add(new NumericAttribute(a.getName(),new ArrayList<Double>()));
-			} else {
-				attributes.add(new StringAttribute(a.getName(),new ArrayList<String>()));
-			}
+	// Load the values
+	it = exampleSet.getAttributes().allAttributes();
+	int i = 0;
+	while (it.hasNext()) {
+	    com.rapidminer.example.Attribute a = it.next();
+	    for (int j = 0; j < exampleSet.size(); j++) {
+		if (a.isNumerical()) {
+		    attributes.get(i).addValue(exampleSet.getExample(j).getValue(a));
+		} else {
+		    String s = a.getMapping().mapIndex(new Double(exampleSet.getExample(j).getValue(a)).intValue());
+		    attributes.get(i).addValue(s);
 		}
+	    }
+	    i++;
+	}
+    }
 
-		// Load the values
-		it = exampleSet.getAttributes().allAttributes();
-		int i=0;
-		while(it.hasNext()) {
-			com.rapidminer.example.Attribute a = it.next();
-			for (int j = 0; j < exampleSet.size(); j++) {
-				if (a.isNumerical()) {
-					attributes.get(i).addValue(exampleSet.getExample(j).getValue(a));
-				} else {
-					String s = a.getMapping().mapIndex(new Double(exampleSet.getExample(j).getValue(a)).intValue());
-					attributes.get(i).addValue(s);
-				}
-			}
-			i++;
+    /**
+     * Returns the number of values if it is equal for all attributes; otherwise
+     * returns -1
+     */
+    public final int getValueCount() {
+	int valueCountForFirstAttr = attributes.get(0).getValueCount();
+	for (Attribute a : attributes) {
+	    if (a.getValueCount() != valueCountForFirstAttr) {
+		return -1;
+	    }
+	}
+	return valueCountForFirstAttr;
+    }
+
+    @Override
+    public void addAttribute(Attribute a) {
+	attributes.add(a);
+    }
+
+    /**
+     * Generates the RapidMiner object ExampleSet from this DataSet
+     *
+     * @return RapidMiner ExampleSet
+     */
+    public ExampleSet convertToRapidMinerExampleSet() {
+
+	NominalMapping mapping = null;
+	com.rapidminer.example.Attribute idAttribute = null;
+	com.rapidminer.example.Attribute labelAttribute = null;
+
+	// Create attribute list
+	List<com.rapidminer.example.Attribute> attributes = new LinkedList<com.rapidminer.example.Attribute>();
+	for (int a = 0; a < getAttributeCount(); a++) {
+	    if (getAttribute(a).getName().equals("Id")) {
+		idAttribute = AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.INTEGER);
+		attributes.add(idAttribute);
+	    } else if (getAttribute(a).getName().equals("Category")) {
+		labelAttribute = AttributeFactory.createAttribute(getAttribute(
+			a).getName(), Ontology.NOMINAL);
+		attributes.add(labelAttribute);
+		mapping = attributes.get(attributes.size() - 1).getMapping();
+	    } else if (getAttribute(a) instanceof StringAttribute) {
+		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.NOMINAL));
+	    } else {
+		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.REAL));
+	    }
+	}
+
+	// Create table
+	MemoryExampleTable table = new MemoryExampleTable(attributes);
+
+	// Fill table with all time windows
+	for (int d = 0; d < getValueCount(); d++) {
+	    double[] data = new double[attributes.size()];
+	    // int currData = 0;
+	    for (int a = 0; a < attributes.size(); a++) {
+		// System.out.println(attributes.get(a).getName());
+		if (attributes.get(a).getName().equals("Id")) {
+		    /*
+		     * System.out.println("id found");
+		     *
+		     * System.out.println(getAttribute(a).getValueAt(d));
+		     * System.
+		     * out.println(getAttribute(a).getValueAt(d).toString());
+		     */
+		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
+		    // data[a] =
+		    // attributes.get(a).getMapping().mapString(getAttribute(a).getValueAt(d).toString());
+		    // currData++;
+		    // idAttribute.
+
+		} else if (getAttribute(a).getName().equals("Category")) {
+		    data[a] = mapping.mapString(getAttribute(a).getValueAt(d).toString());
+		    // currData++;
+		} else if (getAttribute(a) instanceof StringAttribute) {
+		    data[a] = attributes.get(a).getMapping().mapString(
+			    getAttribute(a).getValueAt(d).toString());
+		    // currData++;
+		} else {
+		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
+		    // currData++;
 		}
+	    }
+
+	    // Add data row
+	    table.addDataRow(new DoubleArrayDataRow(data));
 	}
 
-	/**
-	 * Returns the number of values if it is equal for all attributes; otherwise
-	 * returns -1
-	 */
-	public final int getValueCount() {
-		int valueCountForFirstAttr = attributes.get(0).getValueCount();
-		for (Attribute a : attributes) {
-			if (a.getValueCount() != valueCountForFirstAttr) {
-				return -1;
-			}
-		}
-		return valueCountForFirstAttr;
-	}
+	// Create example set
+	return table.createExampleSet(labelAttribute, null, idAttribute);
+    }
 
-	@Override
-	public void addAttribute(Attribute a) {
-		attributes.add(a);
-	}
-
-	/**
-	 * Generates the RapidMiner object ExampleSet from this DataSet
-	 * 
-	 * @return RapidMiner ExampleSet
-	 */
-	public ExampleSet convertToRapidMinerExampleSet() {
-
-		NominalMapping mapping = null;
-		com.rapidminer.example.Attribute idAttribute = null;
-		com.rapidminer.example.Attribute labelAttribute = null;
-
-		// Create attribute list
-		List<com.rapidminer.example.Attribute> attributes = new LinkedList<com.rapidminer.example.Attribute>();
-		for (int a = 0; a < getAttributeCount(); a++) {
-			if (getAttribute(a).getName().equals("Id")) {
-				idAttribute = AttributeFactory.createAttribute(getAttribute(a)
-						.getName(), Ontology.INTEGER);
-				attributes.add(idAttribute);
-			} else if (getAttribute(a).getName().equals("Category")) {
-				labelAttribute = AttributeFactory.createAttribute(getAttribute(
-						a).getName(), Ontology.NOMINAL);
-				attributes.add(labelAttribute);
-				mapping = attributes.get(attributes.size() - 1).getMapping();
-			} else if (getAttribute(a) instanceof StringAttribute) {
-				attributes.add(AttributeFactory.createAttribute(getAttribute(a)
-						.getName(), Ontology.NOMINAL));
-			} else {
-				attributes.add(AttributeFactory.createAttribute(getAttribute(a)
-						.getName(), Ontology.REAL));
-			}
-		}
-
-		// Create table
-		MemoryExampleTable table = new MemoryExampleTable(attributes);
-
-		// Fill table with all time windows
-		for (int d = 0; d < getValueCount(); d++) {
-			double[] data = new double[attributes.size()];
-			// int currData = 0;
-			for (int a = 0; a < attributes.size(); a++) {
-				// System.out.println(attributes.get(a).getName());
-				if (attributes.get(a).getName().equals("Id")) {
-					/*
-					 * System.out.println("id found");
-					 * 
-					 * System.out.println(getAttribute(a).getValueAt(d));
-					 * System.
-					 * out.println(getAttribute(a).getValueAt(d).toString());
-					 */
-					data[a] = new Double(getAttribute(a).getValueAt(d)
-							.toString());
-					// data[a] =
-					// attributes.get(a).getMapping().mapString(getAttribute(a).getValueAt(d).toString());
-					// currData++;
-					// idAttribute.
-
-				} else if (getAttribute(a).getName().equals("Category")) {
-					data[a] = mapping.mapString(getAttribute(a).getValueAt(d)
-							.toString());
-					// currData++;
-				} else if (getAttribute(a) instanceof StringAttribute) {
-					data[a] = attributes.get(a).getMapping().mapString(
-							getAttribute(a).getValueAt(d).toString());
-					// currData++;
-				} else {
-					data[a] = new Double(getAttribute(a).getValueAt(d)
-							.toString());
-					// currData++;
-				}
-			}
-
-			// Add data row
-			table.addDataRow(new DoubleArrayDataRow(data));
-		}
-
-		// Create example set
-		return table.createExampleSet(labelAttribute, null, idAttribute);
-	}
-
-	public final void saveToArffFile(File file) throws IOException {
-		ArffDataSet arffDataSet = new ArffDataSet(this.name);
-		arffDataSet.addAttributeList(this.attributes);
-		arffDataSet.saveToArffFile(file);
-	}
+    public final void saveToArffFile(File file) throws IOException {
+	ArffDataSet arffDataSet = new ArffDataSet(this.name);
+	arffDataSet.addAttributeList(this.attributes);
+	arffDataSet.saveToArffFile(file);
+    }
 }

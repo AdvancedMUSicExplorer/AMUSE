@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import amuse.data.io.ArffDataSet;
+import java.util.Arrays;
 
 /**
  * The String Attribute as used in ARFF. String Attributes store any kind of
@@ -94,6 +95,10 @@ public class StringAttribute extends Attribute {
 	public StringAttribute(StringAttribute a) {
 		this(a.name, a.getValues());
 	}
+
+    public StringAttribute(String name, String[] string) {
+	this(name, Arrays.asList(string));
+    }
 
 	/**
 	 * 
