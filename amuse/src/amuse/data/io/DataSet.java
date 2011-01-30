@@ -80,6 +80,7 @@ public class DataSet extends DataSetAbstract {
 	    } else {
 		values[aCount] = new String[fileSet.getValueCount()];
 	    }
+            aCount++;
 	}
 	// Fill containers:
 	for (int i = 0; i < fileSet.getValueCount(); i++) {
@@ -98,6 +99,7 @@ public class DataSet extends DataSetAbstract {
 		    String[] val = (String[]) values[aCount];
 		    val[i]= (atr.getValueAt(i));
 		}
+                aCount++;
 	    }
 	}
 	
@@ -113,6 +115,7 @@ public class DataSet extends DataSetAbstract {
 		newAttr = new NominalAttribute(a.getName(), (String[])values[aCount]);
 	    }
 	    attributes.add(newAttr);
+            aCount++;
 	}
     }
 

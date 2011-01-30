@@ -285,7 +285,7 @@ public class DataSetTest {
     	Date before = new Date();
     	System.out.println("Previously on MBPro 2.8GHz DualCore: Checking in 7.686 sec, reading 37.044 sec.");
     	System.out.println("Starting to read "+ speedTestFile.getName()+"("+ speedTestFile.length() / 1024 / 1024 +"MB)...");
-    	ArffDataSet	speedTestSet = new ArffDataSet(speedTestFile);
+    	DataSet	speedTestSet = new DataSet(speedTestFile);
     	Date after = new Date();
     	long timePassed = after.getTime() - before.getTime();
     	System.out.println("Finished initialisation and checking after " + (double)timePassed / 1000 + " seconds!");
