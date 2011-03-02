@@ -78,7 +78,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 				for(int k=0;k<numberOfJobsToMerge;k++) {
 					optimizerConfig[k] = (OptimizationConfiguration)taskConfiguration[i];
 					AmuseLogger.write(this.getClass().getName(), Level.INFO, "Optimizer task script for music category "
-							+ optimizerConfig[k].getCategoryLearningId() + " is prepared");
+							+ optimizerConfig[k].getTrainingInput() + " is prepared");
 					i++;
 				}
 				i--; // Since the for-loop increments i  
@@ -112,13 +112,13 @@ public class OptimizationStarter extends AmuseTaskStarter {
 				    process.waitFor();
 		
 					// DEBUG Show the runtime outputs
-					/*String s = null; 
+					String s = null; 
 					java.io.BufferedReader stdInput = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
  			        java.io.BufferedReader stdError = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()));
 					System.out.println("Here is the standard output of the command:\n"); 
 					while ((s = stdInput.readLine()) != null) { System.out.println(s); } 
 					System.out.println("Here is the standard error of the command (if any):\n"); 
-					while ((s = stdError.readLine()) != null) { System.out.println(s); }*/
+					while ((s = stdError.readLine()) != null) { System.out.println(s); }
 				} catch (Exception e) {
 				    throw new SchedulerException("Problems at proceeding of jobs to grid: " + e.getMessage());
 				}

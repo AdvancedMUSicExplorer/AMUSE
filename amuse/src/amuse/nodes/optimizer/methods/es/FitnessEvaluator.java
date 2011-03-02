@@ -112,14 +112,19 @@ public class FitnessEvaluator {
 			}
 		}
 		
-		
 		// Load the information about used music categories (which correspond to training, optimization and test sets)
-		int categoryLearningId = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
-				getConfiguration()).getCategoryLearningId();
-		int categoryOptimizationId = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
-				getConfiguration()).getCategoryOptimizationId();
-		int categoryTestId = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
-				getConfiguration()).getCategoryTestId();
+		String data = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
+				getConfiguration()).getTrainingInput();
+		int categoryLearningId = (data.contains("[") ? new Double(data.substring(0,data.indexOf("["))).intValue() :
+			new Double(data).intValue());
+		data = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
+				getConfiguration()).getOptimizationInput();
+		int categoryOptimizationId = (data.contains("[") ? new Double(data.substring(0,data.indexOf("["))).intValue() :
+			new Double(data).intValue());;
+		data = ((OptimizationConfiguration)strategy.getCorrespondingScheduler().
+				getConfiguration()).getTestInput();
+		int categoryTestId = (data.contains("[") ? new Double(data.substring(0,data.indexOf("["))).intValue() :
+			new Double(data).intValue());;
 		categoryForLearningDescription = new Integer(categoryLearningId).toString();
 		categoryForOptimizationDescription = new Integer(categoryOptimizationId).toString();
 		categoryForTestDescription = new Integer(categoryTestId).toString();
@@ -201,20 +206,21 @@ public class FitnessEvaluator {
 				}
 			}
 		} catch(NodeException e) {
+			e.printStackTrace();
 			throw new RuntimeException("Could not initialize FitnessEvaluator: " + e.getMessage());
 		}
 		
-		/*
+		
 		// TODO v0.2: provide saving of data sets
-		try {
-			trainingData.saveToArffFile(new File("/home/vatol/instrumentsTraining.arff"));
-			testData.saveToArffFile(new File("/home/vatol/instrumentsTest.arff"));
+		/*try {
+			trainingData.saveToArffFile(new File("/home/vatol/trainingSet.arff"));
+			//optimizationData.saveToArffFile(new File("/home/vatol/optimizationSet.arff"));
+			//testData.saveToArffFile(new File("/home/vatol/testSet.arff"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.exit(1);*/
 		
-		System.out.println("ha");
-		*/
 	}
 	
 	/**
@@ -792,18 +798,43 @@ public class FitnessEvaluator {
 		try {
 			if(string.equals("training")) {
 				AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading training set...");
+				
+				// Check if the path to the previously saved ARFF with training set is given
+				String inputToLearn = ((OptimizationConfiguration)individual.getCorrespondingES().getCorrespondingScheduler().
+						getConfiguration()).getTrainingInput();
+				if(inputToLearn.contains("[")) {
+					data = new DataSet(new File(inputToLearn.substring(inputToLearn.indexOf("[")+1,inputToLearn.indexOf("]"))));
+					return data;
+				}
 				data = new DataSet("TrainingSet");
 				musicFileLoader.setFile(new File(categoryForLearningDescriptionFile));
 			} else if(string.equals("optimization")) {
 				AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading optimization set...");
+				
+				// Check if the path to the previously saved ARFF with optimization set is given
+				String inputToOptimize = ((OptimizationConfiguration)individual.getCorrespondingES().getCorrespondingScheduler().
+						getConfiguration()).getOptimizationInput();
+				if(inputToOptimize.contains("[")) {
+					data = new DataSet(new File(inputToOptimize.substring(inputToOptimize.indexOf("[")+1,inputToOptimize.indexOf("]"))));
+					return data;
+				}
 				data = new DataSet("OptimizationSet");
 				musicFileLoader.setFile(new File(categoryForOptimizationDescriptionFile));
 			} else if(string.equals("test")) {
 				AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading test set...");
+				
+				// Check if the path to the previously saved ARFF with test set is given
+				String inputToTest = ((OptimizationConfiguration)individual.getCorrespondingES().getCorrespondingScheduler().
+						getConfiguration()).getTestInput();
+				if(inputToTest.contains("[")) {
+					data = new DataSet(new File(inputToTest.substring(inputToTest.indexOf("[")+1,inputToTest.indexOf("]"))));
+					return data;
+				}
 				data = new DataSet("TestSet");
 				musicFileLoader.setFile(new File(categoryForTestDescriptionFile));
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
 			throw new NodeException("Error during loading of processed features: " + e.getMessage());
 		}
 			

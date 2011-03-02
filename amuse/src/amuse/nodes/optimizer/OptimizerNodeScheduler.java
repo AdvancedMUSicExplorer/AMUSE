@@ -121,7 +121,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		}
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Optimizer node scheduler for category " + 
-				((OptimizationConfiguration)this.taskConfiguration).getCategoryLearningId() + " started");
+				((OptimizationConfiguration)this.taskConfiguration).getTrainingInput() + " started");
 		
 		// ----------------------------------
 		// (II) Configure optimization method

@@ -121,11 +121,22 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 				equals("-1")) {
 			
 			// Set the optimization category id (if n-fold optimization is used, it is equal to learning category)
-			String optimizationCategoryId = new String(
-					(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryOptimizationId() >= 0) ? 
-					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryOptimizationId().toString() 
-					: 
-					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getCategoryLearningId().toString());
+			String trainingInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
+					getConfiguration()).getTrainingInput();
+			Integer categoryTrainingId = (trainingInput.contains("[") ? new Double(trainingInput.substring(0,trainingInput.indexOf("["))).intValue() :
+				new Double(trainingInput).intValue());
+			String optimizationInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
+					getConfiguration()).getOptimizationInput();
+			String optimizationCategoryId = null;
+			if(optimizationInput.contains("[")) {
+				optimizationCategoryId = optimizationInput.substring(0,optimizationInput.indexOf("["));
+			} else {
+				if(new Integer(optimizationInput) >= 0) {
+					optimizationCategoryId = optimizationInput;
+				} else {
+					optimizationCategoryId = categoryTrainingId.toString();
+				}
+			}
 			File folderForResults = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + "/" + 
 					optimizationCategoryId + "/" + 
 					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getDestinationFolder());
@@ -362,8 +373,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	 */
 	public void setParameters(String parameterString) throws NodeException {
 		esConfiguration = new ESConfiguration(parameterString);
-		isIndependentTestSetUsed = (((OptimizationConfiguration)this.correspondingScheduler.getConfiguration()).
-				getCategoryTestId() != -1) ? true : false;
+		isIndependentTestSetUsed = (!((OptimizationConfiguration)this.correspondingScheduler.getConfiguration()).
+				getTestInput().equals("-1")) ? true : false;
 		
 		// Should the fitness value be minimized or maximized?
 		try {

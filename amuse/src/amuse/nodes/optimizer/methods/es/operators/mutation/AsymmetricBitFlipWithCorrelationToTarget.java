@@ -137,8 +137,10 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip 
 		Instance musicFileInstance;
 		
 		// Search for music pieces of the training category for the correlation estimation
-		int categoryTrainingId = ((OptimizationConfiguration)correspondingStrategy.getCorrespondingScheduler().
-				getConfiguration()).getCategoryLearningId();
+		String trainingInput = ((OptimizationConfiguration)correspondingStrategy.getCorrespondingScheduler().
+				getConfiguration()).getTrainingInput();
+		int categoryTrainingId = (trainingInput.contains("[") ? new Double(trainingInput.substring(0,trainingInput.indexOf("["))).intValue() :
+			new Double(trainingInput).intValue());
 		String categoryForTrainingDescription = new Integer(categoryTrainingId).toString();
 		boolean trainingCatFound = false;
 		ArffLoader categoryDescriptionLoader = new ArffLoader();
