@@ -369,6 +369,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				Feature adaptedFeature = new Feature(features.get(i).getIds(), features.get(i).getDescription(), 
 						newValues, newWindows);
 				adaptedFeature.setHistory(features.get(i).getHistory());
+				adaptedFeature.setSampleRate(features.get(i).getSampleRate());
 				adaptedFeature.setSourceFrameSize(features.get(i).getSourceFrameSize());
 				features.set(i, adaptedFeature);
 			} else {
