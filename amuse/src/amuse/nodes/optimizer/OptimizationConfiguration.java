@@ -44,16 +44,18 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	/** For Serializable interface */
 	private static final long serialVersionUID = -6880712656836146853L;
 	
-	/** Category Id for training set (only from these files the training models will be built) */
-	private final Integer categoryLearningId;
+	/** Training set (only from these files the training models will be built) 
+	 * Can be described as only id of the music category (e.g. "100") or 
+	 * as id and path to previously generated ARFF with all data (e.g. "100[/home/trainingSet.arff]" */
+	private final String trainingInput;
 	
-	/** Category Id for optimization set. Set to -1 if optimization should be done as 10-fold 
-	 * cross-validation using only the training set */
-	private final Integer categoryOptimizationId;
+	/** Optimization set (category id or id with path to ARFF). Set to -1 if optimization should be 
+	 * done as 10-fold cross-validation using only the training set */
+	private final String optimizationInput;
 	
-	/** Category Id for independent test set (Here the generalization performance of optimizer 
+	/** Independent test set (Here the generalization performance of optimizer 
 	 * can be evaluated). Set to -1 if independent test set should not be used */
-	private final Integer categoryTestId;
+	private final String testInput;
 	
 	/** ID of optimization algorithm from optimizerAlgorithmTable.arff 
 	 * (optionally with parameters listed in brackets) */
@@ -80,12 +82,12 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	 * from (otherwise "-1", which is default value)
 	 * @param destinationFolder Folder for optimization results
 	 */
-	public OptimizationConfiguration(Integer categoryLearningId, Integer categoryOptimizationId, 
-			Integer categoryTestId, String algorithmDescription, String continueOldExperimentFrom,
+	public OptimizationConfiguration(String categoryLearningId, String categoryOptimizationId, 
+			String categoryTestId, String algorithmDescription, String continueOldExperimentFrom,
 			String destinationFolder) {
-		this.categoryLearningId = categoryLearningId;
-		this.categoryOptimizationId = categoryOptimizationId;
-		this.categoryTestId = categoryTestId;
+		this.trainingInput = categoryLearningId;
+		this.optimizationInput = categoryOptimizationId;
+		this.testInput = categoryTestId;
 		this.algorithmDescription = algorithmDescription;
 		if(continueOldExperimentFrom.equals("")) continueOldExperimentFrom = "-1";
 		this.continueOldExperimentFrom = continueOldExperimentFrom;
@@ -103,9 +105,9 @@ public class OptimizationConfiguration extends TaskConfiguration {
 			
    		// Proceed music file lists one by one
 	    for(int i=0;i<optimizerConfig.getValueCount();i++) {
-			Integer currentCategoryForLearningId = (new Double(optimizerConfig.getCategoryIdAttribute().getValueAt(i).toString())).intValue();
-			Integer currentCategoryForOptimizationId = (new Double(optimizerConfig.getCategoryOptimizationIdAttribute().getValueAt(i).toString())).intValue();
-			Integer currentCategoryForTestId = (new Double(optimizerConfig.getCategoryTestIdAttribute().getValueAt(i).toString())).intValue();
+			String currentCategoryForLearningId = optimizerConfig.getCategoryIdAttribute().getValueAt(i).toString();
+			String currentCategoryForOptimizationId = optimizerConfig.getCategoryOptimizationIdAttribute().getValueAt(i).toString();
+			String currentCategoryForTestId = optimizerConfig.getCategoryTestIdAttribute().getValueAt(i).toString();
 			String currentAlgorithmDescription = optimizerConfig.getAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentContinueOldExperimentFrom = optimizerConfig.getContinueOldExperimentFromAttribute().getValueAt(i).toString();
 			if(currentContinueOldExperimentFrom.equals("")) currentContinueOldExperimentFrom = "-1";
@@ -137,24 +139,24 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the categoryLearningId
+	 * @return trainingInput
 	 */
-	public Integer getCategoryLearningId() {
-		return categoryLearningId;
+	public String getTrainingInput() {
+		return trainingInput;
 	}
 
 	/**
-	 * @return the categoryOptimizationId
+	 * @return the optimizationInput
 	 */
-	public Integer getCategoryOptimizationId() {
-		return categoryOptimizationId;
+	public String getOptimizationInput() {
+		return optimizationInput;
 	}
 	
 	/**
-	 * @return the categoryTestId
+	 * @return the testInput
 	 */
-	public Integer getCategoryTestId() {
-		return categoryTestId;
+	public String getTestInput() {
+		return testInput;
 	}
 
 	/**
@@ -191,7 +193,7 @@ public class OptimizationConfiguration extends TaskConfiguration {
 	 * @see amuse.interfaces.nodes.TaskConfiguration#getDescription()
 	 */
 	public String getDescription() {
-		return new String("Training category: " + categoryLearningId + " Optimization category: " + categoryOptimizationId + 
-				" Test category: " + categoryTestId);
+		return new String("Training category: " + trainingInput + " Optimization category: " + optimizationInput + 
+				" Test category: " + testInput);
 	}
 }

@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 
 import amuse.data.io.DataSetAbstract;
-import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.optimizer.OptimizationConfiguration;
@@ -48,9 +47,9 @@ public class OptimizerConfigSet extends AbstractArffExperimentSet {
     private static final String strDestinationFolderAttribute = "DestinationFolder";
     
 	// ARFF attributes
-	private final NumericAttribute categoryIdAttribute;
-    private final NumericAttribute categoryOptimizationIdAttribute;
-    private final NumericAttribute categoryTestIdAttribute;
+	private final StringAttribute categoryIdAttribute;
+    private final StringAttribute categoryOptimizationIdAttribute;
+    private final StringAttribute categoryTestIdAttribute;
     private final StringAttribute algorithmIdAttribute;
     private final StringAttribute continueOldExperimentFromAttribute;
     private final StringAttribute destinationFolderAttribute;
@@ -63,15 +62,15 @@ public class OptimizerConfigSet extends AbstractArffExperimentSet {
     public OptimizerConfigSet(File file) throws IOException {
         super(file);
         // Check preconditions:
-        checkNumericAttribute(strCategoryId);
-        checkNumericAttribute(strCategoryOptimizationIdAttribute);
-        checkNumericAttribute(strCategoryTestIdAttribute);
+        checkStringAttribute(strCategoryId);
+        checkStringAttribute(strCategoryOptimizationIdAttribute);
+        checkStringAttribute(strCategoryTestIdAttribute);
         checkStringAttribute(strAlgorithmIdAttribute);
         checkStringAttribute(strContinueOldExperimentFromAttribute);
         checkStringAttribute(strDestinationFolderAttribute);
-        categoryIdAttribute = (NumericAttribute) getAttribute(strCategoryId);
-        categoryOptimizationIdAttribute = (NumericAttribute) getAttribute(strCategoryOptimizationIdAttribute);
-        categoryTestIdAttribute = (NumericAttribute) getAttribute(strCategoryTestIdAttribute);
+        categoryIdAttribute = (StringAttribute) getAttribute(strCategoryId);
+        categoryOptimizationIdAttribute = (StringAttribute) getAttribute(strCategoryOptimizationIdAttribute);
+        categoryTestIdAttribute = (StringAttribute) getAttribute(strCategoryTestIdAttribute);
         algorithmIdAttribute = (StringAttribute) getAttribute(strAlgorithmIdAttribute);
         continueOldExperimentFromAttribute = (StringAttribute) getAttribute(strContinueOldExperimentFromAttribute);
         destinationFolderAttribute = (StringAttribute) getAttribute(strDestinationFolderAttribute);
@@ -86,9 +85,9 @@ public class OptimizerConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(strAlgorithmIdAttribute);
         checkStringAttribute(strContinueOldExperimentFromAttribute);
         checkStringAttribute(strDestinationFolderAttribute);
-        categoryIdAttribute = (NumericAttribute) getAttribute(strCategoryId);
-        categoryOptimizationIdAttribute = (NumericAttribute) getAttribute(strCategoryOptimizationIdAttribute);
-        categoryTestIdAttribute = (NumericAttribute) getAttribute(strCategoryTestIdAttribute);
+        categoryIdAttribute = (StringAttribute) getAttribute(strCategoryId);
+        categoryOptimizationIdAttribute = (StringAttribute) getAttribute(strCategoryOptimizationIdAttribute);
+        categoryTestIdAttribute = (StringAttribute) getAttribute(strCategoryTestIdAttribute);
         algorithmIdAttribute = (StringAttribute) getAttribute(strAlgorithmIdAttribute);
         continueOldExperimentFromAttribute = (StringAttribute) getAttribute(strContinueOldExperimentFromAttribute);
         destinationFolderAttribute = (StringAttribute) getAttribute(strDestinationFolderAttribute);
@@ -112,21 +111,21 @@ public class OptimizerConfigSet extends AbstractArffExperimentSet {
 	/**
 	 * @return the categoryAttribute
 	 */
-	public NumericAttribute getCategoryIdAttribute() {
+	public StringAttribute getCategoryIdAttribute() {
 		return categoryIdAttribute;
 	}
 
 	/**
 	 * @return the categoryOptimizationIdAttribute
 	 */
-	public NumericAttribute getCategoryOptimizationIdAttribute() {
+	public StringAttribute getCategoryOptimizationIdAttribute() {
 		return categoryOptimizationIdAttribute;
 	}
 
 	/**
 	 * @return the categoryTestIdAttribute
 	 */
-	public NumericAttribute getCategoryTestIdAttribute() {
+	public StringAttribute getCategoryTestIdAttribute() {
 		return categoryTestIdAttribute;
 	}
 
