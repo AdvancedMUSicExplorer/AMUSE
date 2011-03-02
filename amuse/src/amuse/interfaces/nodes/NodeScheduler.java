@@ -200,8 +200,15 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 	protected void cleanInputFolder() throws NodeException {
 		if(!cleanInputFolder)
                     return;
-                for (File f: new File(this.nodeHome + "/input/task_" + this.jobId).listFiles()) {
-                    if (!delete(f, true))
+        File list = new File(this.nodeHome + "/input/task_" + this.jobId);
+        File[] a = null;
+        if(list.exists() && list != null) {
+        	a = list.listFiles();
+        }
+		for(int i=0;i<a.length;i++) {
+			File f = a[i];
+			
+			if(!delete(f, true))
                     	AmuseLogger.write(this.getClass().getName(),Level.WARN, "Could not clean the folder with intermediate results '" + 
             					this.nodeHome + "/input/task_" + this.jobId + "; please delete it manually!");
                         // TODO v0.2 because of Weka ArffLoader bug (streams remain opened)
