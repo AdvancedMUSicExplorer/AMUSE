@@ -94,13 +94,13 @@ public class HypervolumeSelection extends AbstractSelection {
 		// Calculate delta S values for the worst front
 		HashMap<Integer,Double> individualOfWorstFront2DeltaS = calculateDeltaS();
 		
-		// Search for the worst individual (with the smalest delta S) from the worst front
+		// Search for the worst individual (with the smallest delta S) from the worst front
 		int worstIndividualIndex = -1;
-		double worstIndividualValue = Double.MAX_VALUE;
+		double worstIndividualValue = Double.POSITIVE_INFINITY;
 		Iterator<Integer> keyIt = individualOfWorstFront2DeltaS.keySet().iterator();		
 		while(keyIt.hasNext()) {
 			Integer nextIndividualIndex = keyIt.next();
-			if(individualOfWorstFront2DeltaS.get(nextIndividualIndex) < worstIndividualValue) {
+			if(individualOfWorstFront2DeltaS.get(nextIndividualIndex) <= worstIndividualValue) {
 				worstIndividualIndex = nextIndividualIndex;
 				worstIndividualValue = individualOfWorstFront2DeltaS.get(nextIndividualIndex);
 			}
@@ -210,7 +210,7 @@ public class HypervolumeSelection extends AbstractSelection {
     	ValidationMetricDouble[] secondFitnessValues = getIndividualFitness(j);
     	
     	for(int k=0;k<firstFitnessValues.length;k++) {
-    		if(correspondingES.isMinimizingFitness) {
+    		if(firstFitnessValues[k].isForMinimizing()) {
     			if(firstFitnessValues[k].getValue() > secondFitnessValues[k].getValue())
     				condition1 = false;
     			if(firstFitnessValues[k].getValue() < secondFitnessValues[k].getValue())
@@ -251,7 +251,8 @@ public class HypervolumeSelection extends AbstractSelection {
     		double value2OfIndividual = getIndividualFitness(currentIndividualIndex)[1].getValue();
     		double value2OfIndividualMinus1 = getIndividualFitness(fitnessValuesForCurrentDimension[i-1].
     				individualNumber)[1].getValue();
-    		double deltaS = (value1OfIndividualPlus1 - value1OfIndividual)*(value2OfIndividualMinus1 - value2OfIndividual);
+    		double deltaS = Math.abs((value1OfIndividualPlus1 - value1OfIndividual)) * 
+    				Math.abs((value2OfIndividualMinus1 - value2OfIndividual));
     		map.put(currentIndividualIndex, deltaS);
     	}
 		
