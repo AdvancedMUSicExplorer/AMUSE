@@ -26,8 +26,8 @@ package amuse.nodes.validator.metrics.confusionmatrix;
 import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
-import amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculator;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
+import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMetricCalculator;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
 
 /**
@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class Likelihoods extends ClassificationQualityMetricCalculator {
+public class Likelihoods extends ClassificationQualityDoubleMetricCalculator {
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#setParameters(java.lang.String)
@@ -45,71 +45,18 @@ public class Likelihoods extends ClassificationQualityMetricCalculator {
 		// Does nothing
 	}
 	
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMetric(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateMetric(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		if(groundTruthRelationships.size() != predictedRelationships.size()) {
-			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
-		}
-		
-		ValidationMetricDouble[] metricOnSongLev = null;
-		ValidationMetricDouble[] metricOnPartLev = null;
-		
-		if(groundTruthRelationships.get(0) instanceof Double) {
-			if(this.getSongLevel()) {
-				metricOnSongLev = calculateFuzzyMetricOnSongLevel(groundTruthRelationships, predictedRelationships);
-			} 
-			if(this.getPartitionLevel()) {
-				metricOnPartLev = calculateFuzzyMetricOnPartitionLevel(groundTruthRelationships, predictedRelationships);
-			}
-		} else {
-			return null;
-		}
-		
-		// Return the corresponding number of metric values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return metricOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
-			return metricOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMetricDouble[] metrics = new ValidationMetricDouble[4];
-			metrics[0] = metricOnSongLev[0];
-			metrics[1] = metricOnSongLev[1];
-			metrics[2] = metricOnPartLev[0];
-			metrics[3] = metricOnPartLev[1];
-			return metrics;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnSongLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnPartitionLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	public ValidationMetricDouble[] calculateOneClassMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
 		Recall recallCalculator = new Recall();
 		
-		ValidationMetricDouble[] specificity = specificityCalculator.calculateFuzzyMetricOnSongLevel(
+		ValidationMetricDouble[] specificity = specificityCalculator.calculateOneClassMetricOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
-		ValidationMetricDouble[] recall = recallCalculator.calculateFuzzyMetricOnSongLevel(
+		ValidationMetricDouble[] recall = recallCalculator.calculateOneClassMetricOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
 		
 		double likelihoodPositive = recall[0].getValue() / (1 - specificity[0].getValue());
@@ -129,16 +76,16 @@ public class Likelihoods extends ClassificationQualityMetricCalculator {
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	public ValidationMetricDouble[] calculateOneClassMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
 		Recall recallCalculator = new Recall();
 		
-		ValidationMetricDouble[] specificity = specificityCalculator.calculateFuzzyMetricOnPartitionLevel(
+		ValidationMetricDouble[] specificity = specificityCalculator.calculateOneClassMetricOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
-		ValidationMetricDouble[] recall = recallCalculator.calculateFuzzyMetricOnPartitionLevel(
+		ValidationMetricDouble[] recall = recallCalculator.calculateOneClassMetricOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
 		
 		double likelihoodPositive = recall[0].getValue() / (1 - specificity[0].getValue());
@@ -161,15 +108,16 @@ public class Likelihoods extends ClassificationQualityMetricCalculator {
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnSongLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
+
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnPartitionLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
 

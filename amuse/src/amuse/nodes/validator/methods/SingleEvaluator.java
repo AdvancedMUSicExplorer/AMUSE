@@ -37,7 +37,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
 import amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface;
@@ -160,7 +160,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 		for(int i=0;i<modelsToEvaluate.size();i++) { 
 			
 			// Classify the music input with the current model
-			ArrayList<ClassifiedSongPartitionsDescription> predictedSongs = new ArrayList<ClassifiedSongPartitionsDescription>();
+			ArrayList<ClassifiedSongPartitions> predictedSongs = new ArrayList<ClassifiedSongPartitions>();
 			ClassificationConfiguration cConf = null;
 			cConf = new ClassificationConfiguration(
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputToValidate(),
@@ -182,8 +182,13 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				for(int currentMetric = 0; currentMetric < this.metricCalculators.size(); currentMetric++) {
 					ValidationMetric[] currMetr = null; 
 					if(this.metricCalculators.get(currentMetric) instanceof ClassificationQualityMetricCalculatorInterface) {
-						currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMetric(
+						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateOneClassMetric(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
+						} else {
+							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMultiClassMetric(
+									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
+						}
 					} else if(this.metricCalculators.get(currentMetric) instanceof DataReductionMetricCalculatorInterface) {
 						currMetr = ((DataReductionMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMetric(
 								((ValidatorNodeScheduler)this.correspondingScheduler).getListOfAllProcessedFiles());
@@ -196,6 +201,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				}
 				metricsForEveryModel.add(metricsOfThisRun);
 			} catch (NodeException e) {
+				e.printStackTrace();
 				throw e;
 			}
 		}

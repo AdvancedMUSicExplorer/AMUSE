@@ -26,8 +26,9 @@ package amuse.nodes.validator.metrics;
 import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
-import amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculator;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
+import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
+import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMetricCalculator;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
 
 /**
@@ -37,7 +38,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * @author Igor Vatolkin
  * @version $Id: MeanSquaredError.java 1086 2010-07-01 14:08:46Z vatolkin $
  */
-public class MeanSquaredError extends ClassificationQualityMetricCalculator {
+public class MeanSquaredError extends ClassificationQualityDoubleMetricCalculator {
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#setParameters(java.lang.String)
@@ -47,60 +48,10 @@ public class MeanSquaredError extends ClassificationQualityMetricCalculator {
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMetric(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMetric(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		if(groundTruthRelationships.size() != predictedRelationships.size()) {
-			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
-		}
+	public ValidationMetricDouble[] calculateOneClassMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
-		ValidationMetricDouble[] metricOnSongLev = null;
-		ValidationMetricDouble[] metricOnPartLev = null;
-		
-		if(groundTruthRelationships.get(0) instanceof Double) {
-			if(this.getSongLevel()) {
-				metricOnSongLev = calculateFuzzyMetricOnSongLevel(groundTruthRelationships, predictedRelationships);
-			} 
-			if(this.getPartitionLevel()) {
-				metricOnPartLev = calculateFuzzyMetricOnPartitionLevel(groundTruthRelationships, predictedRelationships);
-			}
-		} else {
-			return null;
-		}
-		
-		// Return the corresponding number of metric values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return metricOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
-			return metricOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMetricDouble[] metrics = new ValidationMetricDouble[2];
-			metrics[0] = metricOnSongLev[0];
-			metrics[1] = metricOnPartLev[0];
-			return metrics;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnSongLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnPartitionLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
 		// Maximum possible error on the given ground truth
 		// E.g. if an instance has relationship 0.4, maximum classification error is 0.6 and
 		// maximum squared error is 0.36
@@ -144,9 +95,9 @@ public class MeanSquaredError extends ClassificationQualityMetricCalculator {
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	public ValidationMetricDouble[] calculateOneClassMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		// Maximum possible error on the given ground truth
 		// E.g. if an instance has relationship 0.4, maximum classification error is 0.6 and
 		// maximum squared error is 0.36
@@ -191,16 +142,69 @@ public class MeanSquaredError extends ClassificationQualityMetricCalculator {
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnSongLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		
+		// Go through all songs
+		double errorSum = 0.0d;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			
+			// Calculate the error for the current song
+			double songError = 0.0d;
+			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
+				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
+						getLabels()[j];
+				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
+						getLabels()[j];
+				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
+					songError++;
+				}
+			}
+			songError /= ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
+			
+			errorSum += (songError*songError);
+		}
+		errorSum /= groundTruthRelationships.size();
+		
+		// Prepare the result
+		ValidationMetricDouble[] rmsMetric = new ValidationMetricDouble[1];
+		rmsMetric[0] = new ValidationMetricDouble();
+		rmsMetric[0].setId(202);
+		rmsMetric[0].setName("Mean squared error on song level");
+		rmsMetric[0].setValue(errorSum);
+		return rmsMetric;
 	}
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnPartitionLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		
+		// Go through all partitions
+		double errorSum = 0.0d;
+		int partitionNumber =0;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			partitionNumber += ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
+			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
+				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
+						getLabels()[j];
+				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
+						getLabels()[j];
+				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
+					errorSum++;
+				}
+			}
+		}
+		errorSum /= partitionNumber;
+		
+		// Prepare the result
+		ValidationMetricDouble[] rmsMetric = new ValidationMetricDouble[1];
+		rmsMetric[0] = new ValidationMetricDouble();
+		rmsMetric[0].setId(202);
+		rmsMetric[0].setName("Mean squared error on partition level");
+		rmsMetric[0].setValue(errorSum);
+		return rmsMetric;
 	}
+
 
 
 }
