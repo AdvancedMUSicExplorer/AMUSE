@@ -51,7 +51,9 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
+import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
@@ -76,7 +78,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private String categoryDescription = null;
 	
 	/** Ground truth relationships for given songs*/
-	private ArrayList<ClassifiedSongPartitionsDescription> labeledSongRelationships = null;
+	private ArrayList<ClassifiedSongPartitions> labeledSongRelationships = null;
+	
+	private boolean isMulticlass = false;
 	
 	/** Used for calculation of data reduction metrics */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
@@ -371,7 +375,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	 * @throws NodeException
 	 */
 	private void prepareValidatorInput() throws NodeException {
-		labeledSongRelationships = new ArrayList<ClassifiedSongPartitionsDescription>();
+		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
 		
 		if(! (((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput)) {
 			
@@ -406,6 +410,22 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					groundTruthFile = new File(pathToCategoryFile);
 					DataSetAbstract validatorGroundTruthSet = new ArffDataSet(groundTruthFile);
 					
+					// Is the current classification result binary or multiclass?
+					String category = validatorGroundTruthSet.getAttribute("Category").getValueAt(0).toString();
+					if(category.startsWith("NOT")) {
+						category = category.substring(4,category.length());
+					}
+					for(int i=1;i<validatorGroundTruthSet.getAttribute("Category").getValueCount();i++) {
+						String currentCategory = validatorGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
+						if(currentCategory.startsWith("NOT")) {
+							currentCategory = currentCategory.substring(4,currentCategory.length());
+						}
+						if(!currentCategory.equals(category)) {
+							isMulticlass = true;
+							break;
+						}
+					}
+					
 					// Load the first classifier input for attributes information
 					String currentInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
 					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
@@ -436,6 +456,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
 						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
 						String label = validatorGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
+						String[] labels = null; // If multiclass classification is done
 						Double confidence = new Double(validatorGroundTruthSet.getAttribute("Relationship").getValueAt(i).toString());
 						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
 						String path = validatorGroundTruthSet.getAttribute("Path").getValueAt(i).toString();
@@ -460,10 +481,17 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								labeledInputForValidation.getAttribute("Id").addValue(id);
 								
 								// FIXME Must be saved directly!
-								if(confidence >= 0.5) {
-									labeledInputForValidation.getAttribute("Category").addValue(label);
+								if(!isMulticlass) {
+									if(confidence >= 0.5) {
+										labeledInputForValidation.getAttribute("Category").addValue(label);
+									} else {
+										labeledInputForValidation.getAttribute("Category").addValue("NOT_" + label);
+									}
 								} else {
-									labeledInputForValidation.getAttribute("Category").addValue("NOT_" + label);
+									labels = new String[partitionStarts.size()];
+									for(int j=0;j<partitionStarts.size();j++) {
+										labels[j] = validatorGroundTruthSet.getAttribute("Category").getValueAt(j).toString();
+									}
 								}
 								double startPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("Start"));
 								double endPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("End"));
@@ -487,9 +515,16 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								} else {
 									relationships[l] = confidence;
 								}
-							}
-							ClassifiedSongPartitionsDescription newSongDesc = new ClassifiedSongPartitionsDescription(path, 
+							} 
+							
+							ClassifiedSongPartitions newSongDesc = null;
+							if(!isMulticlass) {
+								newSongDesc = new BinaryClassifiedSongPartitions(path, 
 									songId, partitionStartsAsArray, partitionEndsAsArray, label, relationships);
+							} else {
+								newSongDesc = new MulticlassClassifiedSongPartitions(path, 
+										songId, partitionStartsAsArray, partitionEndsAsArray, labels, relationships);
+							}
 							labeledSongRelationships.add(newSongDesc);
 						} else {
 							// TODO Consider Vocals/Piano-Recognition-Scenario!
@@ -553,8 +588,25 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
 						getInputToValidate()).getDataSet().getAttribute("Category");
 				
+				// Is the current classification result binary or multiclass?
+				String category = labelAttribute.getValueAt(0).toString();
+				if(category.startsWith("NOT")) {
+					category = category.substring(4,category.length());
+				}
+				for(int i=1;i<labelAttribute.getValueCount();i++) {
+					String currentCategory = labelAttribute.getValueAt(i).toString();
+					if(currentCategory.startsWith("NOT")) {
+						currentCategory = currentCategory.substring(4,currentCategory.length());
+					}
+					if(!currentCategory.equals(category)) {
+						isMulticlass = true;
+						break;
+					}
+				}
+				
 				Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
 				ArrayList<Double> relationships = new ArrayList<Double>();
+				ArrayList<String> labels = new ArrayList<String>();
 				for(int i=0;i<labelAttribute.getValueCount();i++) {
 					Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
 					
@@ -563,12 +615,24 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						Double[] relationshipsAsArray = new Double[relationships.size()];
 						for(int k=0;k<relationships.size();k++) {
 							relationshipsAsArray[k] = relationships.get(k);
-						}
-						ClassifiedSongPartitionsDescription newSongDesc = new ClassifiedSongPartitionsDescription("", 
+						} 
+						
+						ClassifiedSongPartitions newSongDesc = null; 
+						if(!isMulticlass) {
+							newSongDesc = new BinaryClassifiedSongPartitions("", 
 								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
+						} else {
+							String[] labelsAsArray = new String[labels.size()];
+							for(int k=0;k<labels.size();k++) {
+								labelsAsArray[k] = labels.get(k);
+							} 
+							newSongDesc = new MulticlassClassifiedSongPartitions("", 
+									currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
+						}
 						labeledSongRelationships.add(newSongDesc);
 						currentSongId = newSongId;
 						relationships = new ArrayList<Double>();
+						labels = new ArrayList<String>();
 					} 
 						
 					if(!labelAttribute.getValueAt(i).toString().startsWith("NOT")) {
@@ -576,15 +640,29 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					} else {
 						relationships.add(0d);
 					}
+					if(isMulticlass) {
+						labels.add(labelAttribute.getValueAt(i).toString());
+					}
 				}
 				
 				// For the last song
 				Double[] relationshipsAsArray = new Double[relationships.size()];
 				for(int k=0;k<relationships.size();k++) {
 					relationshipsAsArray[k] = relationships.get(k);
-				}
-				ClassifiedSongPartitionsDescription newSongDesc = new ClassifiedSongPartitionsDescription("", 
+				} 
+				
+				ClassifiedSongPartitions newSongDesc = null; 
+				if(!isMulticlass) {
+					newSongDesc = new BinaryClassifiedSongPartitions("", 
 						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
+				} else {
+					String[] labelsAsArray = new String[labels.size()];
+					for(int k=0;k<labels.size();k++) {
+						labelsAsArray[k] = labels.get(k);
+					} 
+					newSongDesc = new MulticlassClassifiedSongPartitions("", 
+							currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
+				}
 				labeledSongRelationships.add(newSongDesc);
 			} 
 		}
@@ -715,7 +793,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	/**
 	 * @return the labeledSongRelationships
 	 */
-	public ArrayList<ClassifiedSongPartitionsDescription> getLabeledSongRelationships() {
+	public ArrayList<ClassifiedSongPartitions> getLabeledSongRelationships() {
 		return labeledSongRelationships;
 	}
 	
@@ -724,7 +802,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	 */
 	public ArrayList<Double> getLabeledAverageSongRelationships() {
 		ArrayList<Double> a = new ArrayList<Double>(labeledSongRelationships.size());
-		for(ClassifiedSongPartitionsDescription d : labeledSongRelationships) {
+		for(ClassifiedSongPartitions d : labeledSongRelationships) {
 			a.add(d.getMeanRelationship());
 		}
 		return a;
@@ -756,6 +834,13 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	 */
 	public File getGroundTruthFile() {
 		return groundTruthFile;
+	}
+
+	/**
+	 * @return the isMulticlass
+	 */
+	public boolean isMulticlass() {
+		return isMulticlass;
 	}
 	
 }

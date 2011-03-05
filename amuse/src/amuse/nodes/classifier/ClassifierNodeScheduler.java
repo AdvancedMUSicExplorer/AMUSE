@@ -48,8 +48,10 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
+import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -118,8 +120,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	/**
 	 * Proceeds classification task and returns the results as ArrayList<ClassifiedSongPartitionsDescription>
 	 * OR saves them to file
+	 * TODO sollte einheitlich sein: Ergebnisse sollen in ClassificationConfiguration gespeichert werden
 	 */
-	public ArrayList<ClassifiedSongPartitionsDescription> proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration,
+	public ArrayList<ClassifiedSongPartitions> proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration,
 			boolean saveToFile) throws NodeException {
 		
 		// --------------------------------------------
@@ -163,7 +166,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// -------------------------------------
 		// (IV): Start the classification method
 		// -------------------------------------
-		ArrayList<ClassifiedSongPartitionsDescription> classifierResult = null;
+		ArrayList<ClassifiedSongPartitions> classifierResult = null;
 		try {
 			this.classify();
 			classifierResult = createClassifiedSongPartitionDescriptions();
@@ -534,20 +537,27 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	    }
 	}
 	
-	private ArrayList<ClassifiedSongPartitionsDescription> createClassifiedSongPartitionDescriptions() {
-		ArrayList<ClassifiedSongPartitionsDescription> classificationResults = new ArrayList<ClassifiedSongPartitionsDescription>();
+	private ArrayList<ClassifiedSongPartitions> createClassifiedSongPartitionDescriptions() {
+		ArrayList<ClassifiedSongPartitions> classificationResults = new ArrayList<ClassifiedSongPartitions>();
 		
 		DataSet d = ((DataSetInput)((ClassificationConfiguration)taskConfiguration).getInputToClassify()).getDataSet();
 		
-		// Get the label
-		String nextLabel = d.getAttribute("PredictedCategory").getValueAt(0).toString();
-		String categoryName = null;
-		if(nextLabel.startsWith("NOT")) {
-			categoryName = new String(nextLabel.substring(3));
-		} else {
-			categoryName = new String(nextLabel.toString());
+		// Is the current classification result binary or multiclass?
+		boolean isMulticlass = false;
+		String predictedLabel = d.getAttribute("PredictedCategory").getValueAt(0).toString();
+		if(predictedLabel.startsWith("NOT")) {
+			predictedLabel = predictedLabel.substring(4,predictedLabel.length());
 		}
-		String label = new String(categoryName);
+		for(int i=1;i<d.getAttribute("PredictedCategory").getValueCount();i++) {
+			String currentPredictedLabel = d.getAttribute("PredictedCategory").getValueAt(i).toString();
+			if(currentPredictedLabel.startsWith("NOT")) {
+				currentPredictedLabel = currentPredictedLabel.substring(4,currentPredictedLabel.length());
+			}
+			if(!currentPredictedLabel.equals(predictedLabel)) {
+				isMulticlass = true;
+				break;
+			}
+		}
 		
 		// Go through all songs
 		int currentPartition = 0;
@@ -555,18 +565,38 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			int numberOfCorrespondingPartitions = descriptionOfClassifierInput.get(i).getStartMs().length;
 			
 			// Gather the partition data for this song
-			Double[] relationships = new Double[numberOfCorrespondingPartitions];
-			for(int j=0;j<numberOfCorrespondingPartitions;j++) {
-				relationships[j] = d.getAttribute("PredictedCategory").getValueAt(currentPartition).toString().startsWith("NOT") ? 
-						0.0 : 1.0;
-				currentPartition++;
+			Double[] relationships = null;
+			String[] categories = null;
+			
+			if(!isMulticlass) {
+				relationships = new Double[numberOfCorrespondingPartitions];
+				for(int j=0;j<numberOfCorrespondingPartitions;j++) {
+					relationships[j] = d.getAttribute("PredictedCategory").getValueAt(currentPartition).toString().startsWith("NOT") ? 
+							0.0 : 1.0;
+					currentPartition++;
+				}
+			} else {
+				categories = new String[numberOfCorrespondingPartitions];
+				relationships = new Double[numberOfCorrespondingPartitions];
+				for(int j=0;j<numberOfCorrespondingPartitions;j++) {
+					categories[j] = d.getAttribute("PredictedCategory").getValueAt(currentPartition).toString();
+					relationships[j] = 1.0; // TODO Currently the single partition cannot be fuzzy classified
+					currentPartition++;
+				}
 			}
 			
 			// Save the partition data for this song
-			classificationResults.add(new ClassifiedSongPartitionsDescription(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
+			if(!isMulticlass) {
+				classificationResults.add(new BinaryClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
 					descriptionOfClassifierInput.get(i).getSongId(),
 					descriptionOfClassifierInput.get(i).getStartMs(), 
-					descriptionOfClassifierInput.get(i).getEndMs(), label, relationships));
+					descriptionOfClassifierInput.get(i).getEndMs(), predictedLabel, relationships));
+			} else {
+				classificationResults.add(new MulticlassClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
+					descriptionOfClassifierInput.get(i).getSongId(),
+					descriptionOfClassifierInput.get(i).getStartMs(), 
+					descriptionOfClassifierInput.get(i).getEndMs(), categories, relationships));
+			}
 		}
 		
 		return classificationResults;
@@ -575,7 +605,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	/**
 	 * Saves the results of classification to the given output file
 	 */
-	private void saveClassifierResultToFile(ArrayList<ClassifiedSongPartitionsDescription> classifierResult) throws NodeException {
+	private void saveClassifierResultToFile(ArrayList<ClassifiedSongPartitions> classifierResult) throws NodeException {
 		try {
 			File classifierResultFile = new File(((ClassificationConfiguration)taskConfiguration).getClassificationOutput());
 			if (classifierResultFile.exists())

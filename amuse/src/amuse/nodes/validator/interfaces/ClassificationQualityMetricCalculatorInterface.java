@@ -26,7 +26,7 @@ package amuse.nodes.validator.interfaces;
 import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 
 /**
  * Methods which calculate metrics based on classification results and ground truth information
@@ -56,18 +56,7 @@ public interface ClassificationQualityMetricCalculatorInterface extends MetricCa
 	 * @return Metric or null if this calculator does not support required classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMetric[] calculateMetric(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException;
-	
-	/**
-	 * Calculates the metric, if this calculator supports binary classifiers
-	 * @param groundTruthRelationships Binary ground truth relationships of classifier input (labeled relationships)
-	 * @param classifierRelationships Binary relationships calculated by classifier (predicted relationships)
-	 * @return Metric or null if this calculator does not support binary classifiers
-	 * @throws NodeException
-	 */
-	public ValidationMetric[] calculateBinaryMetricOnSongLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException;
-	
-	public ValidationMetric[] calculateBinaryMetricOnPartitionLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException;
+	public ValidationMetric[] calculateOneClassMetric(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
 	/**
 	 * Calculates the metric, if this calculator supports fuzzy classifiers
@@ -76,10 +65,13 @@ public interface ClassificationQualityMetricCalculatorInterface extends MetricCa
 	 * @return Metric or null if this calculator does not support fuzzy classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMetric[] calculateFuzzyMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException;
+	public ValidationMetric[] calculateOneClassMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
-	public ValidationMetric[] calculateFuzzyMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException;
+	public ValidationMetric[] calculateOneClassMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
+	
+
+	public ValidationMetric[] calculateMultiClassMetric(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
 	/**
 	 * Calculates the metric, if this calculator supports multiclass classifiers
@@ -88,7 +80,9 @@ public interface ClassificationQualityMetricCalculatorInterface extends MetricCa
 	 * @return Metric or null if this calculator does not support multiclass classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMetric[] calculateMulticlassMetricOnSongLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException;
+	// TODO v0.x Multiclass fuzzy relationships are currently not supported!
+	public ValidationMetric[] calculateMultiClassMetricOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
-	public ValidationMetric[] calculateMulticlassMetricOnPartitionLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException;
+	// TODO v0.x Multiclass fuzzy relationships are currently not supported!
+	public ValidationMetric[] calculateMultiClassMetricOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 }

@@ -26,6 +26,7 @@ package amuse.nodes.validator.methods;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -42,7 +43,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.trainer.TrainerNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
@@ -218,39 +219,23 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 	 * @throws NodeException
 	 */
 	private void performCrossValidation() throws NodeException {
-		// Create ten partitions
-		// For partitions
-		ArrayList<Integer[]> partitions= new ArrayList<Integer[]>();
-		// Songs are distributed randomly to partitions
-		ArrayList<Integer> partitionsToDistribute = new ArrayList<Integer>();
-		for(int i=0;i<((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size();i++) {
-			partitionsToDistribute.add(i);
-		}
-
-		// Create a HashMap which maps song ids to the corresponding partition for faster search later
-		HashMap<Integer,Integer> songIdToPartition = new HashMap<Integer,Integer>();
+		
+		// Set with all data instances
+		DataSet allPartitions = ((DataSetInput)((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).
+				getInputToValidate()).getDataSet();
+		
+		// Create n song partitions with the equal partition size
+		int partitionSize = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size() / this.n;
 		HashMap<Integer,Integer> songIdToSongNumber = new HashMap<Integer,Integer>();
 		
-		// Create n partitions with the equal partition size 
-		int partitionSize = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size() / this.n;
-		for(int i=0;i<this.n;i++) {
-			Integer[] currentPartition = new Integer[partitionSize];
-			for(int j=0;j<partitionSize;j++) {
-				
-				// If the random seed is set to -1, the first n songs build the first partition, the next n songs the second etc.
-				int songPosition = 0; 
-				if(randomSeed >= 0) {
-					songPosition = random.nextInt(partitionsToDistribute.size());
-				}
-				int songNumber = partitionsToDistribute.get(songPosition);
-				partitionsToDistribute.remove(songPosition);
-				Integer idOfCurrentSong = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(songNumber).getSongId();
-				currentPartition[j] = idOfCurrentSong;
-				songIdToPartition.put(idOfCurrentSong, i);
-				songIdToSongNumber.put(idOfCurrentSong,songNumber);
-			}
-			partitions.add(currentPartition);
+		// Shuffle the song sequence for partition building
+		ArrayList<Integer> shuffledPartitions = new ArrayList<Integer>(((ValidatorNodeScheduler)this.correspondingScheduler).
+				getLabeledSongRelationships().size());
+		for(int i=0;i<((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size();i++) {
+			shuffledPartitions.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(i).getSongId());
+			songIdToSongNumber.put(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(i).getSongId(), i);
 		}
+		Collections.shuffle(shuffledPartitions, random);
 		
 		// Validation metrics are saved in a list (for each run)
 		ArrayList<ArrayList<ValidationMetric/*Double*/>> metricsOfEveryValidationRun = new ArrayList<ArrayList<ValidationMetric/*Double*/>>();
@@ -259,8 +244,6 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 		for(int i=0;i<this.n;i++) { 
 			
 			// Create the sets with the data of the current partition for training and validation
-			DataSet allPartitions = ((DataSetInput)((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).
-					getInputToValidate()).getDataSet();
 			DataSet trainingSet = new DataSet("TrainingSet");
 			DataSet validationSet = new DataSet("ValidationSet");
 			
@@ -279,58 +262,62 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			}
 			
 			// Save the ground truth for the validation set
-			ArrayList<Double> songRelationshipsValidationSet = new ArrayList<Double>();
-			for(int v=0;v<partitionSize;v++) {
-				int currentSong = partitions.get(i)[v];
-				int numberOfThisSong = songIdToSongNumber.get(currentSong);
-				songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledAverageSongRelationships().get(numberOfThisSong));
-			}
+			ArrayList<Double> songRelationshipsValidationSet = null; // If binary classification is applied
+			ArrayList<ClassifiedSongPartitions> songRelationshipsMValidationSet = null; // If multiclass classification is applied
 			
-			// Fill the validation set (with songs which belong to current partition)
-			for(int j=0;j<partitions.get(i).length;j++) {
-				int currentSongIdToSearch = partitions.get(i)[j];
-				
-				// Search for partitions which belong to this song going through all given partitions
-				for(int k=0;k<allPartitions.getValueCount();k++) {
-					int currentSongId = new Double(allPartitions.getAttribute("Id").getValueAt(k).toString()).intValue();
-					
-					// Is it found?
-					if(currentSongId == currentSongIdToSearch) {
-						
-						// Go through all attributes and add the values of this partition
-						for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-							validationSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(k));
-						}
-					}
+			if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+				songRelationshipsValidationSet = new ArrayList<Double>();
+				for(int v=i*partitionSize;v<(i+1)*partitionSize;v++) {
+					songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
+							getLabeledAverageSongRelationships().get(songIdToSongNumber.get(shuffledPartitions.get(v))));
+				}
+			} else {
+				songRelationshipsMValidationSet = new ArrayList<ClassifiedSongPartitions>();
+				for(int v=i*partitionSize;v<(i+1)*partitionSize;v++) {
+					songRelationshipsMValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
+						getLabeledSongRelationships().get(songIdToSongNumber.get(shuffledPartitions.get(v))));
 				}
 			}
 			
-			// Fill the training set (with songs which does not belong to current partition)
-			for(int p=0;p<this.n;p++) {
+			for(int j=0;j<partitionSize*this.n;j++) {
 				
-				if(p==i) continue;
+				// The current song which has been distributed to this partition
+				int songIdToSearchFor = shuffledPartitions.get(j);
 				
-				for(int j=0;j<partitions.get(p).length;j++) {
-					int currentSongIdToSearch = partitions.get(p)[j];
+				// Search for allPartition instances which belong to this song
+				ArrayList<Integer> indicesOfInstancesForCurrentSong = new ArrayList<Integer>();
+				for(int z=0;z<allPartitions.getValueCount();z++) {
+					if(new Double(allPartitions.getAttribute("Id").getValueAt(z).toString()).intValue() == songIdToSearchFor) {
+						indicesOfInstancesForCurrentSong.add(z);
+					}
+				}
+				
+				// Training or validation set?
+				if(j >= i*partitionSize && j < (i+1)*partitionSize) {
 					
-					// Search for partitions which belong to this song going through all given partitions
-					for(int k=0;k<allPartitions.getValueCount();k++) {
-						int currentSongId = new Double(allPartitions.getAttribute("Id").getValueAt(k).toString()).intValue();
+					// Add the partition to validation set
+					for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
 						
-						// Is it found?
-						if(currentSongId == currentSongIdToSearch) {
-							
-							// Go through all attributes and add the values of this partition
-							for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-								trainingSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(k));
-							}
+						// Go through all indices..
+						for(int z=0;z<indicesOfInstancesForCurrentSong.size();z++) {
+							validationSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(indicesOfInstancesForCurrentSong.get(z)));
+						}
+					}
+				} else {
+					
+					// Add the partition to training set
+					for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
+						
+						// Go through all indices..
+						for(int z=0;z<indicesOfInstancesForCurrentSong.size();z++) {
+							trainingSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(indicesOfInstancesForCurrentSong.get(z)));
 						}
 					}
 				}
 			}
 			
 			// Train the model
-			// FIXME Classification preprocessing is not currently supported!
+			// TODO Classification preprocessing is not currently supported!
 			TrainingConfiguration tConf = new TrainingConfiguration(
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
@@ -353,7 +340,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			cConf.setPathToInputModel(this.folderForModels + "/model_" + i + ".mod");
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
-			ArrayList<ClassifiedSongPartitionsDescription> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
+			ArrayList<ClassifiedSongPartitions> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 			
 			// Calculate the classifier evaluation metrics for result
 			try {
@@ -361,8 +348,13 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				for(int currentMetric = 0; currentMetric < this.metricCalculators.size(); currentMetric++) {
 					ValidationMetric[] currMetr = null;
 					if(this.metricCalculators.get(currentMetric) instanceof ClassificationQualityMetricCalculatorInterface) {
-						currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMetric(
+						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateOneClassMetric(
 								songRelationshipsValidationSet, predictedSongs);
+						} else {
+							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMultiClassMetric(
+								songRelationshipsMValidationSet, predictedSongs);
+						}
 					} else if(this.metricCalculators.get(currentMetric) instanceof DataReductionMetricCalculatorInterface) {
 						currMetr = ((DataReductionMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMetric(
 								((ValidatorNodeScheduler)this.correspondingScheduler).getListOfAllProcessedFiles());

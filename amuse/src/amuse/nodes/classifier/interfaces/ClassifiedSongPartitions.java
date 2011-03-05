@@ -29,12 +29,9 @@ package amuse.nodes.classifier.interfaces;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class ClassifiedSongPartitionsDescription extends SongPartitionsDescription {
+public class ClassifiedSongPartitions extends SongPartitionsDescription {
 	
-	/** Assigned label/category */
-	final String label;
-	
-    /** Corresponding relationships for the partitions */
+	/** Corresponding relationships for the partitions */
 	final Double[] relationships; 
     
 	/**
@@ -45,7 +42,7 @@ public class ClassifiedSongPartitionsDescription extends SongPartitionsDescripti
 	 * @param labels Assigned label/category
 	 * @param relationships Corresponding relationships for the partitions
 	 */
-	public ClassifiedSongPartitionsDescription(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs, String label,
+	public ClassifiedSongPartitions(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs,
 			Double[] relationships) {
 		super(pathToMusicSong, songId, startMs, endMs);
 		if(relationships.length != startMs.length) {
@@ -53,15 +50,7 @@ public class ClassifiedSongPartitionsDescription extends SongPartitionsDescripti
 					"the number of partition starts (" + startMs.length + ") is not equal to the number " +
 					"of relationships (" + relationships.length + ")");
 		}
-		this.label = label;
 		this.relationships = relationships;
-	}
-
-	/**
-	 * @return the label
-	 */
-	public String getLabel() {
-		return label;
 	}
 
 	/**

@@ -26,8 +26,8 @@ package amuse.nodes.validator.metrics.confusionmatrix;
 import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitionsDescription;
-import amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculator;
+import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
+import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMetricCalculator;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
 import amuse.nodes.validator.metrics.confusionmatrix.base.FalsePositives;
 import amuse.nodes.validator.metrics.confusionmatrix.base.TrueNegatives;
@@ -38,7 +38,7 @@ import amuse.nodes.validator.metrics.confusionmatrix.base.TrueNegatives;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class Specificity extends ClassificationQualityMetricCalculator {
+public class Specificity extends ClassificationQualityDoubleMetricCalculator {
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#setParameters(java.lang.String)
@@ -48,71 +48,19 @@ public class Specificity extends ClassificationQualityMetricCalculator {
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMetric(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMetric(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		if(groundTruthRelationships.size() != predictedRelationships.size()) {
-			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
-		}
-		
-		ValidationMetricDouble[] metricOnSongLev = null;
-		ValidationMetricDouble[] metricOnPartLev = null;
-		
-		if(groundTruthRelationships.get(0) instanceof Double) {
-			if(this.getSongLevel()) {
-				metricOnSongLev = calculateFuzzyMetricOnSongLevel(groundTruthRelationships, predictedRelationships);
-			} 
-			if(this.getPartitionLevel()) {
-				metricOnPartLev = calculateFuzzyMetricOnPartitionLevel(groundTruthRelationships, predictedRelationships);
-			}
-		} else {
-			return null;
-		}
-		
-		// Return the corresponding number of metric values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return metricOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
-			return metricOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMetricDouble[] metrics = new ValidationMetricDouble[2];
-			metrics[0] = metricOnSongLev[0];
-			metrics[1] = metricOnPartLev[0];
-			return metrics;
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnSongLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateBinaryMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateBinaryMetricOnPartitionLevel(ArrayList<Boolean> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		return null;
-	}
-
-	
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	public ValidationMetricDouble[] calculateOneClassMetricOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		// Get true negatives
 		TrueNegatives trueNegativesCalculator = new TrueNegatives();
 		trueNegativesCalculator.setSongLevel(true);
-		ValidationMetricDouble tn = trueNegativesCalculator.calculateMetric(groundTruthRelationships, predictedRelationships)[0];
+		ValidationMetricDouble tn = trueNegativesCalculator.calculateOneClassMetric(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false positives
 		FalsePositives falsePositivesCalculator = new FalsePositives();
 		falsePositivesCalculator.setSongLevel(true);
-		ValidationMetricDouble fp = falsePositivesCalculator.calculateMetric(groundTruthRelationships, predictedRelationships)[0];
+		ValidationMetricDouble fp = falsePositivesCalculator.calculateOneClassMetric(groundTruthRelationships, predictedRelationships)[0];
 		
 		double specificity = tn.getValue() / (fp.getValue() + tn.getValue());
 		
@@ -126,19 +74,19 @@ public class Specificity extends ClassificationQualityMetricCalculator {
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateFuzzyMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateOneClassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateFuzzyMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	public ValidationMetricDouble[] calculateOneClassMetricOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		// Get true negatives
 		TrueNegatives trueNegativesCalculator = new TrueNegatives();
 		trueNegativesCalculator.setPartitionLevel(true);
-		ValidationMetricDouble tn = trueNegativesCalculator.calculateMetric(groundTruthRelationships, predictedRelationships)[0];
+		ValidationMetricDouble tn = trueNegativesCalculator.calculateOneClassMetric(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false positives
 		FalsePositives falsePositivesCalculator = new FalsePositives();
 		falsePositivesCalculator.setPartitionLevel(true);
-		ValidationMetricDouble fp = falsePositivesCalculator.calculateMetric(groundTruthRelationships, predictedRelationships)[0];
+		ValidationMetricDouble fp = falsePositivesCalculator.calculateOneClassMetric(groundTruthRelationships, predictedRelationships)[0];
 		
 		double specificity = tn.getValue() / (fp.getValue() + tn.getValue());
 		
@@ -151,19 +99,19 @@ public class Specificity extends ClassificationQualityMetricCalculator {
 		return specificityMetric;
 	}
 
-	
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnSongLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
+
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#calculateMulticlassMetricOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMetricDouble[] calculateMulticlassMetricOnPartitionLevel(ArrayList<ArrayList<Double>> groundTruthRelationships, ArrayList<ArrayList<ClassifiedSongPartitionsDescription>> predictedRelationships) throws NodeException {
-		return null;
+	public ValidationMetricDouble[] calculateMultiClassMetricOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
 
