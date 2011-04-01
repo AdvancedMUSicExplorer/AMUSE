@@ -34,6 +34,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 /**
+ * A Navigation Panel with Title.
  * @author  Clemens Waeltken
  */
 public class JButtonPanelWithHeading extends javax.swing.JPanel implements ButtonPanelInterface {

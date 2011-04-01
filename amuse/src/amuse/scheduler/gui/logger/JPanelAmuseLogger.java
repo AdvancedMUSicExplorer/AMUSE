@@ -54,6 +54,9 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
     private static final long serialVersionUID = 1900018463030143312L;
     private static JTextPane txtArea = new JTextPane();
 
+    /**
+     * This JPanel displays Log4J Logging entries inside the GUI.
+     */
     public JPanelAmuseLogger() {
 	super(txtArea);
 	// Setup text style
@@ -61,12 +64,20 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
 	txtArea.setEditable(false);
     }
 
+    /**
+     * Start listening to Logging events.
+     */
     public void startListening() {
 	// Start listening on AmuseLogger
 	AmuseLogger.addListener(this);
 	txtArea.addComponentListener(new ComponentListenerImpl(this.getViewport()));
     }
 
+    /**
+     * Append a Lgging entry into the view.
+     * @param appendString the Stirng to append.
+     * @param textColor the color to be displayed in.
+     */
     public synchronized void append(String appendString, Color textColor) {
 	Document doc = txtArea.getDocument();
 	SimpleAttributeSet textAttributes = new SimpleAttributeSet();
@@ -79,6 +90,12 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
 	}
     }
 
+    /**
+     * Recievs a Log4J Logging event.
+     * @param category Category of this logging event.
+     * @param level Log Level
+     * @param message Log Message
+     */
     @Override
     public void receiveLoggerEvent(String category, Level level, String message) {
 	ColoredLoggerEntry entry = new ColoredLoggerEntry(category, level,
@@ -89,8 +106,9 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
     }
 
     /**
-     * @param entry
-     * @return
+     * Decide if we want to display this LogLevel.
+     * @param level the LogLevel to be checked.
+     * @return true - if this Level should be displayed.
      */
     private boolean isToBeDisplayed(Level level) {
 	int logLevel = AmusePreferences.getInt(KeysIntValue.GUI_LOG_LEVEL);

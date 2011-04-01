@@ -49,8 +49,9 @@ final class ColoredLoggerEntry {
 	private static final Color FATAL_COLOR = new Color(150, 70, 140);
 
 	/**
-	 * @param category 
-	 * @param level
+	 * Creates a colored entry into the Amuse Logger.
+	 * @param category Category of this logging entry.
+	 * @param level Log level of this logging entry.
 	 * @param message
 	 */
 
@@ -62,6 +63,7 @@ final class ColoredLoggerEntry {
 	}
 
 	/**
+	 * Creates a colored entry into the Amuse Logger.
 	 * @param level - log level
 	 * @return according color.
 	 */

@@ -28,7 +28,9 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 /**
- *
+ * Interface for a Button Panel.
+ * This is used if you want to allow dynamic creation of additional buttons on
+ * the navbar.
  * @author Clemens Waeltken
  */
 public interface ButtonPanelInterface {

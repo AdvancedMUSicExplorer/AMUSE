@@ -104,9 +104,6 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		initPopupMenu();
 	}
 
-	/**
-	 * 
-	 */
 	private void initPopupMenu() {
 		popupMenu = new JPopupMenu();
 		popupMenu.setInvoker(addButton);
@@ -249,6 +246,7 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 	}
 
 	/**
+	 *
 	 * @param i
 	 */
 	public void setListSelectedIndex(int i) {

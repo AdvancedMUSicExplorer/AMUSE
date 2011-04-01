@@ -81,9 +81,9 @@ public class OptimizationController extends AbstractController {
 
     @Override
     public TaskConfiguration getExperimentConfiguration() {
-        int catLearningID = oView.getLearningCategory();
-        int catOptimizationID = oView.getOptimizingCategory();
-        int catTestID = oView.getTestCategory();
+        String catLearningID = oView.getLearningCategory() + "";
+        String catOptimizationID = oView.getOptimizingCategory() + "";
+        String catTestID = oView.getTestCategory() + "";
         String algorithmDescriptor = oView.getTrainingAlgorithmDescriptor();
         String targetDescriptor = oView.getOutputDescriptor();
         OptimizationConfiguration oConfig = new OptimizationConfiguration(catLearningID, catOptimizationID, catTestID, algorithmDescriptor, "-1", targetDescriptor);

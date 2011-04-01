@@ -43,7 +43,7 @@ import amuse.data.datasets.FileTableSet;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 
 /**
- *
+ * Controller Class for MusicFileTrees.
  * @author Clemens Waeltken
  */
 public class FileTreeController implements ActionListener, KeyListener {
@@ -66,6 +66,10 @@ public class FileTreeController implements ActionListener, KeyListener {
         view.setController(this);
     }
 
+    /**
+     * Handles all actions performed by the user in FileTreeView.
+     * @param e the Action event create by FileTreeView.
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand().equals("save")) {
@@ -155,6 +159,11 @@ public class FileTreeController implements ActionListener, KeyListener {
         }
     }
 
+    /**
+     * Load a List of MusicFiles by given arff music file list.
+     * @param file arff File containing absolute paths to music files.
+     * @throws HeadlessException
+     */
     public void loadFileList(File file) throws HeadlessException {
         // 3. Load DataSet:
         FileTableSet fileSet = null;
@@ -168,24 +177,30 @@ public class FileTreeController implements ActionListener, KeyListener {
         loadFiles(fileList);
     }
 
-    public void loadFiles (List<File> files) {
+    /**
+     * Load a List of files into the current FileTree.
+     * @param files
+     */
+    public void loadFiles(List<File> files) {
         model.removeAllFiles();
         for (File currentFile : files) {
             model.addFile(currentFile);
         }
     }
-
     @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    /**
+     * If delete key is pressed remove current selection from file tree.
+     * @param e
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DELETE) {
             removeSelectedNodes();
         }
     }
-
     @Override
     public void keyReleased(KeyEvent e) {
         // Nothing ToDo

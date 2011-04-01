@@ -33,7 +33,7 @@ import javax.swing.JTextField;
 import amuse.scheduler.gui.views.WizardView;
 
 /**
- *
+ * A Text Field indicating valid content by its color.
  * @author Clemens Waeltken
  */
 public class JTextFieldWithValidation extends JTextField {

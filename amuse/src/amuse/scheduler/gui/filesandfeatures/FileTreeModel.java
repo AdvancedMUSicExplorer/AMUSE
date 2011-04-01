@@ -60,6 +60,10 @@ public class FileTreeModel extends DefaultTreeModel {
         }
     }
 
+    /**
+     * adds a single file to this model.
+     * @param file the file to add to the model.
+     */
     protected void addFile(File file) {
 //        System.out.println("Path to Music DB: " + relativeToPath.getAbsolutePath());
 //        System.out.println("File to Add: "+ file.getAbsolutePath());
@@ -79,6 +83,10 @@ public class FileTreeModel extends DefaultTreeModel {
         this.nodeStructureChanged(root);
     }
 
+    /**
+     * Retuns all files in the current FileTreeModel
+     * @return complete list of files in this model.
+     */
     public List<File> getFiles() {
         Vector<File> files = new Vector<File>();
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) root;

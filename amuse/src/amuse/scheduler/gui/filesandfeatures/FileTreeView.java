@@ -38,7 +38,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- *
+ * FileTreeView allows to display hierarchical file trees.
  * @author Clemens Waeltken
  */
 public class FileTreeView {
@@ -52,6 +52,9 @@ public class FileTreeView {
     JButton saveFileListButton;
     JButton loadFileListButton;
 
+    /**
+     * Creates an new FileTree View.
+     */
     public FileTreeView() {
         BorderLayout layout = new BorderLayout();
         view.setLayout(layout);
@@ -70,6 +73,10 @@ public class FileTreeView {
         return tree.getSelectionPaths();
     }
 
+    /**
+     * Returns this FileTreeView as JComponent to add into other components.
+     * @return this View.
+     */
     public JComponent getView() {
         return view;
     }

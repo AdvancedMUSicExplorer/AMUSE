@@ -60,7 +60,7 @@ import amuse.data.io.attributes.StringAttribute;
 
 /**
  * @author Clemens Waeltken
- * 
+ * A View showing Music files in a JTree according to the folder they are located in.
  */
 public class AmuseMusicFileTreeView {
 
@@ -77,13 +77,22 @@ public class AmuseMusicFileTreeView {
     private JButton saveFileListButton = null;
     private JButton loadFileListButton = null;
 
-    public AmuseMusicFileTreeView(String[] exeptedFileEndings, File relativeToPath) {
+    /**
+     * Create a new FileTreeView
+     * @param acceptedFileEndings Array of accepted file types.
+     * @param relativeToPath The relative Path is used as a root node for this tree.
+     */
+    public AmuseMusicFileTreeView(String[] acceptedFileEndings, File relativeToPath) {
         super();
         this.relativeToPath = relativeToPath;
-        this.fileEndings = exeptedFileEndings;
+        this.fileEndings = acceptedFileEndings;
         initialize();
     }
 
+    /**
+     * Get all Files in this FileTree
+     * @return List of all files in the tree.
+     */
     public List<File> getFiles() {
         Vector<File> files = new Vector<File>();
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) fileTree.getModel().getRoot();
@@ -99,6 +108,11 @@ public class AmuseMusicFileTreeView {
         return files;
     }
 
+    /**
+     * Get the JPanel of this view.
+     * Place this in your own view to show this FileTree.
+     * @return a JPanel containing a FileTree.
+     */
     public JPanel getView() {
         return view;
     }

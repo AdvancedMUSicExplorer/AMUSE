@@ -65,13 +65,17 @@ public final class WizardController implements WizardControllerInterface {
 	instance = this;
     }
 
+    /**
+     * Singleton Pattern.
+     * Create or get the current WizardController.
+     * @return the current WizardController instance.
+     */
     public static synchronized WizardController getInstance() {
 	if (instance == null) {
 	    instance = new WizardController();
 	}
 	return instance;
     }
-
     @Override
     public void startWizard() {
 	wizard = new WizardView(this);
@@ -82,7 +86,7 @@ public final class WizardController implements WizardControllerInterface {
 	wizardFrame.setVisible(true);
 	scheduler = Scheduler.getInstance();
     }
-
+    
     @Override
     public void closeWizard() {
     }
@@ -98,11 +102,18 @@ public final class WizardController implements WizardControllerInterface {
 	wizardFrame.setLocation(x, y);
     }
 
+    /**
+     *
+     */
     @Override
     public void goToSettings() {
 	wizard.showInWizardPane(JPanelSettings.getInstance());
     }
 
+    /**
+     *
+     * @param args
+     */
     public static void main(String[] args) {
       new WizardController().startWizard();
     }
@@ -115,6 +126,10 @@ public final class WizardController implements WizardControllerInterface {
 	}
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public TitleUpdater getTitleUpdater() {
 	return new TitleUpdater() {
@@ -126,12 +141,19 @@ public final class WizardController implements WizardControllerInterface {
 	};
     }
 
+    /**
+     *
+     */
     @Override
     public void goToFeatureProcessing() {
         goToFeatureProcessing(null);
     }
 
-        @Override
+    /**
+     *
+     * @param conf
+     */
+    @Override
     public void goToFeatureProcessing(ProcessingConfiguration conf) {
 	proController = new ProcessingController(instance);
         if (conf != null) {
@@ -140,11 +162,18 @@ public final class WizardController implements WizardControllerInterface {
 	wizard.showInWizardPane(proController.getView());
     }
 
+    /**
+     *
+     */
     @Override
     public void goToFeatureExtraction() {
         goToFeatureExtraction(null);
     }
 
+    /**
+     *
+     * @param set
+     */
     @Override
     public void goToFeatureExtraction(ExtractionConfiguration set) {
 	exController = new ExtractionController(instance);
@@ -157,11 +186,18 @@ public final class WizardController implements WizardControllerInterface {
     /* (non-Javadoc)
      * @see amuse.scheduler.gui.controller.WizardControllerInterface#goToTrainingExperiment()
      */
+    /**
+     *
+     */
     @Override
     public void goToTrainingExperiment() {
         goToTrainingExperiment(null);
     }
 
+    /**
+     *
+     * @param set
+     */
     @Override
     public void goToTrainingExperiment(TrainingConfiguration set) {
 	trainController = new TrainingController(instance);
@@ -171,25 +207,42 @@ public final class WizardController implements WizardControllerInterface {
 	wizard.showInWizardPane(trainController.getView());
     }
 
+    /**
+     *
+     * @param panel
+     */
     @Override
     public void setWizardPanel(JPanel panel) {
 	wizard.showInWizardPane(panel);
     }
 
+    /**
+     *
+     * @return
+     */
     public Scheduler getScheduler() {
 	return scheduler;
     }
 
+    /**
+     *
+     */
     public void goToLogger() {
 	wizard.switchToConsole();
     }
 
+    /**
+     *
+     */
     public void goBack() {
 	wizard.goBack();
     }
 
     /* (non-Javadoc)
      * @see amuse.scheduler.gui.controller.WizardControllerInterface#gotoClassification()
+     */
+    /**
+     *
      */
     @Override
     public void goToClassification() {
@@ -212,7 +265,7 @@ public final class WizardController implements WizardControllerInterface {
     public void goToValidation() {
         goToValidation(null);
     }
-
+    
     @Override
     public void goToValidation(ValidationConfiguration set) {
 	validationController = new ValidationController(instance);
@@ -245,12 +298,12 @@ public final class WizardController implements WizardControllerInterface {
 	});
 	thread.start();
     }
-
+    
     @Override
     public void goToOptimization() {
 	goToOptimization(null);
     }
-
+    
     @Override
     public void goToOptimization(OptimizationConfiguration set) {
 	optimizationController = new OptimizationController(instance);
