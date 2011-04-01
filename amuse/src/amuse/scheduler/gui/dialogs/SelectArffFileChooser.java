@@ -28,11 +28,16 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- *
+ * This File chooser only accepts .arff files.
  * @author Clemens Waeltken
  */
 public class SelectArffFileChooser extends JFileChooser {
 
+    /**
+     * Creates an arff File chooser.
+     * @param type short descriptor for type of arff file.
+     * @param the folder to be preselected in this file chooser.
+     */
     public SelectArffFileChooser(String type, File destinationFolder) {
         super(destinationFolder);
         this.setAcceptAllFileFilterUsed(false);

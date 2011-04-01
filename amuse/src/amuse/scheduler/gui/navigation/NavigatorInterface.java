@@ -28,17 +28,31 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 /**
- *
+ * Interface for the navigation.
  * @author Clemens Waeltken
  */
 public interface NavigatorInterface {
 
+    /**
+     * @return returns a JPanel diplaying the navigation bar.
+     */
     public JPanel getNavBar();
 
+    /**
+     * Navigate back.
+     */
     void goBack();
 
+    /**
+     * Navigate forward.
+     */
     void goForward();
 
+    /**
+     * Set new content and move the old contetn onto the undo stack.
+     * Discard all forward steps.
+     * @param content the new Content.
+     */
     void setNewContent(JComponent content);
     
 }

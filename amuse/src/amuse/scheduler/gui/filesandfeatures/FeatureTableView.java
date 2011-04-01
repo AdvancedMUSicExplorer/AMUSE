@@ -51,10 +51,17 @@ public class FeatureTableView {
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
 
+    /**
+     * Creates a new Feature Table View.
+     */
     public FeatureTableView() {
         initGUI();
     }
 
+    /**
+     * Returns this view as JPanel to be placed in other components.
+     * @return This view.
+     */
     public JPanel getView() {
         return view;
     }

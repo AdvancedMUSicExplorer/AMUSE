@@ -33,7 +33,7 @@ import amuse.scheduler.gui.algorithm.AlgorithmView;
 import amuse.scheduler.gui.controller.ProcessingController;
 
 /**
- *
+ * Controller for the Processing Methods Panel.
  * @author Clemens Waeltken
  */
 public class ProcessingMethodsController {

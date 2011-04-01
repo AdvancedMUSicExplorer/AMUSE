@@ -37,7 +37,9 @@ import javax.swing.JComponent;
 import javax.swing.JSplitPane;
 
 /**
- *
+ * This Class combines a MusicFileTreeView with FeatureTableView.
+ * They are displayed in a JSplitPane. FileTree will be on the left FeatureTable
+ * on the right hand side.
  * @author Clemens Waeltken
  */
 public class FilesAndFeaturesFacade {
@@ -80,6 +82,10 @@ public class FilesAndFeaturesFacade {
         return fileTreeModel.getFiles();
     }
 
+    /**
+     * Returns this combined view as a single JComponent.
+     * @return this View as JComponent.
+     */
     public JComponent getView() {
         return view;
     }

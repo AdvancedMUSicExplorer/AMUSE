@@ -42,6 +42,10 @@ public class FeatureTableModel implements TableModel {
     private FeatureTable featureTable;
     private ArrayList<TableModelListener> listeners = new ArrayList<TableModelListener>();
 
+    /**
+     * Creates a new Feature Table Model out of a given FeatureTable.
+     * @param featureTable The feature table of all Features to be displayed in this table.
+     */
     public FeatureTableModel(FeatureTable featureTable) {
         this.featureTable = featureTable;
         List<Feature> features = this.featureTable.getFeatures();
@@ -60,7 +64,6 @@ public class FeatureTableModel implements TableModel {
     public void addTableModelListener(TableModelListener l) {
         listeners.add(l);
     }
-
     @Override
     public void removeTableModelListener(TableModelListener l) {
         listeners.remove(l);
@@ -157,6 +160,10 @@ public class FeatureTableModel implements TableModel {
         return 0;
     }
 
+    /**
+     * Returns the current selection of Features as FeatureTable.
+     * @return The Feature Table holding all currently selected Features.
+     */
     public FeatureTable getCurrentFeatureTable() {
         // Update FeatureTable with current selection:
         for (int i = 0; i < featureTable.size(); i++) {

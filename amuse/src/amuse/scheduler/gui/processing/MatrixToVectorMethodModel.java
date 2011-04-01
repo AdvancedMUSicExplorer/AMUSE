@@ -40,7 +40,7 @@ import amuse.data.io.attributes.StringAttribute;
 import amuse.scheduler.gui.algorithm.Algorithm;
 
 /**
- *
+ * Model used for MatrixToVector Methods.
  * @author Clemens Waeltken
  */
 public class MatrixToVectorMethodModel implements ComboBoxModel {

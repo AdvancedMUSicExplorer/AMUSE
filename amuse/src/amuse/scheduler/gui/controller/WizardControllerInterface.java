@@ -40,36 +40,103 @@ import javax.swing.JPanel;
  */
 public interface WizardControllerInterface {
 
+    /**
+     * Set a new Panel inside the wizard.
+     * @param panel
+     */
     void setWizardPanel(JPanel panel);
 
+    /**
+     * Go to the Freature Processing View.
+     */
     void goToFeatureProcessing();
+    /**
+     * Go to the Freature Processing View and restore configuration.
+     * @param processorConfigSet The ProcessingConfiguration to restore from.
+     */
     void goToFeatureProcessing(ProcessingConfiguration processorConfigSet);
 
+    /**
+     * Go to the Freature Extraction View.
+     */
     void goToFeatureExtraction();
+    /**
+     * Go to the Freature Extraction View and restore configuration.
+     * @param set The ExtractionConfiguration to restore from.
+     */
     void goToFeatureExtraction(ExtractionConfiguration set);
 
+    /**
+     * Go to the settings page for the amuse wizard.
+     */
     void goToSettings();
 
+    /**
+     * Got to the Experiment Manager.
+     * The Experiment Manager allows to configure multiple Experiments.
+     */
     void goToExperimentManager();
 
+    /**
+     * This method is used by the navbar to update the window title.
+     * @return a TitleUpdate object to update the title of the wizard.
+     */
     TitleUpdater getTitleUpdater();
 
+    /**
+     * Start the amuse wizard.
+     */
     void startWizard();
 
+    /**
+     * Stop the amuse wizard.
+     */
     void closeWizard();
 
+    /**
+     * Go to the Training Experiment View.
+     */
     void goToTrainingExperiment();
+    /**
+     * Go to the Training Experiment View and restore configuration.
+     * @param set The TrainingConfiguration to restore from.
+     */
     void goToTrainingExperiment(TrainingConfiguration set);
 
+    /**
+     * Go to the Classification View.
+     */
     void goToClassification();
+    /**
+     * Go to the Classification View and restore configuration.
+     * @param set The ClassificationConfiguration to restore from.
+     */
     void goToClassification(ClassificationConfiguration set);
 
+    /**
+     * Go to the Validation View.
+     */
     void goToValidation();
+    /**
+     * Go to the Validation View and restore configuration.
+     * @param set The ValidationConfiguration to restore from.
+     */
     void goToValidation(ValidationConfiguration set);
 
+    /**
+     * Start a List of preconfigured amuse Tasks.
+     * @param experiments
+     */
     public void startTasks(List<TaskConfiguration> experiments);
 
+    /**
+     * Go to the Optimization View.
+     */
     public void goToOptimization();
+    /**
+     * Go to the Optimization View and restore configuration.
+     * @param set The OptimizationConfiguration to restore from.
+     */
     public void goToOptimization(OptimizationConfiguration set);
 
 }

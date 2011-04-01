@@ -25,11 +25,16 @@
 package amuse.scheduler.gui.navigation;
 
 /**
- *
+ * Used Components with a Navigator.
+ * Allows the Navigator to set a title according to the current content.
  * @author Clemens Waeltken
  */
 public interface TitleUpdater {
 
+    /**
+     * Set new title.
+     * @param suffix append this to the current title.
+     */
     void setTitleSuffix(String suffix);
 
 }
