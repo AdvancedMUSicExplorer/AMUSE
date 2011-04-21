@@ -62,7 +62,7 @@ public class AsymmetricBitFlip extends RandomBitFlip {
 				
 				// Perform 0 -> 1 mutation?
 				if(!valueToMutate.getValue()[i]) {
-					double mutationProbability = (p_01*gamma) / valueToMutate.getValue().length;
+					double mutationProbability = (p_01*gamma*this.selfAdaptationFactor) / valueToMutate.getValue().length;
 					if(rand.nextDouble() < mutationProbability) {
 						valueToMutate.getValue()[i] = true;
 					}
@@ -70,7 +70,7 @@ public class AsymmetricBitFlip extends RandomBitFlip {
 				
 				// Perform 1 -> 0 mutation?
 				else {
-					double mutationProbability = (p_10*gamma) / valueToMutate.getValue().length;
+					double mutationProbability = (p_10*gamma*this.selfAdaptationFactor) / valueToMutate.getValue().length;
 					if(rand.nextDouble() < mutationProbability) {
 						valueToMutate.getValue()[i] = false;
 					}
