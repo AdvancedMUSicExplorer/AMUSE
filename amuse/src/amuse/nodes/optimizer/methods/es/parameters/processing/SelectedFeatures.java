@@ -75,18 +75,28 @@ public class SelectedFeatures extends BinaryVector {
 	 */
 	private static Boolean[] generateFeatureVector(ESConfiguration esConfiguration) {
 		Boolean[] vector;
-		Random rand = new Random(new Long(esConfiguration.getESParameterByName("Random seed").getAttributes().getNamedItem("longValue").getNodeValue()));
+		//Random rand = new Random();
+		Long seed = new Long(esConfiguration.getESParameterByName("Random seed").getAttributes().getNamedItem("longValue").getNodeValue());
+		Random rand; // TODO seed = -1 means generate each time new!!
+		if(seed != -1) {
+			rand = new Random(seed);
+		} else {
+			rand = new Random();
+		}
 			
 		// Load the feature table for the estimation of original raw feature number
 		Node featureTableNode = esConfiguration.getConstantParameterByName("Feature table");
 		FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
 			
-		// Load the factor parameter (maximum number of features proceeded to classification is
+		// Load the 
+		// (1) factor parameter (maximum number of features proceeded to classification is
 		// factor * number of initial raw features. E.g. if the processing uses GMM1, for each feature
 		// a mean value and deviation in a partition are calculated and the factor 2 is enough. If
 		// additionally a derivation calculator is applied once during the processing, the factor must 
 		// be here 4 etc.
+		// (2) initial feature rate
 		int factor = 0;
+		double initFeatureRate = 0.5;
 		Node selectedFeaturesNode = esConfiguration.getOptimizationParameterByName("Selected features");
 		NodeList parameters = selectedFeaturesNode.getChildNodes();
 		for(int i=0;i<parameters.getLength();i++) {
@@ -94,7 +104,8 @@ public class SelectedFeatures extends BinaryVector {
 				if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Maximum factor of generated features " +
 						"related to initial raw feature set")) {
 					factor = new Integer(parameters.item(i).getAttributes().getNamedItem("intValue").getNodeValue());
-					break;
+				} else if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Initial rate of selected features")) {
+					initFeatureRate = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
 				}
 			}
 		}
@@ -107,8 +118,17 @@ public class SelectedFeatures extends BinaryVector {
 			
 		// Create an array with appropriate number of features dimensions which will be later switched on/off by ES
 		vector = new Boolean[ft.getDimensionsCount() * factor];
+		// DEBUG Set the constant feature number
+		//vector = new Boolean[1068];
 		for(int i=0;i<vector.length;i++) {
-			vector[i] = rand.nextBoolean();
+			// DEBUG Switch all features on!
+			//vector[i] = true;
+			double toss = rand.nextDouble();
+			if(toss < initFeatureRate) {
+				vector[i] = true;
+			} else {
+				vector[i] = false;
+			}
 		}
 		
 		return vector;
