@@ -231,6 +231,7 @@ public class ArffDataSet extends DataSetAbstract {
 		}
 		// Begin writing data to StringBuilder:
 		output.append("\n" + dataStr + "\n");
+		BufferedWriter fileWriter = new BufferedWriter(new FileWriter(outputFile));
 		for (int i = 0; i < getValueCount(); i++) {
 			for (Attribute atr : attributes) {
 				output.append(atr.getValueStrAt(i));
@@ -240,16 +241,12 @@ public class ArffDataSet extends DataSetAbstract {
 					output.append(",");
 				}
 			}
-		}
-		// Do the actual I/O writing to file:
-		try {
-			BufferedWriter fileWriter = new BufferedWriter(new FileWriter(
-					outputFile));
+			
+			// Write the attribute values of the current instance to file:
 			fileWriter.append(output);
-			fileWriter.close();
-		} catch (IOException ex) {
-			throw new IOException(ex);
+			output = new StringBuilder();
 		}
+		fileWriter.close();
 	}
 
 	/**
