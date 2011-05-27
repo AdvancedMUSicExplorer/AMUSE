@@ -52,7 +52,7 @@ public class RandomBitFlip extends AbstractMutation {
 	int intervalForSuccessRateCalculation;
 	
 	/** Depending on the previous successes, the bit flip probability is multiplied by this factor */
-	double selfAdaptationFactor;
+	public double selfAdaptationFactor;
 	
 	/*
 	 * (non-Javadoc)
