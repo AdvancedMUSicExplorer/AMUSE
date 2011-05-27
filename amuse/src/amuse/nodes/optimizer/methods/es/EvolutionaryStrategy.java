@@ -26,6 +26,7 @@ package amuse.nodes.optimizer.methods.es;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +43,13 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.interfaces.OptimizerInterface;
+import amuse.nodes.optimizer.methods.es.operators.crossover.interfaces.CrossoverInterface;
 import amuse.nodes.optimizer.methods.es.operators.mutation.interfaces.MutationInterface;
 import amuse.nodes.optimizer.methods.es.operators.selection.CommaSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.HypervolumeSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.PlusSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface;
+import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
 import amuse.nodes.validator.interfaces.ValidationMetricDouble;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -91,8 +94,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	SelectionInterface selectionOperator;
 	public int numberOfFitnessValues;
 	
-	/** Used for the update of success counter */
-	ValidationMetricDouble[][] originalOffspringFitnessValues;
+	/** Maps the name of representation class to the list with used crossover operators */
+	HashMap<String,List<CrossoverInterface>> crossoverMap;
 	
 	/** Maps the name of representation class to the list with used mutation operators */
 	HashMap<String,List<MutationInterface>> mutationMap;
@@ -146,6 +149,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			
 			boolean logCreated = false;
 			File newLog = null;
+			// FIXME Provide some stopping criterion! If the log exists, the loop continues without stopping..
 			while(!logCreated) {
 				newLog = new File(folderForResults + "/optimization_" + 
 					folderForResults.listFiles().length + "_" + esConfiguration.getESParameterByName("Random seed").getAttributes().getNamedItem("longValue").getNodeValue() + ".arff");
@@ -188,20 +192,81 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			for(int i=0;i<popSize;i++) {
 				candidateIndices.add(i);
 			}
-			Collections.shuffle(candidateIndices);
 			offspringPopulation = new ESIndividual[offspringPopSize];
-			for(int i=0;i<offspringPopSize;i++) {
-				offspringPopulation[i] = population[candidateIndices.get(i)].clone();
-				originalOffspringFitnessValues[i] = populationFitnessValues[candidateIndices.get(i)];
-			}
 			
 			// -------------------
 			// (II) Make crossover
 			// -------------------
+			if(!crossoverMap.isEmpty()) { 
+				
+				// Estimate the number of required crossover applications required to create the offsprings
+				// (e.g. for (10+5)-ES and crossover with 2 children as output three crossover operations are required).
+				CrossoverInterface ci = crossoverMap.values().iterator().next().get(0);
+				int breedingNumber = new Double(Math.ceil((double)offspringPopSize / ci.getOffspringNumber())).intValue();
+				
+				// Create the offspring population cloning the 1st individiual for representation info
+				for(int j=0;j<offspringPopSize;j++) {
+					offspringPopulation[j] = population[0].clone();
+				}
+				
+				// Run the breedings
+				for(int i=0;i<breedingNumber;i++) {
+					Collections.shuffle(candidateIndices);
+					ESIndividual[] parentPopulation = new ESIndividual[ci.getParentNumber()];
+					
+					// Select the required parent number randomly
+					for(int j=0;j<ci.getParentNumber();j++) {
+						parentPopulation[j] = population[candidateIndices.get(j)].clone();
+					}
+					
+					// Go through each representation
+					for(int j=0;j<parentPopulation[i].getRepresentationList().size();j++) {
+						
+						// Get the crossover which should be proceeded for current representation
+						List<CrossoverInterface> crossoverToProceed = crossoverMap.get(parentPopulation[i].getRepresentationList().get(j).getClass().getName());
+						if(crossoverToProceed != null) {
+							RepresentationInterface[] ri = new RepresentationInterface[ci.getParentNumber()];
+							for(int currentParent=0;currentParent<ci.getParentNumber();currentParent++) {
+								ri[currentParent] = parentPopulation[currentParent].getRepresentationList().get(j);
+							}
+							
+							RepresentationInterface[] offspringRepresentations = crossoverToProceed.get(0).crossover(ri);
+							
+							// Save the new representations for offsprings
+							for(int currentCrossoverOutput=0;currentCrossoverOutput<offspringRepresentations.length;currentCrossoverOutput++) {
+								
+								// Some of the crossover output solutions may be omitted if the strategy offspring number is achieved
+								int currentOverallCrossoverOutput = i * ci.getOffspringNumber() + currentCrossoverOutput;
+								if(currentOverallCrossoverOutput < offspringPopSize) { 
+									offspringPopulation[currentOverallCrossoverOutput].getRepresentationList().
+											set(j, offspringRepresentations[currentCrossoverOutput]);
+								} else break; // Further crossover output is not required!
+							}
+						} else {
+							
+							// Transfer the corresponding parent representation to offsprings if no crossover will be applied for it
+							for(int currentCrossoverOutput=0;currentCrossoverOutput<ci.getOffspringNumber();currentCrossoverOutput++) {
+								int currentOverallCrossoverOutput = breedingNumber*ci.getOffspringNumber() + currentCrossoverOutput;
+								if(currentOverallCrossoverOutput < offspringPopSize) {
+									offspringPopulation[currentOverallCrossoverOutput].getRepresentationList().
+											set(j, parentPopulation[i].getRepresentationList().get(j));
+								} else break;
+							}
+						}
+					}
+				}
+			}
 			
 			// -------------------
 			// (III) Make mutation
 			// -------------------
+			// Select the candidates for mutation randomly (otherwise they have been generated by crossover)
+			if(crossoverMap.isEmpty()) {
+				Collections.shuffle(candidateIndices);
+				for(int i=0;i<offspringPopSize;i++) {
+					offspringPopulation[i] = population[candidateIndices.get(i)].clone();
+				}
+			}
 
 			// Go through offspring population
 			for(int i=0;i<offspringPopSize;i++) {
@@ -221,10 +286,10 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 				if(isIndependentTestSetUsed) {
 					offspringPopulationFitnessValuesOnTestSet[i] = offspringPopulation[i].getFitnessOnIndependentTestSet();
 				}
-				
-				// Make logging after mutation of the current individual
-				outputLog();
 			}
+			
+			// Log after the mutation
+			outputLog();
 			
 			// --------------------------------------------
 			// (IV) Make local search if VNS scheme is used
@@ -257,18 +322,10 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 				}
 			}
 			
-			// Update the success counter going through offspring population
-			for(int i=0;i<offspringPopSize;i++) {
-				if((isMinimizingFitness && (offspringPopulationFitnessValues[i][0].getValue() < originalOffspringFitnessValues[i][0].getValue())) ||
-						(!isMinimizingFitness && (offspringPopulationFitnessValues[i][0].getValue() > originalOffspringFitnessValues[i][0].getValue()))) {
-					currentSuccessCounter++;
-				}
-			}
-			
-			// --------------------------------
-			// (V) Update the parent population
-			// --------------------------------
-			selectionOperator.replaceParentPopulation();
+			// --------------------------------------------------------------------------------------------------
+			// (V) Update the parent population and the success number (if the children were better than parents)
+			// --------------------------------------------------------------------------------------------------
+			currentSuccessCounter += selectionOperator.replaceParentPopulation();
 			
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Generation: " + currentGeneration + 
 					" Evaluation: " + currentEvaluation);
@@ -413,10 +470,50 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		populationFitnessValues = new ValidationMetricDouble[popSize][numberOfFitnessValues];
 		offspringPopulation = new ESIndividual[offspringPopSize];
 		offspringPopulationFitnessValues = new ValidationMetricDouble[offspringPopSize][numberOfFitnessValues];
-		originalOffspringFitnessValues = new ValidationMetricDouble[offspringPopSize][numberOfFitnessValues];
 		if(isIndependentTestSetUsed) {
 			populationFitnessValuesOnTestSet = new ValidationMetricDouble[popSize][numberOfFitnessValues];
 			offspringPopulationFitnessValuesOnTestSet = new ValidationMetricDouble[offspringPopSize][numberOfFitnessValues];
+		}
+		
+		// Set the crossover operators
+		// TODO the number of parents and children must be the same for all crossover operators across different representation!
+		crossoverMap = new HashMap<String,List<CrossoverInterface>>();
+		NodeList crossoverNodes = esConfiguration.getESParameterByName("List with crossover operators").getChildNodes();
+		for(int i=0;i<crossoverNodes.getLength();i++) {
+			if(crossoverNodes.item(i).getNodeType() == Node.ELEMENT_NODE) {
+				
+				// Get the class for representation
+				String parameterToOptimizeName = crossoverNodes.item(i).getAttributes().getNamedItem("name").getNodeValue();
+				String parameterToOptimizeClass = esConfiguration.getOptimizationParameterByName(parameterToOptimizeName).
+					getAttributes().getNamedItem("classValue").getNodeValue();
+				
+				// Go through crossover operators for this representation and initialize them
+				try {
+					NodeList crossoverSpecification = crossoverNodes.item(i).getChildNodes();
+					for(int j=0;j<crossoverSpecification.getLength();j++) {
+						if(crossoverSpecification.item(j).getNodeType() == Node.ELEMENT_NODE) {
+							Class<?> crossoverClass = Class.forName(crossoverSpecification.item(j).getAttributes().
+									getNamedItem("classValue").getNodeValue());
+							CrossoverInterface ci = (CrossoverInterface)crossoverClass.newInstance();
+							ci.setParameters(crossoverSpecification.item(j).getChildNodes(),this);
+							if(ci.getParentNumber() > popSize) {
+								throw new NodeException("Crossover requires " + ci.getParentNumber() + " parents; popSize = " + popSize);
+							}
+							
+							// Has any crossover been already configured for this representation?
+							if(crossoverMap.containsKey(parameterToOptimizeClass)) {
+								crossoverMap.get(parameterToOptimizeClass).add(ci);
+							} else {
+								ArrayList<CrossoverInterface> list = new ArrayList<CrossoverInterface>(1);
+								list.add(ci);
+								crossoverMap.put(parameterToOptimizeClass,list);
+							}
+						}
+					}
+				} catch(Exception e) {
+					throw new NodeException("Could not set up crossover for " + parameterToOptimizeClass + " : " + e.getMessage());
+				}
+			}
 		}
 		
 		// Set the mutation operators
@@ -676,6 +773,9 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			
 		// TODO E.g. expected step size can be also output.
 		// However the for-loop is required to search if any IntegerMutation is there..
+		// FIXME
+		esLogger.logString("@ATTRIBUTE 'Self-adaptation factor' NUMERIC");
+		esLogger.logString("@ATTRIBUTE 'Time' NUMERIC");
 			
 		// Output the current population fitness values
 		if(logEvaluation) {
@@ -753,6 +853,14 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			
 			// TODO E.g. expected step size can be also output.
 			// However the for-loop is required to search if any IntegerMutation is there..
+			// FIXME
+			// Go through each representation
+			List<MutationInterface> mutationsToProceed = mutationMap.get(offspringPopulation[0].getRepresentationList().get(0).getClass().getName());
+			MutationInterface m = mutationsToProceed.get(0);
+			outputBuffer.append(((amuse.nodes.optimizer.methods.es.operators.mutation.RandomBitFlip)m).selfAdaptationFactor + ",");
+			
+			// FIXME
+			outputBuffer.append(Calendar.getInstance().getTimeInMillis() + ",");
 			
 			// Output the current population fitness values
 			if(logEvaluation) {

@@ -19,21 +19,42 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 17.02.2010
+ * Creation date: 26.05.2011
  */
-package amuse.nodes.optimizer.methods.es.operators.selection.interfaces;
+package amuse.nodes.optimizer.methods.es.operators.crossover.interfaces;
+
+import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
 
 /**
- * All selection operators must implement this interface
- *
+ * Abstract crossover operator class
+ * 
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public interface SelectionInterface {
+public abstract class AbstractCrossover implements CrossoverInterface {
+
+	/** Number of parents which are used for breeding */
+	protected int parentNumber;
 	
-	/**
-	 * Replaces the parent population
-	 * @return Success number (replacements of parents by children)
+	/** Number of offsprings which are generated */
+	protected int offspringNumber;
+	
+	/** Corresponding evolutionary strategy */
+	protected EvolutionaryStrategy correspondingES;
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.optimizer.methods.es.operators.crossover.interfaces.CrossoverInterface#getParentNumber()
 	 */
-	public int replaceParentPopulation();
+	public int getParentNumber() {
+		return parentNumber;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.optimizer.methods.es.operators.crossover.interfaces.CrossoverInterface#getOffspringNumber()
+	 */
+	public int getOffspringNumber() {
+		return offspringNumber;
+	}
 }

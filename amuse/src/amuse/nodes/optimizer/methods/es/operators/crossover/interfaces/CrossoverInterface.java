@@ -19,21 +19,42 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 17.02.2010
+ * Creation date: 26.05.2011
  */
-package amuse.nodes.optimizer.methods.es.operators.selection.interfaces;
+package amuse.nodes.optimizer.methods.es.operators.crossover.interfaces;
+
+import org.w3c.dom.NodeList;
+
+import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
+import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
 
 /**
- * All selection operators must implement this interface
- *
+ * Each crossover operator must implement this interface
+ * 
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public interface SelectionInterface {
+public interface CrossoverInterface {
+
+	/**
+	 * Sets the parameters of this crossover
+	 * @param parameters Parameters of this crossover
+	 */
+	public void setParameters(NodeList parameters, EvolutionaryStrategy correspondingStrategy) throws NodeException;
 	
 	/**
-	 * Replaces the parent population
-	 * @return Success number (replacements of parents by children)
+	 * Does the crossover
 	 */
-	public int replaceParentPopulation();
+	public RepresentationInterface[] crossover(RepresentationInterface[] representation) throws NodeException;
+	
+	/**
+	 * Returns the parent number
+	 */
+	public int getParentNumber();
+	
+	/**
+	 * Returns the offspring number
+	 */
+	public int getOffspringNumber();
 }

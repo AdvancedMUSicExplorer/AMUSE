@@ -79,7 +79,7 @@ public class HypervolumeSelection extends AbstractSelection {
 	 * (non-Javadoc)
 	 * @see amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface#replaceParentPopulation()
 	 */
-	public void replaceParentPopulation() {
+	public int replaceParentPopulation() {
 		
 		// Individual indices are sorted in the way so that at first comes the parent population
 		// (individual 0 to individual popSize-1) and then offspring population (popSize to popSize+offspringSize-1)
@@ -120,7 +120,9 @@ public class HypervolumeSelection extends AbstractSelection {
 			if(correspondingES.isIndependentTestSetUsed) {
 				correspondingES.populationFitnessValuesOnTestSet[worstIndividualIndex] = newFitnessOnTestSet;
 			}
+			return 1;
 		}
+		return 0;
 	}
 
 	private ArrayList<ArrayList<Integer>> fastNondominatedSorting() {
