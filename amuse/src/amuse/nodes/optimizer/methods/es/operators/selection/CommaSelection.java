@@ -46,7 +46,7 @@ public class CommaSelection extends AbstractSelection {
 	 * (non-Javadoc)
 	 * @see amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface#replaceParentPopulation()
 	 */
-	public void replaceParentPopulation() {
+	public int replaceParentPopulation() {
 		
 		// Individual indices are sorted in the way so that at first comes the parent population
 		// (individual 0 to individual popSize-1) and then offspring population (popSize to popSize+offspringSize-1)
@@ -104,7 +104,7 @@ public class CommaSelection extends AbstractSelection {
 		if(correspondingES.isIndependentTestSetUsed) {
 			correspondingES.populationFitnessValuesOnTestSet = newPopulationFitnessValuesOnTestSet;
 		}
-		
+		return correspondingES.offspringPopSize;
 	}
 
 }

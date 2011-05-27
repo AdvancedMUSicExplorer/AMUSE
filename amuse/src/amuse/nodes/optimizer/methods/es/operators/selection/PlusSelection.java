@@ -46,7 +46,7 @@ public class PlusSelection extends AbstractSelection {
 	 * (non-Javadoc)
 	 * @see amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface#replaceParentPopulation()
 	 */
-	public void replaceParentPopulation() {
+	public int replaceParentPopulation() {
 		
 		// Individual indices are sorted in the way so that at first comes the parent population
 		// (individual 0 to individual popSize-1) and then offspring population (popSize to popSize+offspringSize-1)
@@ -82,6 +82,14 @@ public class PlusSelection extends AbstractSelection {
 			individualsToSort.remove(positionOfBestIndividual);
 		}
 		
+		// Estimate the success number (number of new solutions which will replace the parents)
+		int successCounter = 0;
+		for(Integer ind : sortedIndividuals) {
+			if(ind >= correspondingES.popSize) {
+				successCounter++;
+			}
+		}
+		
 		// Replace parent population
 		ESIndividual[] newPopulation = new ESIndividual[correspondingES.popSize];
 		ValidationMetricDouble[][] newPopulationFitnessValues = new ValidationMetricDouble[correspondingES.popSize][correspondingES.numberOfFitnessValues];
@@ -104,6 +112,7 @@ public class PlusSelection extends AbstractSelection {
 			correspondingES.populationFitnessValuesOnTestSet = newPopulationFitnessValuesOnTestSet;
 		}
 		
+		return successCounter;
 	}
 
 }
