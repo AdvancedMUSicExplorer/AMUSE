@@ -700,8 +700,16 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					values_writer.writeBytes(features.get(j).getValues().get(i)[0].toString() + ",");
 				}
 				double sampleRate = new Integer(features.get(0).getSampleRate()).doubleValue();
-				values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
-					(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().equals(new String("4"))) {
+					values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
+							(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+				} else {
+					
+					// TODO Currently can be used properly only with three AOR features: features 0,3,6... are extracted from attack intervals; 1,4,7,... from onset and
+					// 2,5,8,... from release. Therefore the "partition" size is spanned between the middle of attack interval (from feature 0) and the middle of the release interval (from feature 2)
+					values_writer.writeBytes("milliseconds," + (features.get(0).getWindows().get(i)-1)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
+							(features.get(2).getWindows().get(i))*((double)minimalFrameSize/sampleRate*1000d) + sep);
+				}
 			} 
 			values_writer.close();
 		} catch(IOException e) {
