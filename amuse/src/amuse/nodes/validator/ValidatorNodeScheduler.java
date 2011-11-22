@@ -226,6 +226,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// -------------------------------
 		try {
 			this.vmi.validate();
+			// TODO v0.2: if the file input is validated, the place for metric file must be also given!
 			if(saveToFile) {
 				saveMetricsToFile();
 			}
@@ -377,6 +378,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private void prepareValidatorInput() throws NodeException {
 		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
 		
+		// If the validation set is not given as ready data set..
 		if(! (((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput)) {
 			
 			DataSet labeledInputForValidation = null;
@@ -580,92 +582,90 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			((ValidationConfiguration)this.taskConfiguration).setInputToValidate(new DataSetInput(labeledInputForValidation));
 		} 
 		
-		// Load only the song information if the data is already prepared
-		else {
-			if(((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput) {
-				amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
-						getInputToValidate()).getDataSet().getAttribute("Id");
-				amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
-						getInputToValidate()).getDataSet().getAttribute("Category");
+		// If the validation set is given as ready data set or has been loaded from the file above
+		if(((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput) {
+			amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
+					getInputToValidate()).getDataSet().getAttribute("Id");
+			amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
+					getInputToValidate()).getDataSet().getAttribute("Category");
 				
-				// Is the current classification result binary or multiclass?
-				String category = labelAttribute.getValueAt(0).toString();
-				if(category.startsWith("NOT")) {
-					category = category.substring(4,category.length());
+			// Is the current classification result binary or multiclass?
+			String category = labelAttribute.getValueAt(0).toString();
+			if(category.startsWith("NOT")) {
+				category = category.substring(4,category.length());
+			}
+			for(int i=1;i<labelAttribute.getValueCount();i++) {
+				String currentCategory = labelAttribute.getValueAt(i).toString();
+				if(currentCategory.startsWith("NOT")) {
+					currentCategory = currentCategory.substring(4,currentCategory.length());
 				}
-				for(int i=1;i<labelAttribute.getValueCount();i++) {
-					String currentCategory = labelAttribute.getValueAt(i).toString();
-					if(currentCategory.startsWith("NOT")) {
-						currentCategory = currentCategory.substring(4,currentCategory.length());
-					}
-					if(!currentCategory.equals(category)) {
-						isMulticlass = true;
-						break;
-					}
+				if(!currentCategory.equals(category)) {
+					isMulticlass = true;
+					break;
 				}
+			}
+			
+			Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
+			ArrayList<Double> relationships = new ArrayList<Double>();
+			ArrayList<String> labels = new ArrayList<String>();
+			for(int i=0;i<labelAttribute.getValueCount();i++) {
+				Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
 				
-				Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
-				ArrayList<Double> relationships = new ArrayList<Double>();
-				ArrayList<String> labels = new ArrayList<String>();
-				for(int i=0;i<labelAttribute.getValueCount();i++) {
-					Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
-					
-					// New song is reached
-					if(!newSongId.equals(currentSongId)) {
-						Double[] relationshipsAsArray = new Double[relationships.size()];
-						for(int k=0;k<relationships.size();k++) {
-							relationshipsAsArray[k] = relationships.get(k);
-						} 
-						
-						ClassifiedSongPartitions newSongDesc = null; 
-						if(!isMulticlass) {
-							newSongDesc = new BinaryClassifiedSongPartitions("", 
-								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
-						} else {
-							String[] labelsAsArray = new String[labels.size()];
-							for(int k=0;k<labels.size();k++) {
-								labelsAsArray[k] = labels.get(k);
-							} 
-							newSongDesc = new MulticlassClassifiedSongPartitions("", 
-									currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
-						}
-						labeledSongRelationships.add(newSongDesc);
-						currentSongId = newSongId;
-						relationships = new ArrayList<Double>();
-						labels = new ArrayList<String>();
+				// New song is reached
+				if(!newSongId.equals(currentSongId)) {
+					Double[] relationshipsAsArray = new Double[relationships.size()];
+					for(int k=0;k<relationships.size();k++) {
+						relationshipsAsArray[k] = relationships.get(k);
 					} 
 						
-					if(!labelAttribute.getValueAt(i).toString().startsWith("NOT")) {
-						relationships.add(1d);
+					ClassifiedSongPartitions newSongDesc = null; 
+					if(!isMulticlass) {
+						newSongDesc = new BinaryClassifiedSongPartitions("", 
+							currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
 					} else {
-						relationships.add(0d);
+						String[] labelsAsArray = new String[labels.size()];
+						for(int k=0;k<labels.size();k++) {
+							labelsAsArray[k] = labels.get(k);
+						} 
+						newSongDesc = new MulticlassClassifiedSongPartitions("", 
+								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
 					}
-					if(isMulticlass) {
-						labels.add(labelAttribute.getValueAt(i).toString());
-					}
-				}
-				
-				// For the last song
-				Double[] relationshipsAsArray = new Double[relationships.size()];
-				for(int k=0;k<relationships.size();k++) {
-					relationshipsAsArray[k] = relationships.get(k);
+					labeledSongRelationships.add(newSongDesc);
+					currentSongId = newSongId;
+					relationships = new ArrayList<Double>();
+					labels = new ArrayList<String>();
 				} 
-				
-				ClassifiedSongPartitions newSongDesc = null; 
-				if(!isMulticlass) {
-					newSongDesc = new BinaryClassifiedSongPartitions("", 
-						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
+						
+				if(!labelAttribute.getValueAt(i).toString().startsWith("NOT")) {
+					relationships.add(1d);
 				} else {
-					String[] labelsAsArray = new String[labels.size()];
-					for(int k=0;k<labels.size();k++) {
-						labelsAsArray[k] = labels.get(k);
-					} 
-					newSongDesc = new MulticlassClassifiedSongPartitions("", 
-							currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
+					relationships.add(0d);
 				}
-				labeledSongRelationships.add(newSongDesc);
+				if(isMulticlass) {
+					labels.add(labelAttribute.getValueAt(i).toString());
+				}
+			}
+				
+			// For the last song
+			Double[] relationshipsAsArray = new Double[relationships.size()];
+			for(int k=0;k<relationships.size();k++) {
+				relationshipsAsArray[k] = relationships.get(k);
 			} 
-		}
+			
+			ClassifiedSongPartitions newSongDesc = null; 
+			if(!isMulticlass) {
+				newSongDesc = new BinaryClassifiedSongPartitions("", 
+					currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
+			} else {
+				String[] labelsAsArray = new String[labels.size()];
+				for(int k=0;k<labels.size();k++) {
+					labelsAsArray[k] = labels.get(k);
+				} 
+				newSongDesc = new MulticlassClassifiedSongPartitions("", 
+						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
+			}
+			labeledSongRelationships.add(newSongDesc);
+		} 
 	}
 
 	/**
