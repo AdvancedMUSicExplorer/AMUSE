@@ -40,6 +40,8 @@ import org.apache.log4j.Level;
 import amuse.data.ArffFeatureLoader;
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.NodeEvent;
@@ -692,6 +694,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		   				" to " + numberOfMaxPartitions);
 			}
 			
+			// TODO [1/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
+			// is to change Feature class and allow frames of different sizes (e.g. with a child class)
+			// Load the attack start events and release end events
+			Double[] attackStarts = loadEventTimes("attack");
+			Double[] releaseEnds = loadEventTimes("release");
+			
 			// Save the data
 			for(int i=0;i<numberOfMaxPartitions;i++) {
 				for(int j=0;j<features.size();j++) {
@@ -700,15 +708,15 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					values_writer.writeBytes(features.get(j).getValues().get(i)[0].toString() + ",");
 				}
 				double sampleRate = new Integer(features.get(0).getSampleRate()).doubleValue();
-				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().equals(new String("4"))) {
+				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1"))) {
 					values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
 							(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
 				} else {
 					
-					// TODO Currently can be used properly only with three AOR features: features 0,3,6... are extracted from attack intervals; 1,4,7,... from onset and
-					// 2,5,8,... from release. Therefore the "partition" size is spanned between the middle of attack interval (from feature 0) and the middle of the release interval (from feature 2)
-					values_writer.writeBytes("milliseconds," + (features.get(0).getWindows().get(i)-1)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
-							(features.get(2).getWindows().get(i))*((double)minimalFrameSize/sampleRate*1000d) + sep);
+					// TODO [2/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
+					// is to change Feature class and allow frames of different sizes (e.g. with a child class)
+					values_writer.writeBytes("milliseconds," + attackStarts[i] * 1000 + "," + releaseEnds[i] * 1000 + sep);
+					
 				}
 			} 
 			values_writer.close();
@@ -850,5 +858,67 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		return minimalFrameSize;
 	}
 	
+	/**
+	 * Loads the event times TODO this function exists also in AORSplitter!
+	 * @param string Event description (onset, attack or release)
+	 * @return Double array with time values in ms
+	 */
+	private Double[] loadEventTimes(String string) throws NodeException {
+		Double[] eventTimes = null;
+		
+		String idPostfix = null;
+		if(string.equals(new String("onset"))) {
+			idPostfix = new String("_419.arff");
+		} else if(string.equals(new String("attack"))) {
+			idPostfix = new String("_423.arff");
+		} if(string.equals(new String("release"))) {
+			idPostfix = new String("_424.arff");
+		} 
+		
+		try {
+			
+			// Load the attack, onset or release times, using the file name of the first feature
+			// for finding the path to feature files (ID = 419, 423 and 424)
+			String currentTimeEventFile = ((ProcessingConfiguration)this.getConfiguration()).getMusicFileList().getFileAt(0);
+				
+			// Calculate the path to file with time events
+			String relativeName = new String();
+			if(currentTimeEventFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+			} else {
+				relativeName = currentTimeEventFile;
+			}
+			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + idPostfix;
+			} else {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					File.separator + relativeName + idPostfix;
+			}	
+			
+			DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));
+			
+			// TODO vINTERNAL Current implementation for the cases if MIR Toolbox extracts none or more than one onset for instrument tones
+			/*if(eventTimesSet.getValueCount() != 1) {
+				return loadEventTimesBasedOnRMS(string);
+			}*/
+			
+			eventTimes = new Double[eventTimesSet.getValueCount()];
+			for(int i=0;i<eventTimes.length;i++) {
+				if(string.equals(new String("onset"))) {
+					eventTimes[i] = new Double(eventTimesSet.getAttribute("Onset times").getValueAt(i).toString());
+				} else if(string.equals(new String("attack"))) {
+					eventTimes[i] = new Double(eventTimesSet.getAttribute("Start points of attack intervals").getValueAt(i).toString());
+				} if(string.equals(new String("release"))) {
+					eventTimes[i] = new Double(eventTimesSet.getAttribute("End points of release intervals").getValueAt(i).toString());
+				} 
+			}
+		} catch(Exception e) {
+			throw new NodeException("Could not load the time events: " + e.getMessage());
+		}
+		return eventTimes;
+	}
+
 
 }
