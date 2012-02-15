@@ -163,7 +163,19 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 				
 				int currentWindow = features.get(j).getWindows().get(k).intValue()-1;
 				
-				// If the last release is too far away
+				// If any of the current time events belongs to the end frames of a song from which the current feature has not
+				// been extracted (holds e.g. for delta MFCCs and occurs rather seldom! - the time event must be at the very end
+				// of the music piece), an approximation is used: window of the current time event is set to the last window for 
+				// which this feature has been extracted
+				if(windowOfCurrentAttackStart > features.get(j).getWindows().size()-1) {
+					windowOfCurrentAttackStart = features.get(j).getWindows().size()-1;
+				}
+				if(windowOfCurrentAttackMiddle > features.get(j).getWindows().size()-1) {
+					windowOfCurrentAttackMiddle = features.get(j).getWindows().size()-1;
+				}
+				if(windowOfCurrentOnset > features.get(j).getWindows().size()-1) {
+					windowOfCurrentOnset = features.get(j).getWindows().size()-1;
+				}
 				if(windowOfCurrentReleaseMiddle > features.get(j).getWindows().size()-1) {
 					windowOfCurrentReleaseMiddle = features.get(j).getWindows().size()-1;
 				}
