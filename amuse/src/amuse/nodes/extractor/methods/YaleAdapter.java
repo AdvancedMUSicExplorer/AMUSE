@@ -461,7 +461,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		// Start Yale
 		try {
 			List<String> javaProperties = new ArrayList<String>();
-			javaProperties.add("-Xmx1800m");
+			javaProperties.add("-Xmx2000m");
 			List<String> libs = new ArrayList<String>();
 			String yaleHome = new File(properties.getProperty("extractorFolder")).getAbsolutePath();
 			String lib = yaleHome + File.separator + "lib" + File.separator;
