@@ -95,7 +95,7 @@ public class DataSet extends DataSetAbstract {
 		    String[] val = (String[]) values[aCount];
 		    val[i]= (atr.getValueAt(i));
 		} else {
-		    StringAttribute atr = (StringAttribute) a;
+		    NominalAttribute atr = (NominalAttribute) a;
 		    String[] val = (String[]) values[aCount];
 		    val[i]= (atr.getValueAt(i));
 		}
