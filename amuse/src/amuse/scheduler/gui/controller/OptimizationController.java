@@ -72,9 +72,9 @@ public class OptimizationController extends AbstractController {
         if (conf instanceof OptimizationConfiguration) {
             OptimizationConfiguration optiConf = (OptimizationConfiguration) conf;
             oView.setTrainingAlgorithmDescriptor(optiConf.getAlgorithmDescription());
-            oView.setLearningCategory(optiConf.getCategoryLearningId());
-            oView.setOptimizingCategory(optiConf.getCategoryOptimizationId());
-            oView.setTestCategory(optiConf.getCategoryTestId());
+            oView.setLearningCategory(new Integer(optiConf.getTrainingInput()));
+            oView.setOptimizingCategory(new Integer(optiConf.getOptimizationInput()));
+            oView.setTestCategory(new Integer(optiConf.getTestInput()));
             oView.setOutputDescriptor(optiConf.getDestinationFolder());
         }
     }
