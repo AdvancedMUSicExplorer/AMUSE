@@ -5,7 +5,7 @@
 -------------------
 For AMUSE framework:
 -------------------
-Copyright 2006-2010 by code authors
+Copyright 2006-2012 by code authors
 
 Created at TU Dortmund, Chair of Algorithm Engineering
 (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -26,33 +26,39 @@ along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
 ------------------
 For Chroma Toolbox:
 ------------------
-The Chroma Toolbox has been developed by Meinard Müller and his collaborates from the 
-research group headed by Michael Clausen. It contains MATLAB implementations for extracting 
-various types of novel pitch-based and chroma-based audio features. The MATLAB implementations 
-provided on this website are free for use in non-commercial research projects worldwide. 
-If you publish results obtained using these implementations, please cite the references below, 
-[1], [2], [3], [4].
+(Version 2.0. Last update: 2011-08-31)
+The Chroma Toolbox has been developed by Meinard Müller and Sebastian Ewert.  It contains MATLAB implementations for extracting 
+various types of novel pitch-based and chroma-based audio features. The MATLAB implementations are published under the terms of 
+the General Public License (GPL). A general overview of the chroma toolbox is given in [1]. 
 
-[1] 
+If you publish results obtained using these implementations, please cite [1]. For technical details on the features please cite [2], 
+[3], [4], [5].
+
+[1]
+Meinard Müller and Sebastian Ewert 
+Chroma Toolbox: MATLAB Implementations for Extracting Variants of Chroma-Based Audio Features 
+Proceedings of the International Conference on Music Information Retrieval (ISMIR), 2011.
+
+[2] 
 Meinard Müller 
 Information Retrieval for Music and Motion 
 Monograph, Springer, 2007. 
 ISBN: 978-3-540-74047-6
 
-[2]
+[3]
 Meinard Müller, Frank Kurth, and Michael Clausen
 Audio matching via chroma-based statistical features. 
-Proceedings of the 6th International Conference on Music Information Retrieval (ISMIR), pp. 288-295, 2005.
+Proceedings of the International Conference on Music Information Retrieval (ISMIR), pp. 288-295, 2005.
 
-[3]
+[4]
 Meinard Müller, Sebastian Ewert, and Sebastian Kreuzer
 Making chroma features more robust to timbre changes. 
 Proceedings of IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP), Taipei, Taiwan, pp. 1869-1872, 2009.
 
-[4]
+[5]
 Meinard Müller and Sebastian Ewert 
 Towards timbre-invariant audio features for harmony-based music. 
-IEEE Transactions on Audio, Speech, and Language Processing, pp. 649-662, Vol. 18(3), 2010.
+IEEE Transactions on Audio, Speech, and Language Processing, vol. 18, no. 3, pp. 649–662, 2010.
 
 Further information is available on the web site:
 http://www.mpi-inf.mpg.de/~mmueller/chromatoolbox/

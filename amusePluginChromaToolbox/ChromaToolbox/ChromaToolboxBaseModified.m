@@ -1,5 +1,4 @@
-<amuseMatlabScript>
-<text>
+
 %
 % ChromaToolboxBase.m
 %%%%%%%%%%%%%%%%%%%
@@ -40,11 +39,7 @@ woffset = wlength;
 p=strfind(input_file,'/');
 k=strfind(input_file,'.');
 output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
-</text>
-	
-<amuseEnableTransform>
-<transformContent>
-        <text>
+
 	  % Split the file name as required for wav_to_audio
 	  p=strfind(input_file,'/');
 	  dir_abs = input_file(1:p(end-4));
@@ -70,10 +65,7 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 	  parameter.saveAsTuned = 1;
 	  parameter.visualize = 0; % Do not make any visualization!
 	  [f_pitch,sideinfo] = audio_to_pitch_via_FB(f_audio,parameter,sideinfo);
-	 </text> 
-          
-<amuseEnableFeature id="218" dimensions="12">
-	<text>
+	 
 	  % Compute CENS
 	  win_len = 4410;
 	  parameter.winLenSmooth = 21;
@@ -84,13 +76,7 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 	  %parameter.print = 0;
 	  [f_CENS,sideinfo] = pitch_to_CENS(f_pitch,parameter,sideinfo);
 	  arff_saver_with_windows_number_forCENS([output_file_prefix,'218.arff'],'Chroma Energy Normalized Statistics',f_CENS,11025);
-	 </text>
-</amuseEnableFeature>
-          
-<amuseEnableTransform>
-<transformContent>
-<amuseEnableFeature id="219" dimensions="12">
-	<text>
+	 
 	  % Compute CRP
 	  win_len = 4410;
 	  parameter.coeffsToKeep = [55:120];
@@ -99,10 +85,7 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 	  parameter.featureRate = sideinfo.pitch.featureRate;
 	  [f_CRP,sideinfo] = pitch_to_CRP(f_pitch,parameter,sideinfo);
 	  arff_saver_with_windows_number_forCENS([output_file_prefix,'219.arff'],'Chroma DCT-Reduced log Pitch',f_CRP,11025);
-	</text>
-</amuseEnableFeature>
-<amuseEnableFeature id="220" dimensions="66">
-	<text>
+	
 	  % Compute strengths of CRP cooccurrences (1st dim: (CRP1+CRP2)/2; 2nd dim: (CRP1+CRP3)/2 etc.)
 	  co = zeros(length(f_CRP),66);
 	  curr_index = 1;
@@ -116,15 +99,5 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 	      curr_index = 1;
 	  end;
 	  arff_saver_with_windows_number_forCENS([output_file_prefix,'220.arff'],'Strengths of CRP cooccurrences',co',11025);
-	</text>
-</amuseEnableFeature>
-</transformContent>
-</amuseEnableTransform>
-</transformContent>
-</amuseEnableTransform>
-
-<text>
+	
 	exit
-</text>
-
-</amuseMatlabScript>
