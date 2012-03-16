@@ -24,7 +24,7 @@
 % along with AMUSE. If not, see: http://www.gnu.org/licenses/.
 % 
 % Created on 15.12.2009 by Igor Vatolkin
-% Last modified on 11.03.2012 by Igor Vatolkin (update to Chroma Toolbox 2.0 and integration of CRP features)
+% Last modified on 16.03.2012 by Igor Vatolkin (update to Chroma Toolbox 2.0 and integration of CRP features)
 % $Id: $
 function ChromaToolboxBase(input_file,output_dir)
 
