@@ -60,11 +60,14 @@ public class FeatureTable implements Serializable {
             StringAttribute description = featureTableSet.getDescriptionAttribute();
             NumericAttribute extractorID = featureTableSet.getExtractorIDAttribute();
             NumericAttribute dimension = featureTableSet.getDimensionsAttribute();
+            NumericAttribute windowSize = featureTableSet.getWindowSizeAttribute();
             for (int i = 0; i < featureTableSet.getValueCount(); i++) {
             	if (extractorID.getValueAt(i).isNaN()) {
             		// Skip this
             	} else {
-            		features.add(new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue()));
+            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue());
+            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
+            		features.add(f);
             	}
             }
         } catch (IOException ex) {
