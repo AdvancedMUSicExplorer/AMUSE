@@ -1,0 +1,35 @@
+<amuseSonicAnnotatorScript>
+<amuseEnableFeature id="256" dimensions="1">
+vamp:nnls-chroma:chordino:simplechord
+</amuseEnableFeature>
+<amuseEnableFeature id="254" dimensions="1">
+vamp:nnls-chroma:chordino:harmonicchange
+</amuseEnableFeature>
+<amuseEnableFeature id="222" dimensions="2">
+vamp:nnls-chroma:chordino:chordnotes
+</amuseEnableFeature>
+<amuseEnableFeature id="251" dimensions="12">
+vamp:nnls-chroma:nnls-chroma:basschroma
+</amuseEnableFeature>
+<amuseEnableFeature id="224" dimensions="12">
+vamp:nnls-chroma:nnls-chroma:chroma
+</amuseEnableFeature>
+<amuseEnableFeature id="255" dimensions="1">
+vamp:nnls-chroma:nnls-chroma:consonance
+</amuseEnableFeature>
+<amuseEnableFeature id="226" dimensions="256">
+vamp:nnls-chroma:nnls-chroma:logfreqspec
+</amuseEnableFeature>
+<amuseEnableFeature id="252" dimensions="84">
+vamp:nnls-chroma:nnls-chroma:semitonespectrum
+</amuseEnableFeature>
+<amuseEnableFeature id="228" dimensions="256">
+vamp:nnls-chroma:nnls-chroma:tunedlogfreqspec
+</amuseEnableFeature>
+<amuseEnableFeature id="253" dimensions="1">
+vamp:nnls-chroma:tuning:localtuning
+</amuseEnableFeature>
+<amuseEnableFeature id="230" dimensions="3">
+vamp:nnls-chroma:tuning:tuning
+</amuseEnableFeature>
+</amuseSonicAnnotatorScript>
