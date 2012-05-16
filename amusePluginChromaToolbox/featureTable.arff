@@ -19,3 +19,5 @@
 
 @DATA
 218, "Chroma Energy Normalized Statistics", 5, 4410, 12
+219, "Chroma DCT-Reduced log Pitch", 5, 4410, 12
+220, "Strengths of CRP cooccurrences", 5, 4410, 66
