@@ -1,0 +1,27 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+
+@DATA
+250, "Chroma - NNLS", 7, 2048, 12
+251, "Bass chroma - NNLS", 7, 2048, 12
+252, "Semitone spectrum - NNLS", 7, 2048, 85
+253, "Local tuning - NNLS", 7, 8192, 1
+254, "Harmonic change - NNLS", 7, 2048, 1
+255, "Consonance - NNLS", 7, 2048, 1
+256, "Simplechord - NNLS", 7, -1, 1
