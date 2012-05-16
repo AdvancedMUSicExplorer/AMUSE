@@ -11,5 +11,5 @@
 @ATTRIBUTE Folder STRING
 
 @DATA
-2, "Chroma Toolbox", "15.12.2009 stable", "ChromaToolbox"
+2, "Chroma Toolbox", "Version 2.0. Last update: 2011-08-31", "ChromaToolbox"
 
