@@ -25,3 +25,8 @@
 254, "Harmonic change - NNLS", 7, 2048, 1
 255, "Consonance - NNLS", 7, 2048, 1
 256, "Simplechord - NNLS", 7, -1, 1
+257, "Number of different chords in 10s", 7, 220500, 1
+258, "Number of chord changes in 10s", 7, 220500, 1
+259, "Shares of the most frequent 20, 40 and 60 percents of chords with regard to their duration", 7, 220500, 3
+260, "Interval strengths estimated from 10 highest semitone peaks", 7, 2048, 12
+261, "Interval strengths estimated from the semitone peaks above 3/4 of the maximum peak", 7, 2048, 12

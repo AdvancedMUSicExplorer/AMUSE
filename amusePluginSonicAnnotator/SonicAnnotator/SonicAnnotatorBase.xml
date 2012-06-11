@@ -1,35 +1,81 @@
 <amuseSonicAnnotatorScript>
-<amuseEnableFeature id="256" dimensions="1">
-vamp:nnls-chroma:chordino:simplechord
-</amuseEnableFeature>
-<amuseEnableFeature id="254" dimensions="1">
-vamp:nnls-chroma:chordino:harmonicchange
-</amuseEnableFeature>
-<amuseEnableFeature id="222" dimensions="2">
-vamp:nnls-chroma:chordino:chordnotes
+<amuseEnableFeature id="250" dimensions="12">
+<sonicAnnotatorCommand>vamp:nnls-chroma:nnls-chroma:chroma</sonicAnnotatorCommand>
+<convertExtractedFeature id="250" filename="vamp_nnls-chroma_nnls-chroma_chroma.csv"></convertExtractedFeature>
 </amuseEnableFeature>
 <amuseEnableFeature id="251" dimensions="12">
-vamp:nnls-chroma:nnls-chroma:basschroma
+<sonicAnnotatorCommand>vamp:nnls-chroma:nnls-chroma:basschroma</sonicAnnotatorCommand>
+<convertExtractedFeature id="251" filename="vamp_nnls-chroma_nnls-chroma_basschroma.csv"></convertExtractedFeature>
 </amuseEnableFeature>
-<amuseEnableFeature id="224" dimensions="12">
-vamp:nnls-chroma:nnls-chroma:chroma
+
+<amuseEnableTransform>
+<transformContent>
+<!-- Semitone spectrum and derived features -->
+<sonicAnnotatorCommand>vamp:nnls-chroma:nnls-chroma:semitonespectrum</sonicAnnotatorCommand>
+
+<amuseEnableFeature id="252" dimensions="84">
+<convertExtractedFeature id="252" filename="vamp_nnls-chroma_nnls-chroma_semitonespectrum.csv"></convertExtractedFeature>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="260" dimensions="12">
+<extractFeature id="260" source="vamp_nnls-chroma_nnls-chroma_semitonespectrum.csv">amuse.nodes.extractor.methods.nnlsderived.IntervalStrengthsFromHighestSemitonePeaks</extractFeature>
+</amuseEnableFeature>
+<amuseEnableFeature id="261" dimensions="12">
+<extractFeature id="261" source="vamp_nnls-chroma_nnls-chroma_semitonespectrum.csv">amuse.nodes.extractor.methods.nnlsderived.IntervalStrengthsFromHighestSemitonePeaksRelatedToMaxPeak</extractFeature>
+</amuseEnableFeature>
+
+</transformContent>
+</amuseEnableTransform>
+
+
+<amuseEnableFeature id="253" dimensions="1">
+<sonicAnnotatorCommand>vamp:nnls-chroma:tuning:localtuning</sonicAnnotatorCommand>
+<convertExtractedFeature id="253" filename="vamp_nnls-chroma_tuning_localtuning.csv"></convertExtractedFeature>
+</amuseEnableFeature>
+<amuseEnableFeature id="254" dimensions="1">
+<sonicAnnotatorCommand>vamp:nnls-chroma:chordino:harmonicchange</sonicAnnotatorCommand>
+<convertExtractedFeature id="254" filename="vamp_nnls-chroma_chordino_harmonicchange.csv"></convertExtractedFeature>
 </amuseEnableFeature>
 <amuseEnableFeature id="255" dimensions="1">
-vamp:nnls-chroma:nnls-chroma:consonance
+<sonicAnnotatorCommand>vamp:nnls-chroma:nnls-chroma:consonance</sonicAnnotatorCommand>
+<convertExtractedFeature id="255" filename="vamp_nnls-chroma_nnls-chroma_consonance.csv"></convertExtractedFeature>
+</amuseEnableFeature>
+
+<amuseEnableTransform>
+<transformContent>
+<!-- Chords and derived features -->
+<sonicAnnotatorCommand>vamp:nnls-chroma:chordino:simplechord</sonicAnnotatorCommand>
+
+<amuseEnableFeature id="256" dimensions="1">
+<convertExtractedFeature id="256" filename="vamp_nnls-chroma_chordino_simplechord.csv"></convertExtractedFeature>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="257" dimensions="1">
+<extractFeature id="257" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.NumberOfDifferentChordsIn10Seconds</extractFeature>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="258" dimensions="1">
+<extractFeature id="258" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.NumberOfChordChangesIn10Seconds</extractFeature>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="259" dimensions="3">
+<extractFeature id="259" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.FrequentChordSharesBasedOnChordDuration</extractFeature>
+</amuseEnableFeature>
+</transformContent>
+</amuseEnableTransform>
+
+
+
+<!--<amuseEnableFeature id="222" dimensions="2">
+vamp:nnls-chroma:chordino:chordnotes
 </amuseEnableFeature>
 <amuseEnableFeature id="226" dimensions="256">
 vamp:nnls-chroma:nnls-chroma:logfreqspec
 </amuseEnableFeature>
-<amuseEnableFeature id="252" dimensions="84">
-vamp:nnls-chroma:nnls-chroma:semitonespectrum
-</amuseEnableFeature>
 <amuseEnableFeature id="228" dimensions="256">
 vamp:nnls-chroma:nnls-chroma:tunedlogfreqspec
 </amuseEnableFeature>
-<amuseEnableFeature id="253" dimensions="1">
-vamp:nnls-chroma:tuning:localtuning
-</amuseEnableFeature>
 <amuseEnableFeature id="230" dimensions="3">
 vamp:nnls-chroma:tuning:tuning
-</amuseEnableFeature>
+</amuseEnableFeature>-->
 </amuseSonicAnnotatorScript>

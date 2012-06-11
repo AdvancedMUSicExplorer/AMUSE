@@ -25,24 +25,24 @@ package amuse.nodes.extractor.methods;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Level;
 import org.w3c.dom.Document;
@@ -54,7 +54,9 @@ import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.methods.nnlsderived.NNLSDerivedFeature;
 import amuse.util.AmuseLogger;
 import amuse.util.ExternalProcessBuilder;
 
@@ -77,8 +79,6 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	/** Path to the desired arff output from Sonic Annotator */
 	private String outputFeatureFile;
 	
-	private static HashMap<String,Feature> filename2feature = new HashMap<String,Feature>();
-	
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.nodes.extractor.interfaces.ExtractorInterface#setFilenames(java.lang.String, java.lang.String, java.lang.Integer)
@@ -99,7 +99,7 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 		Document currentBaseScript = null;
 		try {
 			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + "/" + 
+					properties.getProperty("extractorFolder") + File.separator + 
 					properties.getProperty("inputExtractorBaseBatch"));
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open Sonic Annotator base script: " + e.getMessage());
@@ -109,29 +109,115 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			throw new NodeException("Cannot create DocumentBuilder which satisfies the configuration: " + e.getMessage());
 		}
 		
-		// Save the modified script as xml file
-		filename2feature.clear();
+		// Search for all AmuseEnabler Nodes
 		NodeList nList = currentBaseScript.getElementsByTagName("amuseEnableFeature");
-		try {
-		        BufferedWriter out = new BufferedWriter(new FileWriter(properties.getProperty("extractorFolder") + "/" + 
-						   properties.getProperty("inputExtractorBatch")));
-		        
-				for(int i=0;i<nList.getLength();i++) {
-					Node node = nList.item(i);
-					NamedNodeMap attr = node.getAttributes();
-					Integer id = new Integer(attr.getNamedItem("id").getNodeValue());
-					if(feature2Tool.containsKey(id) ) {
-						String pluginCmd = node.getTextContent().substring(1); // Plugin command parameter for sonic-annotator
-						out.write(pluginCmd); // Write the plugin command parameter
-						Feature ft = featureTable.getFeatureByID(id); //Look up the feature through the featureTable
-						filename2feature.put(pluginCmd.replace("\n", ""), ft); // Add the pair of plugin command and feature object into the data structure for the following conversion
-						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Feature with ID '" + id + 
+		for(int i=0;i<nList.getLength();i++) {
+			Node node = nList.item(i);
+			NamedNodeMap attr = node.getAttributes();
+			StringTokenizer idsTokenizer = new StringTokenizer(attr.getNamedItem("id").getNodeValue(),",");	
+			ArrayList<Integer> idsOfCurrentEnabler = new ArrayList<Integer>();
+			while(idsTokenizer.hasMoreElements()) {
+				idsOfCurrentEnabler.add(new Integer(idsTokenizer.nextToken()));
+			}
+			
+			// The subtree will be kept only if this extractor should extract the feature
+			boolean enableSubTree = false;
+			for(int j=0;j<idsOfCurrentEnabler.size();j++) {
+				if(!feature2Tool.containsKey(idsOfCurrentEnabler.get(j))) {
+					continue;
+				}
+				if(feature2Tool.get(idsOfCurrentEnabler.get(j)).toString().equals(properties.getProperty("id"))) {
+					enableSubTree = true; break;
+				}
+			}
+			
+			if(!enableSubTree) {
+				// Cut the XML subtree which extracts current feature(s) since it should not be supported by this extractor
+				node.getParentNode().removeChild(node);
+				
+				// Important, since the list is updated after replacement!
+				i--;
+			} else {
+				// Go through the list of features which are extracted in the subtree of this enabler
+				for(int j=0;j<idsOfCurrentEnabler.size();j++) {
+					if(feature2Tool.get(idsOfCurrentEnabler.get(j)).toString().equals(properties.getProperty("id"))) {
+						
+						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Feature with ID '" + idsOfCurrentEnabler.get(j) + 
 								"' will be extracted with " + properties.getProperty("extractorName"));
+						
 					}
 				}
-		        out.close();
-		} catch (IOException e) {
-		    	e.printStackTrace();
+				
+				Node parent = node.getParentNode(); 
+				NodeList children = node.getChildNodes();
+				for(int j=0;j<children.getLength();j++) {
+					if(children.item(j).getNodeType() == Node.ELEMENT_NODE) {
+						// Insert the child node before "amuseEnableNode" node
+						parent.insertBefore(children.item(j), node);
+					}
+				}
+				parent.removeChild(node);
+				
+				// Important, since the list is updated after replacement!
+				i--;
+				
+				Node start2Search = parent;
+				
+				// Go upside in XML tree and look for amuseEnableTransform nodes. If they are found, replace them
+				// with their subtrees since these transforms are needed for the extraction of features
+				while(start2Search.getNodeType() != Node.DOCUMENT_NODE) {
+					start2Search = start2Search.getParentNode();
+					if(start2Search == null) break;
+					
+					// amuseEnableTransform found?
+					if(start2Search.getNodeName().equals("amuseEnableTransform")) {
+						Node parentOfEnableTransform = start2Search.getParentNode();
+						NodeList childrenOfTransform = start2Search.getChildNodes();
+						for(int j=0;j<childrenOfTransform.getLength();j++) {
+							if(childrenOfTransform.item(j).getNodeType() == Node.ELEMENT_NODE) {
+								
+								// Replace "amuseEnableTransform" with child subtree which extracts somewhere the current feature(s)
+								parentOfEnableTransform.replaceChild(childrenOfTransform.item(j),start2Search);
+							}
+						}
+						start2Search = parentOfEnableTransform;
+					}
+				}
+			} 
+		}
+		
+		// Search for the rest of amuseEnableTransform nodes and delete them, since they do not include features to extract
+		// with this Tool
+		nList = currentBaseScript.getElementsByTagName("amuseEnableTransform");
+		for(int i=0;i<nList.getLength();i++) {
+			Node node = nList.item(i);
+			node.getParentNode().removeChild(node);
+			
+			// Important, since the list is updated after replacement!
+			i--;
+		}
+		
+		// Save the modified script
+		try {
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			DOMSource domsource = new DOMSource(currentBaseScript);
+			File modifiedScript = new File(properties.getProperty("extractorFolder") + File.separator
+							+ properties.getProperty("inputExtractorBatch"));
+			if (modifiedScript.exists())
+				if (!modifiedScript.canWrite()) {
+					throw new NodeException(
+							"Cannot write to modified Sonic Annotator base script");
+				}
+			if (!modifiedScript.exists())
+				modifiedScript.createNewFile();
+			StreamResult result = new StreamResult(modifiedScript);
+			transformer.transform(domsource, result);
+		} catch (javax.xml.transform.TransformerConfigurationException e) {
+			throw new NodeException("Cannot transform Sonic Annotator base script: " + e.getMessage());
+		} catch (java.io.IOException e) {
+			throw new NodeException("Cannot save transformed Sonic Annotator base script: " + e.getMessage());
+		} catch (javax.xml.transform.TransformerException e) {
+			throw new NodeException("Cannot transform Sonic Annotator base script: " + e.getMessage());
 		}
 	}
 
@@ -141,8 +227,6 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	 */
 	public void convertOutput() throws NodeException {
 		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
-		Set<String> pluginCommands = filename2feature.keySet();
-		Iterator<String> loop = pluginCommands.iterator();
 		
 		// Create a folder for Amuse feature files
 		File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + 
@@ -152,15 +236,29 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 					folder.toString());
 		}
 		
-		// Go through all extracted feature files
-		while(loop.hasNext()) {
-			String pluginCmd = (String) loop.next();
-			Feature currentFeature = filename2feature.get(pluginCmd);
-			String outputPath = outputFeatureFile + File.separator + musicFileName + "_" + pluginCmd.replace(':','_') + ".csv";
+		// Load Sonic Annotator modified script
+		Document modifiedBaseScript = null;
+		try {
+			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+					properties.getProperty("extractorFolder") + File.separator + 
+					properties.getProperty("inputExtractorBatch"));
+		} catch(Exception e) {
+			throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
+		} 
+		
+		// Go through all extracted feature files which must be converted to AMUSE ARFF
+		NodeList nList = modifiedBaseScript.getElementsByTagName("convertExtractedFeature");
+		for(int k=0;k<nList.getLength();k++) {
+			Node node = nList.item(k);
+			NamedNodeMap attr = node.getAttributes();
+			Integer id = new Integer(attr.getNamedItem("id").getNodeValue());
+			String filename = attr.getNamedItem("filename").getNodeValue();
+			Feature currentFeature = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable().getFeatureByID(id);
+			String outputPath = outputFeatureFile + File.separator + musicFileName + "_" + filename;
 			
 			// For AMUSE feature file (TMP in the folder name is omitted)
 			String outputAmuseFeature = outputFeatureFile.substring(0,outputFeatureFile.length()-3) + 
-				File.separator + musicFileName + "_" + currentFeature.getId() + ".arff";
+				File.separator + musicFileName + "_" + id + ".arff";
 			FileReader featuresInput = null;
 			BufferedReader featuresReader = null;
 			int columns;
@@ -231,6 +329,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			catch(IOException e) {
 				throw new NodeException("Could not read the csv output from Sonic Annotator: " + e.getMessage());
 			}
+			
+			try {
+				featuresReader.close();
+			} catch (IOException e) {
+				throw new NodeException("Could not close the input stream: " + e.getMessage());
+			}
 		}
 	}
 
@@ -275,11 +379,22 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 				
 		// Go through the modified base script and start Sonic Annotator for each feature
 		try {
-			BufferedReader in = new BufferedReader(new FileReader(properties.getProperty("extractorFolder") + File.separator + 
-					   properties.getProperty("inputExtractorBatch")));
-			String input = null;
-			while((input = in.readLine()) != null)
-			{
+			
+			// Load Sonic Annotator modified script
+			Document modifiedBaseScript = null;
+			try {
+				modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+						properties.getProperty("extractorFolder") + File.separator + 
+						properties.getProperty("inputExtractorBatch"));
+			} catch(Exception e) {
+				throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
+			} 
+			
+			// Search for all features which must be extracted by Sonic Annotator directly
+			NodeList nList = modifiedBaseScript.getElementsByTagName("sonicAnnotatorCommand");
+			for(int i=0;i<nList.getLength();i++) {
+				Node node = nList.item(i);
+				String input = node.getTextContent();
 				List<String> commands = new ArrayList<String>();
 				commands.add(properties.getProperty("extractorFolder") + File.separator + properties.getProperty("extractorStartScript"));
 				commands.add("-d");
@@ -303,6 +418,59 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
         }
         outputFeatureFile = folder.getAbsolutePath();
         convertOutput();
+        extractAMUSEFeatures();
+	}
+
+	/**
+	 * Extracts the AMUSE features based on previously extracted Sonic Annotator features
+	 */
+	private void extractAMUSEFeatures() throws NodeException {
+		
+		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
+		
+		// Create a folder for Amuse feature files
+		File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + 
+				"/" + this.currentPart + "/" + properties.getProperty("extractorFolderName"));
+		if(!folder.exists() && !folder.mkdirs()) {
+			throw new NodeException("Extraction with Sonic Annotator failed: could not create temp folder " + 
+					folder.toString());
+		}
+		
+		// Load Sonic Annotator modified script
+		Document modifiedBaseScript = null;
+		try {
+			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
+					properties.getProperty("extractorFolder") + File.separator + 
+					properties.getProperty("inputExtractorBatch"));
+		} catch(Exception e) {
+			throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
+		} 
+		
+		// Search for all features which must be extracted by Sonic Annotator directly
+		NodeList nList = modifiedBaseScript.getElementsByTagName("extractFeature");
+		for(int i=0;i<nList.getLength();i++) {
+			Node node = nList.item(i);
+			String featureClassString = node.getTextContent();
+			NamedNodeMap attr = node.getAttributes();
+			Integer id = new Integer(attr.getNamedItem("id").getNodeValue());
+			String source = new String(attr.getNamedItem("source").getNodeValue());
+			String sourceFeatureFile = folder + "TMP" + File.separator + musicFileName + "_" + source;
+			try {
+				Class<?> featureClass = Class.forName(featureClassString);
+				NNLSDerivedFeature featureToEstimate = (NNLSDerivedFeature)featureClass.newInstance();
+				featureToEstimate.extractFeature(sourceFeatureFile, folder + File.separator + musicFileName + "_" + id + ".arff");
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	/*
