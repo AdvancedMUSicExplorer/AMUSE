@@ -336,9 +336,8 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%sample_rate=-1");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%window_size=" + windowSize + "s");
-				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%overlap_size=" + overlapSize + "s");
+				values_writer.writeBytes("%window_size=" + ((ExtractionConfiguration)this.correspondingScheduler.
+						getConfiguration()).getFeatureTable().getFeatureByID(currentFeatureId).getSourceFrameSize());
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("@ATTRIBUTE '" + currentFeatureName + "' NUMERIC");
@@ -351,7 +350,8 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				values_writer.writeBytes("@DATA");
 				values_writer.writeBytes(sep);
 				for(int k=0;k<featureValues.size();k++) {
-					values_writer.writeBytes(featureValues.get(k) + "," + (k+1) + sep);
+					double windowNumber = (double)(windowSize - overlapSize) * (double)k / 10000;
+					values_writer.writeBytes(featureValues.get(k) + "," + (windowNumber+1) + sep);
 				}
 				values_writer.close();
 			} catch (IOException e) {
