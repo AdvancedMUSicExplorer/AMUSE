@@ -207,7 +207,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 			String classifierAlgorithmDescription = null;
 			String classificationModel = null;
 			int windowSize = 0;
-			int overlapSize = 0;
+			int offsetSize = 0;
 			for(int i=0;i<parameters.getLength();i++) {
 				if(parameters.item(i).getNodeType() == Node.ELEMENT_NODE && parameters.item(i).getNodeName().equals("extractionParameter")) {
 					if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Processing description")) {
@@ -220,8 +220,8 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						classificationModel = parameters.item(i).getAttributes().getNamedItem("fileValue").getNodeValue();
 					} else if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Window size")) {
 						windowSize = new Integer(parameters.item(i).getAttributes().getNamedItem("stringValue").getNodeValue());
-					} else if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Overlap size")) {
-						overlapSize = new Integer(parameters.item(i).getAttributes().getNamedItem("stringValue").getNodeValue());
+					} else if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Offset size")) {
+						offsetSize = new Integer(parameters.item(i).getAttributes().getNamedItem("stringValue").getNodeValue());
 					}
 				}
 			}
@@ -289,7 +289,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						
 						numberOfValuesInCurrentFrame = 0;
 						sumOfPositivesInCurrentFrame = 0;
-						currentFrameStart = currentFrameStart + overlapSize;
+						currentFrameStart = currentFrameStart + offsetSize;
 						currentFrameEnd = currentFrameStart + windowSize;
 						
 						// Reset i going back due to possible overlap
@@ -334,7 +334,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%columns=" + featureValues.size());
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%sample_rate=-1");
+				values_writer.writeBytes("%sample_rate=22050"); // TODO set sampling size properly
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%window_size=" + ((ExtractionConfiguration)this.correspondingScheduler.
 						getConfiguration()).getFeatureTable().getFeatureByID(currentFeatureId).getSourceFrameSize());
@@ -350,7 +350,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				values_writer.writeBytes("@DATA");
 				values_writer.writeBytes(sep);
 				for(int k=0;k<featureValues.size();k++) {
-					double windowNumber = (double)(windowSize - overlapSize) * (double)k / 10000;
+					double windowNumber = (double)offsetSize / (double)windowSize * (double)k;
 					values_writer.writeBytes(featureValues.get(k) + "," + (windowNumber+1) + sep);
 				}
 				values_writer.close();
