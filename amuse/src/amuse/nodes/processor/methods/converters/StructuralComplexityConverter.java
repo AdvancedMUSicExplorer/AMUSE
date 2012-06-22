@@ -46,23 +46,23 @@ import amuse.util.AmuseLogger;
  */
 public class StructuralComplexityConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 
-	/** The lowest value for variable j from the paper */
-	private int firstTimeScale = -1;
-	
-	/** The highest value for variable j from the paper */
-	private int lastTimeScale = -1;
+	/** The time scales from the paper (seconds before and after the current window to analyze)*/
+	private ArrayList<Integer> timeScales;
 	
 	/**
 	 * @see amuse.nodes.processor.interfaces.DimensionProcessorInterface#setParameters(String)
 	 */
 	public void setParameters(String parameterString) throws NodeException {
+		timeScales = new ArrayList<Integer>();
 		if(parameterString == null || parameterString == "") {
-			firstTimeScale = 0;
-			lastTimeScale = 2;
+			timeScales.add(1);
+			timeScales.add(2);
+			timeScales.add(4);
 		} else {
 			StringTokenizer tok = new StringTokenizer(parameterString,"_");
-			firstTimeScale = new Integer(tok.nextToken());
-			lastTimeScale = new Integer(tok.nextToken());
+			while(tok.hasMoreTokens()) {
+				timeScales.add(new Integer(tok.nextToken()));
+			}
 		}
 	}
 	
@@ -82,48 +82,48 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 			int sampleRate = features.get(0).getSampleRate();
 				
 			// Estimated complexity statistics are the quartile boundaries, mean and standard deviation
-			ArrayList<Feature> newFeatures = new ArrayList<Feature>((lastTimeScale - firstTimeScale + 1) * 7);
-			for(int j=firstTimeScale;j<=lastTimeScale;j++) {
+			ArrayList<Feature> newFeatures = new ArrayList<Feature>(timeScales.size() * 7);
+			for(int j=0;j<timeScales.size();j++) {
 				Feature minOfCurrentScale = new Feature(-1);
 				minOfCurrentScale.setHistory(history);
-				minOfCurrentScale.getHistory().add("Structural_Complexity_Min_" + (j+1));
-				minOfCurrentScale.setSampleRate(-1);
+				minOfCurrentScale.getHistory().add("Structural_Complexity_Min_" + timeScales.get(j));
+				minOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(minOfCurrentScale);
 				
 				Feature firstQBoundOfCurrentScale = new Feature(-1);
 				firstQBoundOfCurrentScale.setHistory(history);
-				firstQBoundOfCurrentScale.getHistory().add("Structural_Complexity_1st_Quartile_Bound_" + (j+1));
-				firstQBoundOfCurrentScale.setSampleRate(-1);
+				firstQBoundOfCurrentScale.getHistory().add("Structural_Complexity_1st_Quartile_Bound_" + timeScales.get(j));
+				firstQBoundOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(firstQBoundOfCurrentScale);
 
 				Feature medianOfCurrentScale = new Feature(-1);
 				medianOfCurrentScale.setHistory(history);
-				medianOfCurrentScale.getHistory().add("Structural_Complexity_Median_" + (j+1));
-				medianOfCurrentScale.setSampleRate(-1);
+				medianOfCurrentScale.getHistory().add("Structural_Complexity_Median_" + timeScales.get(j));
+				medianOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(medianOfCurrentScale);
 				
 				Feature thirdQBoundOfCurrentScale = new Feature(-1);
 				thirdQBoundOfCurrentScale.setHistory(history);
-				thirdQBoundOfCurrentScale.getHistory().add("Structural_Complexity_3rd_Quartile_Bound_" + (j+1));
-				thirdQBoundOfCurrentScale.setSampleRate(-1);
+				thirdQBoundOfCurrentScale.getHistory().add("Structural_Complexity_3rd_Quartile_Bound_" + timeScales.get(j));
+				thirdQBoundOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(thirdQBoundOfCurrentScale);
 				
 				Feature maxOfCurrentScale = new Feature(-1);
 				maxOfCurrentScale.setHistory(history);
-				maxOfCurrentScale.getHistory().add("Structural_Complexity_Max_" + (j+1));
-				maxOfCurrentScale.setSampleRate(-1);
+				maxOfCurrentScale.getHistory().add("Structural_Complexity_Max_" + timeScales.get(j));
+				maxOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(maxOfCurrentScale);
 								
 				Feature meanOfCurrentScale = new Feature(-1);
 				meanOfCurrentScale.setHistory(history);
-				meanOfCurrentScale.getHistory().add("Structural_Complexity_Mean_" + (j+1));
-				meanOfCurrentScale.setSampleRate(-1);
+				meanOfCurrentScale.getHistory().add("Structural_Complexity_Mean_" + timeScales.get(j));
+				meanOfCurrentScale.setSampleRate(sampleRate);
 				newFeatures.add(meanOfCurrentScale);
 				
 				Feature stdDevOfCurrentSingleFeature = new Feature(-1);
 				stdDevOfCurrentSingleFeature.setHistory(history);
-				stdDevOfCurrentSingleFeature.getHistory().add("Structural_Complexity_Stddev_" + (j+1));
-				stdDevOfCurrentSingleFeature.setSampleRate(-1);
+				stdDevOfCurrentSingleFeature.getHistory().add("Structural_Complexity_Stddev_" + timeScales.get(j));
+				stdDevOfCurrentSingleFeature.setSampleRate(sampleRate);
 				newFeatures.add(stdDevOfCurrentSingleFeature);
 			}
 			
@@ -147,7 +147,8 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 				
 				// Calculates the last used time window and the number of maximum available partitions from it
 				double numberOfAllPartitionsD = ((features.get(0).getWindows().get(features.get(0).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;
-				numberOfAllPartitions = new Double(Math.ceil(numberOfAllPartitionsD)).intValue();
+				// Round down since the complete partitions are required!
+				numberOfAllPartitions = new Double(Math.floor(numberOfAllPartitionsD)).intValue();
 			}
 				
 			// If the partition size is greater than music song length..
@@ -155,11 +156,10 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 				throw new NodeException("Partition size too large");
 			}
 				
-		    int currentWindow = 0;
-				
-			// Go through all partitions
+		    // Go through all partitions
 			for(int numberOfCurrentPartition=0;numberOfCurrentPartition<numberOfAllPartitions;numberOfCurrentPartition++) {
-					
+				int currentWindow = 0;
+				
 				// Calculate the start (inclusive) and end (exclusive) windows for the current partition
 				Double partitionStartWindow = Math.floor(new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition));
 				Double partitionEndWindow = Math.ceil((new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition)+partitionSizeInWindows));
@@ -196,11 +196,11 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 				}
 					
 				// Go through different time scales
-				for(int s=firstTimeScale;s<=lastTimeScale;s++) {
+				for(int s=0;s<timeScales.size();s++) {
 					ArrayList<Double> distances = new ArrayList<Double>();
 					
 					// Estimate the number of windows for the number of seconds from the current time scale
-					double seconds = Math.pow(2, s);
+					double seconds = timeScales.get(s);
 					int windowNumber = new Double(sampleRate * seconds / (double)windowSize).intValue();
 						
 					// Go through all windows of the current partition
@@ -208,7 +208,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 							
 						// Complexity can be only calculated if w_j windows before and after the current window
 						// belong to this partition (see the paper)
-						if(l - windowNumber < partitionStartWindow || l + windowNumber > partitionEndWindow) {
+						if(l - windowNumber < partitionStartWindow+1 || l + windowNumber > partitionEndWindow) {
 							continue;
 						} else {
 							ArrayList<Double> s1 = new ArrayList<Double>();
@@ -322,6 +322,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 				endFeatures.add(newFeatures.get(m));
 			}
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new NodeException("Problem occured during feature conversion: " + e.getMessage());
 		}
 		
@@ -340,7 +341,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 	private double kullbackLeiblerDivergence(ArrayList<Double> s1, ArrayList<Double> s2) {
 		double sum = 0d;
 		for(int i=0;i<s1.size();i++) {
-			if(s1.get(i) != 0) {
+			if(s1.get(i) != 0 && s2.get(i) != 0) {
 				sum += s1.get(i) * Math.log(s1.get(i) / s2.get(i));
 			}
 		}
