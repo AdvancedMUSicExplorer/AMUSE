@@ -54,6 +54,7 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
+import amuse.nodes.validator.ValidationConfiguration.GroundTruthSourceType;
 import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
@@ -582,8 +583,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			((ValidationConfiguration)this.taskConfiguration).setInputToValidate(new DataSetInput(labeledInputForValidation));
 		} 
 		
-		// If the validation set is given as ready data set or has been loaded from the file above
-		if(((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput) {
+		// Set the ground truth if the validation set is given as ready data set
+		if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().equals(GroundTruthSourceType.READY_INPUT)) {
 			amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
 					getInputToValidate()).getDataSet().getAttribute("Id");
 			amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
