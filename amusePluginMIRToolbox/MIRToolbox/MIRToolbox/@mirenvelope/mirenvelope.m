@@ -35,6 +35,8 @@ function varargout = mirenvelope(orig,varargin)
 %               b = 'Mel': Mel-band decomposition 
 %               b = 'Bark': Bark-band decomposition 
 %               b = 'Cents': decompositions into cents 
+%       mirenvelope(...,'Frame',...) specifies the frame configuration.
+%           Default value: length: .1 s, hop factor: 10 %.
 %       mirenvelope(...,'UpSample',N) upsamples by a factor N>1, where 
 %           N is an integer.
 %           Default value if 'UpSample' called: N = 2
@@ -48,10 +50,13 @@ function varargout = mirenvelope(orig,varargin)
 %       mirenvelope(...,'Center'): centers the extracted envelope.
 %       mirenvelope(...,'HalfwaveCenter'): performs a half-wave
 %           rectification on the centered envelope.
-%       mirenvelope(...,'Log',mu): computes the logarithm of the
+%       mirenvelope(...,'Log'): computes the common logarithm (base 10) of
+%           the envelope.
+%       mirenvelope(...,'Mu',mu): computes the logarithm of the
 %           envelope, before the eventual differentiation, using a mu-law
 %           compression (Klapuri, 2006).
 %               Default value for mu: 100
+%       mirenvelope(...,'Log'): computes the logarithm of the envelope.
 %       mirenvelope(...,'Power'): computes the power (square) of the
 %           envelope.
 %       mirenvelope(...,'Diff'): computes the differentation of the
@@ -71,9 +76,6 @@ function varargout = mirenvelope(orig,varargin)
 %           Default value when the option is toggled on: o=30
 %       mirenvelope(...,'Klapuri06'): follows the model proposed in
 %           (Klapuri et al., 2006). 
-%       mirenvelope(...,'Frame',...): decompose the resulting envelope into 
-%           frames.
-%           Default parameters: length .05 s and hop factor .5
 
         method.type = 'String';
         method.choice = {'Filter','Spectro'};
@@ -180,13 +182,19 @@ function varargout = mirenvelope(orig,varargin)
         chwr.when = 'After';
     option.chwr = chwr;
     
+        mu.key = 'Mu';
+        mu.type = 'Integer';
+        mu.default = 0;
+        mu.keydefault = 100;
+        mu.when = 'After';
+    option.mu = mu;
+    
         oplog.key = 'Log';
-        oplog.type = 'Integer';
+        oplog.type = 'Boolean';
         oplog.default = 0;
-        oplog.keydefault = 100;
         oplog.when = 'After';
     option.log = oplog;
-    
+
         oppow.key = 'Power';
         oppow.type = 'Integer';
         oppow.default = 0;
@@ -241,16 +249,14 @@ function varargout = mirenvelope(orig,varargin)
         frame.key = 'Frame';
         frame.type = 'Integer';
         frame.number = 2;
-        frame.default = [0 0];
-        frame.keydefault = [.05 .5];
-        frame.when = 'After';
+        frame.default = [.1 .1];
     option.frame = frame;
         
 specif.option = option;
 
 specif.eachchunk = 'Normal';
 specif.combinechunk = 'Concat';
-specif.framedchunk = 1;
+specif.extensive = 1;
 
 varargout = mirfunction(@mirenvelope,orig,varargin,nargout,specif,@init,@main);
 
@@ -277,9 +283,15 @@ if not(isamir(x,'mirenvelope'))
                               'Tau',option.tau,'PreDecim',option.decim);
         end
     elseif strcmpi(option.method,'Spectro')
-        x = mirspectrum(x,'Frame',.1,'s',.05,'/1','Window','hanning',...
-                           option.band,'Power');
-           %    .023,'s',.5,'/1'
+        x = mirspectrum(x,'Frame',option.frame.length.val,...
+                                  option.frame.length.unit,...
+                                  option.frame.hop.val,...
+                                  option.frame.hop.unit,...
+                                  option.frame.phase.val,...
+                                  option.frame.phase.unit,...
+                                  'Window','hanning',...
+                                  option.band,'Power');
+
     end
 end
 
@@ -313,7 +325,7 @@ if isfield(option,'presel') && ischar(option.presel) && ...
         strcmpi(option.presel,'Klapuri06')
     option.method = 'Spectro';
     postoption.up = 2;
-    postoption.log = 100;
+    postoption.mu = 100;
     postoption.diffhwr = 1;
     postoption.lambda = .8;
 end
@@ -333,23 +345,28 @@ elseif strcmpi(option.method,'Spectro')
     ch = get(orig,'Channels');
     ph = get(orig,'Phase');
     for h = 1:length(d)
+        sr{h} = 0;
         for i = 1:length(d{h})
             if size(d{h}{i},3)>1 % Already in bands (channels in 3d dim)
                 d{h}{i} = permute(sum(d{h}{i}),[2 1 3]);
-                ph{h}{i} = permute(ph{h}{i},[2 1 3]);
+                if ~isempty(ph)
+                    ph{h}{i} = permute(ph{h}{i},[2 1 3]);
+                end
             else % Simple spectrogram, frequency range sent to 3d dim
                 d{h}{i} = permute(d{h}{i},[2 3 1]);
-                ph{h}{i} = permute(ph{h}{i},[2 3 1]);
+                if ~isempty(ph)
+                    ph{h}{i} = permute(ph{h}{i},[2 3 1]);
+                end
             end
             p{h}{i} = mean(fp{h}{i})';
+            if not(sr{h}) && size(fp{h}{i},2)>1
+                sr{h} = 1/(fp{h}{i}(1,2)-fp{h}{i}(1,1));
+            end
         end
-        if size(fp{h}{i},2)<2
-            %error('ERROR IN MIRENVELOPE: The frame decomposition did not succeed. Either the input is of too short duration, or the chunk size is too low.');
-            sr{h} = 0;
-        else
-            sr{h} = 1/(fp{h}{i}(1,2)-fp{h}{i}(1,1));
+        if not(sr{h})
+            warning('WARNING IN MIRENVELOPE: The frame decomposition did not succeed. Either the input is of too short duration, or the chunk size is too low.');
         end
-        ch{h} = (1:size(d{h}{i},3))';
+        ch{h} = (1:size(d{h}{1},3))';
     end
     e.downsampl = 0;
     e.hwr = 0;
@@ -359,7 +376,7 @@ elseif strcmpi(option.method,'Spectro')
     e.phase = ph;
     e = class(e,'mirenvelope',mirtemporal(orig));
     e = set(e,'Title','Envelope','Data',d,'Pos',p,...
-              'Sampling',sr,'Channels',ch);
+              'Sampling',sr,'Channels',ch,'FramePos',{{p{1}{1}([1 end])}});
     postoption.trim = 0;
     postoption.ds = 0;
     e = post(e,postoption);
@@ -387,8 +404,12 @@ else
     sr = get(e,'Sampling');
     disp('Extracting envelope...')
     d = cell(1,length(sig));
-    [state e] = gettmp(orig,e);
     for k = 1:length(sig)
+        if length(sig)==1
+            [state e] = gettmp(orig,e);
+        else
+            state = [];
+        end
         if option.decim
             sr{k} = sr{k}/option.decim;
         end
@@ -456,7 +477,9 @@ else
         end
     end
     e = set(e,'Data',d,'Pos',x,'Sampling',sr); %,'ToDelete',td
-    e = settmp(e,state);
+    if length(sig)==1
+        e = settmp(e,state);
+    end
     if not(option.zp == 2)
         e = post(e,postoption);
     end
@@ -528,8 +551,11 @@ for k = 1:length(d)
                 d{k}{i}(end-tdk+1:end,:,:) = repmat(d{k}{i}(end-tdk,:,:),[tdk,1,1]);
             end
             if postoption.log
+                d{k}{i} = log10(d{k}{i});
+            end
+            if postoption.mu
                 dki = max(0,d{k}{i});
-                mu = postoption.log;
+                mu = postoption.mu;
                 dki = log(1+mu*dki)/log(1+mu);
                 dki(~isfinite(d{k}{i})) = NaN;
                 d{k}{i} = dki;
@@ -570,7 +596,7 @@ for k = 1:length(d)
                     d{k}{i} = d{k}{i}(2:end,:,:); 
                     tp{k}{i} = tp{k}{i}(2:end,:,:);
                 elseif order == 1
-                    ddki = diff(d{k}{i});
+                    ddki = diff(d{k}{i},1,1);
                 else
                     b = firls(order,[0 0.9],[0 0.9*pi],'differentiator');
                     ddki = filter(b,1,...
@@ -646,6 +672,6 @@ if isfield(postoption,'sampling')
     end
 end
 e = set(e,'Data',d,'Time',tp); 
-if isfield(postoption,'frame') && isstruct(postoption.frame)
-    e = mirframenow(e,postoption);
-end
+%if isfield(postoption,'frame') && isstruct(postoption.frame)
+%    e = mirframenow(e,postoption);
+%end

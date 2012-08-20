@@ -42,19 +42,24 @@ elseif isa(x,'mirdesign')
         
         fl = get(x,'FrameLength');
         fh = get(x,'FrameHop');
+        fp = get(x,'FramePhase');
         flu = get(x,'FrameLengthUnit');
         fhu = get(x,'FrameHopUnit');
+        fpu = get(x,'FramePhaseUnit');
         if fl
             f = set(f,'FrameLength',fl,'FrameLengthUnit',flu,...
-                      'FrameHop',fh,'FrameHopUnit',fhu,'FrameEval',1);
+                      'FrameHop',fh,'FrameHopUnit',fhu,...
+                      'FramePhase',fp,'FramePhaseUnit',fpu);
         else
             f = set(f,'FrameLength',para.wlength.val,...
                       'FrameLengthUnit',para.wlength.unit,...
                       'FrameHop',para.hop.val,...
                       'FrameHopUnit',para.hop.unit,...
-                      'FrameEval',1);
+                      'FramePhase',para.phase.val,...
+                      'FramePhaseUnit',para.phase.unit);
         end
-        
+        f = set(f,'FrameEval',1,...
+                  'SeparateChannels',get(x,'SeparateChannels'));
         if not(isamir(x,'miraudio'))
             f = set(f,'NoChunk',1);
         end
@@ -70,11 +75,25 @@ elseif isa(x,'mirdesign')
         if iscell(e)
             e = e{1};
         end
-        f = mirframe(e,varargin{:});
+        if isempty(mirgetdata(e))
+            f = e;
+        else
+            sc = get(x,'Scale');
+            if ~isempty(sc)
+                varargin{1}.wlength.val = varargin{1}.wlength.val(sc);
+                if length(varargin{1}.hop.val)>1
+                    varargin{1}.hop.val = varargin{1}.hop.val(sc);
+                end
+            end
+            varargin{1}.phase.val = 0;
+                % The phase has already been taken into account in the
+                % chunk decomposition.
+            f = mirframe(e,varargin{:});
+        end
     end
 elseif isa(x,'mirdata')
     if isframed(x)
-        %warning('WARNING IN MIRFRAME: The input data is already decomposed into frames. No more frame decomposition.');
+        warning('WARNING IN MIRFRAME: The input data is already decomposed into frames. No more frame decomposition.');
         f = x;
     else
         x = purgedata(x);
@@ -93,69 +112,106 @@ elseif isa(x,'mirdata')
             dxk = dx{k};
             dtk = dt{k};
             if strcmpi(para.wlength.unit,'s')
-                l = ceil(para.wlength.val*sf{k});
+                l = para.wlength.val*sf{k};
             elseif strcmpi(para.wlength.unit,'sp')
                 l = para.wlength.val;
             end
             if strcmpi(para.hop.unit,'/1')
-                h = ceil(para.hop.val*l);
+                h = para.hop.val*l;
             elseif strcmpi(para.hop.unit,'%')
-                h = ceil(para.hop.val*l*.01);
+                h = para.hop.val*l*.01;
             elseif strcmpi(para.hop.unit,'s')
-                h = ceil(para.hop.val*sf{k});
-            elseif strcmpi(para.hop.unit,'sp') || strcmpi(para.hop.unit,'Hz')
+                h = para.hop.val*sf{k};
+            elseif strcmpi(para.hop.unit,'sp')
                 h = para.hop.val;
+            elseif strcmpi(para.hop.unit,'Hz')
+                h = sf{k}/para.hop.val;
             end
+            if strcmpi(para.phase.unit,'s')
+                p = para.phase.val*sf{k};
+            elseif strcmpi(para.phase.unit,'sp')
+                p = para.phase.val;
+            elseif strcmpi(para.phase.unit,'/1')
+                p = para.phase.val*h;
+            elseif strcmpi(para.phase.unit,'%')
+                p = para.phase.val*h*.01;
+            end
+            l = floor(l);
             dx2k = cell(1,length(dxk));
             dt2k = cell(1,length(dxk));
             fpk = cell(1,length(dxk));
-            for j = 1:length(dxk)   % For each segment, ...
-                dxj = dxk{j};
-                dtj = dtk{j};
-                if not(isa(x,'mirtemporal'))
-                    dxj = dxj';
-                    dtj = dtj(1,:)';
-                end
+            if size(l)==1
+                for j = 1:length(dxk)   % For each segment, ...
+                    dxj = dxk{j};
+                    dtj = dtk{j};
+                    if not(isa(x,'mirtemporal'))
+                        dxj = dxj';
+                        dtj = dtj(1,:)';
+                    end
 
-                % Number of frames: n
-                if strcmpi(para.hop.unit,'Hz')
-                    n = (size(dxj,1)-l)/sf{k}*h;
-                    if mod(n,1)>.9
-                        n = ceil(n)+1;
+                    n = floor((size(dxj,1)-l-p)/h)+1; % Number of frames
+                    dx2j = zeros(l,n,size(dxj,3));
+                    dt2j = zeros(l,n);
+                    fpj = zeros(2,n);
+                    if n < 1
+                        disp('Frame length longer than total sequence size. No frame decomposition.');
+                        dx2j = dxj(:,1,:);
+                        dt2j = dtj;
+                        fpj = [dtj(1) ; dtj(end)];
                     else
-                        n = floor(n)+1;
-                    end
-                else
-                    n = floor((size(dxj,1)-l)/h)+1;
-                end
-
-                dx2j = zeros(l,n,size(dxj,3));
-                dt2j = zeros(l,n);
-                fpj = zeros(2,n);
-                if n < 1
-                    disp('Frame length longer than total sequence size. No frame decomposition.');
-                    dx2j = dxj(:,1,:);
-                    dt2j = dtj;
-                    fpj = [dtj(1) ; dtj(end)];
-                else
-                    for i = 1:n % For each frame, ...
-                        if strcmpi(para.hop.unit,'Hz')
-                            st = floor((i-1)/h*sf{k})+1;
-                        else
-                            st = (i-1)*h+1;
+                        for i = 1:n % For each frame, ...
+                            st = floor((i-1)*h+p+1);
+                            stend = st+l-1;
+                            dx2j(:,i,:) = dxj(st:stend,1,:);
+                            dt2j(:,i) = dtj(st:stend);
+                            fpj(:,i) = [dtj(st) dtj(stend)];
                         end
-                        dx2j(:,i,:) = dxj(st:st+l-1,1,:);
-                        dt2j(:,i) = dtj(st:st+l-1);
-                        fpj(:,i) = [dtj(st) dtj(st+l-1)];
                     end
+                    dx2k{j} = dx2j;
+                    dt2k{j} = dt2j;
+                    fpk{j} = fpj;
                 end
-                dx2k{j} = dx2j;
-                dt2k{j} = dt2j;
-                fpk{j} = fpj;
+                dx2{k} = dx2k;
+                dt2{k} = dt2k;
+                fp{k} = fpk;
+            else % Multi-scale version
+                if size(h) == 1
+                    h = repmat(h,size(l));
+                end
+                for j = 1:length(l)   % For each scale, ...
+                    dxj = dxk{1};
+                    dtj = dtk{1};
+                    if not(isa(x,'mirtemporal'))
+                        dxj = dxj';
+                        dtj = dtj(1,:)';
+                    end
+
+                    n = floor((size(dxj,1)-l(j)-p)/h(j))+1; % Number of frames
+                    dx2j = zeros(l(j),n,size(dxj,3));
+                    dt2j = zeros(l(j),n);
+                    fpj = zeros(2,n);
+                    if n < 1
+                        disp('Frame length longer than total sequence size. No frame decomposition.');
+                        dx2j = dxj(:,1,:);
+                        dt2j = dtj;
+                        fpj = [dtj(1) ; dtj(end)];
+                    else
+                        for i = 1:n % For each frame, ...
+                            st = floor((i-1)*h(j)+p+1);
+                            stend = st+l(j)-1;
+                            dx2j(:,i,:) = dxj(st:stend,1,:);
+                            dt2j(:,i) = dtj(st:stend);
+                            fpj(:,i) = [dtj(st) dtj(stend)];
+                        end
+                    end
+                    dx2k{j} = dx2j;
+                    dt2k{j} = dt2j;
+                    fpk{j} = fpj;
+                end
+                dx2{k} = dx2k;
+                dt2{k} = dt2k;
+                fp{k} = fpk;
             end
-            dx2{k} = dx2k;
-            dt2{k} = dt2k;
-            fp{k} = fpk;
         end
         if isa(x,'mirtemporal')
             f = set(x,'Time',dt2,'Data',dx2,'FramePos',fp);
@@ -178,6 +234,7 @@ if not(isempty(v)) && isstruct(v{1})
     else
         para.wlength = v{1};
         para.hop = v{2};
+        para.phase = v{3};
     end
     return
 end
@@ -185,6 +242,8 @@ para.wlength.val = 0.05;
 para.wlength.unit = 's';
 para.hop.val = 0.5;
 para.hop.unit = '/1';
+para.phase.val = 0;
+para.phase.unit = '/1';
 nv = length(v);
 i = 1;
 j = 1;
@@ -218,6 +277,20 @@ while i <= nv
             i = i+1;
             para.hop.unit = v{i};
         end
+    elseif strcmpi(arg,'Phase')
+        if i < nv && isnumeric(v{i+1})
+            i = i+1;
+            j = 0;
+            para.phase.val = v{i};
+        else
+            error('ERROR IN MIRFRAME: Incorrect use of Phase option. See help mirframe.'); 
+        end
+        if i < nv && ischar(v{i+1}) && ...
+                (strcmpi(v{i+1},'%') || strcmpi(v{i+1},'/1') || ...
+                 strcmpi(v{i+1},'s') || strcmpi(v{i+1},'sp'))
+            i = i+1;
+            para.phase.unit = v{i};
+        end
     elseif isnumeric(arg)
         switch j
             case 1
@@ -237,6 +310,15 @@ while i <= nv
                          strcmpi(v{i+1},'Hz'))
                     i = i+1;
                     para.hop.unit = v{i};
+                end
+            case 3
+                j = 4;
+                para.phase.val = arg;
+                if i < nv && ischar(v{i+1}) && ...
+                        (strcmpi(v{i+1},'%') || strcmpi(v{i+1},'/1') || ...
+                         strcmpi(v{i+1},'s') || strcmpi(v{i+1},'sp'))
+                    i = i+1;
+                    para.phase.unit = v{i};
                 end
             otherwise
                 error('ERROR IN MIRFRAME: Syntax error. See help mirframe.');

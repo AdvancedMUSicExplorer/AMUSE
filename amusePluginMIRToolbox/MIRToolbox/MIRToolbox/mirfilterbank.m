@@ -124,9 +124,9 @@ if not(isnan(option.freq))
     option.filtertype = 'Manual';
 end
         
-%disp('Decomposing into a filterbank...');
 d = get(x,'Data');
 if size(d{1}{1},3) > 1
+    warning('WARNING IN MIRFILTERBANK: The input data is already decomposed into channels. No more channel decomposition.');
     if option.Ch
         cx = get(x,'Channels');
         db = cell(1,length(d));
@@ -154,46 +154,28 @@ else
     end
     nCh = option.nCh;
     Ch = option.Ch;
-    if strcmpi(option.filtertype, 'Gammatone');
-        [tmp x] = gettmp(x); %get(x,'Tmp');
-        if not(Ch)
-            Ch = 1:nCh;
-        end
-        erb = cell(1,length(d));
-        for i = 1:length(d)
-            erb{i} = cell(1,length(d{i}));
-            nch{i} = Ch;
-            for j = 1:length(d{i})
-                try
-                    coef = MakeERBFilters(f{i},nCh,option.lowF);
-                catch
-                    error(['ERROR IN MIRFILTERBANK: Auditory Toolbox needs to be installed.']);
-                end                    
-                [erb{i}{j} tmp] = ERBfilterbank(d{i}{j},coef,Ch,tmp);
-            end
-        end
-        b = set(x,'Data',erb,'Channels',nch);%,'Tmp',tmp);
-        clear erb
-        b = settmp(b,tmp);
-    elseif strcmpi(option.filtertype, '2Channels');
-        if not(Ch)
-            Ch = 1:2;
-        end
-        output = cell(1,length(d));
-        try
-            for i = 1:length(d)
-                output{i} = cell(1,length(d{i}));
+    
+    [tmp x] = gettmp(x);
+    output = cell(1,length(d));
+    nch = cell(1,length(d));
+    for i = 1:length(d)
+        if isempty(tmp) && i == 1
+            if strcmpi(option.filtertype,'Gammatone')
+                if not(Ch)
+                    Ch = 1:nCh;
+                end
+                Hd = ERBFilters(f{i},nCh,Ch,option.lowF);
+                nch{i} = Ch;
+            elseif strcmpi(option.filtertype,'2Channels')
+                if not(Ch)
+                    Ch = 1:2;
+                end
                 [bl,al] = butter(4,[70 1000]/f{i}*2);
-                k = 1;
                 if ismember(1,Ch)
-                    Hdl = dfilt.df2t(bl,al);
-                    %fvtool(Hdl)
-                    Hdl.PersistentMemory = true;
-                    for j = 1:length(d{i})
-                        low = filter(Hdl,d{i}{j});
-                        output{i}{j}(:,:,k) = low;
-                    end
-                    k = k+1;
+                    Hd{1} = dfilt.df2t(bl,al);
+                    k = 2;
+                else
+                    k = 1;
                 end
                 if ismember(2,Ch)
                     if f{i} < 20000
@@ -201,124 +183,184 @@ else
                     else
                         [bh,ah] = butter(2,[1000 10000]/f{i}*2);
                     end
-                    Hdlh = dfilt.df2t(bl,al);
-                    %fvtool(Hdlh)
-                    Hdh = dfilt.df2t(bh,ah);
-                    %fvtool(Hdh)
-                    Hdlh.PersistentMemory = true;
-                    Hdh.PersistentMemory = true;
-                    for j = 1:length(d{i})
-                        high = filter(Hdh,d{i}{j});
-                        high = max(high,0);
-                        high = filter(Hdlh,high);
-                        output{i}{j}(:,:,k) = high;
-                    end
+                    Hd{k} = {dfilt.df2t(bl,al),...
+                             @(x) max(x,0),...
+                             dfilt.df2t(bh,ah)};
                 end
                 nch{i} = Ch;
-            end
-            b = set(x,'Data',output,'Channels',nch);
-        catch
-            warning(['WARNING IN MIRFILTERBANK: Signal Processing Toolbox (version 6.2.1, or higher) not installed: no filterbank decomposition.']);
-            b = x;
-        end
-    elseif strcmpi(option.filtertype,'Manual');
-        output = cell(1,length(d));
-        for i = 1:length(d)
-            freqi = option.freq;
-            j = 1;
-            while j <= length(freqi)
-                if not(isinf(freqi(j))) && freqi(j)>f{i}/2
-                    if j == length(freqi)
-                        freqi(j) = Inf;
+            elseif strcmpi(option.filtertype,'Manual')
+                freqi = option.freq;
+                j = 1;
+                while j <= length(freqi)
+                    if not(isinf(freqi(j))) && freqi(j)>f{i}/2
+                        if j == length(freqi)
+                            freqi(j) = Inf;
+                        else
+                            freqi(j) = [];
+                            j = j-1;
+                        end
+                    end
+                    j = j+1;
+                end
+                step = option.overlap;
+                for j = 1:length(freqi)-step
+                    if isinf(freqi(j))
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi(j+step)/f{i}*2);
+                    elseif isinf(freqi(j+step))
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi(j)/f{i}*2,'high');
                     else
-                        freqi(j) = [];
-                        j = j-1;
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi([j j+step])/f{i}*2);
                     end
                 end
-                j = j+1;
+                for j = 1:length(z)
+                    [sos,g] = zp2sos(z{j},p{j},k{j});
+                    Hd{j} = dfilt.df2tsos(sos,g);
+                end
+                nch{i} = 1:length(freqi)-step;
             end
-            output{i} = cell(1,length(d{i}));
-            step = option.overlap;
-            for j = 1:length(freqi)-step
-                if isinf(freqi(j))
-                    [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                    freqi(j+step)/f{i}*2);
-                elseif isinf(freqi(j+step))
-                    [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                    freqi(j)/f{i}*2,'high');
-                else
-                    [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                    freqi([j j+step])/f{i}*2);
+            
+            if length(d) == 1
+                for k = 1:length(Hd)
+                    Hdk = Hd{k};
+                    if ~iscell(Hdk)
+                        Hdk = {Hdk};
+                    end
+                    for h = 1:length(Hdk)
+                        if ~isa(Hdk{h},'function_handle')
+                            Hdk{h}.PersistentMemory = true;
+                        end
+                    end
                 end
             end
-            for j = 1:length(z)
-                [sos,g] = zp2sos(z{j},p{j},k{j});
-                Hd = dfilt.df2tsos(sos,g);
-                Hd.PersistentMemory = true;
-                for h = 1:length(d{i})
-                    output{i}{h}(:,:,j) = filter(Hd,d{i}{h});
+        elseif i == 1
+            Hd = tmp;
+        end 
+        
+        output{i} = cell(1,length(d{i}));
+        for j = 1:length(d{i})
+            for k = 1:length(Hd)
+                dk = d{i}{j};
+                Hdk = Hd{k};
+                if ~iscell(Hdk)
+                    Hdk = {Hdk};
                 end
+                for h = 1:length(Hdk)
+                    if isa(Hdk{h},'function_handle')
+                        dk = Hdk{h}(dk);
+                    else
+                        dk = Hdk{h}.filter(dk);
+                    end
+                end
+                output{i}{j}(:,:,k) = dk;
             end
-            nch{i} = 1:length(freqi)-step;
         end
-        b = set(x,'Data',output,'Channels',nch);
     end
- end
+    b = set(x,'Data',output,'Channels',nch);   
+    b = settmp(b,Hd);
+end
 
-    
-function [output tmp] = ERBfilterbank(x, fcoefs, chans, tmp)
-% The following is based on the source code from Auditory Toolbox 
-% (A part that I could not call directly from MIRtoolbox, and that I
-% generalize to chunk decomposition)
+%%
 
+function Hd=ERBFilters(fs,numChannels,chans,lowFreq)
+% This function computes the filter coefficients for a bank of 
+% Gammatone filters.  These filters were defined by Patterson and 
+% Holdworth for simulating the cochlea.  
+% The transfer function  of these four second order filters share the same
+% denominator (poles) but have different numerators (zeros).
+% The filter bank contains "numChannels" channels that extend from
+% half the sampling rate (fs) to "lowFreq".
+
+% Note this implementation fixes a problem in the original code by
+% computing four separate second order filters.  This avoids a big
+% problem with round off errors in cases of very small cfs (100Hz) and
+% large sample rates (44kHz).  The problem is caused by roundoff error
+% when a number of poles are combined, all very close to the unit
+% circle.  Small errors in the eigth order coefficient, are multiplied
+% when the eigth root is taken to give the pole location.  These small
+% errors lead to poles outside the unit circle and instability.  Thanks
+% to Julius Smith for leading me to the proper explanation.
+
+% Code taken from Auditory Toolbox and optimized.
 % (Malcolm Slaney, August 1993, (c) 1998 Interval Research Corporation)
 
-% Process an input waveform with a gammatone filter bank.
-% The fcoefs parameter, which completely specifies the Gammatone filterbank,
-% should be designed with the MakeERBFilters function.
+T = 1/fs;
+EarQ = 9.26449;				%  Glasberg and Moore Parameters
+minBW = 24.7;
 
-A0  = fcoefs(:,1);
-A11 = fcoefs(:,2);
-A12 = fcoefs(:,3);
-A13 = fcoefs(:,4);
-A14 = fcoefs(:,5);
-A2  = fcoefs(:,6);
-B0  = fcoefs(:,7);
-B1  = fcoefs(:,8);
-B2  = fcoefs(:,9);
-gain= fcoefs(:,10);	
-lc = length(chans);
-output = zeros(size(x,1),size(x,2),lc);
-if isempty(tmp)
-    emptytmp = 1;
-else
-    emptytmp = 0;
-end
-for i = 1:lc
+%%
+% Computes an array of numChannels frequencies uniformly spaced between
+% fs/2 and lowFreq on an ERB scale.
+%
+% For a definition of ERB, see Moore, B. C. J., and Glasberg, B. R. (1983).
+% "Suggested formulae for calculating auditory-filter bandwidths and
+% excitation patterns," J. Acoust. Soc. Am. 74, 750-753.
+% 
+% Derived from Apple TR #35, "An
+% Efficient Implementation of the Patterson-Holdsworth Cochlear
+% Filter Bank."  See pages 33-34.
+cf = -(EarQ*minBW) + exp((1:numChannels)'*(-log(fs/2 + EarQ*minBW) + ...
+		log(lowFreq + EarQ*minBW))/numChannels) * (fs/2 + EarQ*minBW);
+
+%%
+ERB = ((cf/EarQ) + minBW);
+B=1.019*2*pi*ERB;
+
+A0 = T;
+A2 = 0;
+B0 = 1;
+B1 = -2*cos(2*cf*pi*T)./exp(B*T);
+B2 = exp(-2*B*T);
+
+A11 = -(2*T*cos(2*cf*pi*T)./exp(B*T) + 2*sqrt(3+2^1.5)*T*sin(2*cf*pi*T)./ ...
+		exp(B*T))/2;
+A12 = -(2*T*cos(2*cf*pi*T)./exp(B*T) - 2*sqrt(3+2^1.5)*T*sin(2*cf*pi*T)./ ...
+		exp(B*T))/2;
+A13 = -(2*T*cos(2*cf*pi*T)./exp(B*T) + 2*sqrt(3-2^1.5)*T*sin(2*cf*pi*T)./ ...
+		exp(B*T))/2;
+A14 = -(2*T*cos(2*cf*pi*T)./exp(B*T) - 2*sqrt(3-2^1.5)*T*sin(2*cf*pi*T)./ ...
+		exp(B*T))/2;
+
+gain = abs((-2*exp(4i*cf*pi*T)*T + ...
+                 2*exp(-(B*T) + 2i*cf*pi*T).*T.* ...
+                         (cos(2*cf*pi*T) - sqrt(3 - 2^(3/2))* ...
+                          sin(2*cf*pi*T))) .* ...
+           (-2*exp(4i*cf*pi*T)*T + ...
+             2*exp(-(B*T) + 2i*cf*pi*T).*T.* ...
+              (cos(2*cf*pi*T) + sqrt(3 - 2^(3/2)) * ...
+               sin(2*cf*pi*T))).* ...
+           (-2*exp(4i*cf*pi*T)*T + ...
+             2*exp(-(B*T) + 2i*cf*pi*T).*T.* ...
+              (cos(2*cf*pi*T) - ...
+               sqrt(3 + 2^(3/2))*sin(2*cf*pi*T))) .* ...
+           (-2*exp(4i*cf*pi*T)*T + 2*exp(-(B*T) + 2i*cf*pi*T).*T.* ...
+           (cos(2*cf*pi*T) + sqrt(3 + 2^(3/2))*sin(2*cf*pi*T))) ./ ...
+          (-2 ./ exp(2*B*T) - 2*exp(4i*cf*pi*T) +  ...
+           2*(1 + exp(4i*cf*pi*T))./exp(B*T)).^4);
+	
+allfilts = ones(length(cf),1);
+A0 = A0*allfilts;
+A2 = A2*allfilts;
+B0 = B0*allfilts;
+
+for i = 1:length(chans)
     chan = length(gain)-chans(i)+1; % Revert the channels order
     aa1 = [A0(chan)/gain(chan) A11(chan)/gain(chan)  A2(chan)/gain(chan)];
     bb1 = [B0(chan) B1(chan) B2(chan)];
     aa2 = [A0(chan) A12(chan) A2(chan)];
     bb2 = [B0(chan) B1(chan) B2(chan)];
-    aa3 = [A0(chan) A12(chan) A2(chan)];
+    aa3 = [A0(chan) A13(chan) A2(chan)];
     bb3 = [B0(chan) B1(chan) B2(chan)];
-    aa4 = [A0(chan) A13(chan) A2(chan)];
+    aa4 = [A0(chan) A14(chan) A2(chan)];
     bb4 = [B0(chan) B1(chan) B2(chan)];
-    if emptytmp
-        [y1 tmp(:,:,i,1)] = filter(aa1,bb1,x);
-        [y2 tmp(:,:,i,2)] = filter(aa2,bb2,y1);
-        [y3 tmp(:,:,i,3)] = filter(aa3,bb3,y2);
-        [y4 tmp(:,:,i,4)] = filter(aa4,bb4,y3);
-    else
-        [y1 tmp(:,:,i,1)] = filter(aa1,bb1,x,tmp(:,:,i,1));
-        [y2 tmp(:,:,i,2)] = filter(aa2,bb2,y1,tmp(:,:,i,2));
-        [y3 tmp(:,:,i,3)] = filter(aa3,bb3,y2,tmp(:,:,i,3));
-        [y4 tmp(:,:,i,4)] = filter(aa4,bb4,y3,tmp(:,:,i,4));
-    end
-    output(:,:,i) = y4;
+    Hd{i} = {dfilt.df2t(aa1,bb1);dfilt.df2t(aa2,bb2);...
+             dfilt.df2t(aa3,bb3);dfilt.df2t(aa4,bb4)};
 end
 
 
+%%
 function [y orig] = eachchunk(orig,option,missing)
 y = mirfilterbank(orig,option);
 

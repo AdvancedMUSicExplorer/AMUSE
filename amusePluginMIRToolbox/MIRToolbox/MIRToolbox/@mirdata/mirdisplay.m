@@ -1,6 +1,9 @@
-function mirdisplay(d,varargin)
+function mirdisplay(d,va,axis,songs)
 % MIRDATA/DISPLAY display of a MIR data
 
+if nargin<3
+    fig = [];
+end
 disp(' ');
 v = d.data;
 f = d.sr;
@@ -31,11 +34,15 @@ end
 if ld == 0
     disp('No data.');
 else
-    for i = 1:length(v)
+    if nargin<4 || isempty(songs)
+        songs=1:length(v);
+    end
+    
+    for song = 1:length(songs)  %For each audio file
+        i=songs(song);
+        
         if nargin < 2
             va = inputname(1);
-        else
-            va = varargin{1};
         end
         if isempty(va)
             va = 'ans';
@@ -68,7 +75,7 @@ else
                 cha = [];
             end
             flag = displot(p{i},v{i},d.abs,d.ord,d.title,fp{i},pp{i},tp{i},tv{i},...
-                cha,d.multidata,pm{i},ap{i},rp{i},d.clusters{i});
+                cha,d.multidata,pm{i},ap{i},rp{i},d.clusters{i},axis);
             if flag
                 fig = get(0,'CurrentFigure');
                 disp(['Its content is displayed in Figure ',num2str(fig),'.']);

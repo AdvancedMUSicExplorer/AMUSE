@@ -43,7 +43,9 @@ elseif length(f)>4 && strcmpi(f(end-4:end),'.arff')
 else
     format = 'Matrix';
 end
-title = 'MIRtoolbox';
+v = ver('MIRtoolbox');
+title = ['MIRtoolbox' v.Version];
+class = {};
 if not(isempty(varargin)) && ischar(varargin{end}) && strcmp(varargin{end},'#add')
     add = 1;
     varargin(end) = [];
@@ -53,6 +55,9 @@ else
 end
 for v = 2:narg
     argv = varargin{v-1};
+    if isa(argv,'mirdesign')
+        mirerror('MIREXPORT','You can only export features that have been already evaluated (using mireval).');
+    end
     if ischar(argv)
         if strcmpi(argv,'Matrix')
             format = 'Matrix';
@@ -61,18 +66,18 @@ for v = 2:narg
         else
             imported = importdata(argv,'\t',1);
             imported.name = {};
-            stored = integrate(stored,imported);
+            [stored class] = integrate(stored,imported);
         end
     elseif isstruct(argv) && isfield(argv,'data')
         new.data = argv.data;
         new.textdata = argv.fields;
         new.name = {};
-        stored = integrate(stored,new);
+        [stored class] = integrate(stored,new);
     else
         new.data = argv;
         new.textdata = '';
         new.name = {};
-        stored = integrate(stored,new);
+        [stored class] = integrate(stored,new);
     end
 end
 switch format
@@ -80,7 +85,13 @@ switch format
         matrixformat(stored,f,title,add);
         m = 1;
     case 'ARFF'
-        ARFFformat(stored,f,title);
+        classes = {};
+        for i = 1:length(class)
+            if isempty(strcmp(class{i},classes)) || not(max(strcmp(class{i},classes)))
+                classes{end+1} = class{i};
+            end
+        end
+        ARFFformat(stored,f,title,class,classes,add);
         m = 1;
     case 'Workspace'
         m = variableformat(stored,f,title);
@@ -88,8 +99,12 @@ end
 
 
 
-function stored = integrate(stored,new)
+function [stored class] = integrate(stored,new,class)
 
+if nargin<3
+    class = {};
+end
+    
 % Input information
 data = new.data;
 textdata = new.textdata;
@@ -105,9 +120,19 @@ newtextdata = {};
 newname = {};
 
 if isstruct(data)
+    if isfield(data,'Class')
+        class = data.Class;
+        data = rmfield(data,'Class');
+    end
+        
+    if isfield(data,'FileNames')
+        name = data.FileNames;
+        data = rmfield(data,'FileNames');
+    end
+    
     fields = fieldnames(data);
     nfields = length(fields);
-    
+
     for w = 1:nfields
         % Field information
         field = fields{w};
@@ -120,19 +145,22 @@ if isstruct(data)
             end
 
             % Processing of the field
-            n = integrate({},newfield);
+            [n class] = integrate({},newfield,class);
 
             % Concatenation of the results
             newdata = {newdata{:} n.data{:}};
             newtextdata = {newtextdata{:} n.textdata{:}};
-            newname = checkname(newname,n.name);
+            newname = checkname(newname,name);
         end
     end
 elseif isa(data,'mirdata')
     newinput.data = mirstat(data);
+    if isfield(newinput.data,'FileNames')
+        newinput.data = rmfield(newinput.data,'FileNames');
+    end
     title = get(data,'Title');
     newinput.textdata = [textdata '_' title(find(not(isspace(title))))];
-    n = integrate({},newinput);
+    [n class] = integrate({},newinput,class);
     newdata = n.data;
     newtextdata = n.textdata;
     newname = get(data,'Name');
@@ -154,7 +182,7 @@ elseif iscell(data)
             newelement.textdata = [textdata num2str(i)];
 
             % Processing of the element
-            n = integrate({},newelement);
+            [n class] = integrate({},newelement,class);
 
             % Concatenation of the results
             newdata = {newdata{:} n.data{:}};
@@ -174,7 +202,7 @@ elseif size(data,4)>1
         end
         
         % Processing of the bin
-        n = integrate({},bin);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -192,7 +220,7 @@ elseif size(data,3)>1
         end
         
         % Processing of the bin
-        n = integrate({},bin);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -210,7 +238,7 @@ elseif size(data,1)>1 && size(data,1)<=50
         end
         
         % Processing of the bin
-        n = integrate({},bin);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -279,15 +307,34 @@ fclose(fid);
 disp(['Data exported to file ',filename,'.']);
 
 
-function ARFFformat(data,filename,title)
-fid = fopen(filename,'wt');
-fprintf(fid,'%% Attribution-Relation File automatically generated using MIRtoolbox.\n\n');
-
-fprintf(fid,'@RELATION %s\n\n',title);
-for i = 1:length(data.textdata)
-    fprintf(fid,'@ATTRIBUTE %s NUMERIC\n',data.textdata{i});
+function ARFFformat(data,filename,title,class,classes,add)
+if add
+    fid = fopen(filename,'at');
+else
+    fid = fopen(filename,'wt');
+    fprintf(fid,['%% Attribution-Relation File automatically generated using ',title,'\n\n']);
+    fprintf(fid,'@RELATION %s\n\n',title);
+    for i = 1:length(data.textdata)
+        fprintf(fid,'@ATTRIBUTE %s NUMERIC\n',data.textdata{i});
+    end
+    if not(isempty(class))
+        fprintf(fid,'@ATTRIBUTE class {');
+        for i = 1:length(classes)
+            if i>1
+                fprintf(fid,',');
+            end
+            fprintf(fid,'%s',classes{i});
+        end
+        fprintf(fid,'}\n');
+    end
+    fprintf(fid,'\n@DATA\n');
+    fid2 = fopen([filename(1:end-5) '.filenames.txt'],'wt');    
+    for i = 1:length(data.name)
+        fprintf(fid2,'%s\n',data.name{i});
+    end
+    fclose(fid2);
 end
-fprintf(fid,'\n@DATA\n');
+
 try
     data = cell2mat(data.data(:))';
 catch
@@ -295,6 +342,9 @@ catch
 end
 for i = 1:size(data,1)
     fprintf(fid,'%d ',data(i,:));
+    if not(isempty(class))
+        fprintf(fid,'%s',class{i});
+    end
     fprintf(fid,'\n');
 end
 fclose(fid);

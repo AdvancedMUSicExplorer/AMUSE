@@ -26,13 +26,10 @@ function varargout = mirsimatrix(orig,varargin)
 %           if w = inf (default value), all the matrix will be computed.
 %       mirsimatrix(...,'Horizontal') rotates the matrix 45 degrees in order to
 %           make the first diagonal horizontal, and to restrict on the
-%           diagonal bandwith only.
-%
-%       mirsimatrix(M,r) creates a mirsimatrix similarity matrix based on
-%           the Matlab square matrix M, of frame rate r (in Hz.)
-%               By default r = 20 Hz.
-%           mirsimatrix(M,r,'Dissimilarity') creates instead a mirsimatrix
-%               dissimilarity matrix.
+%           diagonal bandwidth only.
+%       mirsimatrix(...,'TimeLag') transforms the (non-rotated) matrix into
+%           a time-lag matrix, making the first diagonal horizontal as well
+%           (corresponding to the zero-lag line).
 %
 %   Foote, J. & Cooper, M. (2003). Media Segmentation using Self-Similarity
 % Decomposition,. In Proc. SPIE Storage and Retrieval for Multimedia
@@ -77,10 +74,15 @@ function varargout = mirsimatrix(orig,varargin)
         view.when = 'After';
     option.view = view;
     
-        rate.type = 'Integer';
-        rate.position = 2;
-        rate.default = 20;
-    option.rate = rate;
+        warp.key = 'Warp';
+        warp.type = 'Boolean';
+        warp.default = 0;
+        warp.when = 'After';
+    option.warp = warp;
+    
+        arg2.position = 2;
+        arg2.default = [];
+    option.arg2 = arg2;
     
 specif.option = option;
 specif.nochunk = 1;
@@ -88,30 +90,20 @@ varargout = mirfunction(@mirsimatrix,orig,varargin,nargout,specif,@init,@main);
 
 
 function [x type] = init(x,option)
-if isnumeric(x)
-    m.diagwidth = Inf;
-    m.view = 's';
-    m.similarity = NaN;
-    m = class(m,'mirsimatrix',mirdata);
-    m = set(m,'Title','Dissimilarity matrix');
-    fp = repmat(((1:size(x,1))-.5)/option.rate,[2,1]);
-    x = set(m,'Data',{x},'Pos',[],...
-              'FramePos',{{fp}},'Name',{inputname(1)});
-else
-    if not(isamir(x,'mirsimatrix'))
-        if (isamir(x,'miraudio'))
-            if isframed(x)
-                x = mirspectrum(x);
-            else
-                x = mirspectrum(x,'Frame',0.05,1);
-            end
-        end
+if isamir(x,'miraudio')
+    if isframed(x)
+        x = mirspectrum(x);
+    else
+        x = mirspectrum(x,'Frame',0.05,1);
     end
 end
 type = 'mirsimatrix';
 
 
 function m = main(orig,option,postoption)
+if ~isframed(orig)
+    mirerror('mirsimatrix','The input should be frame decomposed.');
+end
 if iscell(orig)
     orig = orig{1};
 end
@@ -121,61 +113,55 @@ if isa(orig,'mirsimatrix')
         if iscell(option) && isfield(option,'K') && option.K < orig.diagwidth
             nl = size(d{k},1);
             if strcmp(orig.view,'h')
-                dl = (nl - option.K)/2;
-                dk = d{k}(ceil(dl):nl-floor(dl),:);
+                dl = floor((nl - option.K)/2);
+                dk = d{k}(dl:nl-dl,:);
             else
-                [spA,spd] = spdiags(d{k},-ceil(option.K/2):ceil(option.K/2));
+                [spA,spd] = spdiags(d{k},-floor(option.K/2):floor(option.K/2));
                 dk = full(spdiags(spA,spd,nl,size(d{k},2)));
             end
             d{k} = dk;
-            orig.diagwidth = option.K;
+            orig.diagwidth = 2*floor(option.K/2)+1;
         end
     end
     m = set(orig,'Data',d);
-else
+elseif isempty(option.arg2)
     v = get(orig,'Data');
     d = cell(1,length(v));
+    lK = 2*floor(option.K/2)+1;
     for k = 1:length(v)
         vk = v{k};
-        hK = floor(option.K/2);
         if mirwaitbar
             handle = waitbar(0,'Computing dissimilarity matrix...');
         else
             handle = 0;
         end
-        if 0 %iscell(vk)
-            try
-                vk = cell2mat(vk);
+        if not(iscell(vk))
+            vk = {vk};
+        end    
+        for z = 1:length(vk)
+            vz = vk{z};
+            ll = size(vz,1);
+            l = size(vz,2);
+            nc = size(vz,3);
+            if ll==1 && nc>1
+                vz = squeeze(vz)';
+                ll = nc;
+                nc = 1;
             end
-        end
-        if 0 %iscell(vk) %&& length(vk) > 1 %%% ATTENTION KL!!<<<<<<<<<<<<
-            l = length(vk);
-            dk = NaN(l,l);
-            for i = 1:l
-                if handle
-                    waitbar(i/l,handle);
+            nd = size(vz,4);
+            if not(isempty(postoption)) && ...
+                strcmpi(postoption.view,'TimeLag')
+                if isinf(lK)
+                    lK = l;
                 end
-                for j = max(1,i-hK):min(l,i+hK)
-                    dk(i,j) = KL(vk{i},vk{j});
-                end
-            end
-        else
-            if not(iscell(vk))
-                vk = {vk};
-            end    
-            for z = 1:length(vk)
-                vz = vk{z};
-                ll = size(vz,1);
-                l = size(vz,2);
-                nc = size(vz,3);
-                if ll==1 && nc>1
-                    vz = squeeze(vz)';
-                    ll = nc;
-                    nc = 1;
-                end
-                nd = size(vz,4);
+                dk{z} = NaN(lK,l,nc);
+            else
                 dk{z} = NaN(l,l,nc);
-                for g = 1:nc
+            end
+            for g = 1:nc
+                if nd == 1
+                    vv = vz;
+                else
                     vv = zeros(ll*nd,l);
                     for h = 1:nd
                         if iscell(vz)
@@ -193,34 +179,51 @@ else
                             vv((h-1)*ll+1:h*ll,:) = vz(:,:,g,h);
                         end
                     end
-                    if isinf(option.K)  
-                        try
-                            manually = 0;
-                            dk{z}(:,:,g) = squareform(pdist(vv',option.distance));
-                            if option.K < Inf
-                                [spA,spd] = spdiags(dk{z},...
-                                    -ceil(option.K/2):ceil(option.K/2));
-                                dk{z}(:,:,g) = full(spdiags(spA,spd,size(dk,1),size(dk{z},2)));
-                            end
-                        catch
-                            %err = lasterror;
-                            %warning(err.message)
-                            %disp('Statistics Toolbox does not seem to be
-                            %installed. Recompute the distance matrix manually.');
-                            manually = 1;
-                        end
-                    else
+                end
+                if isinf(option.K) && not(strcmpi(postoption.view,'TimeLag'))
+                    try
+                        manually = 0;
+                        dk{z}(:,:,g) = squareform(pdist(vv',option.distance));
+                    catch
                         manually = 1;
                     end
-                    if manually
-                        disf = str2func(option.distance);
+                else
+                    manually = 1;
+                end
+                if manually
+                    disf = str2func(option.distance);
+                    if strcmpi(option.distance,'cosine')
                         for i = 1:l
-                            if mirwaitbar
+                            vv(:,i) = vv(:,i)/norm(vv(:,i));
+                        end
+                    end
+                    hK = ceil(lK/2);
+                    if not(isempty(postoption)) && ...
+                            strcmpi(postoption.view,'TimeLag')
+                        for i = 1:l
+                            if mirwaitbar && (mod(i,100) == 1 || i == l)
                                 waitbar(i/l,handle);
                             end
-                            for j = max(1,i-hK):min(l,i+hK)
-                                dk{z}(i,j,g) = disf(vv(:,i),vv(:,j));
+                            ij = min(i+lK-1,l); % Frame region i:ij
+                            dkij = disf(vv(:,i),vv(:,i:ij));
+                            for j = 0:ij-i
+                                if hK-j>0
+                                    dk{z}(hK-j,i,g) = dkij(j+1);   
+                                end
+                                if hK+j<=lK
+                                    dk{z}(hK+j,i+j,g) = dkij(j+1);
+                                end
                             end
+                        end
+                    else
+                        for i = 1:l
+                            if mirwaitbar && (mod(i,100) == 1 || i == l)
+                                waitbar(i/l,handle);
+                            end
+                            j = min(i+hK-1,l);
+                            dkij = disf(vv(:,i),vv(:,i:j));
+                            dk{z}(i,i:j,g) = dkij;
+                            dk{z}(i:j,i,g) = dkij';
                         end
                     end
                 end
@@ -231,20 +234,89 @@ else
             delete(handle)
         end
     end
-    m.diagwidth = option.K;
-    m.view = 's';
+    m.diagwidth = lK;
+    if not(isempty(postoption)) && strcmpi(postoption.view,'TimeLag')
+        m.view = 'l';
+    else
+        m.view = 's';
+    end
     m.similarity = 0;
+    m.graph = {};
+    m.branch = {};
+    m.warp = [];
     m = class(m,'mirsimatrix',mirdata(orig));
     m = purgedata(m);
     m = set(m,'Title','Dissimilarity matrix');
     m = set(m,'Data',d,'Pos',[]);
+else
+    v1 = get(orig,'Data');
+    v2 = get(option.arg2,'Data');
+    n1 = get(orig,'Name');
+    n2 = get(option.arg2,'Name');
+    fp1 = get(orig,'FramePos');
+    fp2 = get(option.arg2,'FramePos');
+    v1 = v1{1}{1};
+    v2 = v2{1}{1};
+    nf1 = size(v1,2);
+    nf2 = size(v2,2);
+    nd = size(v1,4);
+    if nd>1
+        l1 = size(v1,1);
+        vv = zeros(l1*nd,nf1);
+        for h = 1:nd
+            vv((h-1)*l1+1:h*l1,:) = v1(:,:,1,h);
+        end
+        v1 = vv;
+        l2 = size(v2,1);
+        vv = zeros(l2*nd,nf2);
+        for h = 1:nd
+            vv((h-1)*l2+1:h*l2,:) = v2(:,:,1,h);
+        end
+        v2 = vv;
+        clear vv
+    end
+    d = NaN(nf1,nf2);
+    disf = str2func(option.distance);
+    if strcmpi(option.distance,'cosine')
+        for i = 1:nf1
+            v1(:,i) = v1(:,i)/norm(v1(:,i));
+        end
+        for i = 1:nf2
+            v2(:,i) = v2(:,i)/norm(v2(:,i));
+        end
+    end
+    for i = 1:nf1
+        %if mirwaitbar && (mod(i,100) == 1 || i == nf1)
+        %    waitbar(i/nf1,handle);
+        %end
+        d(i,:) = disf(v1(:,i),v2);
+    end
+    d = {{d}};
+    m.diagwidth = NaN;
+    m.view = 's';
+    m.similarity = 0;
+    m.graph = {};
+    m.branch = {};
+    m.warp = [];
+    m = class(m,'mirsimatrix',mirdata(orig));
+    m = purgedata(m);
+    m = set(m,'Title','Dissimilarity matrix','Data',d,'Pos',[],...
+              'Name',{n1{1},n2{1}},'FramePos',{fp1{1},fp2{1}});
 end
+lK = option.K;
 if not(isempty(postoption))
-    if strcmpi(m.view,'s')
+    if strcmpi(m.view,'s') && isempty(option.arg2)
         if strcmpi(postoption.view,'Horizontal')
             for k = 1:length(d)
                 for z = 1:length(d{k})
                     d{k}{z} = rotatesim(d{k}{z},m.diagwidth);
+                    if lK < m.diagwidth
+                        W = size(d{k}{z},1);
+                        hW = ceil(W/2);
+                        hK = floor(lK/2);
+                        d{k}{z} = d{k}{z}(hW-hK:hW+hK,:);
+                        m.diagwidth = lK;
+                    end
                 end
             end
             m = set(m,'Data',d);
@@ -252,9 +324,28 @@ if not(isempty(postoption))
         elseif strcmpi(postoption.view,'TimeLag') || postoption.filt
             for k = 1:length(d)
                 for z = 1:length(d{k})
-                    dz = NaN(size(d{k}{z}));
-                    for l = 1:size(dk,1)
-                        dz(1:end-l+1,l) = diag(d{k}{z},l-1);
+                    if isinf(m.diagwidth)
+                        nlines = 2*size(d{k}{z},1)*2-1;
+                        half = size(d{k}{z},1);
+                    else
+                        nlines = m.diagwidth;
+                        half = (m.diagwidth+1)/2;
+                    end
+                    dz = NaN(nlines,size(d{k}{z},2));
+                    for l = 1:nlines
+                        dia = abs(half-l);
+                        if l<half
+                            dz(l,1:end-dia) = diag(d{k}{z},dia)';
+                        else
+                            dz(l,dia+1:end) = diag(d{k}{z},dia)';
+                        end
+                    end
+                    if lK < m.diagwidth
+                        nlines2 = floor(lK/2);
+                        if size(dz,1)>lK
+                            dz = dz(half-nlines2:half+nlines2,:);
+                        end
+                        m.diagwidth = lK;
                     end
                     d{k}{z}= dz;
                 end
@@ -297,6 +388,129 @@ if not(isempty(postoption))
         end
         m = set(m,'Data',d,'FramePos',fp);
     end
+    if postoption.warp
+        dz = 1 - (d{1}{1} - min(min(d{1}{1}))) ...
+            / (max(max(d{1}{1})) - min(min(d{1}{1})));
+        paths = cell(size(dz)+1);
+        bests = sparse(size(dz,1),size(dz,2));
+        bestsindex = sparse(size(dz,1),size(dz,2));
+        for i = 1:size(dz,1)
+            if ~mod(i,100)
+                i/size(dz,1)
+            end
+            for j = 1:size(dz,2)
+                if dz(i,j)>.5
+                    continue
+                end
+                ending = [i; j];
+                [newpaths bests bestsindex] = ...
+                            addpaths({},paths{i,j},ending,dz(i,j),...
+                                     bests,bestsindex,paths,1);
+                [newpaths bests bestsindex] = ...
+                            addpaths(newpaths,paths{i+1,j},ending,dz(i,j),...
+                                     bests,bestsindex,paths,0);
+                [newpaths bests bestsindex] = ...
+                            addpaths(newpaths,paths{i,j+1},ending,dz(i,j),...
+                                     bests,bestsindex,paths,0);
+                if isempty(newpaths) && (i == 1 || j == 1 || ...
+                                         (dz(i-1,j-1)>.5 && ...
+                                          dz(i-1,j)>.5 && ...
+                                          dz(i,j-1)>.5))
+                    newpaths = {[ending; 0]};
+                end
+                paths{i+1,j+1} = newpaths;
+            end
+        end
+        m = set(m,'Warp',{paths,bests,bestsindex});
+    end
+end
+
+
+function [newpaths bests bestsindex] = addpaths(newpaths,oldpaths,ending,d,...
+                                                bests,bestsindex,paths,diag)
+for k = 1:length(oldpaths)
+    % For each path
+    if oldpaths{k}(3,end)<10 && d>.33
+        continue
+    end
+    found_redundant = 0;
+    for l = 1:length(newpaths)
+        if (newpaths{l}(1,1) - oldpaths{k}(1,1)) * ...
+                (newpaths{l}(2,1) - oldpaths{k}(2,1)) >= 0
+            % Redundant paths. One is removed.
+            found_redundant = 1;
+            if oldpaths{k}(1,1) < newpaths{l}(1,1)
+                % The new candidate is actually better.
+                % The path stored in newpaths is modified.
+                newpaths{l} = [oldpaths{k} ...
+                               [ending; oldpaths{k}(3,end)+diag]];
+                if bests(newpaths{l}(1,1),newpaths{l}(2,1)) ...
+                        == ending(1)+1i*ending(2)
+                    bests(newpaths{l}(1,1),newpaths{l}(2,1)) = 0;
+                end
+                [bests bestsindex] = update(bests,bestsindex,...
+                                            oldpaths{k}(1:2,1),...
+                                            ending(1:2),l,...
+                                            paths,newpaths);
+            end
+        else
+            % Each of the 2 paths explores more one particular dimension
+            % upfront. No path should be removed.
+            %        +
+            %     --+
+            %    -  |
+            %       |
+            %      |
+            if oldpaths{k}(1,1) < newpaths{l}(1,1)
+                if bests(oldpaths{k}(1,1),oldpaths{k}(2,1))...
+                        == ending(1)+1i*ending(2)
+                    bests(oldpaths{k}(1,1),oldpaths{k}(2,1)) = 0;
+                end
+            else
+                if bests(newpaths{l}(1,1),newpaths{l}(2,1))...
+                        == ending(1)+1i*ending(2)
+                    bests(newpaths{l}(1,1),newpaths{l}(2,1)) = 0;
+                end
+            end
+        end
+    end
+    if ~found_redundant
+        newpaths{end+1} = [oldpaths{k} ...
+                           [ending; oldpaths{k}(3,end)+diag]];
+        [bests bestsindex] = update(bests,bestsindex,...
+                                    oldpaths{k}(1:2,1),...
+                                    ending(1:2),length(newpaths),...
+                                    paths,newpaths);
+    end
+end
+
+
+function [bests bestsindex] = update(bests,bestsindex,starts,ends,...
+                                     pathindex,paths,newpaths)
+key = ends(1)+1i*ends(2);
+[i,j,v] = find(bests);
+k = find(v == key);
+if ~isempty(k)
+    bests(i(k),j(k)) = 0;
+end
+previous = bests(starts(1),starts(2));
+previndex = bestsindex(starts(1),starts(2));
+replace = 0;
+if previous == 0
+    replace = 1;
+else
+    newscore = newpaths{pathindex}(3,end-1);
+    oldscore = paths{real(previous)+1,imag(previous)+1}{previndex}(3,end);
+    if newscore > oldscore
+        replace = 1;
+    elseif newscore == oldscore
+        paths{real(previous)+1,imag(previous)+1}{previndex}
+        newpaths{pathindex}
+    end
+end
+if replace
+    bests(starts(1),starts(2)) = key;
+    bestsindex(starts(1),starts(2)) = pathindex;
 end
 
 
@@ -304,25 +518,26 @@ function S = rotatesim(d,K)
 if length(d) == 1;
     S = d;
 else
-    K = min(K,size(d,1)*2);
+    K = min(K,size(d,1)*2+1);
     lK = floor(K/2);
     S = NaN(K,size(d,2),size(d,3));
     for k = 1:size(d,3)
         for j = -lK:lK
-            S(lK+1+j,:,k) = [NaN(1,floor(abs(j)/2)) diag(d(:,:,k),j)' ...
+            S(lK+j+1,:,k) = [NaN(1,floor(abs(j)/2)) diag(d(:,:,k),j)' ...
                                                     NaN(1,ceil(abs(j)/2))];
         end
     end
 end
 
 function d = cosine(r,s)
-nr = sqrt(r'*r);
-ns = sqrt(s'*s);
-if or(nr == 0, ns == 0);
-    d = 1;
-else
-    d = 1 - r'*s/nr/ns;
-end
+d = 1-r'*s;
+%nr = sqrt(r'*r);
+%ns = sqrt(s'*s);
+%if or(nr == 0, ns == 0);
+%    d = 1;
+%else
+%    d = 1 - r'*s/nr/ns;
+%end
 
 
 function d = KL(x,y)

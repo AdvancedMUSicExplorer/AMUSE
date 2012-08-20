@@ -3,6 +3,8 @@ function v = mireval(d,file,single,export)
 %       named filename.
 %   mireval(d,'Folder') applied the mirdesign object to each audio files in
 %       the current directory.
+%   mireval(d,'Folders') applied the mirdesign object recursively to the
+%       subfolders.
 %   Optional argument: mireval(...,'Single') only keeps the first
 %       output when several output are returned for a given mirdesign
 %       object.
@@ -15,6 +17,10 @@ function v = mireval(d,file,single,export)
 %   The evaluation starts with a top-down traversal of the design flowchart
 %       (evaleach).
 
+if not(ischar(file) || (iscell(file) && ischar(file{1})))
+    error('ERROR IN MIREVAL: the second input should be a file name or ''Folder''')
+end
+
 if nargin<3
     single = [];
 end
@@ -24,64 +30,51 @@ end
 
 % First, let's look at the content of the file(s): size, sampling rate,
 % etc.
-if not(ischar(file))
-    error('ERROR IN EVAL: the second input should be a file name or ''Folder''')
-end
 w = [];    % Array containing the index positions of the starting and ending dates.
 s = getsize(d);
-if strcmpi(file,'Folder')
-    dd = dir;
-    dn = {dd.name};
-    nn = cell(1,length(dn));
-    for i = 1:length(dn)
-        j = 0;
-        while j<length(dn{i})
-            j = j+1;
-            tmp = dn{i}(j) - '0';
-            if tmp>=0 && tmp<=9
-                while j+1<length(dn{i}) && dn{i}(j+1)>='0' && dn{i}(j+1)<='9'
-                    j = j+1;
-                    tmp = tmp*10 + (dn{i}(j)-'0');
-                end
-            else
-                tmp = dn{i}(j);
-            end
-            nn{i}{end+1} = tmp;
-        end
-    end
-    dd = sortnames(dd,[],nn);
-    l = 0;
-    for i=1:length(dd);
-        nf = dd(i).name;
-        [di,tpi,fpi,fi,bi,ni] = mirread([],nf,0,1,0);
-        if not(isempty(ni))
-            l = l+1;
-            if not(isempty(s))
-                interval = s(1:2);
-                if s(3)
-                    interval = round(interval*fi)+1;
-                end
-                if s(4) == 1
-                    interval = interval+round(di/2);
-                elseif s(4) == 2
-                    interval = interval+di;
-                end
-                w{l} = min(max(interval,1),di);
-            else
-                w{l} = [1;di];
-            end
-            sr{l} = fi;
-            a{l} = ni;
-        end
-    end
+ch = 1;
+if ~iscell(file) && (strcmpi(file,'Folder') || strcmpi(file,'Folders'))
+    [l w sr lg a] = evalfolder('',s,0,[],[],[],{},strcmpi(file,'Folders'));
     if l == 0
         disp('No sound file detected in this folder.')
     end
+elseif iscell(file) || (length(file)>3 && strcmpi(file(end-3:end),'.txt'))
+    if iscell(file)
+        a = file;
+    else
+        a = importdata(file);
+    end
+    l = length(a);
+    w = zeros(2,l);
+    sr = zeros(1,l);
+    lg = zeros(1,l);
+    for i = 1:l
+        [di,tpi,fpi,fi,lg(i)] = mirread([],a{i},0,0,0);
+        if not(isempty(s))
+            interval = s(1:2);
+            if s(3)
+                interval = round(interval*fi)+1;
+            end
+            if s(4) == 1
+                interval = interval+round(di/2);
+            elseif s(4) == 2
+                interval = interval+di;
+            end
+            w(:,i) = min(max(interval,1),di);
+        else
+            w(:,i) = [1;di];
+        end
+        if getsampling(d)
+            sr(i) = getsampling(d);
+        else
+            sr(i) = fi;
+        end
+    end
 else
     l = 1;
-    [d1,tp1,fp1,f1] = mirread([],file,0,0,0);
+    [d1,tp1,fp1,f1,lg,b,n,ch] = mirread([],file,0,0,0);
     if length(s)>1
-        interval = s(1:2);
+        interval = s(1:2)';
         if s(3)
             interval = round(interval*f1)+1;
         end
@@ -90,11 +83,18 @@ else
         elseif s(4) == 2
             interval = interval+d1;
         end
-        w = {min(max(interval,1),d1)};
+        if d1 < interval(2)
+            warning('WARNING IN MIRAUDIO: The temporal region to be extracted exceeds the temporal extent of the whole audio file.'); 
+        end
+        w = min(max(interval,1),d1);
     else
-        w = {[1;d1]};
+        w = [1;d1];
     end
-    sr = {f1};
+    if isa(d,'mirdesign') && getsampling(d)
+        sr = getsampling(d);
+    else
+        sr = f1;
+    end
     a = {file};
 end
 
@@ -103,9 +103,6 @@ if not(l)
     return
 end
 
-if isempty(export)
-    y = cell(1,l);
-end
 order = 1:l;
 if isa(d,'mirdesign') && isequal(get(d,'Method'),@mirplay)
     op = get(d,'Option');
@@ -126,57 +123,102 @@ if isa(d,'mirdesign') && isequal(get(d,'Method'),@mirplay)
     order = order(:)';
 end
 
-%   The evaluation is carried out for each audio file successively.
-for i = 1:length(order)
-    f = order(i);
-    if l > 1
-        fprintf('\n')
-        display(['*** File # ',num2str(i),'/',num2str(l),': ',a{f}]);
+parallel = 0;
+if mirparallel
+    try
+        matlabpool;
+        parallel = 1;
+        mirwaitbar(0)
+        mirverbose(0)
     end
-    tic
-    yf = evalaudiofile(d,a{f},sr{f},w{f},{},0,f,single,''); %% y = ...
-    toc
-    if not(isempty(export))
-        if f==1
-            mirexport(export,yf)
-        else
-            mirexport(export,yf,'#add')
-        end
-    end
-    if isempty(export)
-        y{f} = yf;
-    end
-    clear yf
 end
 
-if isempty(export)
-    v = combineaudiofile(y{:});
+if parallel
+    %   The evaluation is carried out for each audio file successively
+    %       (or in parallel).
+    y = mirevalparallel(a,sr,w,single,ch,export);
 else
-    v = [];
+    %   The evaluation is carried out for each audio file successively.
+    y = cell(1,l);
+    isstat = isfield(d,'Stat');
+    for i = 1:length(order)
+        f = order(i);
+        if l > 1
+            fprintf('\n')
+            display(['*** File # ',num2str(i),'/',num2str(l),': ',a{f}]);
+        end
+        if mirverbose
+            tic
+        end
+        yf = evalaudiofile(d,a{f},sr(f),lg(f),w(:,f),{},0,f,single,'',ch);
+        if mirverbose
+            toc
+        end
+        y{f} = yf;
+        if not(isempty(export))
+            if strncmpi(export,'Separately',10)
+                filename = a{f};
+                filename(filename == '/') = '.';
+                filename = ['Backup/' filename export(11:end)];
+                if i == 1
+                    mkdir('Backup');
+                end
+                mirexport(filename,yf);
+            elseif i==1
+                mirexport(export,yf);
+            else
+                mirexport(export,yf,'#add');
+            end
+        end
+        clear yf
+    end
 end
+
+v = combineaudiofile(a,isstat,y{:});
     
 
-function v = evalaudiofile(d,file,sampling,size,struc,istmp,index,single,name)
+function v = evalaudiofile(d,file,sampling,lg,size,struc,istmp,index,single,name,ch)
 % Now let's perform the analysis (or analyses) on the different files.
 %   If d is a structure or a cell array, evaluate each component
 %       separately.
 if isstruct(d)
-    fields = fieldnames(d);
     v = struct;
     if istmp
         struc.tmp = struct;
     end
+    isstat = isfield(d,'Stat');
+    if isstat
+        d = rmfield(d,'Stat');
+    end
+    fields = fieldnames(d);
     for fi = 1:length(fields)
-        field = fields{fi};
-        display(['*******',field,'******']);
-        res = evalaudiofile(d.(field),file,sampling,size,struc,istmp,index,single,field);
+        fieldname = fields{fi};
+        field = d.(fieldname);
+        display(['*******',fieldname,'******']);
+        if isstat
+            if isa(field,'mirstruct')
+                field = set(field,'Stat',1);
+            elseif isa(field,'mirdesign')
+                field = mirstat(field,'FileNames',0);
+            else
+                field.Stat = 1;
+            end
+        end
+        res = evalaudiofile(field,file,sampling,lg,size,struc,istmp,index,...
+                                                     single,fieldname,ch);
         if not(isempty(single)) && not(isequal(single,0)) && ...
-                iscell(res) && isa(d.(field),'mirdesign')
+                iscell(res) && isa(field,'mirdesign')
             res = res{1};
         end
-        v.(field) = res;
+        v.(fieldname) = res;
         if istmp
-            struc.tmp.(field) = v.(field);
+            struc.tmp.(fieldname) = res;
+        end
+        if fi == 1
+            if isfield(res,'Class')
+                v.Class = res.Class;
+                v.(fieldname) = rmfield(res,'Class');
+            end
         end
     end
     if isfield(v,'tmp')
@@ -186,25 +228,87 @@ elseif iscell(d)
     l = length(d);
     v = cell(1,l);
     for j = 1:l
-        v{j} = evalaudiofile(d{j},file,sampling,size,struc,istmp,index,single,[name,num2str(j)]);
+        v{j} = evalaudiofile(d{j},file,sampling,lg,size,struc,istmp,index,...
+                                       single,[name,num2str(j)],ch);
     end
+elseif isa(d,'mirstruct') && isempty(get(d,'Argin'))
+    mirerror('MIRSTRUCT','You should always use tmp fields when using mirstruct. Else, just use struct.');
+elseif get(d,'SeparateChannels')
+    v = cell(1,ch);
+    for i = 1:ch
+        d = set(d,'File',file,'Sampling',sampling,'Length',lg,'Size',size,...
+                  'Eval',1,'Index',index,'Struct',struc,'Channel',i);
+        % For that particular file or this particular feature, let's begin the
+        % actual evaluation process.
+        v{i} = evaleach(d,single,name);    
+        % evaleach performs a top-down traversal of the design flowchart.
+    end
+    v = combinechannels(v);
 else
-    d = set(d,'File',file,'Sampling',sampling,'Size',size,...
+    d = set(d,'File',file,'Sampling',sampling,'Length',lg,'Size',size,...
               'Eval',1,'Index',index,'Struct',struc);
-    % For that particular file or this particular feature, let's begin the
-    % actual evaluation process.
-    v = evaleach(d,single,name);    
-    % evaleach performs a top-down traversal of the design flowchart.
+    dl = get(d,'FrameLength');
+    if length(dl)>1
+        v = cell(1,length(dl));
+        for i = 1:length(dl)
+            d = set(d,'Scale',i);
+            v{i} = evaleach(d,single,name);
+        end
+        v = combinescales(v);
+    else
+        % For that particular file or this particular feature, let's begin the
+        % actual evaluation process.
+        v = evaleach(d,single,name);    
+        % evaleach performs a top-down traversal of the design flowchart.
+    end
 end
 
 
-function c = combineaudiofile(varargin) % Combine output from several audio files into one single
+function y = combinechannels(c)
+y = c{1};
+v = get(y,'Data');
+for h = 2:length(c)
+    d = get(c{h},'Data');
+    for i = 1:length(d)
+        if isa(y,'mirmidi')
+            d{i}(:,3) = h;
+            v{i} = sortrows([v{i};d{i}]);
+        else
+            for j = 1:length(d{i})
+                v{i}{j}(:,:,h) = d{i}{j};
+            end
+        end
+    end
+end
+y = set(y,'Data',v);
+
+
+function y = combinescales(s)
+y = s{1};
+fp = get(y{1},'FramePos');
+fp = fp{1};
+for j = 1:length(y)
+    v = get(y{j},'Data');
+    for h = 2:length(s)
+        d = get(s{h}{j},'Data');
+        for i = 1:length(d)
+            v{i}{h} = d{i}{1};
+        end
+        if j == 1
+            fph = get(s{h}{j},'FramePos');
+            fp{h} = fph{1}{1};
+        end
+    end
+    y{j} = set(y{j},'Data',v,'FramePos',{fp});
+end
+
+
+function c = combineaudiofile(filename,isstat,varargin) % Combine output from several audio files into one single
 c = varargin{1};    % The (series of) input(s) related to the first audio file
 if isempty(c)
     return
 end
 if isstruct(c)
-    %fields = fieldnames(c);
     for j = 1:length(varargin)
         if j == 1
             fields = fieldnames(varargin{1});
@@ -222,8 +326,18 @@ if isstruct(c)
                 v{j} = NaN;
             end
         end
-        c.(field) = combineaudiofile(v{:});
+        c.(field) = combineaudiofile('',isstat,v{:});
+        if strcmp(field,'Class')
+            c.Class = c.Class{1};
+        end
     end
+    if not(isempty(filename)) && isstat
+        c.FileNames = filename;
+    end
+    return
+end
+if ischar(c)
+    c = varargin;
     return
 end
 if (not(iscell(c)) && not(isa(c,'mirdata')))
@@ -244,10 +358,11 @@ if (not(iscell(c)) && not(isa(c,'mirdata')))
 end
 if (iscell(c) && not(isa(c{1},'mirdata')))
     for i = 1:length(c)
-        for j = 1:nargin
+        v = cell(1,nargin-2);
+        for j = 1:nargin-2
             v{j} = varargin{j}{i};
         end
-        c{i} = combineaudiofile(v{:});
+        c{i} = combineaudiofile(filename,isstat,v{:});
     end
     return
 end
@@ -322,5 +437,63 @@ while i<length(n)
             tmp{end+1} = n{i}(2:end);
         end
         d2 = sortnames(dmp,d2,tmp);
+    end
+end
+
+
+function [l w sr lg a] = evalfolder(path,s,l,w,sr,lg,a,folders)
+if not(isempty(path))
+    path = [path '/'];
+end
+dd = dir;
+dn = {dd.name};
+nn = cell(1,length(dn));  % Modified file names
+for i = 1:length(dn)      % Each file name is considered
+    j = 0;
+    while j<length(dn{i})   % Each successive character is modified if necessary
+        j = j+1;
+        tmp = dn{i}(j) - '0';
+        if tmp>=0 && tmp<=9
+            while j+1<length(dn{i}) && dn{i}(j+1)>='0' && dn{i}(j+1)<='9'
+                j = j+1;
+                tmp = tmp*10 + (dn{i}(j)-'0');
+            end
+        else
+            tmp = dn{i}(j);
+        end
+        nn{i}{end+1} = tmp;
+    end
+end
+dd = sortnames(dd,[],nn);
+for i = 1:length(dd);
+    nf = dd(i).name;
+    if folders && dd(i).isdir
+        if not(strcmp(nf(1),'.'))
+            cd(dd(i).name)
+            [l w sr a lg] = evalfolder([path nf],s,l,w,sr,lg,a,1);
+            cd ..
+        end
+    else
+        [di,tpi,fpi,fi,li,bi,ni] = mirread([],nf,0,1,0);
+        if not(isempty(ni))
+            l = l+1;
+            if not(isempty(s))
+                interval = s(1:2);
+                if s(3)
+                    interval = round(interval*fi)+1;
+                end
+                if s(4) == 1
+                    interval = interval+round(di/2);
+                elseif s(4) == 2
+                    interval = interval+di;
+                end
+                w(:,l) = min(max(interval,1),di);
+            else
+                w(:,l) = [1;di];
+            end
+            sr(l) = fi;
+            lg(l) = li;
+            a{l} = [path ni];
+        end
     end
 end

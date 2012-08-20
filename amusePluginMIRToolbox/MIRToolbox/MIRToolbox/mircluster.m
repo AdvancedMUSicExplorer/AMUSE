@@ -17,6 +17,8 @@ function [a d] = mircluster(a,varargin)
 %           Default value: n = 2.
 %       mircluster(...,'Runs',r) indicates the maximal number of runs.
 %           Default value: r = 5.
+%
+%   Requires SOM Toolbox (included in the MIRtoolbox distribution).
 
 
         nruns.key = 'Runs';
@@ -56,7 +58,9 @@ else
         mirerror('mircluster','The input should be either frame- or segment-decomposed.');
     end
    
-    if isempty(varargin) || not(isa(varargin{1},'mirdata'))
+    if isempty(varargin) || (not(isa(varargin{1},'mirdata') || ...
+                             (iscell(varargin{1}) && ...
+                              isa(varargin{1}{1},'mirdata'))))
         % mircluster version for frame-decomposed data:
         % frames are clustered into groups using K-means clustering.
         [unused option] = miroptions(@mircluster,a,specif,varargin);
@@ -127,9 +131,6 @@ else
                     c{j}.covar(:,ii) = [];
                 else
                     c{j}.weight(ii) = size(clus,2)/size(va,2);
-                    if c{j}.weight(ii) == 0
-                        pause
-                    end
                     c{j}.covar(:,ii) = mean((clus'-ones(1,size(clus,1))*c{j}.centr(:,ii)).^2);
                     ii = ii+1;
                 end

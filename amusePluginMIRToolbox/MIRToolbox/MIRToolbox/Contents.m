@@ -1,5 +1,5 @@
 % MIRtoolbox
-% Version 1.2.3 14-October-2009
+% Version 1.4 30-May-2012
 %
 % A more detailed documentation of each function is available using the
 % help command. For instance, type help miraudio.
@@ -32,6 +32,7 @@
 % mironsets        - Note onset positions and characteristics
 % mirattacktime    - Duration of note attacks
 % mirattackslope   - Average slope of note attacks
+% mirattackleap    - Change of amplitude in note attacks
 % mireventdensity  - Average frequency of events
 %
 %RHYTHM
@@ -54,6 +55,7 @@
 %PITCH
 % mirpitch         - Pitch frequencies
 % mircepstrum      - Cepstrum representation (showing periodicities)
+% mirmidi          - Attempts a conversion of audio into MIDI
 %
 %TONALITY
 % mirchromagram    - Chromagram (distribution of energy along pitches)
@@ -63,6 +65,9 @@
 % mirmode          - General estimation of mode (major/minor)
 % mirtonalcentroid - Tonal centroid (using circles of fifths and thirds)
 % mirhcdf          - Harmonic Change Detection Function
+%
+%PREDICTIONS
+% miremotion       - Emotion, represented both as classes and dimensions
 %
 %ANALYSIS
 % mirmean          - Returns the mean of any feature
@@ -100,3 +105,4 @@
 % mirchunklim      - Get or set the chunk size threshold
 % mirwaitbar       - Toggles on/off the display of progress bars
 % mirverbose       - Toggles on/off the display of ongoing operations
+% mirparallel      - Toggles on/off parallel processing

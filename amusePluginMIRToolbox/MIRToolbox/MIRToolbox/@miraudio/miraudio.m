@@ -3,8 +3,8 @@ function varargout = miraudio(orig,varargin)
 %       format) into a miraudio object.
 %   a = miraudio('Folder') loads all the sound files in the CURRENT folder
 %       into a miraudio object.
-%   a = miraudio(v,sr), where v is a vector, translates the vector v into a
-%       miraudio object. The sampling frequency is set to sr Hertz.
+%   a = miraudio(v,sr), where v is a column vector, translates the vector v
+%       into a miraudio object. The sampling frequency is set to sr Hertz.
 %           Default value for sr: 44100 Hz.
 %   a = miraudio(b, ...), where b is already a miraudio object, performs 
 %       operations on b specified by the optional arguments (see below).
@@ -39,6 +39,8 @@ function varargout = miraudio(orig,varargin)
 %              'TrimStart' only trims the beginning of the audio file,
 %              'TrimEnd' only trims the end.
 %           miraudio(...,'TrimThreshold',t) specifies the trimming threshold t.
+%       miraudio(...,'Channel',c) or miraudio(...,'Channels',c) selects the
+%           channels indicated by the (array of) integer(s) c.
 %   Labeling option:
 %       miraudio(...,'Label',l) labels the audio signal(s) following the 
 %           label(s) l.
@@ -48,7 +50,15 @@ function varargout = miraudio(orig,varargin)
 %           whole file name.
 
 
+if isempty(orig)
+    varargout = {{}};
+    return
+end
+
 if isnumeric(orig)
+    if size(orig,2) > 1 || size(orig,3) > 1
+        mirerror('MIRAUDIO','Only column vectors can be imported into mirtoolbox.');
+    end
     if nargin == 1
         f = 44100;
     else
@@ -59,13 +69,15 @@ if isnumeric(orig)
         orig = orig';
     end
     tp = (0:size(orig,1)-1)'/f;
-    t = mirtemporal([],'Time',{{tp}},'Data',{{orig}},...
+    l = (size(orig,1)-1); %/f;
+    t = mirtemporal([],'Time',{{tp}},'Data',{{orig}},'Length',{{l}},...
                     'FramePos',{{tp([1 end])}},'Sampling',{f},...
                     'Name',{inputname(1)},'Label',{{}},'Clusters',{{}},...
                     'Channels',[],'Centered',0,'NBits',{b},...
                     'Title','Audio signal',...
                     'PeakPos',{{{}}},'PeakVal',{{{}}},'PeakMode',{{{}}});
     aa.fresh = 1;
+    aa.extracted = 0;
     varargout = {class(aa,'miraudio',t)};
     return
 end
@@ -113,7 +125,7 @@ end
         sampling.key = 'Sampling';
         sampling.type = 'Integer';
         sampling.default = 0;
-        sampling.when = 'After';
+        sampling.when = 'Both';
     option.sampling = sampling;
         
    %     segment.key = 'Segment';
@@ -133,7 +145,18 @@ end
         mono.default = NaN;
         mono.when = 'After';
     option.mono = mono;    
+
+        separate.key = 'SeparateChannels';
+        separate.type = 'Boolean';
+        separate.default = 0;
+    option.separate = separate;    
     
+        Ch.key = {'Channel','Channels'};
+        Ch.type = 'Integer';
+        Ch.default = [];
+        Ch.when = 'After';
+    option.Ch = Ch;
+        
 specif.option = option;
 
 specif.beforechunk = {@beforechunk,'normal'};
@@ -146,7 +169,6 @@ if nargin > 1 && ischar(varargin{1}) && strcmp(varargin{1},'Now')
     else
         extract = [];
     end
-    %para.mono = 1;  % Turn by default the sequence into mono.
     para = [];
     varargout = {main(orig,[],para,[],extract)};
 else
@@ -158,6 +180,11 @@ end
 
 
 function [x type] = init(x,option)
+if isa(x,'mirdesign')
+    if option.sampling
+        x = setresampling(x,option.sampling);
+    end
+end
 type = 'miraudio';
 
 
@@ -169,13 +196,15 @@ if ischar(orig)
     if nargin < 5
         extract = [];
     end
-    [d{1},tp{1},fp{1},f{1},b{1},n{1},ch{1}] = mirread(extract,orig,1,0);
+    [d{1},tp{1},fp{1},f{1},l{1},b{1},n{1},ch{1}] = mirread(extract,orig,1,0);
+    l{1}{1} = l{1}{1}*f{1};
     t = mirtemporal([],'Time',tp,'Data',d,'FramePos',fp,'Sampling',f,...
                        'Name',n,'Label',cell(1,length(d)),...
-                       'Clusters',cell(1,length(d)),...
+                       'Clusters',cell(1,length(d)),'Length',l,...
                        'Channels',ch,'Centered',0,'NBits',b);
     t = set(t,'Title','Audio waveform');
     a.fresh = 1;
+    a.extracted = 1;
     a = class(a,'miraudio',t);
 else
     if not(isempty(option)) && not(isempty(option.extract))
@@ -188,6 +217,7 @@ else
         a = orig;
     else
         a.fresh = 1;
+        a.extracted = 0;
         a = class(a,'miraudio',orig);
     end
 end      
@@ -212,15 +242,11 @@ ac = get(a,'AcrossChunks');
 f = get(a,'Sampling');
 cl = get(a,'Clusters');
 for h = 1:length(d)
-    %if isfield(para,'segment') && not(isempty(para.segment)) && para.segment
-    %    t{h} = {t{h}{para.segment}};
-    %    d{h} = {d{h}{para.segment}};
-    %    cl{h} = cl{h}(para.segment);
-    %end
     for k = 1:length(d{h})
         tk = t{h}{k};
         dk = d{h}{k};
-        if isfield(para,'extract') && not(isempty(para.extract))
+        if isfield(para,'extract') && not(isempty(para.extract)) ...
+                && ~a.extracted
             t1 = para.extract(1);
             t2 = para.extract(2);
             if para.extract(4)
@@ -249,6 +275,9 @@ for h = 1:length(d)
             tk = tk(ft,:,:);
             dk = dk(ft,:,:);
         end
+        if isfield(para,'Ch') && not(isempty(para.Ch))
+            dk = dk(:,:,para.Ch);
+        end
         if isfield(para,'center') && para.center
             dk = center(dk);
             a = set(a,'Centered',1);
@@ -265,7 +294,9 @@ for h = 1:length(d)
             else
                 ee = sqrt(sum(ac.sqrsum.^2)/ac.samples);
             end
-            dk = dk./repmat(ee,[nl,1,nc]);
+            if ee
+                dk = dk./repmat(ee,[nl,1,nc]);
+            end
         end
         if isfield(para,'trim') && not(isequal(para.trim,0)) ...
                 && not(strcmpi(para.trim,'NoTrim'))
@@ -276,14 +307,12 @@ for h = 1:length(d)
             trimhop = 10;
             nframes = floor((length(tk)-trimframe)/trimhop)+1;
             rms = zeros(1,nframes);
+            ss = sum(dk,3);
             for j = 1:nframes
                 st = floor((j-1)*trimhop)+1;
-                for z = 1:size(dk,3)
-                    rms(1,j,z) = norm(dk(st:st+trimframe-1,1,z))/sqrt(trimframe);
-                end
+                rms(j) = norm(ss(st:st+trimframe-1))/sqrt(trimframe);
             end
-            rms = (rms-repmat(min(rms),[1,size(rms,2),1]))...
-                     ./repmat(max(rms)-min(rms),[1,size(rms,2),1]);
+            rms = (rms-min(rms))./(max(rms)-min(rms));
             nosil = find(rms>para.trimthreshold);
             if strcmpi(para.trim,'Trim') || strcmpi(para.trim,'TrimStart') ...
                                          || strcmpi(para.trim,'TrimBegin')
@@ -304,13 +333,8 @@ for h = 1:length(d)
             else
                 n2 = length(tk);
             end
-            wh = ones(n2-n1+1,1);
-            dt = round(.02*f{k});
-            ha = hann(dt*2);
-            wh(1:dt) = ha(1:dt);
-            wh(end-dt+1:end) = ha(dt+1:end);
             tk = tk(n1:n2);
-            dk = dk(n1:n2,1,:);%.*repmat(wh,[1 1 size(dk,3)]);
+            dk = dk(n1:n2,1,:);
         end
         if isfield(para,'sampling') && para.sampling
             if and(f{k}, not(f{k} == para.sampling))
@@ -331,6 +355,7 @@ for h = 1:length(d)
     end
 end
 a = set(a,'Data',d,'Time',t,'Sampling',f,'Clusters',cl);
+a = set(a,'Extracted',0);
 if isfield(para,'label') 
     if isnumeric(para.label)
         n = get(a,'Name');
@@ -349,7 +374,7 @@ if isfield(para,'label')
             idx = length(para.label);
         end
         a = set(a,'Label',para.label{idx});
-    elseif ischar(para.label)
+    elseif ischar(para.label) && ~isempty(para.label)
         l = cell(1,length(d));
         for k = 1:length(d)
             l{k} = para.label;

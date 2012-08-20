@@ -17,6 +17,10 @@ function varargout = mirautocor(orig,varargin)
 %           Possible values:
 %               'Toiviainen' from (Toiviainen & Snyder, 2003)
 %               'vanNoorden' from (van Noorden & Moelants, 2001)
+%           mirautocor(...,'Center',c) assigns the center value of the
+%               resonance curve, in seconds.
+%               Works mainly with 'Toiviainen' option.
+%               Default value: c = 0.5
 %       mirautocor(...,'Enhanced',a) reduces the effect of subharmonics.
 %           The original autocorrelation function is half-wave rectified,
 %           time-scaled by the factor a (which can be a factor list as
@@ -34,7 +38,7 @@ function varargout = mirautocor(orig,varargin)
 %           Possible values: any windowing function proposed in the Signal
 %               Processing Toolbox (help window) plus 'rectangle' (no
 %               windowing)
-%           default value:  w = 'hanning'
+%           Default value:  w = 'hanning'
 %           mirautocor(...,'NormalWindow',0): toggles off this normalization
 %               (which is on by default).
 %   All the parameters described previously can be applied to an
@@ -47,11 +51,11 @@ function varargout = mirautocor(orig,varargin)
 %           spectral representation. A normal autocorrelation corresponds
 %           to the value k=2, but values lower than 2 are suggested by
 %           (Tolonen & Karjalainen, 2000).
-%               Default value: k = 0.67
+%           Default value: k = 0.67
 %       mirautocor(...,'Normal',n) or simply mirautocor(...,n) specifies
 %           the normalization strategy. Accepted values are 'biased',
 %           'unbiased', 'coeff' (default  value) and 'none'.
-%           See help xcorr for an explanation.
+%           See help xcorr for an explanation. 
 
         min.key = 'Min';
         min.type = 'Integer';
@@ -110,6 +114,11 @@ function varargout = mirautocor(orig,varargin)
         reso.default = 0;
     option.reso = reso;
         
+        resocenter.key = {'Center','Centre'};
+        resocenter.type = 'Integer';
+        resocenter.when = 'After';
+    option.resocenter = resocenter;
+
         h.key = 'Halfwave';
         h.type = 'Boolean';
         h.when = 'After';
@@ -241,7 +250,7 @@ else
                                      strcmpi(option.nw,'Yes')
             option.win = 'hanning';
         else
-            option.win = postoption.nw;
+            option.win = option.nw;
         end
     end
 
@@ -296,8 +305,8 @@ else
             else
                 masp = Inf;
             end
-            masp = min(masp,ceil(ls/3));
-            if masp < misp
+            masp = min(masp,ceil(ls/2));
+            if masp <= misp
                 if size(sl,2) > 1
                     warning('WARNING IN MIRAUTOCOR: Frame length is too small.');    
                 else
@@ -415,11 +424,14 @@ for k = 1:length(coeff)
                 else
                     ll = t;
                 end
+                if not(option.resocenter)
+                    option.resocenter = .5;
+                end
                 if strcmpi(option.reso,'ToiviainenSnyder') || ...
                     strcmpi(option.reso,'Toiviainen')
-                    w = max(1 - 0.25*(log2(max(ll,1e-12)/0.5)).^2, 0);
+                    w = max(1 - 0.25*(log2(max(ll,1e-12)/option.resocenter)).^2, 0);
                 elseif strcmpi(option.reso,'vanNoorden')
-                    f0=2.193; b=0.5; 
+                    f0=2.193; b=option.resocenter; 
                     f=1./ll; a1=(f0*f0-f.*f).^2+b*f.^2; a2=f0^4+f.^4;
                     w=(1./sqrt(a1))-(1./sqrt(a2));
                 end
@@ -445,106 +457,108 @@ for k = 1:length(coeff)
                 for g = 1:size(c,2)
                     for h = 1:size(c,3)
                         cgh = c(:,g,h);
-                        pvk = pv{k}{l}{1,g,h};
-                        mv = [];
-                        if not(isempty(pvk))
-                            mp = min(pv{k}{l}{1,g,h}); %Lowest peak
-                            vvv = vv{k}{l}{1,g,h}; %Valleys
-                            mv = vvv(find(vvv<mp,1,'last'));
-                                %Highest valley below the lowest peak
-                                
-                            if not(isempty(mv))
-                                cgh = cgh-mv;
+                        if length(cgh)>1
+                            pvk = pv{k}{l}{1,g,h};
+                            mv = [];
+                            if not(isempty(pvk))
+                                mp = min(pv{k}{l}{1,g,h}); %Lowest peak
+                                vvv = vv{k}{l}{1,g,h}; %Valleys
+                                mv = vvv(find(vvv<mp,1,'last'));
+                                    %Highest valley below the lowest peak
+
+                                if not(isempty(mv))
+                                    cgh = cgh-mv;
+                                end
                             end
-                        end
-                        cgh2 = cgh;
-                        tgh2 = t(:,g,1);
-                        coef = cgh(2)-cgh(1); % initial slope of the autocor curve
-                        tcoef = tgh2(2)-tgh2(1);
-                        deter = 0;
-                        inter = 0;
-                        
-                        repet = find(not(diff(tgh2)));  % Avoid bug if repeated x-values
-                        if repet
-                            warning('WARNING in MIRAUTOCOR: Two successive samples have exactly same temporal position.');
-                            tgh2(repet+1) = tgh2(repet)+1e-12;
-                        end
-                        
-                        if coef < 0
-                            % initial descending slope removed
-                            deter = find(diff(cgh2)>0,1)-1;
-                                % number of removed points
-                            if isempty(deter)
-                                deter = 0;
+                            cgh2 = cgh;
+                            tgh2 = t(:,g,1);
+                            coef = cgh(2)-cgh(1); % initial slope of the autocor curve
+                            tcoef = tgh2(2)-tgh2(1);
+                            deter = 0;
+                            inter = 0;
+
+                            repet = find(not(diff(tgh2)));  % Avoid bug if repeated x-values
+                            if repet
+                                warning('WARNING in MIRAUTOCOR: Two successive samples have exactly same temporal position.');
+                                tgh2(repet+1) = tgh2(repet)+1e-12;
                             end
-                            cgh2(1:deter) = [];
-                            tgh2(1:deter) = [];
-                            coef = cgh2(2)-cgh2(1);
-                        end
-                        
-                        if coef > 0
-                            % initial ascending slope prolonged to the left
-                            % until it reaches the x-axis
-                            while cgh2(1) > 0
-                                coef = coef*1.1;
-                                    % the further to the left, ...
-                                    % the more ascending is the slope
-                                    % (not sure it always works, though...)
-                                inter = inter+1;
-                                    % number of added points
-                                cgh2 = [cgh2(1)-coef; cgh2];
-                                tgh2 = [tgh2(1)-tcoef; tgh2];
+
+                            if coef < 0
+                                % initial descending slope removed
+                                deter = find(diff(cgh2)>0,1)-1;
+                                    % number of removed points
+                                if isempty(deter)
+                                    deter = 0;
+                                end
+                                cgh2(1:deter) = [];
+                                tgh2(1:deter) = [];
+                                coef = cgh2(2)-cgh2(1);
                             end
-                            cgh2(1) = 0;
-                        end
-                        
-                        for i = option.e  % Enhancing procedure
-                            % option.e is the list of scaling factors
-                            % i is the scaling factor
-                            if i
-                                be = find(tgh2 & tgh2/i >= tgh2(1),1);
-                                    % starting point of the substraction
-                                    % on the X-axis
-                                    
-                                if not(isempty(be))
-                                    ic = interp1(tgh2,cgh2,tgh2/i);
-                                        % The scaled autocorrelation
-                                    ic(1:be-1) = 0;
-                                    ic(find(isnan(ic))) = Inf;
-                                        % All the NaN values are changed
-                                        % into 0 in the resulting curve
-                                    ic = max(ic,0);
-                                    
-                                    if debug
-                                       hold off,plot(tgh2,cgh2)
-                                    end
-                                    
-                                    cgh2 = cgh2 - ic;       
-                                        % The scaled autocorrelation
-                                        % is substracted to the initial one
-                                        
-                                    cgh2 = max(cgh2,0);
-                                        % Half-wave rectification
-                                    
-                                    if debug
-                                       hold on,plot(tgh2,ic,'r')
-                                       hold on,plot(tgh2,cgh2,'g')
-                                       drawnow
-                                       figure
+
+                            if coef > 0
+                                % initial ascending slope prolonged to the left
+                                % until it reaches the x-axis
+                                while cgh2(1) > 0
+                                    coef = coef*1.1;
+                                        % the further to the left, ...
+                                        % the more ascending is the slope
+                                        % (not sure it always works, though...)
+                                    inter = inter+1;
+                                        % number of added points
+                                    cgh2 = [cgh2(1)-coef; cgh2];
+                                    tgh2 = [tgh2(1)-tcoef; tgh2];
+                                end
+                                cgh2(1) = 0;
+                            end
+
+                            for i = option.e  % Enhancing procedure
+                                % option.e is the list of scaling factors
+                                % i is the scaling factor
+                                if i
+                                    be = find(tgh2 & tgh2/i >= tgh2(1),1);
+                                        % starting point of the substraction
+                                        % on the X-axis
+
+                                    if not(isempty(be))
+                                        ic = interp1(tgh2,cgh2,tgh2/i);
+                                            % The scaled autocorrelation
+                                        ic(1:be-1) = 0;
+                                        ic(find(isnan(ic))) = Inf;
+                                            % All the NaN values are changed
+                                            % into 0 in the resulting curve
+                                        ic = max(ic,0);
+
+                                        if debug
+                                           hold off,plot(tgh2,cgh2)
+                                        end
+
+                                        cgh2 = cgh2 - ic;       
+                                            % The scaled autocorrelation
+                                            % is substracted to the initial one
+
+                                        cgh2 = max(cgh2,0);
+                                            % Half-wave rectification
+
+                                        if debug
+                                           hold on,plot(tgh2,ic,'r')
+                                           hold on,plot(tgh2,cgh2,'g')
+                                           drawnow
+                                           figure
+                                        end
                                     end
                                 end
                             end
-                        end
-                        
-                        % The  temporary modifications are
-                        % removed from the final curve
-                        if inter>=deter
-                            c(:,g,h) = cgh2(inter-deter+1:end);
-                            if not(isempty(mv))
-                                c(:,g,h) = c(:,g,h) + mv;
+
+                            % The  temporary modifications are
+                            % removed from the final curve
+                            if inter>=deter
+                                c(:,g,h) = cgh2(inter-deter+1:end);
+                                if not(isempty(mv))
+                                    c(:,g,h) = c(:,g,h) + mv;
+                                end
+                            else
+                                c(:,g,h) = [zeros(deter-inter,1);cgh2];
                             end
-                        else
-                            c(:,g,h) = [zeros(deter-inter,1);cgh2];
                         end
                     end
                 end
@@ -576,8 +590,10 @@ y = mirautocor(orig,option);
 
 
 function y = combinechunk(old,new)
-do = mirgetdata(old);
-dn = mirgetdata(new);
+do = get(old,'Data');
+do = do{1}{1};
+dn = get(new,'Data');
+dn = dn{1}{1};
 if abs(size(dn,1)-size(do,1)) <= 2 % Probleme of border fluctuation
     mi = min(size(dn,1),size(do,1));
     dn = dn(1:mi,:,:);

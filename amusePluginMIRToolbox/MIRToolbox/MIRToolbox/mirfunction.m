@@ -17,7 +17,8 @@ if isempty(x)
     return
 end
 
-if ischar(x) % The input is a file name.
+if ischar(x) || ...
+        (iscell(x) && ischar(x{1})) % The input is a file name.
     % Starting point of the design process
     design_init = 1;
     filename = x;
@@ -50,7 +51,9 @@ if isa(orig,'mirdesign')
             orig = mirframe(orig,during.frame.length.val,...
                                  during.frame.length.unit,...
                                  during.frame.hop.val,...
-                                 during.frame.hop.unit);   
+                                 during.frame.hop.unit,...
+                                 during.frame.phase.val,...
+                                 during.frame.phase.unit);   
         end
         
         % The 'init' part of the function can be integrated into the design
@@ -59,23 +62,11 @@ if isa(orig,'mirdesign')
         % Automatic development of the implicit prerequisites,
         % with management of the data types throughout the design process.
         [orig type] = init(orig,during);
-        
-        %?&?& if iscell(type)
-        %?%?%    nout = length(type); %NUMBER OF OUTPUTS IS NOT MORE DEPENDENT ON THE CALL
-        %?%?% end
-        
-        o = mirdesign(method,orig,during,after,specif,type); %,nout);
-        
-                %if isstruct(during) && during.frame.auto
-                %    % Now that the mirframe step has been integrated in the
-                %    % flowchart, the 'Frame' option can be removed from the
-                %    % flowchart's terminal node.
-                %    opt = get(o,'Option');
-                %    opt.frame = [];
-                %    o = set(o,'Option',opt,'Frame',[]);
-                %end
-            
-        if design_init && not(strcmpi(filename,'Design'))
+                
+        o = mirdesign(method,orig,during,after,specif,type);
+                    
+        if design_init && ...
+                not(ischar(filename) && strcmpi(filename,'Design'))
             % Now the design flowchart has been completed created.
             % If the 'Design' keyword not used,
             % the function is immediately evaluated
@@ -92,7 +83,6 @@ if isa(orig,'mirdesign')
         % beginning of the evaluation process.
         
         if not(isempty(get(orig,'TmpFile'))) && get(orig,'ChunkDecomposed')
-            %ch = get(orig,'Chunk');
             orig = evaleach(orig);
             if iscell(orig)
                 orig = orig{1};
@@ -102,7 +92,6 @@ if isa(orig,'mirdesign')
             [orig x] = evaleach(orig);
         end
         
-        %during.extract = [];
         if not(isequal(method,@nthoutput))
             if iscell(orig)
                 orig = orig{1};
@@ -148,7 +137,9 @@ else
     elseif not(isempty(init)) && not(isempty(during))
         if isstruct(during) && isfield(during,'frame') && ...
                 isstruct(during.frame) && during.frame.auto
-            orig = mirframe(orig,during.frame.length,during.frame.hop);        
+            orig = mirframe(orig,during.frame.length,...
+                            during.frame.hop,...
+                            during.frame.phase);        
         end
         % The input of the function is not a design flowchart, which
         % the 'init' part of the function could be integrated into.
@@ -181,14 +172,30 @@ if not(isempty(during)) && mirverbose
     end
 end
 if iscell(x)
-    x = x{1};
+    x1 = x{1};
+else
+    x1 = x;
 end
 if not(iscell(orig) || isnumeric(x))
-    orig = set(orig,'Index',get(x,'Index'));
+    orig = set(orig,'Index',get(x1,'Index'));
 end
-o = main(orig,during,after);
+if iscell(orig)
+    o = main(orig,during,after);
+else
+    d = get(orig,'Data');
+    if isamir(orig,'miraudio') && ...
+        length(d) == 1 && length(d{1}) == 1 && isempty(d{1}{1})
+        % To solve a problem when MP3read returns empty chunk.
+        % Warning: it should not be a cell, because for instance nthoutput can have first input empty... 
+        o = orig;
+    else
+        o = main(orig,during,after);
+    end
+end
 if not(iscell(o) && length(o)>1) || (isa(x,'mirdesign') && get(x,'Eval'))
     o = {o x};
+elseif iscell(x) && isa(x{1},'mirdesign') && get(x{1},'Eval')
+    o = {o x{1}};
 elseif not(isempty(varg)) && isstruct(varg{1}) ...
             && not(iscell(o) && iscell(o{1}))
     % When the function was called by mireval, the output should be packed

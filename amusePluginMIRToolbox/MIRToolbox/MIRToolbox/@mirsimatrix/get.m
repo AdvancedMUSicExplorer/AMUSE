@@ -5,6 +5,12 @@ function val = get(a, propName)
 switch propName
     case 'DiagWidth'
         val = a.diagwidth;
+    case 'Graph'
+        val = a.graph;
+    case 'Branch'
+        val = a.branch;
+    case 'Warp'
+        val = a.warp;
     otherwise
         val = get(mirdata(a),propName);
 end

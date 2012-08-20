@@ -1,5 +1,9 @@
 function varargout = mirlength(orig,varargin)
 %   mirlength(x) indicates the temporal length of x.
+%   If x is decomposed into frames,
+%       mirlength(x) indicates the frame length, whereas 
+%       mirlength(x,'Global') indicates the total temporal spanning of the
+%           frame decomposition. 
 %   Optional argument:
 %       mirlength(...,'Unit',u) indicates the length unit.
 %           Possible values:
@@ -10,7 +14,7 @@ function varargout = mirlength(orig,varargin)
         unit.type = 'String';
         unit.choice = {'Second','Sample'};
         unit.default = 'Second';
-    option.unit = unit;
+    option.unit = unit;   
     
 specif.option = option;
      
@@ -38,4 +42,9 @@ for h = 1:length(d)
         end
     end
 end
-z = mirscalar(a,'Data',v,'Title','Temporal length','Unit','s.');
+z = mirscalar(a,'Data',v,'Title','Temporal length');
+if strcmp(option.unit,'Second')
+    z = set(z,'Unit','s.');
+else
+    z = set(z,'Unit','samples.');
+end

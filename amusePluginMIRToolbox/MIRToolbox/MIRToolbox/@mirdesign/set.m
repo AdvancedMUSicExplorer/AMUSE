@@ -14,6 +14,8 @@ while length(propertyArgIn) >= 2,
            a.file = val;
        case 'Sampling'
            a.sampling = val;
+       case 'Length'
+           a.length = val;
        case 'Size'
            a.size = val;
        case 'Chunk'
@@ -27,18 +29,24 @@ while length(propertyArgIn) >= 2,
            a.frame = val;
        case 'Segment'
            a.segment = val;
-       case 'Frames'
-           a.frame.samples = val;
+       case 'FrameDecomposition'
+           a.frame.decomposition = val;
        case 'FrameLength'
            a.frame.length.val = val;
        case 'FrameHop'
            a.frame.hop.val = val;
+       case 'FramePhase'
+           a.frame.phase.val = val;
        case 'FrameLengthUnit'
            a.frame.length.unit = val;
        case 'FrameHopUnit'
            a.frame.hop.unit = val;
+       case 'FramePhaseUnit'
+           a.frame.phase.unit = val;
        case 'FrameEval'
            a.frame.eval = val;
+       case 'FrameDontChunk'
+           a.frame.dontchunk = val;
        case 'Path'
            a.path = val;
        case 'Specif'
@@ -67,6 +75,12 @@ while length(propertyArgIn) >= 2,
            a.option = val;
        case 'Overlap'
            a.overlap = val;
+       case 'SeparateChannels'
+           a.separate = val;
+       case 'Channel'
+           a.channel = val;
+       case 'Scale'
+           a.scale = val;
        otherwise
            error(['Unknown MIRdesign property: ' prop])
    end

@@ -1,4 +1,4 @@
-function [d,d2] = mirgetdata(x)
+function [d,d2] = mirgetdata(x,varargin)
 %   d = mirgetdata(x) return the data contained in the object x in a
 %       structure that can be used for further computation outside MIRtoolbox.
 %       If x corresponds to one non-segmented audio sequence, the result is 
@@ -58,12 +58,6 @@ if isa(x,'mirclassify')
     return
 end
 
-if isa(x,'miremotion')
-    d = uncell(get(x,'Activity'));
-    d2 = uncell(get(x,'Valence'));
-    return
-end
-
 if isa(x,'mirsimatrix')
     pt = [];
 else
@@ -73,7 +67,9 @@ pv = get(x,'PeakPreciseVal');
 if not(isempty(pt)) && not(isempty(pt{1})) && not(isempty(pt{1}{1}))
     d = uncell(pt);
     d2 = uncell(pv);
-    return
+    if not(isempty(d))
+        return
+    end
 end
 
 if isa(x,'mirsimatrix')
@@ -85,11 +81,13 @@ pv = get(x,'PeakVal');
 if not(isempty(pt)) && not(isempty(pt{1})) && not(isempty(pt{1}{1}))
     d = uncell(pt);
     d2 = uncell(pv);
-    return
+    if not(isempty(d))
+        return
+    end
 end
 
 d = uncell(v,isa(x,'mirscalar'));
-if iscell(d) && not(isempty(d))
+if iscell(d) && not(isempty(d)) && nargin == 1
     disp('The result is an array of cell.')
     disp(['If d is the name of the output variable, ',...
         'the successive cells can be accessed by typing d{1}, d{2}, etc.']);

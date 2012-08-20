@@ -15,6 +15,8 @@ switch propName
         val = a.framed;
     case 'Sampling'
         val = a.sr;
+    case 'Length'
+        val = a.length;
     case 'NBits'
         val = a.nbits;
     case 'Name'
@@ -43,6 +45,9 @@ switch propName
         po = a.pos;
         d = a.data;
         val = cell(1,length(pp));
+        if isempty(d)
+            return
+        end
         for k = 1:length(pp)
             val{k} = cell(1,length(pp{k}));
             if isempty(pp{k})
@@ -187,6 +192,18 @@ switch propName
             val = [];
         else
             val = a.track.val;
+        end
+    case 'TrackPrecisePos'
+        if isempty(a.track)
+            val = [];
+        else
+            val = a.track.precisepos;
+        end
+    case 'TrackPreciseVal'
+        if isempty(a.track)
+            val = [];
+        else
+            val = a.track.preciseval;
         end
     case 'Title'
         val = a.title;
