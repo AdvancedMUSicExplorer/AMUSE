@@ -89,7 +89,8 @@ if isamir(x,'miraudio')
         x = mirspectrum(x);
     else
         x = mirspectrum(x,'Frame',option.frame.length.val,option.frame.length.unit,...
-                                  option.frame.hop.val,option.frame.hop.unit);
+                                  option.frame.hop.val,option.frame.hop.unit,...
+                                  option.frame.phase.val,option.frame.phase.unit);
     end
 end
 if isa(x,'mirdesign')
@@ -194,7 +195,7 @@ else
     f = mirscalar(s,'Data',ff,'FramePos',fp,'Sampling',newsr,...
                         'Title',t,'Parameter',param); %,'Tmp',tmp);
     %f = settmp(f,tmp);
-    if not(isempty(postoption))
+    if not(isequal(postoption,struct))
         f = modif(f,postoption);
     end
 end
@@ -229,20 +230,18 @@ f = set(f,'Data',fl);
 
 
 function y = Euclidian(mi,mj,inc)
-%nl = size(mi,1);
 if inc
-    y = sqrt(sum(max(0,(mj-mi)).^2));%/nl;
+    y = sqrt(sum(max(0,(mj-mi)).^2));
 else
-    y = sqrt(sum((mj-mi).^2));%;/nl;
+    y = sqrt(sum((mj-mi).^2));
 end
 
 
 function y = City(mi,mj,inc)
-nl = size(mi,1);
 if inc
-    y = sum(max(0,(mj-mi)))/nl;
+    y = sum(max(0,(mj-mi)));
 else
-    y = sum(mj-mi)/nl;
+    y = sum(abs(mj-mi));
 end
 
 

@@ -36,8 +36,7 @@ function varargout = mirtempo(x,varargin)
 %               here as well (see help mironsets):
 %               onset detection strategies: 'Envelope', 'DiffEnvelope'
 %               (corresponding to 'Envelope', 'Diff'), 'SpectralFlux,
-%               'Pitch'.
-%               'Filterbank'
+%               'Pitch', 'Log', 'Mu', 'Filterbank'
 %               mironsets(...,'Sum',w) specifies when to sum the channels.
 %                   Possible values:
 %                       w = 'Before': sum before the autocorrelation or
@@ -59,6 +58,11 @@ function varargout = mirtempo(x,varargin)
 %           total amplitude of the autocorrelation function.
 %               if no value for thr is given, the value thr=0.1 is chosen
 %                   by default.
+%       mirtempo(...,'Track',tr): tracks peaks along time in order to 
+%           obtain a stabilized tempo curve and to limit therefore switches
+%           between alternative pulsations
+%               if no value for thr is given, the value tr=0.1 is chosen
+%                   by default.
 %
 %   [t,p] = mirtempo(...) also displays the result of the signal analysis
 %       leading to the tempo estimation, and shows in particular the
@@ -67,7 +71,7 @@ function varargout = mirtempo(x,varargin)
     
         sum.key = 'Sum';
         sum.type = 'String';
-        sum.choice = {'Before','After','Adjacent'};
+        sum.choice = {'Before','After','Adjacent',0};
         sum.default = 'Before';
     option.sum = sum;
         
@@ -141,6 +145,11 @@ function varargout = mirtempo(x,varargin)
             lambda.default = 1;
         option.lambda = lambda;
 
+            mu.key = 'Mu'; 
+            mu.type = 'Integer'; 
+            mu.default = 0; 
+	        option.mu = mu; 
+        
             log.key = 'Log';
             log.type = 'Boolean';
             log.default = 0;
@@ -254,6 +263,12 @@ function varargout = mirtempo(x,varargin)
         ma.default = 200;
     option.ma = ma;
 
+        track.key = 'Track';
+        track.type = 'Integer';
+        track.keydefault = .1;
+        track.default = 0;
+    option.track = track;
+
         pref.key = 'Pref';
         pref.type = 'Integer';
         pref.number = 2;
@@ -273,9 +288,15 @@ varargout = mirfunction(@mirtempo,x,varargin,nargout,specif,@init,@main);
 %% INIT
 
 function [y type] = init(x,option)
+if iscell(x)
+    x = x{1};
+end
 if option.perio
     option.m = 3;
     option.enh = 2:10;
+end
+if option.track
+    option.enh = 0;
 end
 if not(isamir(x,'mirautocor')) && not(isamir(x,'mirspectrum'))
     if isframed(x) && strcmpi(option.fea,'Envelope') && not(isamir(x,'mirscalar'))
@@ -283,24 +304,25 @@ if not(isamir(x,'mirautocor')) && not(isamir(x,'mirspectrum'))
         disp(['Suggestion: Use the ''Frame'' option instead.'])
     end
     if strcmpi(option.sum,'Before')
-        option.sum = 1;
+        optionsum = 1;
     elseif strcmpi(option.sum,'Adjacent')
-        option.sum = 5;
+        optionsum = 5;
     else
-        option.sum = 0;
+        optionsum = 0;
     end
     if option.frame.length.val
         x = mironsets(x,option.fea,'Filterbank',option.fb,...
                     'FilterbankType',option.fbtype,...
                     'FilterType',option.ftype,...
-                    'Sum',option.sum,'Method',option.envmeth,...
+                    'Sum',optionsum,'Method',option.envmeth,...
                     option.band,'Center',option.c,...
                     'HalfwaveCenter',option.chwr,'Diff',option.diff,...
                     'HalfwaveDiff',option.diffhwr,'Lambda',option.lambda,...
                     'Smooth',option.aver,'Sampling',option.sampling,...
                     'Complex',option.complex,'Inc',option.inc,...
                     'Median',option.median(1),option.median(2),...
-                    'Halfwave',option.hw,'Detect',0,'Log',option.log,...
+                    'Halfwave',option.hw,'Detect',0,...
+                    'Mu',option.mu,'Log',option.log,...
                     'Frame',option.frame.length.val,...
                             option.frame.length.unit,...
                             option.frame.hop.val,...
@@ -309,14 +331,15 @@ if not(isamir(x,'mirautocor')) && not(isamir(x,'mirspectrum'))
         x = mironsets(x,option.fea,'Filterbank',option.fb,...
                     'FilterbankType',option.fbtype,...
                     'FilterType',option.ftype,...
-                    'Sum',option.sum,'Method',option.envmeth,...
+                    'Sum',optionsum,'Method',option.envmeth,...
                     option.band,'Center',option.c,...
                     'HalfwaveCenter',option.chwr,'Diff',option.diff,...
                     'HalfwaveDiff',option.diffhwr,'Lambda',option.lambda,...
                     'Smooth',option.aver,'Sampling',option.sampling,...
                     'Complex',option.complex,'Inc',option.inc,...
                     'Median',option.median(1),option.median(2),...
-                    'Halfwave',option.hw,'Detect',0,'Log',option.log);
+                    'Halfwave',option.hw,'Detect',0,...
+                    'Mu',option.mu,'Log',option.log);
     end
 end
 if option.aut == 0 && option.spe == 0
@@ -339,11 +362,13 @@ elseif option.spe && option.aut
                        'ZeroPad',option.zp,'Resonance',option.r);
     y = ac*sp;
 end
-y = mirsum(y);
-if option.m
-    y = mirpeaks(y,'Total',option.m,'Pref',option.pref(1),option.pref(2),...
-                   'Contrast',option.thr,'NoBegin','NoEnd','Normalize','Local');
+if ischar(option.sum)
+    y = mirsum(y);
 end
+y = mirpeaks(y,'Total',option.m,'Track',option.track,...
+               'Pref',option.pref(1),option.pref(2),...
+               'Contrast',option.thr,'NoBegin','NoEnd',...
+               'Normalize','Local');
 type = {'mirscalar',mirtype(y)};            
 
 
@@ -353,24 +378,34 @@ function o = main(p,option,postoption)
 if iscell(p)
     p = p{1};
 end
-pt = get(p,'PeakPrecisePos');
+pt = get(p,'TrackPrecisePos');
+track = 1;
+if isempty(pt) || isempty(pt{1})
+    pt = get(p,'PeakPrecisePos');
+    track = 0;
+end
 bpm = cell(1,length(pt));
 for j = 1:length(pt)
     bpm{j} = cell(1,length(pt{j}));
     for k = 1:length(pt{j})
         ptk = pt{j}{k};
         bpmk = cell(1,size(ptk,2));
-        for l = 1:size(ptk,2)
-            ptl = ptk{l};
-            if isempty(ptl)
-                bpmk{l} = NaN;
-            else
-                if isa(p,'mirautocor') && not(get(p,'FreqDomain'))
-                    bpmk{l} = 60./ptl;
+        for h = 1:size(ptk,3)
+            for l = 1:size(ptk,2)
+                ptl = ptk{1,l,h};
+                if isempty(ptl)
+                    bpmk{1,l,h} = NaN;
                 else
-                    bpmk{l} = ptl*60;
+                    if isa(p,'mirautocor') && not(get(p,'FreqDomain'))
+                        bpmk{1,l,h} = 60./ptl;
+                    else
+                        bpmk{1,l,h} = ptl*60;
+                    end
                 end
             end
+        end
+        if track
+            bpmk = bpmk{1};
         end
         bpm{j}{k} = bpmk;
     end 

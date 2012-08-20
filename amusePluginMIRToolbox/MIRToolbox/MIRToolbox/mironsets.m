@@ -8,6 +8,10 @@ function varargout = mironsets(x,varargin)
 %           f = 'Envelope': Envelope of the audio signal. (Default choice).
 %           With two methods for envelope extraction:
 %               mironsets(...,'Spectro') (Default):
+%                   mironsets(...,'SpectroFrame',fl,fh) species the frame
+%                       length fl (in s.) and the hop factor fh (as a value
+%                       between 0 and 1)
+%                       Default values: fl = .1 s., fh = .1
 %                    the frequency reassigment method can be specified:
 %                    'Freq' (default), 'Mel', 'Bark' or 'Cents' (cf. mirspectrum).
 %               mironsets(...,'Filter'):
@@ -22,7 +26,7 @@ function varargout = mironsets(x,varargin)
 %                       passed here as well (see help mirenvelope):
 %                      'FilterType','Tau','PreDecim'
 %               mironsets(...,'Sum','no') does not sum back the channels at
-%                   then end of the computation. The resulting onset curve
+%                   the end of the computation. The resulting onset curve
 %                   remains therefore decomposed into several channels.
 %               Options associated to the mirenvelope function can be
 %                   passed here as well (see help mirenvelope):
@@ -38,21 +42,24 @@ function varargout = mironsets(x,varargin)
 %                   'Median' (toggled on by default here)
 %           f = 'Pitch ':computes a frame-decomposed autocorrelation function ,
 %                of same default characteristics than those returned
-%                 by mirpitch (with however a range of frequencies not
-%                 exceeding 1000 Hz) and subsequently computes the novelty 
-%                 curve of the resulting similatrix matrix, with a 'KernelSize' 
-%                 of 32 samples.
+%                by mirpitch, with however a range of frequencies set by 
+%                the following options:
+%                   'Min' (set by default to 30 Hz),
+%                   'Max' (set by default to 1000 Hz),
+%                and subsequently computes the novelty curve of the 
+%                resulting similatrix matrix.
+%               Option associated to the mirnovelty function can be
+%               passed here as well (see help mirnovelty):
+%                   'KernelSize' (set by default to 32 samples)
 %       mironsets(...,'Detect',d) toggles on or off the onset detection, 
 %           which is based on the onset detection function.
 %           (By default toggled on.)
 %           Option associated to the mirpeaks function can be specified as
 %               well:
 %               'Contrast' with default value c = .01
+%               'Threshold' with default value t = 0
 %       mironsets(...,'Attack') (or 'Attacks') detects attack phases.
 %       mironsets(...,'Release') (or 'Releases') detects release phases.
-%           mironsets(...,'Gauss',o) estimate the attack and/or release
-%               points using a gaussian envelope smoothing of order o of the
-%               onset curve.
 %       mironsets(...,'Frame',...) decomposes into frames, with default frame
 %           length 3 seconds and hop factor .1
 %   Preselected onset detection models:
@@ -113,7 +120,12 @@ function varargout = mironsets(x,varargin)
             band.choice = {'Freq','Mel','Bark','Cents'};
             band.default = 'Freq';
         option.band = band;
-
+        
+            specframe.key = 'SpectroFrame';
+            specframe.type = 'Integer';
+            specframe.number = 2;
+            specframe.default = [.1 .1];
+        option.specframe = specframe;
                     
         sum.key = 'Sum';
         sum.type = 'Boolean';
@@ -126,12 +138,18 @@ function varargout = mironsets(x,varargin)
         chwr.when = 'After';
     option.chwr = chwr;
     
+        mu.key = 'Mu';
+        mu.type = 'Integer';
+        mu.default = 0;
+        mu.keydefault = 100;
+    option.mu = mu;
+    
         oplog.key = 'Log';
         oplog.type = 'Boolean';
         oplog.default = 0;
         oplog.when = 'After';
     option.log = oplog;
-    
+
         oppow.key = 'Power';
         oppow.type = 'Boolean';
         oppow.default = 0;
@@ -204,7 +222,7 @@ function varargout = mironsets(x,varargin)
         flux.type = 'Boolean';
         flux.default = 0;
     option.flux = flux;
-
+    
         complex.key = 'Complex';
         complex.type = 'Boolean';
         complex.when = 'Both';
@@ -235,6 +253,27 @@ function varargout = mironsets(x,varargin)
         pitch.default = 0;
     option.pitch = pitch;
 
+        min.key = 'Min';
+        min.type = 'Integer';
+        min.default = 30;
+    option.min = min;
+
+        max.key = 'Max';
+        max.type = 'Integer';
+        max.default = 1000;
+    option.max = max;
+
+        kernelsize.key = 'KernelSize';
+        kernelsize.type = 'Integer';
+        kernelsize.default = 32;
+    option.kernelsize = kernelsize;
+    
+%%
+        nomodif.key = 'NoModif';
+        nomodif.type = 'Boolean';
+        nomodif.default = 0;
+    option.nomodif = nomodif;
+
 %% options related to event detection
         detect.key = 'Detect';
         detect.type = 'String';
@@ -249,7 +288,13 @@ function varargout = mironsets(x,varargin)
         cthr.default = NaN;
         cthr.when = 'After';
     option.cthr = cthr;
-    
+
+        thr.key = 'Threshold';
+        thr.type = 'Integer';
+        thr.default = 0;
+        thr.when = 'After';
+    option.thr = thr;
+
         attack.key = {'Attack','Attacks'};
         attack.type = 'Boolean';
         attack.default = 0;
@@ -257,16 +302,12 @@ function varargout = mironsets(x,varargin)
     option.attack = attack;
         
         release.key = {'Release','Releases'};
-        release.type = 'Boolean';
+        release.type = 'String';
+        release.choice = {'Olivier','Valeri',0,'no','off'};
         release.default = 0;
+        release.keydefault = 'Olivier';
         release.when = 'After';
     option.release = release;
-
-        gauss.key = 'Gauss';
-        gauss.type = 'Integer';
-        gauss.default = 0;
-        gauss.when = 'After';
-    option.gauss = gauss;
     
 %% preselection
         presel.choice = {'Scheirer','Klapuri99'};
@@ -288,6 +329,7 @@ specif.option = option;
 
 specif.eachchunk = 'Normal';
 specif.combinechunk = 'Concat';
+specif.extensive = 1;
 
 specif.title = 'Onset curve'; %used for miroptions
 
@@ -300,15 +342,21 @@ function [y type] = init(x,option)
 if iscell(x)
     x = x{1};
 end
+if option.nomodif
+    y = x;
+    return
+end
 if ischar(option.presel)
     if strcmpi(option.presel,'Scheirer')
         option.filtertype = 'Scheirer';
         option.filter = 'HalfHann';
+        option.envmeth = 'Filter';
     elseif strcmpi(option.presel,'Klapuri99')
         option.filtertype = 'Klapuri';
         option.filter = 'HalfHann';
         option.envmeth = 'Filter';
         option.decim = 180;
+        option.mu = 100;
     end
 end
 if option.diffenv
@@ -329,25 +377,27 @@ if isamir(x,'miraudio')
             fb = x;
         end
         y = mirenvelope(fb,option.envmeth,option.band,...
+                          'Frame',option.specframe(1),option.specframe(2),...
                           'FilterType',option.filter,...
                           'Tau',option.tau,'UpSample',option.up,...
-                          'PreDecim',option.decim,'PostDecim',0);
+                          'PreDecim',option.decim,'PostDecim',0,...
+                          'Mu',option.mu);
         type = 'mirenvelope';
     elseif option.flux
         x = mirframenow(x,option);
         y = mirflux(x,'Inc',option.inc,'Complex',option.complex);
         type = 'mirscalar';
     elseif option.pitch
-        [unused ac] = mirpitch(x,'Frame','Stable','Multi','Max',1000);
-        y = mirnovelty(ac,'KernelSize',32);
+        [unused ac] = mirpitch(x,'Frame','Min',option.min,'Max',option.max);
+        y = mirnovelty(ac,'KernelSize',option.kernelsize);
         type = 'mirscalar';
     end
 elseif (option.pitch && not(isamir(x,'mirscalar'))) ...
         || isamir(x,'mirsimatrix')
-    y = mirnovelty(x,'KernelSize',32);
+    y = mirnovelty(x,'KernelSize',option.kernelsize);
     type = 'mirscalar';
 elseif isamir(x,'mirscalar') || isamir(x,'mirenvelope')
-    y = mirframenow(x,option);
+    y = x; %mirframenow(x,option);
     type = mirtype(x);
 else
     x = mirframenow(x,option);
@@ -366,7 +416,6 @@ if not(isempty(option)) && ischar(option.presel)
         option.sum = 0;
         postoption.detect = 0;
     elseif strcmpi(option.presel,'Klapuri99')
-        postoption.log = 1;
         postoption.diffhwr = 1;
         option.sum = 0;
         postoption.ds = 0;
@@ -375,9 +424,6 @@ if not(isempty(option)) && ischar(option.presel)
 end
 if iscell(o)
     o = o{1};
-end
-if isfield(option,'sum') && option.sum && 0
-    o = mirsum(o,'Adjacent',option.sum);
 end
 if not(isempty(option)) && option.diffenv
     postoption.diff = 1;
@@ -439,7 +485,7 @@ if isfield(option,'sum') && option.sum
 end
 if isfield(option,'presel') && ...
         ischar(option.presel) && strcmpi(option.presel,'Klapuri99')
-    % o, already computed, corresponds to mirenvelope(o,'Log','HalfwaveDiff');
+    % o, already computed, corresponds to mirenvelope(o,'Mu','HalfwaveDiff');
     % o is the relative distance function W in (Klapuri, 99);
     o2 = mirenvelope(o2,'HalfwaveDiff');
     % o2 is the absolute distance function D in (Klapuri, 99);
@@ -465,34 +511,40 @@ if isfield(postoption,'detect') && ischar(postoption.detect)
         end
     end
     if strcmpi(postoption.detect,'Peaks')
-        o = mirpeaks(o,'Total',Inf,'SelectFirst',...
-            'Contrast',postoption.cthr,'Order','Abscissa','NoBegin','NoEnd');
+        o = mirpeaks(o,'Total',Inf,'SelectFirst',0,...
+            'Threshold',postoption.thr,'Contrast',postoption.cthr,...
+            'Order','Abscissa','NoBegin','NoEnd');
     elseif strcmpi(postoption.detect,'Valleys')
-        o = mirpeaks(o,'Total',Inf,'SelectFirst',...
-            'Contrast',postoption.cthr,'Valleys','Order','Abscissa','NoBegin','NoEnd');
+        o = mirpeaks(o,'Total',Inf,'SelectFirst',0,...
+            'Threshold',postoption.thr,'Contrast',postoption.cthr,...
+            'Valleys','Order','Abscissa','NoBegin','NoEnd');
     end
     nop = cell(size(get(o,'Data')));
     o = set(o,'AttackPos',nop,'ReleasePos',nop);
 end
-if isfield(postoption,'attack') && postoption.attack
-    p = get(o,'PeakPos');
+if (isfield(postoption,'attack') && postoption.attack) || ...
+        (isfield(postoption,'release') && postoption.release)
+    pp = get(o,'PeakPos');
+    pv = get(o,'PeakVal');
     pm = get(o,'PeakMode');
+    ppp = get(o,'PeakPrecisePos');
+    ppv = get(o,'PeakPreciseVal');
     d = get(o,'Data');
-    do = mirenvelope(o,'Diff','Gauss',postoption.gauss);
-    dd = get(do,'Data');
-    [st p pm] = mircompute(@startattack,d,dd,p,pm);
-    o = set(o,'AttackPos',st,'PeakPos',p,'PeakMode',pm);
-else
-    st = [];
-end
-if isfield(postoption,'release') && postoption.release
-    p = get(o,'PeakPos');
-    pm = get(o,'PeakMode');
-    d = get(o,'Data');
-    do = mirenvelope(o,'Diff','Gauss',postoption.gauss);
-    dd = get(do,'Data');
-    [rl p pm st] = mircompute(@endrelease,d,dd,p,pm,st);
-    o = set(o,'ReleasePos',rl,'AttackPos',st,'PeakPos',p,'PeakMode',pm);
+    if postoption.attack
+        v = mirpeaks(o,'Total',Inf,'SelectFirst',0,...
+            'Contrast',postoption.cthr,...
+            'Valleys','Order','Abscissa','NoBegin','NoEnd');
+        st = get(v,'PeakPos');
+        [st pp] = mircompute(@startattack,d,pp,st);
+        %[st pp pv pm ppp ppv] = mircompute(@startattack,d,pp,pv,pm,ppp,ppv);
+    end
+    if ischar(postoption.release) && ~strcmpi(postoption.release,'No') ...
+                                  && ~strcmpi(postoption.release,'Off')
+        [rl pp pv pm ppp ppv st] = mircompute(@endrelease,d,pp,pv,pm,ppp,ppv,st,postoption.release);
+        o = set(o,'ReleasePos',rl);
+    end
+    o = set(o,'AttackPos',st,'PeakPos',pp,'PeakVal',pv,'PeakMode',pm,...
+              'PeakPrecisePos',ppp,'PeakPreciseVal',ppv);
 end
 title = get(o,'Title');
 if not(length(title)>11 && strcmp(title(1:11),'Onset curve'))
@@ -500,73 +552,152 @@ if not(length(title)>11 && strcmp(title(1:11),'Onset curve'))
 end
 
 
-function st = startattack(d,dd,z,pm)
-z = sort(z{1});
+function st = startattack(d,pp,st) %pv,pm,ppp,ppv)
+pp = sort(pp{1});
+st = st{1};
+if ~isempty(st) && st(1)>pp(1)
+    dd = diff(d,1,1);       % d'
+    p = find(dd((pp(1)-1)-1:-1:1)<=0,1);
+    if isempty(p)
+        st0 = 1;
+    else
+        st0 = ((pp(1)-1)-p)+1;
+    end
+    st = [st0 st];
+end
+if length(st)>length(pp)
+    st = st(1:length(pp));
+else
+    pp = pp(1:length(st));
+end
+st = {{st} {pp}};
+return
+
+pv = pv{1};
 pm = pm{1};
-st = zeros(size(z));
+ppp = ppp{1};
+ppv = ppv{1};
+st = zeros(size(pp));
 i = 1;
-while i<=length(z)
-    p = find(dd(z(i)-1:-1:1)>0,1); % previous increasing portion
+dd = diff(d,1,1);       % d'
+ddd = diff(dd,1,1);     % d''
+dddd = diff(ddd,1,1);   % d'''
+while i<=length(pp)
+    % Start attack is identified to previous valley in d.
+    p = find(dd((pp(i)-1)-1:-1:1)<0,1);
     if isempty(p)
         st(i) = 1;
     else
-        n = find(dd(z(i)-p-1:-1:1)<0,1); % previous decreasing portion
-        if isempty(n)
-            st(i) = 1;
-        else
-            st(i) = z(i)-p-n;
-        end
+        st(i) = ((pp(i)-1)-p)+1;
         if i>1 && st(i-1)==st(i)
-            if d(z(i))>d(z(i-1))
+            if d(pp(i))>d(pp(i-1))
                 del = i-1;
             else
                 del = i;
             end
             st(del) = [];
-            z(del) = [];
+            pp(del) = [];
+            pv(del) = [];
             pm(del) = [];
+            ppp(del) = [];
+            ppv(del) = [];
             i = i-1;
         end
     end
+    % Start attack is identified to previous peak in d''.
+    %p = find(dddd((pp(i)-1)-1:-1:1)<0,1); % previous decreasing d''
+    %if isempty(p)
+    %    st(i) = 1;
+    %else
+    %    n = find(dddd((pp(i)-1)-p-1:-1:1)>0,1); % previous increasing d''
+    %    if isempty(n)
+    %        st(i) = 1;
+    %    else
+    %        st(i) = ((pp(i)-1)-p-(n-1))+1;
+    %    end
+    %    if i>1 && st(i-1)==st(i)
+    %        if d(pp(i))>d(pp(i-1))
+    %            del = i-1;
+    %        else
+    %            del = i;
+    %        end
+    %        st(del) = [];
+    %        pp(del) = [];
+    %        pv(del) = [];
+    %        pm(del) = [];
+    %        ppp(del) = [];
+    %        ppv(del) = [];
+    %        i = i-1;
+    %    end
+    %end
     i = i+1;
 end
-st = {{st} {z} {pm}};
+st = {{st} {pp} {pv} {pm} {ppp} {ppv}};
 
 
-function rt = endrelease(d,dd,z,pm,st)
-z = sort(z{1});
+function rt = endrelease(d,pp,pv,pm,ppp,ppv,st,meth)
+pp = sort(pp{1});
+pv = pv{1};
 pm = pm{1};
+ppp = ppp{1};
+ppv = ppv{1};
 if not(isempty(st))
     st = st{1};
 end
-rt = zeros(size(z));
+rt = zeros(size(pp));
 i = 1;
-while i<=length(z)
-    p = find(dd(z(i)+1:end)<0,1); % next decreasing portion
-    if isempty(p)
-        rt(i) = length(d);
-    else
-        n = find(dd(z(i)+p+1:end)>0,1); % next increasing portion
-        if isempty(n)
+dd = diff(d,1,1);       % d'
+ddd = diff(dd,1,1);     % d''
+dddd = diff(ddd,1,1);   % d'''
+while i<=length(pp)
+    if strcmpi(meth,'Olivier')
+        % Release attack is identified to next (sufficiently positive) peak 
+        % in d''.
+        l = find(ddd((pp(i)-1):end)<min(ddd)/100,1); 
+            % next d'' sufficiently negative
+        if isempty(l)
             rt(i) = length(d);
         else
-            rt(i) = z(i)+p+n;
-        end
-        if i>1 && rt(i-1)==rt(i)
-            if d(z(i))>d(z(i-1))
-                del = i-1;
+            p = find(ddd((pp(i)-1)+(l-1)+1:end)>max(ddd)/100,1); % next increasing d''
+            if isempty(p)
+                rt(i) = length(d);
             else
-                del = i;
+                n = find(dddd((pp(i)-1)+(l-1)+p+1:end)<0,1); % next decreasing d''
+                if isempty(n)
+                    rt(i) = length(d);
+                else
+                    rt(i) = ((pp(i)-1)+(l-1)+p+n)+1;
+                end
             end
-            rt(del) = [];
-            z(del) = [];
-            pm(del) = [];
-            if not(isempty(st))
-                st(del) = [];
-            end
-            i = i-1;
         end
+    elseif strcmpi(meth,'Valeri')
+        p = find(dd((pp(i)-1)+1:end)>min(dd)/100,1); % find point nearest to min(dd)/100 from current peak. 
+        if isempty(p)
+            rt(i) = length(d);
+        elseif p<=3                                 %that means if p is less than 3 points away from the peak then it can not be considered as the end point of release.
+                                                  %Assumption is that the whole DSR(decay sustain release) section can not be shorter than 30 ms (sampling rate is 100 Hz), also, no successive note can be nearer than 30ms.
+            rt(i) = pp(i)+3;
+        else
+            rt(i) = (pp(i)-1)+(p-1);
+        end
+    end
+    if i>1 && rt(i-1)==rt(i)
+        if d(pp(i))>d(pp(i-1))
+            del = i-1;
+        else
+            del = i;
+        end
+        rt(del) = [];
+        pp(del) = [];
+        pv(del) = [];
+        pm(del) = [];
+        ppp(del) = [];
+        ppv(del) = [];
+        if not(isempty(st))
+            st(del) = [];
+        end
+        i = i-1;
     end
     i = i+1;
 end
-rt = {{rt} {z} {pm} {st}};
+rt = {{rt} {pp} {pv} {pm} {ppp} {ppv} {st}};

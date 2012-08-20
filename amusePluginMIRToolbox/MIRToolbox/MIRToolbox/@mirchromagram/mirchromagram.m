@@ -3,6 +3,9 @@ function varargout = mirchromagram(orig,varargin)
 %       along pitches, of the audio signal x.
 %       (x can be the name of an audio file as well, or a spectrum, ...)
 %   Optional argument:
+%       c = mirchromagram(...,'Tuning',t): specifies the central frequency
+%           (in Hz.) associated to  chroma C.
+%               Default value, t = 261.6256 Hz
 %       c = mirchromagram(...,'Wrap',w): specifies whether the chromagram is
 %           wrapped or not.
 %           w = 1: groups all the pitches belonging to same pitch classes
@@ -11,7 +14,7 @@ function varargout = mirchromagram(orig,varargin)
 %       c = mirchromagram(...,'Frame',l,h) orders a frame decomposition of window
 %           length l (in seconds) and hop factor h, expressed relatively to
 %           the window length. For instance h = 1 indicates no overlap.
-%           Default values: l = .1 seconds and h = .125
+%           Default values: l = .2 seconds and h = .05
 %       c = mirchromagram(...,'Center'): centers the result.
 %       c = mirchromagram(...,'Normal',n): performs a n-norm of the
 %           resulting chromagram. Toggled off if n = 0
@@ -96,26 +99,38 @@ function varargout = mirchromagram(orig,varargin)
         res.default = 12;
     option.res = res;
 
+        origin.key = 'Tuning';
+        origin.type = 'Integer';
+        origin.default = 261.6256;
+    option.origin = origin;
+    
+        transp.key = 'Transpose';
+        transp.type = 'Integer';
+        transp.default = 0;
+    option.transp = transp;
+   
 specif.option = option;
-specif.defaultframelength = .1;
-specif.defaultframehop = .125;
+specif.defaultframelength = .2;
+specif.defaultframehop = .05;
 
 varargout = mirfunction(@mirchromagram,orig,varargin,nargout,specif,@init,@main);
 
 
 function [x type] = init(x,option)
 if isamir(x,'mirtemporal') || isamir(x,'mirspectrum')
-    freqmin = option.min; %chro2freq(chromin,option.res);
+    freqmin = option.min;
     freqmax = freqmin*2;
     while freqmax < option.max
         freqmax = freqmax*2;
     end
-    freqres = freqmin/option.res*.8;
+    %freqres = freqmin*(2.^(1/option.res)-1);
         % Minimal frequency resolution should correspond to frequency range
         %   between the first two bins of the chromagram 
         
     x = mirspectrum(x,'dB',option.thr,'Min',freqmin,'Max',freqmax,...
-                      'NormalInput','MinRes',freqres);
+                      'NormalInput','MinRes',option.res,'OctaveRatio',.85);
+                  %freqres*.5,...
+                  %    'WarningRes',freqres);
 end
 type = 'mirchromagram';
 
@@ -136,6 +151,7 @@ else
     c.plabel = 1;
     c.wrap = 0;
     c.chromaclass = {};
+    c.chromafreq = {};
     c.register = {};
     c = class(c,'mirchromagram',mirdata(orig));
     c = purgedata(c);
@@ -153,6 +169,7 @@ else
     cc = cell(1,length(m));  % The final structured list of chroma classes.
     o = cell(1,length(m));  % The final structured list of octave registers.
     p = cell(1,length(m));  % The final structured list of chromas.
+    cf = cell(1,length(m));  % The final structured list of central frequencies related to chromas.
     for i = 1:length(m)
         mi = m{i};
         fi = f{i};
@@ -164,6 +181,7 @@ else
         ci = cell(1,length(mi));    % The list of chroma classes.
         oi = cell(1,length(mi));    % The list of octave registers.
         pi = cell(1,length(mi));    % The list of absolute chromas.
+        cfi = cell(1,length(mi));    % The central frequency of each chroma.
         for j = 1:length(mi)
             mj = mi{j};
             fj = fi{j};
@@ -178,7 +196,7 @@ else
             
             [s1 s2 s3] = size(mj);
             
-            cj = freq2chro(fj,option.res);
+            cj = freq2chro(fj,option.res,option.origin);
             if not(ismember(min(cj)+1,cj))
                 warning('WARNING IN MIRCHROMAGRAM: Frequency resolution of the spectrum is too low.');    
                 display('The conversion of low frequencies into chromas may be incorrect.');
@@ -186,9 +204,9 @@ else
             ccj = min(min(min(cj))):max(max(max(cj)));
             sc = length(ccj);   % The size of range of absolute chromas.
             mat = zeros(s1,sc);
-            fc = chro2freq(ccj,option.res);   % The absolute chromas in Hz.
-            fl = chro2freq(ccj-1,option.res); % Each previous chromas in Hz.
-            fr = chro2freq(ccj+1,option.res); % Each related next chromas in Hz.
+            fc = chro2freq(ccj,option.res,option.origin);   % The absolute chromas in Hz.
+            fl = chro2freq(ccj-1,option.res,option.origin); % Each previous chromas in Hz.
+            fr = chro2freq(ccj+1,option.res,option.origin); % Each related next chromas in Hz.
             for k = 1:sc
                 rad = find(and(fj(:,1) > fc(k)-option.wth*(fc(k)-fl(k)),...
                                fj(:,1) < fc(k)-option.wth*(fc(k)-fr(k))));
@@ -221,13 +239,16 @@ else
             ci{j} = repmat(cj,[1,s2,s3]);
             pi{j} = repmat(pj,[1,s2,s3]);
             ni{j} = nj;
+            cfi{j} = fc;
         end
         n{i} = ni;
         cc{i} = ci;
         o{i} = oi;
         p{i} = pi;
+        cf{i} = cfi;
     end
-    c = set(c,'Magnitude',n,'Chroma',p,'ChromaClass',cc,'Register',o);
+    c = set(c,'Magnitude',n,'Chroma',p,'ChromaClass',cc,...
+              'ChromaFreq',cf,'Register',o);
     c = modif(c,option,chromascale);
     c = {c orig};
 end
@@ -237,13 +258,16 @@ function c = modif(c,option,chromascale)
 if option.plabel
     c = set(c,'PitchLabel',1);
 end            
-if option.cen || option.nor || option.wrp
+if option.cen || option.nor || option.wrp || option.transp
     n = get(c,'Magnitude');
     p = get(c,'Chroma');
     cl = get(c,'ChromaClass');
     fp = get(c,'FramePos');
     n2 = cell(1,length(n));
     p2 = cell(1,length(n));
+    if option.transp
+        transp = mod(option.transp,12);
+    end
     wrp = option.wrp && not(get(c,'Wrap'));
     for i = 1:length(n)
         ni = n{i};
@@ -281,6 +305,9 @@ if option.cen || option.nor || option.wrp
                     repmat(1e-6,[1,size(n2j,2),size(n2j,3)] )...
                     ,[size(n2j,1),1,1]);
             end
+            if option.transp
+                n2j = [n2j(13-transp:end,:,:);n2j(1:12-transp,:,:)];
+            end
             n2i{j} = n2j;
         end
         n2{i} = n2i;
@@ -290,12 +317,12 @@ if option.cen || option.nor || option.wrp
 end
 
 
-function c = freq2chro(f,res)
-c = round(res*log2(f/261.6256));
+function c = freq2chro(f,res,origin)
+c = round(res*log2(f/origin));
 
 
-function f = chro2freq(c,res)
-f = 2.^(c/res)*261.6256;
+function f = chro2freq(c,res,origin)
+f = 2.^(c/res)*origin;
 
 
 function y = vectnorm(x,p)

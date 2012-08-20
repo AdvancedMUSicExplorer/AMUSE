@@ -2,6 +2,7 @@ function [orig during after] = miroptions(method,orig,specif,varg)
 
 DEFAULTFRAMELENGTH = .05;
 DEFAULTFRAMEHOP = .5;
+DEFAULTFRAMESTART = 0;
 
 % The options are determined during the bottom-up process design (see below). 
 
@@ -30,19 +31,10 @@ if not(isempty(varg)) && (isstruct(varg{1}) || isempty(varg{1}))
         after = [];
     end
     return
-%elseif length(varg) > 1 && isstruct(varg{2})
-%    during = varg{1};
-%    after = varg{2};
-%    return
-%elseif length(varg) >= 1 && isempty(varg{1})
-%    during = [];
-%    after = [];
-%    return
 end
 
 
 during = struct;
-after = struct;
 if isfield(specif,'option')
     option = specif.option;
 else
@@ -84,8 +76,10 @@ for i = 1:length(fields)
             else
                 after.(field) = option.(field).default;
             end
-        else
+        elseif isfield(option.(field),'default')
             after.(field) = option.(field).default;
+        else
+            after.(field) = 0;
         end
     end
     if not(isfield(option.(field),'when')) || strcmpi(option.(field).when,'Both')
@@ -95,6 +89,11 @@ for i = 1:length(fields)
                 during.(field).length.unit = 's';
                 during.(field).hop.val = option.(field).default(2);
                 during.(field).hop.unit = '/1';
+                if length(option.(field).default) < 3
+                    option.(field).default(3) = 0;
+                end
+                during.(field).phase.val = option.(field).default(3);
+                during.(field).phase.unit = '/1';
             else
                 during.(field) = option.(field).default;
             end
@@ -108,6 +107,7 @@ while i <= length(varg)
         frame.auto = isempty(persoframe);
         frame.length.unit = 's';
         frame.hop.unit = '/1';
+        frame.phase.unit = '/1';
         if length(varg) > i && isnumeric(varg{i+1})
             i = i+1;
             frame.length.val = varg{i};
@@ -126,18 +126,31 @@ while i <= length(varg)
                     i = i+1;
                     frame.hop.unit = varg{i};
                 end
-            else
-                if not(isempty(persoframe))
-                    if isfield(option.(persoframe),'keydefault')
-                        frame.hop.val = option.(persoframe).keydefault(2);
-                    else
-                        frame.hop.val = option.(persoframe).default(2);
-                    end
-                elseif isfield(specif,'defaultframehop')
-                    frame.hop.val = specif.defaultframehop;
-                else
-                    frame.hop.val = DEFAULTFRAMEHOP;
+                if not(frame.hop.val || strcmpi(frame.hop.unit,'Hz'))
+                    mirerror(func2str(method),'The hop factor should be strictly positive.')
                 end
+            elseif not(isempty(persoframe))
+                if isfield(option.(persoframe),'keydefault')
+                    frame.hop.val = option.(persoframe).keydefault(2);
+                else
+                    frame.hop.val = option.(persoframe).default(2);
+                end
+            elseif isfield(specif,'defaultframehop')
+                frame.hop.val = specif.defaultframehop;
+            else
+                frame.hop.val = DEFAULTFRAMEHOP;
+            end
+            if length(varg) > i && isnumeric(varg{i+1})
+                i = i+1;
+                frame.phase.val = varg{i};
+                if length(varg) > i && ischar(varg{i+1}) && ...
+                        (strcmpi(varg{i+1},'%') || strcmpi(varg{i+1},'/1') || ...
+                         strcmpi(varg{i+1},'s') || strcmpi(varg{i+1},'sp'))
+                    i = i+1;
+                    frame.phase.unit = varg{i};
+                end
+            else
+                frame.phase.val = DEFAULTFRAMESTART;
             end
         else
             if not(isempty(persoframe))
@@ -162,6 +175,7 @@ while i <= length(varg)
             else
                 frame.hop.val = DEFAULTFRAMEHOP;
             end
+            frame.phase.val = DEFAULTFRAMESTART;
         end
         frame.eval = 0;
         if not(isfield(option,'frame')) || ...
@@ -169,7 +183,8 @@ while i <= length(varg)
                 strcmpi(option.frame.when,'Before') || ...
                 strcmpi(option.frame.when,'Both')
             during.frame = frame;
-        elseif isfield(option,'frame') && ...
+        end
+        if isfield(option,'frame') && ...
                isfield(option.frame,'when') && ...
                (strcmpi(option.frame.when,'After') || ...
                strcmpi(option.frame.when,'Both'))

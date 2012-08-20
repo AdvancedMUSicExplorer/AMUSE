@@ -103,8 +103,13 @@ function varargout = mirpulseclarity(orig,varargin)
 
             oplog.key = 'Log';
             oplog.type = 'Boolean';
-            oplog.default = 1;
+            oplog.default = 0;
         option.log = oplog;
+        
+            mu.key = 'Mu';
+            mu.type = 'Integer';
+            mu.default = 100;
+        option.mu = mu;
 
     %% options related to 'SpectralFlux'
     
@@ -186,6 +191,9 @@ function [x type] = init(x,option)
 %    warning('WARNING IN MIRPULSECLARITY: The input should not be already decomposed into frames.');
 %    disp(['Suggestion: Use the ''Frame'' option instead.'])
 %end
+if iscell(x)
+    x = x{1};
+end
 if isamir(x,'mirautocor')
     type = {'mirscalar','mirautocor'};
 elseif length(option.model) > 1
@@ -214,7 +222,7 @@ else
             case 2
                 option.envmeth = 'Filter';
                 option.fbtype = 'Gammatone';
-                option.log = 0;
+                option.mu = 0;
                 option.r = 0;
                 option.lambda = .8;
                 option.sum = 'After';
@@ -242,7 +250,8 @@ else
                                option.frame.hop.unit,...
                        'FilterbankType',option.fbtype,...
                        'FilterType',option.ftype,...
-                       'Filterbank',option.fb,'Log',option.log,...
+                       'Filterbank',option.fb,'Mu',option.mu,...
+                       'Log',option.log,...
                        'Inc',option.inc,'Halfwave',option.hw,...
                        'Median',option.median(1),option.median(2),...
                        'Min',option.mi,'Max',option.ma,...
@@ -256,7 +265,8 @@ else
                        'Lambda',option.lambda,...
                        'FilterbankType',option.fbtype,...
                        'FilterType',option.ftype,...
-                       'Filterbank',option.fb,'Log',option.log,...
+                       'Filterbank',option.fb,'Mu',option.mu,...
+                       'Log',option.log,...
                        'Inc',option.inc,'Halfwave',option.hw,...
                        'Median',option.median(1),option.median(2),...
                        'Min',option.mi,'Max',option.ma,...
@@ -287,7 +297,7 @@ function o = main(a,option,postoption)
 if option.model == 2
     option.stratg = 'InterfAutocor';
 end
-if isa(a,'mirscalar')
+if isa(a,'mirscalar') && not(strcmpi(option.stratg,'Attack')) % not very nice test... to improve.
     o = {a};
     return
 end

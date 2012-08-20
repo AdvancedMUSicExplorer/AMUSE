@@ -10,9 +10,10 @@ function varargout = mirpeaks(orig,varargin)
 %                   (Default choice.)
 %               'Abscissa': orders the peaks along the abscissa axis.
 %       mirpeaks(...,'Contrast',cthr): a threshold value. A given local
-%           maximum will be considered as a peak if its distance with the
-%           previous and successive local minima (if any) is higher than 
-%           this threshold. This distance is expressed with respect to the
+%           maximum will be considered as a peak if the difference of 
+%           amplitude with respect to both the previous and successive 
+%           local minima (when they exist) is higher than the threshold 
+%           cthr. This distance is expressed with respect to the
 %           total amplitude of x: a distance of 1, for instance, is
 %           equivalent to the distance between the maximum and the minimum
 %           of x.
@@ -40,8 +41,8 @@ function varargout = mirpeaks(orig,varargin)
 %               '', 'no', 'off', 0: no interpolation
 %               'Quadratic': quadratic interpolation. (default value).
 %       mirpeaks(...,'Valleys'): detect valleys instead of peaks.
-%       mirpeaks(...,'Reso',r): removes peaks whose distance to one or
-%           several higher peaks is lower than a given threshold.
+%       mirpeaks(...,'Reso',r): removes peaks whose abscissa distance to 
+%           one or several higher peaks is lower than a given threshold.
 %           Possible value for the threshold r:
 %               'SemiTone': ratio between the two peak positions equal to
 %                   2^(1/12)
@@ -51,6 +52,11 @@ function varargout = mirpeaks(orig,varargin)
 %               resolution, the highest of them is selected by default.
 %           mirpeaks(...,'Reso',r,'First') specifies on the contrary that
 %               the first of them is selected by default.
+%           When a peak p1 is too close to another higher peak p2, p1 is
+%               removed even if p2 is removed as well. If you want to
+%               filter out p1 only if p2 remains in the end, add the option
+%               'Loose'.
+%           mirpeaks(...,'Reso',r,'Loose') specifies instead that 
 %       mirpeaks(...,'Nearest',t,s): takes the peak nearest a given abscisse
 %           values t. The distance is computed either on a linear scale
 %           (s = 'Lin') or logarithmic scale (s = 'Log'). In this case,
@@ -73,8 +79,12 @@ function varargout = mirpeaks(orig,varargin)
 %           are located.
 %       mirpeaks(...,'Only'): keeps from the original curve only the data
 %           corresponding to the peaks, and zeroes the remaining data.
-%       mirpeaks(...,'Track'): tracks partials.
-
+%       mirpeaks(...,'Track',t): tracks temporal continuities of peaks. If
+%           a value t is specified, the variation between successive peaks
+%           is tolerated up to t samples.
+%       mirpeaks(...,'CollapseTrack',ct): collapses tracks into one single
+%           track, and remove small track transitions, of length shorter
+%           than ct samples. Default value: ct = 7
 
         m.key = 'Total';
         m.type = 'Integer';
@@ -127,16 +137,17 @@ function varargout = mirpeaks(orig,varargin)
         thr.type = 'Integer';
         thr.default = NaN;
     option.thr = thr;
-        
-    %    lthr.key = 'InverseThreshold';
-    %    lthr.type = 'Integer';
-    %    lthr.default = NaN;
-    %option.lthr = lthr;
-    
+            
         smthr.key = 'MatrixThreshold'; % to be documented in version 1.3
         smthr.type = 'Integer';
         smthr.default = NaN;
     option.smthr = smthr;
+    
+        graph.key = 'Graph';
+        graph.type = 'Integer';
+        graph.default = 0;
+        graph.keydefault = .25;
+    option.graph = graph;
         
         interpol.key = 'Interpol';
         interpol.type = 'String';
@@ -154,6 +165,11 @@ function varargout = mirpeaks(orig,varargin)
         resofirst.type = 'Boolean';
         resofirst.default = 0;
     option.resofirst = resofirst;
+    
+        resoloose.key = 'Loose';
+        resoloose.type = 'Boolean';
+        resoloose.default = 0;
+    option.resoloose = resoloose;
         
         c.key = 'Pref';
         c.type = 'Integer';
@@ -190,7 +206,19 @@ function varargout = mirpeaks(orig,varargin)
         delta.key = 'Track';
         delta.type = 'Integer';
         delta.default = 0;
+        delta.keydefault = Inf;
     option.delta = delta;
+    
+        mem.key = 'TrackMem';
+        mem.type = 'Integer';
+        mem.default = Inf;
+    option.mem = mem;
+
+        shorttrackthresh.key = 'CollapseTracks';
+        shorttrackthresh.type = 'Integer';
+        shorttrackthresh.default = 0;
+        shorttrackthresh.keydefault = 7;
+    option.shorttrackthresh = shorttrackthresh;
 
         scan.key = 'ScanForward'; % specific to mironsets(..., 'Klapuri99')
         scan.default = [];
@@ -213,6 +241,9 @@ if option.chro
     option.order = 'Abscissa';
 elseif option.ranked
     option.order = 'Amplitude';
+end
+if not(isnan(option.near)) && option.m == 1
+    option.m = Inf;
 end
 x = purgedata(x);
 if option.m <= 0
@@ -243,7 +274,7 @@ elseif isa(x,'mirsimatrix')
     for i = 1:length(t)
         for j = 1:length(t{i})
             t{i}{j} = repmat((t{i}{j}(1,:,:)+t{i}{j}(2,:,:))'/2,...
-                                    [1 size(d{i},2) 1]);
+                                    [1 size(d{i}{j},2) 1]);
         end
     end
 elseif isa(x,'mirhisto')
@@ -253,8 +284,18 @@ else
         for j = 1:length(d{i})
             if iscell(d{i})
                 dij = d{i}{j};
-                if size(dij,3) > 1 && size(dij,1) == 1
+                if ~cha && j == 1 && size(dij,3) > 1 && size(dij,1) == 1
                     cha = 1;
+                end
+                if cha && j > 1 && size(dij,1) > 1
+                    cha = -1;
+                end
+            end
+        end
+        for j = 1:length(d{i})
+            if iscell(d{i})
+                dij = d{i}{j};
+                if cha == 1
                     if iscell(dij)
                         for k = 1:size(dij,2)
                             d{i}{j}{k} = reshape(dij{k},size(dij{k},2),size(dij{k},3));
@@ -268,7 +309,7 @@ else
             end
         end
     end
-    if cha
+    if cha == 1
         t = get(x,'Channels');
     else
         t = get(x,'Pos');
@@ -304,9 +345,13 @@ if not(isempty(option.scan))
     pscan = get(option.scan,'PeakPos');
 end
 
+interpol = get(x,'Interpolable') && not(isempty(option.interpol)) && ...
+                ((isnumeric(option.interpol) && option.interpol) || ...
+                 (ischar(option.interpol) && not(strcmpi(option.interpol,'No')) && not(strcmpi(option.interpol,'Off'))));
+                
 for i = 1:length(d) % For each audio file,...
     di = d{i};
-    if cha
+    if cha == 1
         ti = t; %sure ?
     else
         ti = t{i};
@@ -324,7 +369,7 @@ for i = 1:length(d) % For each audio file,...
         end
         dh2 = dh0;
         [nl0 nc np nd0] = size(dh0);
-        if cha
+        if cha == 1
             if iscell(ti)
                 %% problem here!!!
                 ti = ti{i}; %%%%%it seems that sometimes we need to use instead ti{i}(:);
@@ -349,15 +394,21 @@ for i = 1:length(d) % For each audio file,...
         % and the maximum to 1.
         state = warning('query','MATLAB:divideByZero');
         warning('off','MATLAB:divideByZero');
+        
+        % Let's first normalize all frames globally:
+        dh0 = (dh0-repmat(min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]))./...
+            repmat(max(max(max(dh0,[],1),[],2),[],4)...
+                  -min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]);
+        for l = 1:nd0 
+            [unused lowc] = find(max(dh0(:,:,:,l))<option.thr);
+            dh0(:,lowc,1,l) = 0;
+        end
+        
         if strcmpi(option.normal,'Local')
-        % This is the version frame by frame:
+            % Normalizing each frame separately:
             dh0 = (dh0-repmat(min(min(dh0,[],1),[],4),[nl0 1 1 nd0]))./... 
                 repmat(max(max(dh0,[],1),[],4)...
                       -min(min(dh0,[],1),[],4),[nl0 1 1 nd0]);
-        else
-            dh0 = (dh0-repmat(min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]))./...
-                repmat(max(max(max(dh0,[],1),[],2),[],4)...
-                      -min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]);
         end
         warning(state.state,'MATLAB:divideByZero');
 
@@ -396,7 +447,8 @@ for i = 1:length(d) % For each audio file,...
             dh3((l-1)*nl0+(1:nl0)',:,:) = dh2(:,:,:,l);
             th2((l-1)*nl0+(1:nl0)',:,:) = th(:,:,:);
         end
-        th = th2;
+        
+        th = th2; % The X-abscissa
 
         ddh = diff(dh);
         % Let's find the local maxima
@@ -405,12 +457,13 @@ for i = 1:length(d) % For each audio file,...
             for k = 1:nc
                 dk = dl(:,k);
                 mx{1,k,l} = find(and(and(dk >= option.cthr, ...
-                         dk >= option.thr),...     , dk <= option.lthr)), ...
-                         and(ddh(1:(end-1),k,l) > 0, ...
-                             ddh(2:end,k,l) <= 0)))+1;
+                                         dk >= option.thr),...     
+                                         ... dk <= option.lthr)),
+                                     and(ddh(1:(end-1),k,l) > 0, ...
+                                         ddh(2:end,k,l) <= 0)))+1;
             end
         end
-        if option.cthr && option.m > 1
+        if option.cthr
             for l = 1:np
                 for k = 1:nc
                     finalmxk = [];
@@ -522,23 +575,30 @@ for i = 1:length(d) % For each audio file,...
             end
             for l = 1:np
                 for k = 1:nc
-                    mxlk = sort(mx{1,k,l});
+                    [unused ind] = sort(dh(mx{1,k,l}),'descend');
+                    mxlk = mx{1,k,l}(ind);
+                    del = [];
                     j = 1;
-                    while j < length(mxlk)-1
-                        if compar(th(mxlk(j+1),k,l),th(mxlk(j),k,l),option.reso)
-                            decreas = option.resofirst || ...
-                                dh(mxlk(j+1),k,l)<dh(mxlk(j),k,l);
-                            mxlk(j + decreas) = [];
-                        else
-                            j = j+1;
+                    while j < length(mxlk)
+                        jj = j+1;
+                        while jj <= length(mxlk)
+                            if compar(th(mxlk(jj),k,l),th(mxlk(j),k,l),...
+                                    option.reso)
+                                if option.resoloose
+                                    mxlk(jj) = [];
+                                    jj = jj-1;
+                                elseif option.resofirst && mxlk(j)>mxlk(jj)
+                                    del = [del j];
+                                else
+                                    del = [del jj];
+                                end
+                            end
+                            jj = jj+1;
                         end
+                        j = j+1;
                     end
-                    if length(mxlk)>1 && compar(th(mxlk(end),k,l),...
-                                                 th(mxlk(end-1),k,l),...
-                                                 option.reso)
-                        decreas = not(option.resofirst) &&...
-                            dh(mxlk(end),k,l)>dh(mxlk(end-1),k,l);
-                        mxlk(end-decreas) = [];
+                    if ~option.resoloose
+                        mxlk(del) = [];
                     end
                     mx{1,k,l} = mxlk;
                 end
@@ -549,76 +609,125 @@ for i = 1:length(d) % For each audio file,...
                 for k = 1:nc
                     mxlk = mx{1,k,l};
                     if strcmp(option.logsc,'Log')
-                        [M I] = min(abs(log(th(mxlk)/option.near)));
+                        [M I] = min(abs(log(th(mxlk,k,l)/option.near)));
                     else
-                        [M I] = min(abs(th(mxlk)-option.near));
+                        [M I] = min(abs(th(mxlk,k,l)-option.near));
                     end
                     mx{1,k,l} = mxlk(I);
                 end
             end
         end
-        if option.delta
+        if option.delta % Peak tracking
             tp{i}{h} = cell(1,np);
+            if interpol
+                tpp{i}{h} = cell(1,np);
+                tpv{i}{h} = cell(1,np);
+            end
             for l = 1:np
                 
+                % mxl will be the resulting track position matrix
+                % and myl the related track amplitude
                 % In the first frame, tracks can be identified to peaks.
                 mxl = mx{1,1,l}(:)-1;        
                 myl = dh(mx{1,1,l}(:),k,l); 
+                
                 % To each peak is associated the related track ID
                 tr2 = 1:length(mx{1,1,l});
+                
+                grvy = []; % The graveyard...
+                
+                wait = 0;
+                if nc-1>500
+                    wait = waitbar(0,['Tracking peaks...']);
+                end
+
                 for k = 1:nc-1
+                    % For each successive frame...
+                    
+                    if not(isempty(grvy))
+                        old = find(grvy(:,2) == k-option.mem-1);
+                        grvy(old,:) = [];
+                    end
+                    
+                    if wait && not(mod(k,100))
+                        waitbar(k/(nc-1),wait);
+                    end
+
                     mxk1 = mx{1,k,l};   % w^k
                     mxk2 = mx{1,k+1,l}; % w^{k+1}
+                    thk1 = th(mxk1,k,l);
+                    thk2 = th(mxk2,k,l);
                     myk2 = dh(mx{1,k+1,l},k,l); % amplitude
                     tr1 = tr2;
                     tr2 = NaN(1,length(mxk2));
                     
-                    if isempty(mxk1) || isempty(mxk2)
-                        mxl(:,k+1) = mxl(:,k);
+                    mxl(:,k+1) = mxl(:,k);
+                                        
+                    if isempty(thk1) || isempty(thk2)
+                        %% IS THIS TEST NECESSARY??
+                        
                         myl(:,k+1) = 0;
                     else
                         for n = 1:length(mxk1)
-                            tr = tr1(n); % Track of the current peak
+                            % Let's check each track.
+                            tr = tr1(n); % Current track.
 
                             if not(isnan(tr))
                                 % still alive...
 
                                 % Step 1 in Mc Aulay & Quatieri
-                                [int m] = min(abs(mxk2-mxk1(n)));
-                                if int > option.delta
+                                [int m] = min(abs(thk2-thk1(n)));
+                                if isinf(int) || int > option.delta
                                     % all w^{k+1} outside matching interval:
                                         % partial becomes dead
                                     mxl(tr,k+1) = mxl(tr,k);
                                     myl(tr,k+1) = 0;
+                                    grvy = [grvy; tr k]; % added to the graveyard
                                 else
                                     % closest w^{k+1} is tentatively selected:
                                         % candidate match
 
                                     % Step 2 in Mc Aulay & Quatieri
-                                    [unused mm] = min(abs(mxk2(m)-mxk1));
+                                    [best mm] = min(abs(thk2(m)-th(mx{1,k,l})));
                                     if mm == n
                                         % no better match to remaining w^k:
                                             % definite match
                                         mxl(tr,k+1) = mxk2(m)-1;
                                         myl(tr,k+1) = myk2(m);
                                         tr2(m) = tr;
-                                        mxk1(n) = -Inf; % selected w^k is eliminated from further consideration
-                                        mxk2(m) = Inf;  % selected w^{k+1} is eliminated as well
+                                        thk1(n) = -Inf; % selected w^k is eliminated from further consideration
+                                        thk2(m) = Inf;  % selected w^{k+1} is eliminated as well
+                                        if not(isempty(grvy))
+                                            zz = find ((mxl(grvy(:,1),k) >= mxl(tr,k) & ...
+                                                        mxl(grvy(:,1),k) <= mxl(tr,k+1)) | ...
+                                                       (mxl(grvy(:,1),k) <= mxl(tr,k) & ...
+                                                        mxl(grvy(:,1),k) >= mxl(tr,k+1)));
+                                            grvy(zz,:) = [];
+                                        end
                                     else
-                                        % let's look at adjacent lower w^k...
-                                        [int mmm] = min(abs(mxk2(1:m)-mxk1(n)));
-                                        if int > option.delta
-                                            % all w^k below matching interval:
-                                                % partial becomes dead
+                                        % let's look at adjacent lower w^{k+1}...
+                                        [int mmm] = min(abs(thk2(1:m)-thk1(n)));
+                                        if int > best || ... % New condition added (Lartillot 16.4.2010)
+                                                isinf(int) || ... % Conditions proposed in Mc Aulay & Quatieri (all w^{k+1} below matching interval)
+                                                int > option.delta
+                                            % partial becomes dead
                                             mxl(tr,k+1) = mxl(tr,k);
                                             myl(tr,k+1) = 0;
+                                            grvy = [grvy; tr k]; % added to the graveyard
                                         else
                                             % definite match
                                             mxl(tr,k+1) = mxk2(mmm)-1;
                                             myl(tr,k+1) = myk2(mmm);
                                             tr2(mmm) = tr;
-                                            mxk1(n) = -Inf;     % selected w^k is eliminated from further consideration
-                                            mxk2(mmm) = Inf;    % selected w^{k+1} is eliminated as well
+                                            thk1(n) = -Inf;     % selected w^k is eliminated from further consideration
+                                            thk2(mmm) = Inf;    % selected w^{k+1} is eliminated as well
+                                            if not(isempty(grvy))
+                                                zz = find ((mxl(grvy(:,1),k) >= mxl(tr,k) & ...
+                                                            mxl(grvy(:,1),k) <= mxl(tr,k+1)) | ...
+                                                           (mxl(grvy(:,1),k) <= mxl(tr,k) & ...
+                                                            mxl(grvy(:,1),k) >= mxl(tr,k+1)));
+                                                grvy(zz,:) = [];
+                                            end
                                         end
                                     end
                                 end
@@ -628,21 +737,225 @@ for i = 1:length(d) % For each audio file,...
                     
                     % Step 3 in Mc Aulay & Quatieri
                     for m = 1:length(mxk2)
-                        if not(isinf(mxk2(m)))
-                            % unmatched w^{k+1}:
-                                % birth of a new partial
-                            mxl2 = [mxl;zeros(1,k+1)];
-                            mxl = mxl2;
-                            tr = size(mxl,1);
-                            mxl(tr,k) = mxk2(m)-1;
+                        if not(isinf(thk2(m)))
+                            % unmatched w^{k+1}
+                            
+                            if isempty(grvy)
+                                int = [];
+                            else
+                                % Let's try to reuse a zombie from the
+                                % graveyard (Lartillot).
+                                [int z] = min(abs(th(mxl(grvy(:,1),k+1)+1,k,l)-thk2(m)));
+                            end
+                            if isempty(int) || int > option.delta ...
+                                    || int > min(abs(th(mxl(:,k+1)+1,k,l)-thk2(m)))
+                                % No suitable zombie.
+                                % birth of a new partial (Mc Aulay &
+                                % Quatieri)
+                                mxl = [mxl;zeros(1,k+1)];
+                                tr = size(mxl,1);
+                                mxl(tr,k) = mxk2(m)-1;
+                            else
+                                % Suitable zombie found. (Lartillot)
+                                tr = grvy(z,1);
+                                grvy(z,:) = [];
+                            end
                             mxl(tr,k+1) = mxk2(m)-1;
                             myl(tr,k+1) = myk2(m);
                             tr2(m) = tr;
                         end
                     end
                 end
+                
+                if wait
+                    waitbar(1,wait);
+                    close(wait);
+                    drawnow
+                end
+
+                if size(mxl,1) > option.m
+                    tot = sum(myl,2);
+                    [tot ix] = sort(tot,'descend');
+                    mxl(ix(option.m+1:end),:) = [];
+                    myl(ix(option.m+1:end),:) = [];
+                end
+                
+                mxl(:,not(max(myl))) = 0;
+                
+                if option.shorttrackthresh
+                    [myl bestrack] = max(myl,[],1);
+                    mxl = mxl(bestrack + (0:size(mxl,2)-1)*size(mxl,1));
+                    changes = find(not(bestrack(1:end-1) == bestrack(2:end)))+1;
+                    if not(isempty(changes))
+                        lengths = diff([1 changes nc+1]);
+                        shorts = find(lengths < option.shorttrackthresh);
+                        for k = 1:length(shorts)
+                            if shorts(k) == 1
+                                k1 = 1;
+                            else
+                                k1 = changes(shorts(k)-1);
+                            end
+                            k2 = k1 + lengths(shorts(k)) -1;
+                            myl(1,k1:k2) = 0;
+                            mxl(1,k1:k2) = 0;
+                        end
+                    end
+                end
+                
                 tp{i}{h}{l} = mxl;
                 tv{i}{h}{l} = myl;
+                
+                if interpol  
+                    tpv{i}{h}{l} = zeros(size(mxl));
+                    tpp{i}{h}{l} = zeros(size(mxl));
+                    for k = 1:size(mxl,2)
+                        for j = 1:size(mxl,1)
+                            mj = mxl(j,k);
+                            if mj>2 && mj<size(dh3,1)-1
+                                % More precise peak position
+                                y0 = dh3(mj,k,l);
+                                ym = dh3(mj-1,k,l);
+                                yp = dh3(mj+1,k,l);
+                                p = (yp-ym)/(2*(2*y0-yp-ym));
+                                tpv{i}{h}{l}(j,k) = y0 - 0.25*(ym-yp)*p;
+                                if p >= 0
+                                    tpp{i}{h}{l}(j,k) = (1-p)*th(mj,k,l)+p*th(mj+1,k,l);
+                                elseif p < 0
+                                    tpp{i}{h}{l}(j,k) = (1+p)*th(mj,k,l)-p*th(mj-1,k,l);
+                                end
+                            elseif mj
+                                tpv{i}{h}{l}(j,k) = dh3(mj,k,l);
+                                tpp{i}{h}{l}(j,k) = th(mj,k,l);
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if isa(x,'mirsimatrix') && option.graph
+            % Finding the best branch inside a graph constructed out of a
+            % similarity matrix
+            g{i}{h} = cell(1,nc,np);
+                % Branch info related to each peak
+            br{i}{h} = {};
+                % Info related to each branch
+            scog{i}{h} = cell(1,nc,np);
+                % Score related to each peak
+            scob{i}{h} = [];
+                % Score related to each branch
+            for l = 1:np
+                wait = waitbar(0,['Creating peaks graph...']);
+                for k = 1:nc
+                    g{i}{h}{1,k,l} = cell(size(mx{1,k,l}));
+                    scog{i}{h}{1,k,l} = zeros(size(mx{1,k,l}));
+                    if wait && not(mod(k,50))
+                        waitbar(k/(nc-1),wait);
+                    end
+                    mxk = mx{1,k,l}; % Peaks in current frame
+                    for j = k-1:-1:max(1,k-100) % Recent frames
+                        mxj = mx{1,j,l};        % Peaks in one recent frame
+                        for kk = 1:length(mxk)
+                            mxkk = mxk(kk);     % For each of current peaks
+                            for jj = 1:length(mxj)
+                                mxjj = mxj(jj); % For each of recent peaks
+                                sco = k-j - abs(mxkk-mxjj);
+                                    % Crossprogression from recent to
+                                    % current peak
+                                if sco >= 0 
+                                        % Negative crossprogression excluded
+                                    dist = 0;
+                                    % The distance between recent and
+                                    % current peak is the sum of all the
+                                    % simatrix values when joining the two
+                                    % peaks with a straight line.
+                                    for m = j:k
+                                        % Each point in that straight line.
+                                        mxm = mxjj + (mxkk-mxjj)*(m-j)/(k-j);
+                                        if mxm == floor(mxm)
+                                            dist = dist + 1-dh(mxm,m,l);
+                                        else
+                                            dhm0 = dh(floor(mxm),m,l);
+                                            dhm1 = dh(ceil(mxm),m,l);
+                                            dist = dist + 1-...
+                                                (dhm0 + ...
+                                                 (dhm1-dhm0)*(mxm-floor(mxm)));
+                                        end
+                                        if dist > option.graph
+                                            break
+                                        end
+                                    end
+                                    if dist < option.graph
+                                        % If the distance between recent
+                                        % and current peak is not too high,
+                                        % a new edge is formed between the
+                                        % peaks, and added to the graph.
+                                        gj = g{i}{h}{1,j,l}{jj};
+                                            % Branch information associated
+                                            % with recent peak
+                                        gk = g{i}{h}{1,k,l}{kk};
+                                            % Branch information associated
+                                            % with current peak
+                                        if isempty(gk) || ...
+                                                sco > scog{i}{h}{1,k,l}(kk)
+                                            % Current peak branch to be updated
+                                            if isempty(gj)
+                                                % New branch starting
+                                                % from scratch
+                                                newsco = sco;
+                                                scob{i}{h}(end+1) = newsco;
+                                                bid = length(scob{i}{h});
+                                                g{i}{h}{1,j,l}{jj} = ...
+                                                    [k kk bid newsco];
+                                                br{i}{h}{bid} = [j jj;k kk];
+                                            else
+                                                newsco = scog{i}{h}{1,j,l}(jj)+sco;
+                                                if length(gj) == 1
+                                                    % Recent peak not
+                                                    % associated with other
+                                                    % branch
+                                                    % -> Branch extension
+                                                    bid = gj;
+                                                    g{i}{h}{1,j,l}{jj} = ...
+                                                        [k kk bid newsco];
+                                                    br{i}{h}{bid}(end+1,:) = [k kk];
+                                                else
+                                                    % Recent peak already
+                                                    % associated with other
+                                                    % branch
+                                                    % -> Branch fusion
+                                                    bid = length(scob{i}{h})+1;
+                                                    g{i}{h}{1,j,l}{jj} = ...
+                                                        [k kk bid newsco; gj];
+                                                    other = br{i}{h}{gj(1,3)};
+                                                        % Other branch
+                                                        % info
+                                                        % Let's copy its
+                                                        % prefix to the new
+                                                        % branch:
+                                                    other(other(:,1)>j,:) = [];
+                                                    br{i}{h}{bid} = [other;k kk];
+                                                end
+                                                scob{i}{h}(bid) = newsco;
+                                            end
+                                            g{i}{h}{1,k,l}{kk} = bid;
+                                                % New peak associated with
+                                                % branch
+                                            scog{i}{h}{1,k,l}(kk) = newsco;
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                [scob{i}{h} IX] = sort(scob{i}{h},'descend');
+                    % Branch are ordered from best score to lowest
+                br{i}{h} = br{i}{h}(IX);
+                if wait
+                    waitbar(1,wait);
+                    close(wait);
+                    drawnow
+                end
             end
         end
         for l = 1:np % Orders the peaks and select the best ones
@@ -662,76 +975,6 @@ for i = 1:length(d) % For each audio file,...
                     mx{1,k,l} = mxk(idx);
                 end
             end
-        end
-        if isa(x,'mirsimatrix')
-           ax{i}{h} = cell(1,nc,np);
-           rx{i}{h} = cell(1,nc,np);
-           for l = 1:np
-               for k = 1:nc
-                   for j = 1:length(mx{1,k,l})
-                       prio = dh(mx{1,k,l}(j)-1:-1:2,k,l);
-                       post = dh(mx{1,k,l}(j)+1:end-k,k,l);
-                       prio = find(prio < option.smthr | isnan(prio),1);
-                       if isempty(prio)
-                           ax{i}{h}{1,k,l}(end+1) = 1;
-                       else
-                           ax{i}{h}{1,k,l}(end+1) = mx{1,k,l}(j) - prio;
-                       end
-                       post = find(post < option.smthr | isnan(post),1);
-                       if isempty(post)
-                           rx{i}{h}{1,k,l}(end+1) = size(dh,1)-1-k;
-                       else
-                           rx{i}{h}{1,k,l}(end+1) = mx{1,k,l}(j) + post;
-                       end
-                       if j>1 && ...
-                               (ax{i}{h}{1,k,l}(end) == ax{i}{h}{1,k,l}(end-1))
-                           ax{i}{h}{1,k,l}(end) = [];
-                           rx{i}{h}{1,k,l}(end) = [];
-                       end
-                   end
-               end
-               erase_k = [];
-               erase_j = [];
-               for k = 1:nc-1
-                   j = 0;
-                   stop = 0;
-                   while j < length(ax{i}{h}{1,k,l})
-                       j = j+1;
-                       jj = 0;
-                       while jj < length(ax{i}{h}{1,k+1,l})
-                           jj = jj+1;
-                           if not(isempty(ax{i}{h}{1,k,l}(j)) || ...
-                                  isempty(ax{i}{h}{1,k+1,l}(jj)) || ...
-                                  isempty(intersect(ax{i}{h}{1,k,l}(j)-10:...
-                                                    rx{i}{h}{1,k,l}(j)+10,...
-                                                    ax{i}{h}{1,k+1,l}(jj)-10:...
-                                                    rx{i}{h}{1,k+1,l}(jj)+10)))
-                                if dh(mx{1,k,l}(j),k,l) > ...
-                                       dh(mx{1,k+1,l}(jj),k+1,l)
-                                    erase_k = [erase_k,k+1];
-                                    erase_j = [erase_j,jj];
-                                else
-                                    erase_k = [erase_k,k];
-                                    erase_j = [erase_j,j];
-                                end
-                                stop = 1;
-                           end
-                       end
-                   end
-               end
-               [erase_j ord] = sort(erase_j,'descend');
-               erase_k = erase_k(ord);
-               for k = 1:length(erase_k)
-                   if length(ax{i}{h}{1,erase_k(k),l}) >= erase_j(k)
-                       ax{i}{h}{1,erase_k(k),l}(erase_j(k)) = [];
-                       rx{i}{h}{1,erase_k(k),l}(erase_j(k)) = [];
-                       mx{1,erase_k(k),l}(erase_j(k)) = [];
-                   end
-               end
-               ax{i}{h}{1,1,l} = [];
-               rx{i}{h}{1,1,l} = [];
-               mx{1,1,l} = [];
-           end
         end
         if option.extract % Extracting the positive part of the curve containing the peaks
             if isa(x,'mirtemporal')
@@ -816,10 +1059,7 @@ for i = 1:length(d) % For each audio file,...
         pp{i}{h} = mmx;
         pm{i}{h} = mmy;
         pv{i}{h} = mmv;
-        if not(get(x,'Interpolable')) || isempty(option.interpol) || ...
-                (isnumeric(option.interpol) && not(option.interpol)) || ...
-                (ischar(option.interpol) && ...
-                    (strcmpi(option.interpol,'no') || strcmpi(option.interpol,'off')))
+        if not(interpol)
             ppp{i}{h} = {};
             ppv{i}{h} = {};
         else % Interpolate to find the more exact peak positions
@@ -841,19 +1081,14 @@ for i = 1:length(d) % For each audio file,...
                                 p = (yp-ym)/(2*(2*y0-yp-ym));
                                 vih{1,k,l}(j) = y0 - 0.25*(ym-yp)*p;
                                 if p >= 0
-                                    pih{1,k,l}(j) = (1-p)*th(mj)+p*th(mj+1);
+                                    pih{1,k,l}(j) = (1-p)*th(mj,k,l)+p*th(mj+1,k,l);
                                 elseif p < 0
-                                    pih{1,k,l}(j) = (1+p)*th(mj)-p*th(mj-1);
+                                    pih{1,k,l}(j) = (1+p)*th(mj,k,l)-p*th(mj-1,k,l);
                                 end
                             else
                                 vih{1,k,l}(j) = dh3(mj,k,l);
-                                pih{1,k,l}(j) = th(mj);
+                                pih{1,k,l}(j) = th(mj,k,l);
                             end
-                        else %not finished
-                            select = max(1,j-1):min(length(th),j+1);
-                            highres = th(select(1)):...
-                                (th(select(end))-th(select(1)))/100:th(select(end));
-                            intp = interp1(th(select),dh(select),highres,option.interpol);
                         end
                     end
                 end
@@ -864,7 +1099,7 @@ for i = 1:length(d) % For each audio file,...
         if not(iscell(d{i})) % for chromagram
             d{i} = dh3(2:end-1,:,:,:);
         else
-            if cha
+            if cha == 1
                 d{i}{h} = zeros(1,size(dh3,2),size(dh3,1)-2);
                 for k = 1:size(dh3,2)
                      d{i}{h}(1,k,:) = dh3(2:end-1,k);
@@ -886,9 +1121,8 @@ for i = 1:length(d) % For each audio file,...
     end
 end
 p = set(x,'PeakPos',pp,'PeakVal',pv,'PeakMode',pm);
-if get(x,'Interpolable') && not(isempty(option.interpol)) && ...
-       (not(isnumeric(option.interpol)) || option.interpol)
-    p = set(p,'PeakPrecisePos',ppp,'PeakPreciseVal',ppv);
+if interpol
+   p = set(p,'PeakPrecisePos',ppp,'PeakPreciseVal',ppv);
 end
 if option.extract
     p = set(p,'Data',d);
@@ -899,15 +1133,18 @@ if option.only
 end
 if option.delta
     p = set(p,'TrackPos',tp,'TrackVal',tv);
+    if interpol
+       p = set(p,'TrackPrecisePos',tpp,'TrackPreciseVal',tpv);
+    end
 end
-if isa(x,'mirsimatrix')
-    p = set(p,'AttackPos',ax,'ReleasePos',rx);
+if isa(x,'mirsimatrix') && option.graph
+    p = set(p,'Graph',g,'Branch',br);
 end
 
 
 function y = semitone_compar(p1,p2,thres)
-y = p1/p2 < 2^(1/12);
+y = max(p1,p2)/min(p1,p2) < 2^(1/12);
 
 
 function y = dist_compar(p1,p2,thres)
-y = p1-p2 < thres;
+y = abs(p1-p2) < thres;

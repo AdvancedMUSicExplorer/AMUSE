@@ -13,19 +13,14 @@ function varargout = mirlowenergy(x,varargin)
 %       mirlowenergy(...,'Root',0) uses mean square instead of root mean
 %           square
 %       mirlowenergy(...,'ASR') computes the Average Silence Ratio, which
-%           corresponds in fact to mirlowenergy(...,'Root',0,'Threshold',t)
-%           where t is fixed here by default to t = .5
+%       corresponds in fact to a RMS without the square-root, and a default
+%       threshold set to t = .5
 %   [p,e] = mirlowenergy(...) also returns the RMS energy curve.
     
         asr.key = 'ASR';
         asr.type = 'Boolean';
         asr.default = 0;
     option.asr = asr;
-    
-        root.key = 'Root';
-        root.type = 'Boolean';
-        root.default = 1;
-    option.root = root;
     
         thr.key = 'Threshold';
         thr.type = 'Integer';
@@ -41,22 +36,19 @@ function varargout = mirlowenergy(x,varargin)
 specif.option = option;
 
 specif.combinechunk = {'Average',@nothing};
-specif.framedchunk = 0;
+specif.extensive = 1;
 
 varargout = mirfunction(@mirlowenergy,x,varargin,nargout,specif,@init,@main);
 
 
 function [x type] = init(x,option)
-if option.asr
-    option.root = 0;
-end
 if isamir(x,'miraudio')
     if isframed(x)
-        x = mirrms(x,'Root',option.root);
+        x = mirrms(x);
     else
         x = mirrms(x,'Frame',option.frame.length.val,option.frame.length.unit,...
                              option.frame.hop.val,option.frame.hop.unit,...
-                             'Root',option.root);
+                             option.frame.phase.val,option.frame.phase.unit);
     end
 end
 type = 'mirscalar';
@@ -73,13 +65,16 @@ if isnan(option.thr)
         option.thr = 1;
     end
 end
-v = mircompute(@algo,get(r,'Data'),option.thr);
+v = mircompute(@algo,get(r,'Data'),option.thr,option.asr);
 fp = mircompute(@noframe,get(r,'FramePos'));
 e = mirscalar(r,'Data',v,'Title','Low energy','Unit','/1','FramePos',fp);
 e = {e,r};
 
 
-function v = algo(d,thr)
+function v = algo(d,thr,asr)
+if asr
+    d = d.^2;
+end
 v = sum(d < repmat(thr*mean(d,2),[1 size(d,2) 1]));
 v = v / size(d,2);
 

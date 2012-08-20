@@ -5,7 +5,7 @@
 %%%%%%%%%%%%%%%%%%%
 % This file is part of AMUSE framework (Advanced MUsic Explorer).
 % 
-% Copyright 2006-2010 by code authors
+% Copyright 2006-2012 by code authors
 % 
 % Created at TU Dortmund, Chair of Algorithm Engineering
 % (Contact: &lt;http://ls11-www.cs.tu-dortmund.de&gt;) 
@@ -24,13 +24,13 @@
 % along with AMUSE. If not, see &lt;http://www.gnu.org/licenses/&gt;.
 % 
 % Created on 07.07.2007 by Igor Vatolkin
-% Last modified on 07.08.2009 by Igor Vatolkin
+% Last modified on 19.08.2012 by Igor Vatolkin
 % $Id: $
 %%%%%%%%%%%%%%%%%%%%
 % Extracts MIRToolbox features for a given wave file and saves results as AMUSE ARFF files
 %
 % Created on 07.07.2009 by Igor Vatolkin
-% Last modified on 07.07.2009 by Igor Vatolkin
+% Last modified on 19.08.2012 by Igor Vatolkin
 % $Id: $
 function mirtoolbox_base(input_file,output_dir)
 
@@ -211,7 +211,7 @@ mirres=mirrms(f);
 		% Spectral irregularity (degree of variation of the successive peaks of the spectrum)
 		mirres=mirregularity(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'15.arff'],'Spectral irregularity',res');
+		arff_saver_with_windows_number([output_file_prefix,'15.arff'],'Spectral irregularity',res);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="21" dimensions="1">
@@ -236,7 +236,7 @@ mirres=mirrms(f);
 		% Spectral brightness
 		mirres=mirbrightness(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'23.arff'],'Spectral brightness',res');
+		arff_saver_with_windows_number([output_file_prefix,'23.arff'],'Spectral brightness',res);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="24" dimensions="1">
@@ -245,7 +245,7 @@ mirres=mirrms(f);
 		% Default settings: time window of 1024 samples with 1024 sample overlap
 		mirres=mirroughness(a,'Frame',1024,'sp',1024,'sp');
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res',1024);
+		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res,1024);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="39" dimensions="13">
@@ -260,7 +260,7 @@ mirres=mirrms(f);
 	<text>
 		% Bark scale magnitudes
 		mirres=mirspectrum(f,'Bark');
-		res=mirgetdata(mirres);
+		res=squeeze(mirgetdata(mirres));
 		arff_saver_with_windows_number([output_file_prefix,'40.arff'],'Bark scale magnitudes',res',512);
 	</text>
 </amuseEnableFeature>
@@ -286,7 +286,7 @@ mirres=mirrms(f);
 		currentERBBandFramed = mirframe(currentERBBand,'Length',wlength,'sp','Hop',woffset,'sp');
 		mirres=mirzerocross(currentERBBandFramed,'Per','Sample');
 		res = mirgetdata(mirres);
-		r = [r res];
+		r = [r res'];
 		end;
 		arff_saver_with_windows_number([output_file_prefix,'60.arff'],'Zero-crossing rate for ERB bands',r',512);
 	</text>
@@ -300,7 +300,7 @@ mirres=mirrms(f);
 		currentERBBandFramed = mirframe(currentERBBand,'Length',wlength,'sp','Hop',woffset,'sp');
 		mirres=mirrms(currentERBBandFramed);
 		res = mirgetdata(mirres);
-		r = [r res];
+		r = [r res'];
 		end;
 		arff_saver_with_windows_number([output_file_prefix,'61.arff'],'Root mean square for ERB bands',r',512);
 	</text>
@@ -314,7 +314,7 @@ mirres=mirrms(f);
 			currentERBBandFramed = mirframe(currentERBBand,'Length',wlength,'sp','Hop',woffset,'sp');
 			mirres=mircentroid(currentERBBandFramed);
 			res = mirgetdata(mirres);
-			r = [r res];
+			r = [r res'];
 		end;
 		arff_saver_with_windows_number([output_file_prefix,'62.arff'],'Spectral centroid for ERB bands',r',512);
 	</text>
@@ -340,7 +340,7 @@ mirres=mirrms(f);
 	<text>
 		% Inharmonicity
 		res=mirgetdata(ih);
-		arff_saver_with_windows_number([output_file_prefix,'201.arff'],'Inharmonicity',res',512);
+		arff_saver_with_windows_number([output_file_prefix,'201.arff'],'Inharmonicity',res,512);
 	</text>
 </amuseEnableFeature>
 </transformContent>
@@ -352,7 +352,8 @@ mirres=mirrms(f);
 	% --------------------------------------------------------------------------------------------------
 	% Chromagram features ------------------------------------------------------------------------------
 	% --------------------------------------------------------------------------------------------------
-	chroma = mirchromagram(f);
+	chroma = mirchromagram(a,'Frame',512,'sp',512,'sp');
+	chroma4096 = mirchromagram(a,'Frame',4096,'sp',4096,'sp');
 </text>
 <amuseEnableFeature id="206" dimensions="12">
 	<text>
@@ -367,7 +368,7 @@ mirres=mirrms(f);
 		[k c]=mirkey(chroma);
 		key=mirgetdata(k);
 		clarity=mirgetdata(c);
-		arff_saver_with_windows_number([output_file_prefix,'202.arff'],'Key and its clarity',[key clarity]', 512);
+		arff_saver_with_windows_number([output_file_prefix,'202.arff'],'Key and its clarity',[key' clarity']', 512);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="203" dimensions="1">
@@ -375,7 +376,7 @@ mirres=mirrms(f);
 		% Major/minor alignment
 		mirres=mirmode(chroma);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res', 512);
+		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res, 512);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="209,210" dimensions="12,12">
@@ -403,13 +404,12 @@ mirres=mirrms(f);
 		mirres=mirhcdf(chroma);
 		res=mirgetdata(mirres);
 		% Add NaN at the beginning since the flux calculates the differences between frames
-		arff_saver_with_windows_number([output_file_prefix,'217.arff'],'Harmonic change detection function',[NaN res'], 512);
+		arff_saver_with_windows_number([output_file_prefix,'217.arff'],'Harmonic change detection function',[NaN res], 512);
 		
 	</text>
 </amuseEnableFeature>
 </transformContent>
 </amuseEnableTransform>
-
 
 <amuseEnableTransform>
 <transformContent>
@@ -483,7 +483,7 @@ mirres=mirrms(f);
 		% Attack slopes
 		mirres=mirattackslope(onsets);
 		res = mirgetdata(mirres);
-		arff_saver([output_file_prefix,'426.arff'],'Attack slopes',res',-1);
+		arff_saver([output_file_prefix,'426.arff'],'Attack slopes',res,-1);
 	</text>
 </amuseEnableFeature>
 
@@ -505,7 +505,7 @@ mirres=mirrms(f);
 		% time windows which start directly from the song beginning!
 		mirres=mirpulseclarity(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res',66150);
+		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res,66150);
 	</text>
 </amuseEnableFeature>
 
@@ -518,7 +518,7 @@ mirres=mirrms(f);
 		% time windows which start directly from the song beginning!
 		mirres=mirtempo(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res',66150);
+		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res,66150);
 	</text>
 </amuseEnableFeature>
 </transformContent>

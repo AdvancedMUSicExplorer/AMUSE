@@ -11,5 +11,5 @@
 @ATTRIBUTE Folder STRING
 
 @DATA
-1, "MIR Toolbox", "1.2.1 stable", "MIRToolbox"
+1, "MIR Toolbox", "1.4 stable", "MIRToolbox"
 

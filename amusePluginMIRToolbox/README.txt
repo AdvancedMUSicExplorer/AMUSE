@@ -5,7 +5,7 @@
 -------------------
 For AMUSE framework:
 -------------------
-Copyright 2006-2010 by code authors
+Copyright 2006-2012 by code authors
 
 Created at TU Dortmund, Chair of Algorithm Engineering
 (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -26,7 +26,7 @@ along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
 ----------------
 For MIR Toolbox:
 ----------------
-The MIRtoolbox 1.2.1 Software Package, Copyright (c) 2009, University of Jyvaskyla
+The MIRtoolbox 1.4 Software Package, Copyright (c) 2012, University of Jyvaskyla
 
 Developed by Olivier Lartillot, Petri Toiviainen and Tuomas Eerola Department of Music
 lartillo@campus.jyu.fi

@@ -1,5 +1,5 @@
-Congratulations! You have downloaded MIRtoolbox 1.2.1
------------------------------------------------------
+Congratulations! You have downloaded MIRtoolbox 1.4
+---------------------------------------------------
 
 The list of new features and bug fixes offered by this new version is shown in the ReleaseNotes text file located in the toolbox folder, and also available from our website. New versions of the toolbox will also be released at the same address:
 http://www.jyu.fi/hum/laitokset/musiikki/en/research/coe/materials/mirtoolbox
@@ -31,7 +31,7 @@ MIRtoolbox requires Matlab version 7 and Mathworks' Signal Processing toolbox.
 
 This distribution actually includes four different toolboxes:
 
-- the MIRtoolbox itself, version 1.2.1,
+- the MIRtoolbox itself, version 1.4,
 
 - the Auditory toolbox, version 2, by Malcolm Slaney
 (also available directly at http://cobweb.ecn.purdue.edu/~malcolm/interval/1998-010/),
@@ -47,9 +47,13 @@ This distribution actually includes four different toolboxes:
 MIRtoolbox license is based on GPL 2.0. As such, it can integrate codes from other GPL 2.0 projects, as long as their origins are explicitly stated.
 - codes from the Music Analysis Toolbox by Elias Pampalk (2004), related to the computation of Terhardt outer ear modeling, Bark band decomposition and masking effects.
 
-- openbdf and readbdf script by T.S. Lorig to read BDF files, based on openedf and readedf by Alois Schloegl. 
+- openbdf and readbdf script by T.S. Lorig to read BDF files, based on openedf and readedf by Alois Schloegl,
 
-Other code freely available integrated in the distribution:mp3read for Matlab by Dan Ellis, associated with the mpg123 decoder and the mp3info scanner.
+- implementation of Earth Mover Distance written by Yossi Rubner and wrapped for Matlab by Elias Pampalk.
+
+Code integrated with BSD license:
+- mp3read for Matlab by Dan Ellis, which calls the mpg123 decoder and the mp3info scanner,
+- aiffread for Matlab by Kenneth Eaton.
 
 **
 
@@ -67,7 +71,7 @@ clear classes
 To get an overview of the functions available in the toolbox, type:
 help mirtoolbox
 
-A complete documentation in PDF is provided in the main toolbox folder.
+A complete documentation in PDF is provided in the main toolbox folder. For absolute Matlab beginners, we suggest to read MIRtoolboxPrimer.
 
 A short documentation for each function is available directly in Matlab using the help command. For instance: help miraudio
 
@@ -82,11 +86,3 @@ demo6curves
 demo7tonality
 demo8classification
 demo9retrieval
-
-**
-
-If you have any problem or request, please contact us.
-
-Olivier Lartillot, Petri Toiviainen and Tuomas Eerola
-
-Olivier.Lartillot@campus.jyu.fi

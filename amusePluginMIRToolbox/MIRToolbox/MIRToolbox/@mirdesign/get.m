@@ -23,6 +23,13 @@ if ischar(varargin{1})
                 varargout = {[]};
             end
             return
+        case 'FramePhase'
+            if isstruct(a.frame)
+                varargout = {a.frame.phase.val};
+            else
+                varargout = {[]};
+            end
+            return
         case 'FrameLengthUnit'
             if isstruct(a.frame)
                 varargout = {a.frame.length.unit};
@@ -37,9 +44,16 @@ if ischar(varargin{1})
                 varargout = {[]};
             end
             return
-        case 'FrameChunkNow'
+        case 'FramePhaseUnit'
             if isstruct(a.frame)
-                varargout = {a.frame.chunknow};
+                varargout = {a.frame.phase.unit};
+            else
+                varargout = {[]};
+            end
+            return
+        case 'FrameDontChunk'
+            if isstruct(a.frame)
+                varargout = {a.frame.dontchunk};
             else
                 varargout = {[]};
             end
@@ -107,9 +121,15 @@ if ischar(varargin{1})
         case 'Ascending'
             varargout = {a.ascending};
             return            
-        %case 'NOut'
-        %    varargout = {a.nout};
-        %    return            
+        case 'SeparateChannels'
+            varargout = {a.separate};
+            return            
+        case 'Channel'
+            varargout = {a.channel};
+            return
+        case 'Scale'
+            varargout = {a.scale};
+            return 
     end
 end
 

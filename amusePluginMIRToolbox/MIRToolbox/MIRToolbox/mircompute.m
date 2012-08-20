@@ -22,13 +22,17 @@ for i = 1:l
         vk = v;
         for j = 1:length(vk)
             if iscell(vk{j})
-                vk{j} = vk{j}{k};
+                if k>length(vk{j})
+                    vk{j} = vk{j}{1};
+                else
+                    vk{j} = vk{j}{k};
+                end
             end
         end
-        if 1 %nargout == 1 %% used for miremotion, provokes bug else...
+        if 1 %nargout == 1 
             res = algo(vk{:});
-        else 
-            [res res2] = algo(vk{:}); 
+        else %% used for miremotion, provokes bug else...
+            [res res2 res3 res4] = algo(vk{:}); 
         end
         if iscell(res)
             lr = length(res);
@@ -37,8 +41,10 @@ for i = 1:l
             end
         else
             varargout{1}{i}{k} = res;
-            if nargout == 2
+            if nargout == 4
                 varargout{2}{i}{k} = res2;
+                varargout{3}{i}{k} = res3;
+                varargout{4}{i}{k} = res4;
             end
         end
     end

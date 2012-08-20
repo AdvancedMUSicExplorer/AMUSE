@@ -21,6 +21,8 @@ while length(propertyArgIn) >= 2,
            a.framepos = val;
        case 'Sampling'
            a.sr = val;
+       case 'Length'
+           a.length = val;
        case 'NBits'
            a.nbits = val;
        case 'Name'
@@ -59,6 +61,10 @@ while length(propertyArgIn) >= 2,
            a.track.pos = val;
        case 'TrackVal'
            a.track.val = val;
+       case 'TrackPrecisePos'
+           a.track.precisepos = val;
+       case 'TrackPreciseVal'
+           a.track.preciseval = val;
        case 'InterChunk'
            a.interchunk = val;
        case 'TmpIdx'
@@ -70,7 +76,9 @@ while length(propertyArgIn) >= 2,
        case 'TmpFile'
            a.tmpfile = val;
        case 'Index'
-           a.index = val;
+           a.index = val;  
+       case 'Extracted'
+           a.extracted = val;
        otherwise
            error(['Unknown MIRdata property: ' prop])
    end

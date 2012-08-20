@@ -13,9 +13,11 @@ function varargout = mirnovelty(orig,varargin)
 %               corresponding to f(x) = exp(-x)
 %       mirnovelty(...,'KernelSize',s) or more simply mirnovelty(...,s) 
 %           specifies the length of the gaussian kernel, in samples.
-%           default value: s = 128.
+%           default value: s = 64.
 %       mirnovelty(...,'Normal',0) does not normalize the novelty curve
 %           between the values 0 and 1.
+%       mirnovelty(...,'Horizontal') uses the 'Horizontal' option in
+%           mirsimatrix instead of 'TimeLag' used here by default.
 %
 %   Foote, J. & Cooper, M. (2003). Media Segmentation using Self-Similarity
 % Decomposition,. In Proc. SPIE Storage and Retrieval for Multimedia
@@ -33,8 +35,13 @@ function varargout = mirnovelty(orig,varargin)
 
         K.key = {'KernelSize','Width'};
         K.type = 'Integer';
-        K.default = 128;
+        K.default = 64;
     option.K = K;
+    
+        transf.type = 'String';
+        transf.default = 'TimeLag';
+        transf.choice = {'Horizontal','TimeLag'};
+    option.transf = transf;
 
         normal.key = 'Normal';
         normal.type = 'Boolean';
@@ -43,19 +50,15 @@ function varargout = mirnovelty(orig,varargin)
     option.normal = normal;
     
 specif.option = option;
-specif.combineframes = @combineframes;
+specif.nochunk = 1;
 varargout = mirfunction(@mirnovelty,orig,varargin,nargout,specif,@init,@main);
     
 
 function [x type] = init(x,option)
 type = 'mirscalar';
-if not(isamir(x,'mirscalar'))
+if not(isamir(x,'mirscalar') && strcmp(get(x,'Title'),'Novelty'))
     x = mirsimatrix(x,'Distance',option.dist,'Similarity',option.sm,...
-                      'Width',option.K);
-    x = mirsimatrix(x,'Horizontal');  
-end
-if isa(x,'mirdesign')
-    x = set(x,'Overlap',ceil(option.K));
+                      'Width',option.K,option.transf);
 end
 
 
@@ -77,15 +80,15 @@ if not(isa(orig,'mirscalar'))
         else
             cgs = dwk;
         end
-        hgs = floor(cgs/2);
-        cg = checkergauss(cgs);
+        cg = checkergauss(cgs,option.transf);
         disp('Computing convolution, please wait...')
         for z = 1:length(s{k})
             sz = s{k}{z};
-            szm = max(max(sz));
-            for i = find(isnan(sz))
-                sz(i) = szm;
-            end
+            szma = max(max(sz));
+            szmi = min(min(sz));
+            sz = (sz-szmi)/(szma-szmi);
+            sz = 2*sz-1;
+            sz(isnan(sz)) = 0;
             cv = convolve2(sz,cg,'same');
             nl = size(cv,1);
             nc = size(cv,2);
@@ -93,7 +96,7 @@ if not(isa(orig,'mirscalar'))
                 warning('WARNING IN NOVELTY: No frame decomposition. The novelty score cannot be computed.');
                 score{k}{z} = [];
             else
-                sco = cv(ceil(nl/2),:);
+                sco = cv(floor(size(cv,1)/2),:);
                 incr = find(diff(sco)>=0);
                 if not(isempty(incr))
                     decr = find(diff(sco)<=0);
@@ -137,39 +140,32 @@ n = mirscalar(orig,'Data',score,'Title','Novelty');
 y = {n orig};
 
 
-function old = combineframes(old,new)
-if not(iscell(old))
-    old = {old};
-end
-if not(iscell(new))
-    new = {new};
-end
-for var = 1:length(new)
-    ov = old{var};
-    nv = new{var};
-    ofp = get(ov,'FramePos');
-    ofp = ofp{1}{1};
-    nfp = get(nv,'FramePos');
-    nfp = nfp{1}{1};
-    od = get(ov,'Data');
-    od = od{1}{1};
-    onan = find(isnan(od));
-    od(onan) = [];
-    ofp(:,onan) = [];
-    nd = get(nv,'Data');
-    nd = nd{1}{1};
-    nnan = find(isnan(nd));
-    nd(nnan) = [];
-    nfp(:,nnan) = [];
-    [unused omatch nmatch] = intersect(ofp(1,:),nfp(1,:));
-    if isempty(omatch)
-        ov = set(ov,'FramePos',{{[ofp nfp]}},'Data',{{[od nd]}});
-    else
-        lm = length(omatch);
-        ov = set(ov,'FramePos',{{[ofp(:,1:omatch(1)-1) nfp]}},...
-            'Data',{{[od(1:omatch(1)-1),...
-                      (od(omatch).*(lm:-1:1) + nd(nmatch).*(1:lm))/(lm+1),...
-                      nd(nmatch(end)+1:end)]}});
+function y = checkergauss(N,transf)
+hN = ceil(N/2);
+if strcmpi(transf,'TimeLag')
+    y = zeros(2*N,N);
+    for j = 1:N
+        for i = 1:2*N+1
+            g = exp(-((((i-N)-(j-hN))/hN)^2 + (((j-hN)/hN)^2))*4);
+            if xor(j>hN,j-hN>i-N)
+                y(i,j) = -g;
+            elseif j>hN+i || j-hN<i-2*N
+                y(i,j) = 0;
+            else
+                y(i,j) = g;
+            end
+        end
     end
-    old{var} = ov;
+else
+    y = zeros(N);
+    for i = 1:N
+        for j = 1:N
+            g = exp(-(((i-hN)/hN)^2 + (((j-hN)/hN)^2))*4);
+            if xor(j-hN>floor((i-hN)/2),j-hN>floor((hN-i)/2))
+                y(i,j) = -g;
+            else
+                y(i,j) = g;
+            end
+        end
+    end
 end

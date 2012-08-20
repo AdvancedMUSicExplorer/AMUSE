@@ -1,7 +1,7 @@
-function mirsave(a,f)
+function mirsave(a,f,multichan)
 
 ext = 0;    % Specified new extension
-if nargin == 1
+if nargin < 2
     f = '.mir';
 elseif length(f)>3 && strcmpi(f(end-3:end),'.wav')
     ext = '.wav';
@@ -15,11 +15,16 @@ elseif length(f)>2 && strcmpi(f(end-2:end),'.au')
     end
 end
 
+if nargin < 3
+    multichan = '';
+end
+
 d = get(a,'Data');
 nf = length(d);
 fs = get(a,'Sampling');
 nb = get(a,'NBits');
 nm = get(a,'Name');
+ch = get(a,'Channels');
 maxd = 0;
 for i = 1:nf
     for j = 1:length(d{i})
@@ -31,12 +36,15 @@ for i = 1:nf
     di = d{i};
     fsi = fs{i};
     nmi = nm{i};
+    if length(ch)>=i
+        chi = ch{i};
+    end
     out = [];
     for j = 1:length(di)
         di{j} = di{j}./repmat(maxd,size(di{j}))*.9999;
         out = [out;reshape(di{j},[],size(di{j},3),1)];
         if length(di)>1
-            out = [out;rand(100,1)]*.9;
+            out = [out;rand(100,size(di{j},3))*.9];
         end
     end
     
@@ -47,23 +55,47 @@ for i = 1:nf
         nmi(end-2:end) = [];
     end
     
-    if nf>1 || strcmp(f(1),'.')
-        %Let's add the new suffix
-        n = [nmi f];
+    nchan = size(out,2);
+    if isempty(multichan) || nchan < 2
+        if nf>1 || strcmp(f(1),'.')
+            %Let's add the new suffix
+            n = [nmi f];
+        else
+            n = f;
+        end
+        if not(ischar(ext)) || strcmp(ext,'.wav')
+            if length(n)<4 || not(strcmpi(n(end-3:end),'.wav'))
+                n = [n '.wav'];
+            end
+            wavwrite(out,fsi,nbi,n)
+        elseif strcmp(ext,'.au')
+            if length(n)<3 || not(strcmpi(n(end-2:end),'.au'))
+                n = [n '.au'];
+            end
+            auwrite(out,fsi,nbi,'linear',n)
+        end
+        disp([n,' saved.']);
     else
-        n = f;
-    end
-    
-    if not(ischar(ext)) || strcmp(ext,'.wav')
-        if length(n)<4 || not(strcmpi(n(end-3:end),'.wav'))
-            n = [n '.wav'];
+        for j = 1:nchan
+            nb = num2str(chi(j));
+            if nf>1 || strcmp(f(1),'.')
+                %Let's add the new suffix
+                n = [nmi nb f];
+            else
+                n = [f nb];
+            end
+            if not(ischar(ext)) || strcmp(ext,'.wav')
+                if length(n)<4 || not(strcmpi(n(end-3:end),'.wav'))
+                    n = [n '.wav'];
+                end
+                wavwrite(out(:,j),fsi,nbi,n)
+            elseif strcmp(ext,'.au')
+                if length(n)<3 || not(strcmpi(n(end-2:end),'.au'))
+                    n = [n '.au'];
+                end
+                auwrite(out(:,j),fsi,nbi,'linear',n)
+            end
+            disp([n,' saved.']);
         end
-        wavwrite(out,fsi,nbi,n)
-    elseif strcmp(ext,'.au')
-        if length(n)<3 || not(strcmpi(n(end-2:end),'.au'))
-            n = [n '.au'];
-        end
-        auwrite(out,fsi,nbi,'linear',n)
     end
-    disp([n,' saved.']);
 end

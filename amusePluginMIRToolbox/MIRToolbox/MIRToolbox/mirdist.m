@@ -1,7 +1,7 @@
 function d = mirdist(x,y,dist)
 %   d = mirdist(x,y) evaluates the distance between x and y.
 %   x is the feature values corresponding to one audio file, and y is the
-%       values (for the same feature) corrdponding to one (or several)
+%       values (for the same feature) corresponding to one (or several)
 %       audio files.
 %   If x and y are not decomposed into frames,
 %       d = mirdist(x,y,f) specifies distance function.
@@ -12,6 +12,9 @@ function d = mirdist(x,y,dist)
 %   If x and y contains peaks, the vectors representing the peak
 %       distributions are compared using Euclidean distance.
 %       (used with mirnovelty in Jacobson, 2006)
+%
+% The Earth Mover Distance is based on the implementation by Yossi Rubner,
+% wrapped for Matlab by Elias Pampalk.
 
 if not(isa(x,'mirdata'))
     x = miraudio(x);
