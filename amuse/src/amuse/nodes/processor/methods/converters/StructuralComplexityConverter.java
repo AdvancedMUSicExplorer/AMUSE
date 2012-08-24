@@ -208,7 +208,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 							
 						// Complexity can be only calculated if w_j windows before and after the current window
 						// belong to this partition (see the paper)
-						if(l - windowNumber < partitionStartWindow+1 || l + windowNumber > partitionEndWindow) {
+						if(l - windowNumber < partitionStartWindow+1 || l + windowNumber >= partitionEndWindow) {
 							continue;
 						} else {
 							ArrayList<Double> s1 = new ArrayList<Double>();
