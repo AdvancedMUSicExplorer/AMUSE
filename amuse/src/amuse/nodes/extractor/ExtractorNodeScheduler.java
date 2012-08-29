@@ -579,10 +579,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		StringBuffer path2Create = new StringBuffer();
 		for(int i=0;i<pathsArray.size();i++) {
 			path2Create = new StringBuffer();
-			path2Create.append("mkdir ");
 			path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
 			for(int j=0;j<i+1;j++) {
-				path2Create.append("/");
+				path2Create.append(File.pathSeparator);
 				
 				// Cut the extension for the folder with music file name
 				if(i == pathsArray.size()-1 && j == i) {
@@ -597,11 +596,11 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// Move the extracted features
 		try {
 			if(numberOfParts > 1) {
-				FileOperations.move(new File(this.nodeHome + "/input/task_" + this.jobId + "/features/"), new File(path2Create.toString().substring(6)) );
+				FileOperations.move(new File(this.nodeHome + "/input/task_" + this.jobId + "/features/"), new File(path2Create.toString()) );
 			} else {
 				FileOperations.move(new File(this.nodeHome + "/input/task_" + this.jobId + "/1/" +  
 						((AmuseTask)adapter).getProperties().getProperty("extractorFolderName")), 
-						new File(path2Create.toString().substring(6)));
+						new File(path2Create.toString()));
 			}
 		} catch(IOException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
