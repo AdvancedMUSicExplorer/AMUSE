@@ -23,6 +23,7 @@
  */
 package amuse.util;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
@@ -46,7 +47,7 @@ public class AmuseLogger {
 	 * Private constructor 
 	 */
 	private AmuseLogger() {
-		PropertyConfigurator.configure("log4j.properties");
+		PropertyConfigurator.configure(System.getenv("AMUSEHOME") + File.separator + "log4j.properties");
 	}
 	
 	/**
