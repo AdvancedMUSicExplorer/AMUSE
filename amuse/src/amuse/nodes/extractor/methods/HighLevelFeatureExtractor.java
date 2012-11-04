@@ -130,6 +130,8 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 					continue;
 				}
 				if(feature2Tool.get(idsOfCurrentEnabler.get(j)).toString().equals(properties.getProperty("id"))) {
+					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Feature with ID '" + idsOfCurrentEnabler.get(j) + 
+							"' will be extracted with " + properties.getProperty("extractorName"));
 					enableSubTree = true; break;
 				}
 			}
@@ -226,91 +228,104 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				}
 			}
 			
-			ArrayList<Double> featureValues = new ArrayList<Double>();
+			// How many different models will be used in this feature?
+			StringTokenizer tok = new StringTokenizer(classifierAlgorithmDescription,";");
+			int featureDimensions = tok.countTokens();
+			ArrayList<ArrayList<Double>> featureValues = new ArrayList<ArrayList<Double>>(featureDimensions);
 			
-			// Load the data set with processed features for this file
 			try {
+			
+				// Load the data set with processed features for this file
 				DataSet processedFeatures = new DataSet(new File(AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE) +
 						relativePath + "/" + musicFile + "_" + 
 						processedFeaturesDescription + ".arff"));
-			
-				DataSet featuresToClassify = new DataSet("ProcessedFeatures");
-			
-				// TODO v0.2: Currently selected feature model is a simple bit string which should be replaced by more detailed description
-				// so that the overall feature file and bit string length must not be of the same length
-				BufferedReader selectedFeaturesReader = new BufferedReader(new FileReader(new File(selectedFeaturesModel)));
-				String selectedFeatures = selectedFeaturesReader.readLine();
-				selectedFeaturesReader.close();
-					
-				// Create the data set for classification
-				for(int i=0;i<selectedFeatures.length();i++) {
-					if(selectedFeatures.charAt(i) == '1') {
-						featuresToClassify.addAttribute(processedFeatures.getAttribute(i));
-					}
-				}
+				StringTokenizer currentClassifierTok = new StringTokenizer(classifierAlgorithmDescription,";");
+				StringTokenizer currentSelectedFeaturesModelTok = new StringTokenizer(selectedFeaturesModel,";");
+				StringTokenizer currentClassificationModelTok = new StringTokenizer(classificationModel,";");
 				
-				// Create the fake id - currently ClassifierNodeScheduler requires it for ready input data sets
-				NumericAttribute idAttribute = new NumericAttribute("Id", new ArrayList<Double>());
-				for(int i=0;i<processedFeatures.getValueCount();i++) {
-					idAttribute.addValue(0d);
-				}
-				featuresToClassify.addAttribute(idAttribute);
-					
-				// Classify the music input with the current model
-				ArrayList<ClassifiedSongPartitions> predictedSongs = new ArrayList<ClassifiedSongPartitions>();
-				ClassificationConfiguration cConf = null;
-				cConf = new ClassificationConfiguration(
-					new DataSetInput(featuresToClassify),
-					ClassificationConfiguration.InputSourceType.READY_INPUT,
-					processedFeaturesDescription, 
-					classifierAlgorithmDescription,
-					0,
-					this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
-						
-				cConf.setPathToInputModel(classificationModel);
-				ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
-				cs.setCleanInputFolder(false);
-				predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
-			
-				// The next boundary for feature estimation
-				int currentFrameStart = 0;
-				int currentFrameEnd = windowSize;
-				int numberOfValuesInCurrentFrame = 0;
-				int sumOfPositivesInCurrentFrame = 0;
+				// Go through all dimensions
+				for(int currentDim=0;currentDim<featureDimensions;currentDim++) {
+					featureValues.add(currentDim, new ArrayList<Double>());
+					DataSet featuresToClassify = new DataSet("ProcessedFeatures");
 				
-				// Go through all feature partitions
-				for(int i=0;i<processedFeatures.getValueCount();i++) {
-					int currentPartitionStart = new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue();
-					int currentPartitionEnd = new Double(processedFeatures.getAttribute("End").getValueAt(i).toString()).intValue();
-					
-					if(currentPartitionEnd > currentFrameEnd) {
-						// Save the results
-						featureValues.add((double)sumOfPositivesInCurrentFrame/(double)numberOfValuesInCurrentFrame);
+					// TODO v0.2: Currently selected feature model is a simple bit string which should be replaced by more detailed description
+					// so that the overall feature file and bit string length must not be of the same length
+					String currentFile = currentSelectedFeaturesModelTok.nextToken();
+					BufferedReader selectedFeaturesReader = new BufferedReader(new FileReader(new File(currentFile)));
+					String selectedFeatures = selectedFeaturesReader.readLine();
+					selectedFeaturesReader.close();
 						
-						numberOfValuesInCurrentFrame = 0;
-						sumOfPositivesInCurrentFrame = 0;
-						currentFrameStart = currentFrameStart + offsetSize;
-						currentFrameEnd = currentFrameStart + windowSize;
-						
-						// Reset i going back due to possible overlap
-						while(i>0 && new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue() > currentFrameStart) {
-							i--;
+					// Create the data set for classification
+					for(int i=0;i<selectedFeatures.length();i++) {
+						if(selectedFeatures.charAt(i) == '1') {
+							featuresToClassify.addAttribute(processedFeatures.getAttribute(i));
 						}
-					} else if(currentPartitionStart >= currentFrameStart){
-						numberOfValuesInCurrentFrame++;
-						// Since all of the feature vectors have become the id 0..
-						sumOfPositivesInCurrentFrame += predictedSongs.get(0).getRelationships()[i];
 					}
-				}
+					
+					// Create the fake id - currently ClassifierNodeScheduler requires it for ready input data sets
+					NumericAttribute idAttribute = new NumericAttribute("Id", new ArrayList<Double>());
+					for(int i=0;i<processedFeatures.getValueCount();i++) {
+						idAttribute.addValue(0d);
+					}
+					featuresToClassify.addAttribute(idAttribute);
+					
+					
+					// Classify the music input with the current model
+					ArrayList<ClassifiedSongPartitions> predictedFeatures = new ArrayList<ClassifiedSongPartitions>();
+					ClassificationConfiguration cConf = null;
+					cConf = new ClassificationConfiguration(
+						new DataSetInput(featuresToClassify),
+						ClassificationConfiguration.InputSourceType.READY_INPUT,
+						processedFeaturesDescription, 
+						currentClassifierTok.nextToken(),
+						0,
+						this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
+							
+					cConf.setPathToInputModel(currentClassificationModelTok.nextToken());
+					ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
+					cs.setCleanInputFolder(false);
+					predictedFeatures = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
+				
+					// The next boundary for feature estimation
+					int currentFrameStart = 0;
+					int currentFrameEnd = windowSize;
+					int numberOfValuesInCurrentFrame = 0;
+					int sumOfPositivesInCurrentFrame = 0;
+					
+					// Go through all feature partitions
+					for(int i=0;i<processedFeatures.getValueCount();i++) {
+						int currentPartitionStart = new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue();
+						int currentPartitionEnd = new Double(processedFeatures.getAttribute("End").getValueAt(i).toString()).intValue();
+						
+						if(currentPartitionEnd > currentFrameEnd) {
+							// Save the results
+							featureValues.get(currentDim).add((double)sumOfPositivesInCurrentFrame/(double)numberOfValuesInCurrentFrame);
+							
+							numberOfValuesInCurrentFrame = 0;
+							sumOfPositivesInCurrentFrame = 0;
+							currentFrameStart = currentFrameStart + offsetSize;
+							currentFrameEnd = currentFrameStart + windowSize;
+							
+							// Reset i going back due to possible overlap
+							while(i>0 && new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue() > currentFrameStart) {
+								i--;
+							}
+						} else if(currentPartitionStart >= currentFrameStart){
+							numberOfValuesInCurrentFrame++;
+							// Since all of the feature vectors have become the id 0..
+							sumOfPositivesInCurrentFrame += predictedFeatures.get(0).getRelationships()[i];
+						}
+					}
+				} 
 				
 				// Create a folder for Amuse feature files
 				File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + 
-						this.correspondingScheduler.getTaskId() + 
-						//properties.getProperty("taskId") + 
-						File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));
+					this.correspondingScheduler.getTaskId() + 
+					//properties.getProperty("taskId") + 
+					File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));
 				if(!folder.exists() && !folder.mkdirs()) {
 					throw new NodeException("Extraction with jAudio failed: could not create temp folder " + 
-							folder.toString());
+						folder.toString());
 				}
 				
 				// Create a name for Amuse feature file 
@@ -326,13 +341,13 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				FileOutputStream values_to = new FileOutputStream(feature_values_save_file);
 				DataOutputStream values_writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
-				
+					
 				// Write to the ARFF feature file (header)
 				values_writer.writeBytes("@RELATION 'Music feature'");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%rows=2");
+				values_writer.writeBytes("%rows=" + (featureDimensions+1));
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%columns=" + featureValues.size());
+				values_writer.writeBytes("%columns=" + featureValues.get(0).size());
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%sample_rate=22050"); // TODO set sampling size properly
 				values_writer.writeBytes(sep);
@@ -340,18 +355,23 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						getConfiguration()).getFeatureTable().getFeatureByID(currentFeatureId).getSourceFrameSize());
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE '" + currentFeatureName + "' NUMERIC");
-				values_writer.writeBytes(sep);
+				for(int currentDim=0;currentDim<featureDimensions;currentDim++) {
+					values_writer.writeBytes("@ATTRIBUTE '" + currentFeatureName + "' NUMERIC");
+					values_writer.writeBytes(sep);
+				}
 				values_writer.writeBytes("@ATTRIBUTE WindowNumber NUMERIC");
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
-				
+					
 				// Write to the ARFF feature file (data)
 				values_writer.writeBytes("@DATA");
 				values_writer.writeBytes(sep);
-				for(int k=0;k<featureValues.size();k++) {
+				for(int k=0;k<featureValues.get(0).size();k++) {
 					double windowNumber = (double)offsetSize / (double)windowSize * (double)k;
-					values_writer.writeBytes(featureValues.get(k) + "," + (windowNumber+1) + sep);
+					for(int currentDim=0;currentDim<featureDimensions;currentDim++) {
+						values_writer.writeBytes(featureValues.get(currentDim).get(k) + ",");
+					}
+					values_writer.writeBytes((windowNumber+1) + sep);
 				}
 				values_writer.close();
 			} catch (IOException e) {
