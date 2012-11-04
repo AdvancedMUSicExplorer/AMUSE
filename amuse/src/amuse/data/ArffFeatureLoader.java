@@ -41,7 +41,6 @@ import amuse.interfaces.nodes.NodeException;
 public class ArffFeatureLoader {
 	
 	public static Feature loadFeature(String featureFile) throws NodeException {
-		
 		ArrayList<Double[]> values;
 		ArrayList<Double> windows;
 		int numberOfValues = 0;
@@ -108,7 +107,11 @@ public class ArffFeatureLoader {
 					StringTokenizer t = new StringTokenizer(line,",");
 					Double[] valuesOfCurrentWindow = new Double[dimensionNumber];
 					for(int i=0;i<dimensionNumber;i++) {
-						valuesOfCurrentWindow[i] = new Double(t.nextToken());
+						String val = t.nextToken();
+						if(val.toUpperCase().equals("NAN")) {
+							val = "NaN";
+						}
+						valuesOfCurrentWindow[i] = new Double(val);
 					}
 					
 					// Add time window of this feature (last attribute)
