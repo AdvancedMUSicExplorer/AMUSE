@@ -29,7 +29,7 @@
 function ChromaToolboxBase(input_file,output_dir)
 
 % Add the path to Chroma Toolbox
-addpath('/home/vatol/workspace/amuse/tools/ChromaToolbox');
+addpath('%AMUSEHOME%/tools/ChromaToolbox');
 
 % define window length of analysis window in number of samples
 wlength = 512;
