@@ -84,9 +84,9 @@ public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionPro
 					
 					// Normalize
 					if(!maxs.get(featureId)[l].equals(mins.get(featureId)[l])) {
-						features.get(j).getValues().get(k)[l] = 
+						features.get(j).getValues().get(k)[l] = new Double(
 							((features.get(j).getValues().get(k)[l]-mins.get(featureId)[l]) /
-							 (maxs.get(featureId)[l]-mins.get(featureId)[l]));
+							 (maxs.get(featureId)[l]-mins.get(featureId)[l])));
 					}
 				}
 				
