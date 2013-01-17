@@ -327,7 +327,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			}
 			
 			if(actualFrameSize > minimalFrameSize) {
-				
 				featureIdToWindowNumber.put(features.get(i).getId(), new Long(features.get(i).getValues().size()));
 				initialNumberOfUsedRawTimeWindows += (features.get(i).getValues().size() * (new Double(actualFrameSize) / minimalFrameSize));
 				ArrayList<Double[]> newValues = new ArrayList<Double[]>(features.get(exampleOfFeatureWithMinimalFrame).getWindows().size());
@@ -336,11 +335,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				
 				// Proceed the larger time frames and map them to the smallest time frame
 				for(int indexOfLargeWindow = 0; indexOfLargeWindow < features.get(i).getWindows().size(); indexOfLargeWindow++) {
-					Double[] currentVals = new Double[features.get(i).getValues().get(indexOfLargeWindow).length];
-					for(int b=0;b<currentVals.length;b++) {
-						currentVals[b] = new Double(features.get(i).getValues().get(indexOfLargeWindow)[b]);
-					}
-					
+
 					// Time window numbers can be doubles e.g. for CENS features
 					double numberOfLargeTimeWindow = features.get(i).getWindows().get(indexOfLargeWindow);
 					
@@ -350,6 +345,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					
 					for(int smallTWCounter = numberOfCurrentSmallWindow; smallTWCounter < numberOfLastSmallTWForThisLargeTW;
 						smallTWCounter++) {
+						
+						Double[] currentVals = new Double[features.get(i).getValues().get(indexOfLargeWindow).length];
+						for(int b=0;b<currentVals.length;b++) {
+							currentVals[b] = new Double(features.get(i).getValues().get(indexOfLargeWindow)[b]);
+						}
+						
 						newValues.add(currentVals);
 						newWindows.add(new Double(smallTWCounter + 1)); // Time windows are counted up from 1, not 0!
 					}
@@ -685,6 +686,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			
 			// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
 			int numberOfMaxPartitions = features.get(0).getValues().size();
+			for(int j=1;j<features.size();j++) {
+				if(features.get(j).getValues().size() < numberOfMaxPartitions) {
+					numberOfMaxPartitions = features.get(j).getValues().size();
+				}
+			}
+			System.out.println("N: " + numberOfMaxPartitions);
 			if((numberOfMaxPartitions * (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
 					((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap())) > 360000) {
 				numberOfMaxPartitions = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
@@ -700,17 +707,21 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			Double[] attackStarts = loadEventTimes("attack");
 			Double[] releaseEnds = loadEventTimes("release");
 			
+			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize();
+			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap();
+			
 			// Save the data
 			for(int i=0;i<numberOfMaxPartitions;i++) {
 				for(int j=0;j<features.size();j++) {
-					
+				
 					// [0] since the converted features must be single-dimensional!
 					values_writer.writeBytes(features.get(j).getValues().get(i)[0].toString() + ",");
 				}
 				double sampleRate = new Integer(features.get(0).getSampleRate()).doubleValue();
 				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1"))) {
-					values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
-							(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+					//values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
+						//	(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+					values_writer.writeBytes("milliseconds," + (i*stepSize) + "," + (i*stepSize + partSize) + sep);
 				} else {
 					
 					// TODO [2/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
