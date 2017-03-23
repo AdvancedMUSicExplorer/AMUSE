@@ -232,6 +232,8 @@ public class ArffDataSet extends DataSetAbstract {
 		// Begin writing data to StringBuilder:
 		output.append("\n" + dataStr + "\n");
 		BufferedWriter fileWriter = new BufferedWriter(new FileWriter(outputFile));
+		fileWriter.append(output);
+		output = new StringBuilder();
 		for (int i = 0; i < getValueCount(); i++) {
 			for (Attribute atr : attributes) {
 				output.append(atr.getValueStrAt(i));
