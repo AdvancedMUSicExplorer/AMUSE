@@ -122,7 +122,7 @@ public class ClassifierController extends AbstractController {
     @Override
     public void loadTask(DataSetAbstract dataSet) {
         try {
-            ClassificationConfiguration set = ClassificationConfiguration.loadConfigurationsFromDataSet((ClassifierConfigSet)dataSet)[0];
+            ClassificationConfiguration set = ClassificationConfiguration.loadConfigurationsFromDataSet(new ClassifierConfigSet(dataSet))[0];
             setConfiguration(set);
         } catch (IOException e) {
             showErr(e.getLocalizedMessage());
