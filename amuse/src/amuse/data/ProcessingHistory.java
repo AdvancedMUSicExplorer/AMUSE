@@ -23,12 +23,15 @@
  */
 package amuse.data;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import org.apache.log4j.Level;
 
@@ -67,8 +70,16 @@ public class ProcessingHistory {
      * @throws IOException
      */
     private synchronized void loadHistoryFile() throws IOException {
-        historySet = new ArffDataSet(historyFile);
-        List<String> attributeNames = historySet.getAttributeNames();
+    	try{
+    		historySet = new ArffDataSet(historyFile);
+    	}
+    	catch(IOException e){
+    		int result = JOptionPane.showConfirmDialog((Component) null, "The history file is either empty or corrupted. Create a new one?", "Create new history file", JOptionPane.YES_NO_OPTION);
+    		if(result == JOptionPane.YES_OPTION){
+    			createEmptyHistory();
+    		}
+    	}
+    	List<String> attributeNames = historySet.getAttributeNames();
         if (attributeNames.contains(idStr) && historySet.getAttribute(idStr) instanceof NumericAttribute) {
             NumericAttribute idAttribute = (NumericAttribute) historySet.getAttribute(idStr);
             idValues = idAttribute.getValues();
