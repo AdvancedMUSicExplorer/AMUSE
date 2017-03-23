@@ -33,61 +33,61 @@ import java.util.Scanner;
  */
 public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 
-    private final int id;
-    private final String name;
-    private final String description;
-    private final String[] expectedParameterNames;
-    private final String[] expectedParameters;
-    private final String[] defaultParameterValues;
-    private final String[] expectedParameterDescription;
-    private final String[] currentParameterValues;
-    private final String category;
-    private final List<AlgorithmChangeListener> listeners = new ArrayList<AlgorithmChangeListener>();
+	private final int id;
+	private final String name;
+	private final String description;
+	private final String[] expectedParameterNames;
+	private final String[] expectedParameters;
+	private final String[] defaultParameterValues;
+	private final String[] expectedParameterDescription;
+	private final String[] currentParameterValues;
+	private final String category;
+	private final List<AlgorithmChangeListener> listeners = new ArrayList<AlgorithmChangeListener>();
 
-    public Algorithm(int id, String name, String description, String category, String expectedParameterNames,
-	    String expectedParameters,
-	    String defaultParameterValues, String expectedParameterDescription) {
-	this.id = id;
-	this.name = name;
-	this.description = description;
-	this.category = category;
-	this.expectedParameterNames = scanNamesOrDescriptions(expectedParameterNames);
-	this.expectedParameters = scanParameterDefinition(expectedParameters);
-	this.defaultParameterValues = scanParameters(defaultParameterValues);
-	this.expectedParameterDescription = scanNamesOrDescriptions(expectedParameterDescription);
-	this.currentParameterValues = scanParameters(defaultParameterValues);
-    }
+	public Algorithm(int id, String name, String description, String category, String expectedParameterNames,
+			String expectedParameters,
+			String defaultParameterValues, String expectedParameterDescription) {
+		this.id = id;
+		this.name = name;
+		this.description = description;
+		this.category = category;
+		this.expectedParameterNames = scanNamesOrDescriptions(expectedParameterNames);
+		this.expectedParameters = scanParameterDefinition(expectedParameters);
+		this.defaultParameterValues = scanParameters(defaultParameterValues);
+		this.expectedParameterDescription = scanNamesOrDescriptions(expectedParameterDescription);
+		this.currentParameterValues = scanParameters(defaultParameterValues);
+	}
 
-    public Algorithm(Algorithm copy) {
-	this.id = copy.id;
-	this.name = copy.name;
-	this.description = copy.description;
-	this.category = copy.category;
-	this.expectedParameterNames = copy.expectedParameterNames;
-	this.expectedParameters = copy.expectedParameters;
-	this.defaultParameterValues = copy.defaultParameterValues;
-	this.expectedParameterDescription = copy.expectedParameterDescription;
-	this.currentParameterValues = copy.currentParameterValues.clone();
-    }
+	public Algorithm(Algorithm copy) {
+		this.id = copy.id;
+		this.name = copy.name;
+		this.description = copy.description;
+		this.category = copy.category;
+		this.expectedParameterNames = copy.expectedParameterNames;
+		this.expectedParameters = copy.expectedParameters;
+		this.defaultParameterValues = copy.defaultParameterValues;
+		this.expectedParameterDescription = copy.expectedParameterDescription;
+		this.currentParameterValues = copy.currentParameterValues.clone();
+	}
 
-    @Override
-    public String toString() {
-	return this.name;
-    }
+	@Override
+	public String toString() {
+		return this.name;
+	}
 
-    @Override
-    public String[] getCurrentParameterValues() {
-	return currentParameterValues;
-    }
+	@Override
+	public String[] getCurrentParameterValues() {
+		return currentParameterValues;
+	}
 
-    /**
+	/**
 	 * @param currentParameterValues
 	 * @return
 	 */
 	public String getParameterStr() {
-	    if (currentParameterValues.length == 0) {
-		return "";
-	    }
+		if (currentParameterValues.length == 0) {
+			return "";
+		}
 		StringBuilder returnStr = new StringBuilder("[");
 		for (int i = 0; i < currentParameterValues.length; i++) {
 			returnStr.append(currentParameterValues[i]);
@@ -99,183 +99,185 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 		return returnStr.toString();
 	}
 
-    @Override
-    public void setCurrentParameters(String[] parameters) {
-	if (parameters.length != currentParameterValues.length) {
-	    throw new IllegalArgumentException();
+	@Override
+	public void setCurrentParameters(String[] parameters) {
+		System.out.println(parameters);
+		
+		if (parameters.length != currentParameterValues.length) {
+			throw new IllegalArgumentException();
+		}
+		int i = 0;
+		for (String s : parameters) {
+			currentParameterValues[i] = s;
+			i++;
+		}
+		notifyListeners();
 	}
-	int i = 0;
-	for (String s : parameters) {
-	    currentParameterValues[i] = s;
-	    i++;
+
+	public void setCurrentParameters(String parameterStr) {
+		String[] parameters = scanParameters(parameterStr);
+		if (parameters.length != currentParameterValues.length) {
+			throw new IllegalArgumentException();
+		}
+		int i = 0;
+		for (String s : parameters) {
+			currentParameterValues[i] = s;
+			i++;
+		}
+		notifyListeners();
 	}
-	notifyListeners();
-    }
 
-    public void setCurrentParameters(String parameterStr) {
-        String[] parameters = scanParameters(parameterStr);
-	if (parameters.length != currentParameterValues.length) {
-	    throw new IllegalArgumentException();
+	private void notifyListeners() {
+		for (AlgorithmChangeListener l : listeners) {
+			l.parametersChanged();
+		}
 	}
-	int i = 0;
-	for (String s : parameters) {
-	    currentParameterValues[i] = s;
-	    i++;
+
+	@Override
+	public String[] getAllowedParamerterStrings() {
+		return expectedParameters;
 	}
-	notifyListeners();
-    }
 
-    private void notifyListeners() {
-	for (AlgorithmChangeListener l : listeners) {
-	    l.parametersChanged();
+	@Override
+	public String[] getParameterDescriptions() {
+		return expectedParameterDescription;
 	}
-    }
 
-    @Override
-    public String[] getAllowedParamerterStrings() {
-	return expectedParameters;
-    }
-
-    @Override
-    public String[] getParameterDescriptions() {
-	return expectedParameterDescription;
-    }
-
-    private String[] scanNamesOrDescriptions(String expectedParameterDescription) {
-//        System.out.println(expectedParameterDescription);
-	Scanner scanner = new Scanner(expectedParameterDescription);
-	scanner.useDelimiter("\\||$");
-	List<String> params = new ArrayList<String>();
-	while (scanner.hasNext()) {
-	    params.add(scanner.next());
+	private String[] scanNamesOrDescriptions(String expectedParameterDescription) {
+		//        System.out.println(expectedParameterDescription);
+		Scanner scanner = new Scanner(expectedParameterDescription);
+		scanner.useDelimiter("\\||$");
+		List<String> params = new ArrayList<String>();
+		while (scanner.hasNext()) {
+			params.add(scanner.next());
+		}
+		return params.toArray(new String[params.size()]);
 	}
-	return params.toArray(new String[params.size()]);
-    }
 
-    private String[] scanParameterDefinition(String expectedParameters) {
-	if (expectedParameters.isEmpty()) {
-	    return new String[0];
+	private String[] scanParameterDefinition(String expectedParameters) {
+		if (expectedParameters.isEmpty()) {
+			return new String[0];
+		}
+		if (!expectedParameters.startsWith("[") || !expectedParameters.endsWith("]")) {
+			throw new IllegalArgumentException("Unable to parse parameter definition: " + expectedParameters);
+		}
+		Scanner scanner = new Scanner(expectedParameters.substring(1, expectedParameters.length() - 1));
+		scanner.useDelimiter("%");
+		List<String> params = new ArrayList<String>();
+		while (scanner.hasNext()) {
+			params.add(scanner.next());
+		}
+		return params.toArray(new String[params.size()]);
 	}
-	if (!expectedParameters.startsWith("[") || !expectedParameters.endsWith("]")) {
-	    throw new IllegalArgumentException("Unable to parse parameter definition: " + expectedParameters);
+
+	public static String[] scanParameters(String defaultParameterValues) {
+		if (defaultParameterValues.isEmpty()) {
+			return new String[0];
+		}
+		if (!defaultParameterValues.startsWith("[") || !defaultParameterValues.endsWith("]")) {
+			throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
+		}
+		Scanner scanner = new Scanner(defaultParameterValues.substring(1, defaultParameterValues.length() - 1));
+		scanner.useDelimiter("\\_");
+		List<String> params = new ArrayList<String>();
+		while (scanner.hasNext()) {
+			params.add(scanner.next());
+		}
+		if (params.isEmpty()) {
+			params.add("");
+		}
+		return params.toArray(new String[params.size()]);
 	}
-	Scanner scanner = new Scanner(expectedParameters.substring(1, expectedParameters.length() - 1));
-	scanner.useDelimiter("%");
-	List<String> params = new ArrayList<String>();
-	while (scanner.hasNext()) {
-	    params.add(scanner.next());
+
+	@Override
+	public String[] getParameterNames() {
+		return this.expectedParameterNames;
 	}
-	return params.toArray(new String[params.size()]);
-    }
 
-    public static String[] scanParameters(String defaultParameterValues) {
-	if (defaultParameterValues.isEmpty()) {
-	    return new String[0];
+	@Override
+	public String[] getDefaultParameters() {
+		return this.defaultParameterValues;
 	}
-	if (!defaultParameterValues.startsWith("[") || !defaultParameterValues.endsWith("]")) {
-	    throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
+
+	@Override
+	public String getName() {
+		return name;
 	}
-	Scanner scanner = new Scanner(defaultParameterValues.substring(1, defaultParameterValues.length() - 1));
-        scanner.useDelimiter("\\_");
-	List<String> params = new ArrayList<String>();
-	while (scanner.hasNext()) {
-	    params.add(scanner.next());
+
+	@Override
+	public String getDescription() {
+		return description;
 	}
-	if (params.isEmpty()) {
-	    params.add("");
+
+	/* (non-Javadoc)
+	 * @see amuse.scheduler.gui.processing.AlgorithmInterface#addAlgorithmChangeListener(amuse.scheduler.gui.processing.AlgorithmChangeListener)
+	 */
+	@Override
+	public void addAlgorithmChangeListener(AlgorithmChangeListener listener) {
+		listeners.add(listener);
 	}
-	return params.toArray(new String[params.size()]);
-    }
 
-    @Override
-    public String[] getParameterNames() {
-	return this.expectedParameterNames;
-    }
-
-    @Override
-    public String[] getDefaultParameters() {
-	return this.defaultParameterValues;
-    }
-
-    @Override
-    public String getName() {
-	return name;
-    }
-
-    @Override
-    public String getDescription() {
-	return description;
-    }
-
-    /* (non-Javadoc)
-     * @see amuse.scheduler.gui.processing.AlgorithmInterface#addAlgorithmChangeListener(amuse.scheduler.gui.processing.AlgorithmChangeListener)
-     */
-    @Override
-    public void addAlgorithmChangeListener(AlgorithmChangeListener listener) {
-	listeners.add(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see amuse.scheduler.gui.processing.AlgorithmInterface#removeAlgoritmChangeListener()
-     */
-    @Override
-    public void removeAlgoritmChangeListener(AlgorithmChangeListener listener) {
-	listeners.remove(listener);
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    @Override
-    public int compareTo(Algorithm o) {
-	return this.toString().compareTo(o.toString());
-    }
-
-    /* (non-Javadoc)
-     * @see amuse.scheduler.gui.processing.AlgorithmInterface#setCurrentParameterAt(int, java.lang.String)
-     */
-    @Override
-    public void setCurrentParameterAt(int i, String parameter) {
-	currentParameterValues[i] = parameter;
-	notifyListeners();
-    }
-
-    /* (non-Javadoc)
-     * @see amuse.scheduler.gui.processing.AlgorithmInterface#resetDefaults()
-     */
-    @Override
-    public void resetDefaults() {
-	setCurrentParameters(defaultParameterValues);
-	notifyListenersReset();
-    }
-
-    private void notifyListenersReset() {
-	for (AlgorithmChangeListener l : listeners) {
-	    l.parametersReset();
+	/* (non-Javadoc)
+	 * @see amuse.scheduler.gui.processing.AlgorithmInterface#removeAlgoritmChangeListener()
+	 */
+	@Override
+	public void removeAlgoritmChangeListener(AlgorithmChangeListener listener) {
+		listeners.remove(listener);
 	}
-    }
 
-    public int getID() {
-	return this.id;
-    }
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	@Override
+	public int compareTo(Algorithm o) {
+		return this.toString().compareTo(o.toString());
+	}
 
-    /* (non-Javadoc)
-     * @see amuse.scheduler.gui.algorithm.AlgorithmInterface#getCategory()
-     */
-    @Override
-    public String getCategory() {
-	return this.category;
-    }
+	/* (non-Javadoc)
+	 * @see amuse.scheduler.gui.processing.AlgorithmInterface#setCurrentParameterAt(int, java.lang.String)
+	 */
+	@Override
+	public void setCurrentParameterAt(int i, String parameter) {
+		currentParameterValues[i] = parameter;
+		notifyListeners();
+	}
 
-    public String getIdAndParameterStr() {
-        String algorithmStr = getID() + "";
-        if (getCurrentParameterValues().length > 0) {
-            algorithmStr = algorithmStr + "[";
-            for (String parameter : getCurrentParameterValues()) {
-                algorithmStr = algorithmStr + parameter + "_";
-            }
-            algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('_')) + "]";
-        }
-        return algorithmStr;
-    }
+	/* (non-Javadoc)
+	 * @see amuse.scheduler.gui.processing.AlgorithmInterface#resetDefaults()
+	 */
+	@Override
+	public void resetDefaults() {
+		setCurrentParameters(defaultParameterValues);
+		notifyListenersReset();
+	}
+
+	private void notifyListenersReset() {
+		for (AlgorithmChangeListener l : listeners) {
+			l.parametersReset();
+		}
+	}
+
+	public int getID() {
+		return this.id;
+	}
+
+	/* (non-Javadoc)
+	 * @see amuse.scheduler.gui.algorithm.AlgorithmInterface#getCategory()
+	 */
+	@Override
+	public String getCategory() {
+		return this.category;
+	}
+
+	public String getIdAndParameterStr() {
+		String algorithmStr = getID() + "";
+		if (getCurrentParameterValues().length > 0) {
+			algorithmStr = algorithmStr + "[";
+			for (String parameter : getCurrentParameterValues()) {
+				algorithmStr = algorithmStr + parameter + "_";
+			}
+			algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('_')) + "]";
+		}
+		return algorithmStr;
+	}
 }
