@@ -581,7 +581,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			path2Create = new StringBuffer();
 			path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
 			for(int j=0;j<i+1;j++) {
-				path2Create.append(File.pathSeparator);
+				path2Create.append(File.separator);
 				
 				// Cut the extension for the folder with music file name
 				if(i == pathsArray.size()-1 && j == i) {
