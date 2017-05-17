@@ -546,7 +546,9 @@ public class PluginInstaller {
 			values_writer.writeBytes("% Window size in samples" + sep);
 			values_writer.writeBytes("@ATTRIBUTE WindowSize NUMERIC" + sep);
 			values_writer.writeBytes("% Number of feature dimensions" + sep);
-			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep + sep);
+			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep);
+			values_writer.writeBytes("% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE IsSuitableForProcessing NUMERIC" + sep + sep);
 			values_writer.writeBytes("@DATA" + sep + sep);
 			values_writer.writeBytes("% Timbre features" + sep + sep);
 						
@@ -595,9 +597,12 @@ public class PluginInstaller {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(installedFeatureList.getAttribute("Dimensions").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
+					Double isSuitableForProcessing = new Double(installedFeatureList.getAttribute("IsSuitableForProcessing").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString());
+					String isSuitableForProcessingString = isSuitableForProcessing.isNaN() ? "?" : new Integer(isSuitableForProcessing.intValue()).toString();
+					
 					values_writer.writeBytes(idOfInstalledFeature + ", \"" + 
 						installedFeatureList.getAttribute("Description").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForProcessingString + sep);
 				}
 				
 				// Write the data for the new feature
@@ -608,9 +613,12 @@ public class PluginInstaller {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
+					Double isSuitableForProcessing = new Double(newFeatureList.getAttribute("IsSuitableForProcessing").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
+					String isSuitableForProcessingString = isSuitableForProcessing.isNaN() ? "?" : new Integer(isSuitableForProcessing.intValue()).toString();
+					
 					values_writer.writeBytes(idOfNewFeature + ", \"" + 
 						newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForProcessingString + sep);
 					posRequired++;
 					posInstalled--; // This position remains
 				}
@@ -625,9 +633,11 @@ public class PluginInstaller {
 				String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 				Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 				String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
+				Double isSuitableForProcessing = new Double(newFeatureList.getAttribute("IsSuitableForProcessing").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
+				String isSuitableForProcessingString = isSuitableForProcessing.isNaN() ? "?" : new Integer(isSuitableForProcessing.intValue()).toString();
 				values_writer.writeBytes(idOfNewFeature + ", \"" + 
 					newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
-					extractorIdString + ", " + windowSizeString + ", " + dimensionsString + sep);
+					extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForProcessingString + sep);
 			}
 			
 			values_writer.close();

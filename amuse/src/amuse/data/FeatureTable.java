@@ -52,8 +52,9 @@ public class FeatureTable implements Serializable {
     /**
      * Creates FeatureTable from existing featureTable.arff using only those with existing extractor ID.
      * @param featureTableFile - java.io.File object witch contains featureTable stored as ".arff".
+     * @param includeUnsuitableForProcessingFeatures 
      */
-    public FeatureTable(File featureTableFile) {
+    public FeatureTable(File featureTableFile, boolean includeUnsuitableForProcessingFeatures) {
         try {
             FeatureTableSet featureTableSet = new FeatureTableSet(featureTableFile);
             NumericAttribute id = featureTableSet.getIDAttribute();
@@ -61,13 +62,16 @@ public class FeatureTable implements Serializable {
             NumericAttribute extractorID = featureTableSet.getExtractorIDAttribute();
             NumericAttribute dimension = featureTableSet.getDimensionsAttribute();
             NumericAttribute windowSize = featureTableSet.getWindowSizeAttribute();
+            NumericAttribute suitableForProcessing = featureTableSet.getSuitableForProcessingAttribute();
             for (int i = 0; i < featureTableSet.getValueCount(); i++) {
             	if (extractorID.getValueAt(i).isNaN()) {
             		// Skip this
             	} else {
-            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue());
-            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
-            		features.add(f);
+            		if(includeUnsuitableForProcessingFeatures || suitableForProcessing.getValueAt(i).intValue() == 1){
+	            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), suitableForProcessing.getValueAt(i).intValue());
+	            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
+	            		features.add(f);
+            		}
             	}
             }
         } catch (IOException ex) {
@@ -86,6 +90,7 @@ public class FeatureTable implements Serializable {
         List<Integer> extractorIDList = new ArrayList<Integer>();
         List<Integer> windowSizeList = new ArrayList<Integer>();
         List<Integer> dimensionList = new ArrayList<Integer>();
+        List<Integer> suitableForProcessingList = new ArrayList<Integer>();
         for (Feature f : features) {
             if (f.isSelectedForExtraction()) {
                 featureIDList.add(f.getId());
@@ -93,9 +98,10 @@ public class FeatureTable implements Serializable {
                 extractorIDList.add(f.getExtractorId());
                 windowSizeList.add(f.getSourceFrameSize());
                 dimensionList.add(f.getDimension());
+                suitableForProcessingList.add(f.getSuitableForProcessing());
             }
         }
-    	FeatureTableSet featureSet = new FeatureTableSet(featureDescriptionList, featureIDList, extractorIDList, windowSizeList, dimensionList);
+    	FeatureTableSet featureSet = new FeatureTableSet(featureDescriptionList, featureIDList, extractorIDList, windowSizeList, dimensionList, suitableForProcessingList);
         return featureSet;
     }
 

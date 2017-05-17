@@ -50,9 +50,12 @@ public class Feature implements Serializable {
 	
 	/** Time window size in samples, from which the feature was extracted, e.g. 512 samples */
 	private int sourceFrameSize;
-	
+
 	/** The number of samples per second */
 	private int sampleRate;
+
+	/** Suitability of the Feature for Processing.*/
+	private int suitableForProcessing;
 	
 	/** For processed features, here the performed steps are saved.
 	 *  First step = original name of the feature */
@@ -76,6 +79,7 @@ public class Feature implements Serializable {
 		this.history = new ArrayList<String>();
 		this.description = description;
 		this.history.add(new String(description));
+		this.suitableForProcessing = 1;
 	}
 	
 	public Feature(ArrayList<Integer> ids, String description, int dimension) {
@@ -86,14 +90,16 @@ public class Feature implements Serializable {
 		this.history.add(new String(description));
 		this.values = new ArrayList<Double[]>();
 		this.windows = new ArrayList<Double>();
+		this.suitableForProcessing = 1;
 	}
 	
-	public Feature(int id, String description, int dimension, int extractorID) {
+	public Feature(int id, String description, int dimension, int extractorID, int suitableForProcessing) {
 		this.ids = new ArrayList<Integer>(1);
 		ids.add(id);
 		this.description = description;
 		this.dimension = dimension;
 		this.extractorId = extractorID;
+		this.suitableForProcessing = suitableForProcessing;
 	}
 	
 	public Feature(int id) {
@@ -102,6 +108,7 @@ public class Feature implements Serializable {
 		this.values = new ArrayList<Double[]>();
 		this.windows = new ArrayList<Double>();
 		this.history = new ArrayList<String>();
+		this.suitableForProcessing = 1;
 	}
 	
 	public String getDescription() {
@@ -217,5 +224,9 @@ public class Feature implements Serializable {
 
 	public int getSampleRate() {
 		return sampleRate;
+	}
+
+	public int getSuitableForProcessing() {
+		return suitableForProcessing;
 	}
 }

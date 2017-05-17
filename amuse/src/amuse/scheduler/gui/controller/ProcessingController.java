@@ -39,6 +39,8 @@ import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
+import amuse.scheduler.gui.filesandfeatures.FeatureTableController;
+import amuse.scheduler.gui.filesandfeatures.FileTreeController;
 import amuse.scheduler.gui.filesandfeatures.FilesAndFeaturesFacade;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
@@ -51,6 +53,7 @@ import amuse.util.AmuseLogger;
 import java.awt.BorderLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 /**
  * 
@@ -112,11 +115,13 @@ public class ProcessingController extends AbstractController {
     private JComponent getFilesAndFeatures() {
         JPanel p = new ExtractionPanel();
         if (filesAndFeatures == null) {
-            filesAndFeatures = new FilesAndFeaturesFacade();
+            filesAndFeatures = new FilesAndFeaturesFacade(false);
+            
         }
         p.add(filesAndFeatures.getView(), BorderLayout.CENTER);
         return p;
     }
+    
 
     /**
      *
