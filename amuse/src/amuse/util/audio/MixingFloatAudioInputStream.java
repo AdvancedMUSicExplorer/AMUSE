@@ -38,11 +38,13 @@
  */
 package amuse.util.audio;
 
-import org.tritonus.share.sampled.FloatSampleBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+
+import org.tritonus.share.sampled.FloatSampleBuffer;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -223,7 +225,8 @@ public class MixingFloatAudioInputStream extends AudioInputStream {
         // This routine will handle clipping, i.e. if there are samples > 1.0f
         // in the mix buffer, they will be clipped to 1.0f and converted to the
         // specified audioFormat's sample format.
-        mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
+        //mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
+        maxMixed += mixBuffer.convertToByteArray(abData, nOffset, getFormat()); //TODO 
         return maxMixed * getFormat().getFrameSize();
     }
 

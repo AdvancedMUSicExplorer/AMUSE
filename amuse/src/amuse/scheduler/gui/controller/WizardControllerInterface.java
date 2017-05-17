@@ -72,6 +72,11 @@ public interface WizardControllerInterface {
     void goToSettings();
 
     /**
+     * Go to the annotation editor page for the amuse wizard.
+     */
+    void goToAnnotationEditor();
+    
+    /**
      * Got to the Experiment Manager.
      * The Experiment Manager allows to configure multiple Experiments.
      */
