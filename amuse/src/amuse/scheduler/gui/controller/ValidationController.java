@@ -39,6 +39,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
+import amuse.scheduler.gui.algorithm.Algorithm;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.navigation.HasCaption;
@@ -104,6 +105,14 @@ public class ValidationController extends AbstractController {
                 + file.getName());
         String parameterStr = "";
         if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {
+        	Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
+        	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
+        	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
+        	for(int i = 0; i < currentParameterValues.length; i++){
+        		if(allowedParameterStrings[i].equals("fof")){
+        			currentParameterValues[i] = "|" + currentParameterValues[i] + "|";
+        		}
+        	}
             parameterStr = Arrays.toString(validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues());
         }
         String validationMethodId = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
@@ -138,7 +147,19 @@ public class ValidationController extends AbstractController {
 
     private void setConfiguration(ValidatorConfigSet set) {
         try {
-            validationAlgorithmFacade.setSelectedAlgorithm(set.getValidationMethodIdAttribute().getValueAt(0));
+        	/*
+        	String validationMethodIdAttribute = set.getValidationMethodIdAttribute().getValueAt(0);
+        	String id = validationMethodIdAttribute.substring(0, validationMethodIdAttribute.indexOf('['));
+        	if(id.equals("0")){
+        		String[] parameters = new String[]{validationMethodIdAttribute.substring(validationMethodIdAttribute.indexOf('['),validationMethodIdAttribute.lastIndexOf(']') + 1)};
+        		validationAlgorithmFacade.setSelectedAlgorithm(id + "[]");
+        		validationAlgorithmFacade.getSelectedAlgorithm().setCurrentParameters(parameters);
+        	}
+        	else{
+        		validationAlgorithmFacade.setSelectedAlgorithm(validationMethodIdAttribute);
+        	}
+        	*/
+        	validationAlgorithmFacade.setSelectedAlgorithm(set.getValidationMethodIdAttribute().getValueAt(0));
             // FIXME was tun wenn kein Int?
             validationView.setSelectedCategoryID(new Integer(set.getInputToValidateAttribute().getValueAt(0)));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));

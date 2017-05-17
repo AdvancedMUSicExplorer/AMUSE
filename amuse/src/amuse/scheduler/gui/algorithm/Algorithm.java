@@ -101,8 +101,6 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 
 	@Override
 	public void setCurrentParameters(String[] parameters) {
-		System.out.println(parameters);
-		
 		if (parameters.length != currentParameterValues.length) {
 			throw new IllegalArgumentException();
 		}
@@ -169,7 +167,7 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 		}
 		return params.toArray(new String[params.size()]);
 	}
-
+	
 	public static String[] scanParameters(String defaultParameterValues) {
 		if (defaultParameterValues.isEmpty()) {
 			return new String[0];
@@ -178,11 +176,27 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 			throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
 		}
 		Scanner scanner = new Scanner(defaultParameterValues.substring(1, defaultParameterValues.length() - 1));
-		scanner.useDelimiter("\\_");
+		scanner.useDelimiter("\\_"); //FIXME
 		List<String> params = new ArrayList<String>();
 		while (scanner.hasNext()) {
-			params.add(scanner.next());
+			String next = scanner.next();
+			if(next.startsWith("|")){ //path values are surrounded by "|". In path values, "_" is allowed.
+				if(!next.endsWith("|")){
+					while (scanner.hasNext()) {
+						next += "_" + scanner.next();
+						if(next.endsWith("|")){
+							break;
+						}
+					}
+				}
+				if(!next.endsWith("|")){
+					throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
+				}
+				next = next.substring(1, next.length() - 1);
+			}
+			params.add(next);
 		}
+		scanner.close();
 		if (params.isEmpty()) {
 			params.add("");
 		}
