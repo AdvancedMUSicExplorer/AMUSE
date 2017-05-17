@@ -84,7 +84,7 @@ public class ExtractionConfiguration extends TaskConfiguration {
 
 			// Load the file and feature tables
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
-			FeatureTable currentFeatureTable = new FeatureTable(new File(currentFeatureTableString));
+			FeatureTable currentFeatureTable = new FeatureTable(new File(currentFeatureTableString), true);
 			
 			taskConfigurations.add(new ExtractionConfiguration(currentFileTable,currentFeatureTable));
 			AmuseLogger.write(ExtractionConfiguration.class.getName(), Level.DEBUG, taskConfigurations.size() + " extraction task(s) for " + currentMusicFileList + " loaded");

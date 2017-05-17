@@ -158,7 +158,7 @@ public class AddLeastCorrelatedFeature extends AbstractMutation {
 			
 			// How much is the overall number of single feature dimensions?
 			Node featureTableNode = correspondingStrategy.getConfiguration().getConstantParameterByName("Feature table");
-			FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
+			FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()), true); //TODO
 			int factor = 0;
 			Node selectedFeaturesNode = correspondingStrategy.getConfiguration().getOptimizationParameterByName("Selected features");
 			NodeList parameterList = selectedFeaturesNode.getChildNodes();

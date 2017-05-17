@@ -234,7 +234,7 @@ public class FitnessEvaluator {
 		
 		// Load the feature table
 		Node featureTableNode = individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Feature table");
-		FeatureTable featureTable = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
+		FeatureTable featureTable = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()), true); //TODO
 		
 		// Load the metric table
 		Node metricTableNode = individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Metric table");

@@ -66,11 +66,11 @@ public class FilesAndFeaturesFacade {
 
     private final FileTreeController fileTreeController;
 
-    public FilesAndFeaturesFacade() {
+    public FilesAndFeaturesFacade(boolean includeUnsuitableForProcessingFeatures) {
         view = new JSplitPane();
         view.add(featureTableView.getView(), JSplitPane.RIGHT);
         view.add(fileTreeView.getView(), JSplitPane.LEFT);
-        featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
+        featureTableController = new FeatureTableController(getFeatureTableModel(includeUnsuitableForProcessingFeatures), featureTableView);
         fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView);
     }
 
@@ -90,9 +90,9 @@ public class FilesAndFeaturesFacade {
         return view;
     }
 
-    private FeatureTableModel getFeatureTableModel() {
+    private FeatureTableModel getFeatureTableModel(boolean includeUnsuitableForProcessingFeatures) {
         if (featureTableModel == null) {
-            featureTableModel = new FeatureTableModel(new FeatureTable(featureTableFile));
+            featureTableModel = new FeatureTableModel(new FeatureTable(featureTableFile, includeUnsuitableForProcessingFeatures));
         }
         return featureTableModel;
     }
