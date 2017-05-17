@@ -16,8 +16,10 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
+% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)
+@ATTRIBUTE IsSuitableForProcessing NUMERIC
 
 @DATA
-218, "Chroma Energy Normalized Statistics", 5, 4410, 12
-219, "Chroma DCT-Reduced log Pitch", 5, 4410, 12
-220, "Strengths of CRP cooccurrences", 5, 4410, 66
+218, "Chroma Energy Normalized Statistics", 5, 4410, 12, 1
+219, "Chroma DCT-Reduced log Pitch", 5, 4410, 12, 1
+220, "Strengths of CRP cooccurrences", 5, 4410, 66, 1
