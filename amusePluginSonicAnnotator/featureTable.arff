@@ -16,17 +16,19 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
+% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)
+@ATTRIBUTE IsSuitableForProcessing NUMERIC
 
 @DATA
-250, "Chroma - NNLS", 7, 2048, 12
-251, "Bass chroma - NNLS", 7, 2048, 12
-252, "Semitone spectrum - NNLS", 7, 2048, 85
-253, "Local tuning - NNLS", 7, 8192, 1
-254, "Harmonic change - NNLS", 7, 2048, 1
-255, "Consonance - NNLS", 7, 2048, 1
-256, "Simplechord - NNLS", 7, -1, 1
-257, "Number of different chords in 10s", 7, 220500, 1
-258, "Number of chord changes in 10s", 7, 220500, 1
-259, "Shares of the most frequent 20, 40 and 60 percents of chords with regard to their duration", 7, 220500, 3
-260, "Interval strengths estimated from 10 highest semitone peaks", 7, 2048, 12
-261, "Interval strengths estimated from the semitone peaks above 3/4 of the maximum peak", 7, 2048, 12
+250, "Chroma - NNLS", 7, 2048, 12, 1
+251, "Bass chroma - NNLS", 7, 2048, 12, 1
+252, "Semitone spectrum - NNLS", 7, 2048, 85, 1
+253, "Local tuning - NNLS", 7, 8192, 1, 1
+254, "Harmonic change - NNLS", 7, 2048, 1, 1
+255, "Consonance - NNLS", 7, 2048, 1, 1
+256, "Simplechord - NNLS", 7, -1, 1, 0
+257, "Number of different chords in 10s", 7, 220500, 1, 1
+258, "Number of chord changes in 10s", 7, 220500, 1, 1
+259, "Shares of the most frequent 20, 40 and 60 percents of chords with regard to their duration", 7, 220500, 3, 1
+260, "Interval strengths estimated from 10 highest semitone peaks", 7, 2048, 12, 1
+261, "Interval strengths estimated from the semitone peaks above 3/4 of the maximum peak", 7, 2048, 12, 1
