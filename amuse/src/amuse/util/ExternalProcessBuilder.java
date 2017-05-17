@@ -52,6 +52,7 @@ public class ExternalProcessBuilder {
     public ExternalProcessBuilder(List<String> command) {
         this();
         pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
     }
 
     /**

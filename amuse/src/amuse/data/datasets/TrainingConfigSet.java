@@ -97,7 +97,11 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         List<String> groundTruthSourceList = new ArrayList<String>();
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
         List<String> pathToOutputModel = new ArrayList<String>();
-        pathToOutputModel.add(trainingConfiguration.getPathToOutputModel());
+        String tmpPathToOutputModel = trainingConfiguration.getPathToOutputModel();
+        if (tmpPathToOutputModel == null){
+        	tmpPathToOutputModel = "";
+        }
+        pathToOutputModel.add(tmpPathToOutputModel);
 
         processedFeatureDescriptionAttribute = new StringAttribute(processedFeatureDescriptionStr, processingDescriptions);
         algorithmIdAttribute = new StringAttribute(algorithmIdStr, algorithmStr);
@@ -120,11 +124,12 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     public TrainingConfigSet(DataSetAbstract dataSet) {
         super(dataSet.getName());
         // Check preconditions:
-        dataSet.checkStringAttribute(processedFeatureDescriptionStr);
         dataSet.checkStringAttribute(algorithmIdStr);
+        dataSet.checkStringAttribute(processedFeatureDescriptionStr);
         dataSet.checkStringAttribute(preprocessingAlgorithmIdStr);
         dataSet.checkStringAttribute(groundTruthSourceStr);
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
+        
         dataSet.checkStringAttribute(pathToOutputModelStr);
         processedFeatureDescriptionAttribute =
                 (StringAttribute) dataSet.getAttribute(processedFeatureDescriptionStr);
@@ -133,7 +138,9 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
-
+        
+        
+        
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);

@@ -100,6 +100,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         addAttribute(validationMethodIdAttribute);
         addAttribute(metricListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
+        addAttribute(inputToValidateAttribute); //TODO is this correct?
         addAttribute(groundTruthSourceTypeAttribute);
         addAttribute(classificationAlgorithmIdAttribute);
     }
