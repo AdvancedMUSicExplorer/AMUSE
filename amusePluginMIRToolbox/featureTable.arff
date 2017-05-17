@@ -2,7 +2,7 @@
 % for computation in Amuse. If you wish to use
 % some subset of features, please create a copy
 % of this file and leave only the features you
-% want to extract.
+% want to extract. 
 
 @RELATION features
 
