@@ -56,6 +56,7 @@ import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
+import amuse.interfaces.nodes.NodeException;
 import amuse.util.AmuseLogger;
 
 /**
@@ -374,11 +375,11 @@ public class AlgorithmConfigurationFacade {
     public boolean isEnabled() {
 	return useAlgorithmBox.isSelected();
     }
-
+    
     public void setSelectedAlgorithm(String str) {
 	String idStr = str;
 	int paramBegin = str.indexOf("[");
-	int paramEnd = str.indexOf("]");
+	int paramEnd = str.lastIndexOf("]");
 	String parameters = "";
 	if (idStr.equalsIgnoreCase("-1") && isEnableButtonInUse()) {
 	    useAlgorithmBox.setSelected(false);
@@ -396,7 +397,7 @@ public class AlgorithmConfigurationFacade {
 	    if (a.getID() == id) {
 		comboBox.setSelectedItem(a);
 		if (!parameters.equals("")) {
-		    a.setCurrentParameters(Algorithm.scanParameters(parameters));
+			a.setCurrentParameters(Algorithm.scanParameters(parameters));
 		}
 	    }
 	}
