@@ -372,8 +372,8 @@ public class PluginRemover {
 			values_writer.writeBytes("@ATTRIBUTE WindowSize NUMERIC" + sep);
 			values_writer.writeBytes("% Number of feature dimensions" + sep);
 			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep);
-			values_writer.writeBytes("% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)" + sep);
-			values_writer.writeBytes("@ATTRIBUTE IsSuitableForProcessing NUMERIC" + sep + sep);
+			values_writer.writeBytes("% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC" + sep + sep);
 			values_writer.writeBytes("@DATA" + sep + sep);
 			values_writer.writeBytes("% Timbre features" + sep + sep);
 			
@@ -409,11 +409,11 @@ public class PluginRemover {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(installedFeatureSet.getAttribute("Dimensions").getValueAt(i).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-					Double isSuitableForProcessing = new Double(installedFeatureSet.getAttribute("IsSuitableForProcessing").getValueAt(i).toString());
-					String isSuitableForProcessingString = isSuitableForProcessing.isNaN() ? "?" : new Integer(isSuitableForProcessing.intValue()).toString();
+					Double isSuitableForFeatureMatrixProcessing = new Double(installedFeatureSet.getAttribute("IsSuitableForFeatureMatrixProcessing").getValueAt(i).toString());
+					String isSuitableForFeatureMatrixProcessingString = isSuitableForFeatureMatrixProcessing.isNaN() ? "?" : new Integer(isSuitableForFeatureMatrixProcessing.intValue()).toString();
 					values_writer.writeBytes(idOfInstalledFeature + ", \"" + 
 							installedFeatureSet.getAttribute("Description").getValueAt(i).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForProcessingString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForFeatureMatrixProcessingString + sep);
 				}
 			}
 			
