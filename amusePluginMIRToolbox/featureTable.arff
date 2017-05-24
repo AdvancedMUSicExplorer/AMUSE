@@ -16,8 +16,8 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
-% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)
-@ATTRIBUTE IsSuitableForProcessing NUMERIC
+% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)
+@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC
 
 @DATA
 % Timbre features
@@ -48,10 +48,10 @@
 % Tempo features
 
 418, "Rhythmic clarity", 4, 66150, 1, 1
-419, "Onset times", 4, -1, 1, 1
+419, "Onset times", 4, -1, 1, 0
 420, "Estimated onset number per minute", 4, 229376, 1, 1
-423, "Attack times", 4, -1, 1, 1
-424, "Release times", 4, -1, 1, 1
+423, "Attack times", 4, -1, 1, 0
+424, "Release times", 4, -1, 1, 0
 425, "Tempo based on onset times", 4, 66150, 1, 1
-426, "Attack slopes", 4, -1, 1, 1
+426, "Attack slopes", 4, -1, 1, 0
 427, "Five peaks of fluctuation curves summed across all bands", 4, 229376, 5, 1
