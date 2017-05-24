@@ -16,8 +16,8 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
-% Indicates if the Attribute is suitable for Processing. (1 = True, 0 = False)
-@ATTRIBUTE IsSuitableForProcessing NUMERIC
+% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)
+@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC
 
 @DATA
 250, "Chroma - NNLS", 7, 2048, 12, 1
