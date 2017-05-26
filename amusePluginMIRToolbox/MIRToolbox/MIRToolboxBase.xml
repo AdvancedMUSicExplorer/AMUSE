@@ -269,7 +269,8 @@ mirres=mirrms(f);
 		% Delta mel frequency cepstral coefficients
 		mirres=mirmfcc(f,'Delta',1);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'48.arff'],'Delta MFCCs - MIR Toolbox',res,512);
+		nan_arr = [NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN]';
+		arff_saver_with_windows_number([output_file_prefix,'48.arff'],'Delta MFCCs - MIR Toolbox',[nan_arr nan_arr res nan_arr nan_arr],512);
 	</text>
 </amuseEnableFeature>
 
