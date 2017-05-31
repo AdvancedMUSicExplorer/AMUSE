@@ -169,7 +169,7 @@ public class ProcessingMethodsController {
     }
 
     public void setOverlapSize(int value) {
-        view.setPartitionSizeStr(value);
+        view.setPartitionOverlapStr(value);
     }
 
     public void setMatrixToVector(String value) {
