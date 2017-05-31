@@ -50,7 +50,7 @@ public class FeatureTableSet extends ArffDataSet {
     private static final String strExtractiorID = "ExtractorId";
     private static final String strWindowSize = "WindowSize";
     private static final String strDimensions = "Dimensions";
-    private static final String strSuitableForProcessing = "IsSuitableForProcessing";
+    private static final String strSuitableForProcessing = "IsSuitableForFeatureMatrixProcessing";
 
     /**
      * Creates a new FeatureTableSet from a file. Validates if the given file contains a FeatureTableSet.
