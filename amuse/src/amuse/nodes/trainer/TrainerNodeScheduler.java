@@ -355,14 +355,40 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					// Load the first classifier input for attributes information
 					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
+					
 					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						String processedFeatureDatabase = ((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase();
+
+						if(processedFeatureDatabase.endsWith(File.separator)){
+							processedFeatureDatabase = processedFeatureDatabase.substring(0, processedFeatureDatabase.length() - 1);
+						}
 						currentInputFile = 
-							((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
-							+ File.separator +
-							currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-									currentInputFile.lastIndexOf(".")) + File.separator +
-							currentInputFile.substring(currentInputFile.lastIndexOf(File.separator)+1,currentInputFile.lastIndexOf(".")) + "_" +
-							((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							processedFeatureDatabase
+							+ File.separator 
+							+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+									currentInputFile.lastIndexOf("."))
+							+ File.separator
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf("."))
+							+ "_" 
+							+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+					}
+					else{
+						String processedFeatureDatabase = ((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase();
+
+						if(processedFeatureDatabase.endsWith(File.separator)){
+							processedFeatureDatabase = processedFeatureDatabase.substring(0, processedFeatureDatabase.length() - 1);
+						}
+						currentInputFile = 
+							processedFeatureDatabase
+							+ File.separator 
+							+ currentInputFile.substring(0,
+									currentInputFile.lastIndexOf(".")) 
+							+ File.separator 
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf(".")) 
+							+ "_" 
+							+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
 					
 					ArffLoader classifierInputLoader = new ArffLoader();
@@ -426,7 +452,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 						// Go to the next description
 						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
-						
+						/*
 						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator +
@@ -434,7 +460,34 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								newInputFile.lastIndexOf(".")) + File.separator +
 								newInputFile.substring(newInputFile.lastIndexOf(File.separator)+1,newInputFile.lastIndexOf(".")) + "_" +
 								((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+						}*/
+						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+							newInputFile = 
+								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								//+ File.separator 
+								+ newInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+										newInputFile.lastIndexOf("."))
+								+ File.separator
+								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
+										newInputFile.lastIndexOf("."))
+								+ "_" 
+								+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
+						else{
+							newInputFile = 
+								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								//+ File.separator 
+								+ newInputFile.substring(1,
+										newInputFile.lastIndexOf(".")) 
+								+ File.separator 
+								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
+										newInputFile.lastIndexOf(".")) 
+								+ "_" 
+								+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+						}
+						
+						
+						
 						
 						// Go to the next music file?
 						if(!newInputFile.equals(currentInputFile)) {
