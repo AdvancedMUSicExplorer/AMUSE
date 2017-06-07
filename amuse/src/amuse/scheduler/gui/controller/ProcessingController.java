@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.controller;
 
+import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.io.DataSetAbstract;
 
@@ -39,8 +40,6 @@ import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
-import amuse.scheduler.gui.filesandfeatures.FeatureTableController;
-import amuse.scheduler.gui.filesandfeatures.FileTreeController;
 import amuse.scheduler.gui.filesandfeatures.FilesAndFeaturesFacade;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
@@ -53,7 +52,6 @@ import amuse.util.AmuseLogger;
 import java.awt.BorderLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import javax.swing.JSplitPane;
 
 /**
  * 
@@ -115,7 +113,10 @@ public class ProcessingController extends AbstractController {
     private JComponent getFilesAndFeatures() {
         JPanel p = new ExtractionPanel();
         if (filesAndFeatures == null) {
-            filesAndFeatures = new FilesAndFeaturesFacade(false);
+            File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff");
+            FeatureTable featureTable = new FeatureTable(featureTableFile);
+            featureTable.removeUnsuitableForFeatureMatrixProcessing();
+            filesAndFeatures = new FilesAndFeaturesFacade(featureTable);
             
         }
         p.add(filesAndFeatures.getView(), BorderLayout.CENTER);

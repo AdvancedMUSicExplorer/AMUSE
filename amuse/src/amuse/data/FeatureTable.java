@@ -48,13 +48,15 @@ public class FeatureTable implements Serializable {
     private static final long serialVersionUID = 7702565526106025072L;
     
     private final List<Feature> features = new ArrayList<Feature>();
+    
 
+    
+    
     /**
      * Creates FeatureTable from existing featureTable.arff using only those with existing extractor ID.
-     * @param featureTableFile - java.io.File object witch contains featureTable stored as ".arff".
-     * @param includeUnsuitableForProcessingFeatures 
+     * @param featureTableFile - java.io.File object which contains featureTable stored as ".arff".
      */
-    public FeatureTable(File featureTableFile, boolean includeUnsuitableForProcessingFeatures) {
+    public FeatureTable(File featureTableFile) {
         try {
             FeatureTableSet featureTableSet = new FeatureTableSet(featureTableFile);
             NumericAttribute id = featureTableSet.getIDAttribute();
@@ -67,17 +69,27 @@ public class FeatureTable implements Serializable {
             	if (extractorID.getValueAt(i).isNaN()) {
             		// Skip this
             	} else {
-            		if(includeUnsuitableForProcessingFeatures || suitableForProcessing.getValueAt(i).intValue() == 1){
-	            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), suitableForProcessing.getValueAt(i).intValue());
-	            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
-	            		features.add(f);
-            		}
+            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), suitableForProcessing.getValueAt(i).intValue());
+            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
+            		features.add(f);
+            		
             	}
             }
         } catch (IOException ex) {
             ex.printStackTrace();
             AmuseLogger.write(this.getClass().getName(), Level.FATAL, "Can't load Feature Table!");
         }
+    }
+    
+    /**
+     * This methods removes every feature, that has the attribute "IsSuitableForFeatureMatrixProcessing" set to zero.
+     */
+    public void removeUnsuitableForFeatureMatrixProcessing(){
+    	for(int i = 0; i < features.size(); i++){
+    		if(features.get(i).getSuitableForProcessing() == 0){
+    			features.remove(i);
+    		}
+    	}
     }
 
     /**

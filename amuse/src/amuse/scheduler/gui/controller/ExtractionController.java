@@ -86,7 +86,7 @@ public class ExtractionController extends AbstractController {
     private JComponent getFilesAndFeatures() {
         JPanel p = new ExtracionPanel();
         if (filesAndFeatures == null) {
-            filesAndFeatures = new FilesAndFeaturesFacade(true);
+            filesAndFeatures = new FilesAndFeaturesFacade();
         }
         p.add(filesAndFeatures.getView(), BorderLayout.CENTER);
         return p;
