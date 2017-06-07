@@ -51,6 +51,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
@@ -434,11 +435,26 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 						currentInputFile = 
 							((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
-							+ File.separator +
-							currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-									currentInputFile.lastIndexOf(".")) + File.separator +
-							currentInputFile.substring(currentInputFile.lastIndexOf(File.separator)+1,currentInputFile.lastIndexOf(".")) + "_" +
-							((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ File.separator 
+							+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+									currentInputFile.lastIndexOf("."))
+							+ File.separator
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf("."))
+							+ "_" 
+							+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+					}
+					else{
+						currentInputFile = 
+							((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+							+ File.separator 
+							+ currentInputFile.substring(0,
+									currentInputFile.lastIndexOf(".")) 
+							+ File.separator 
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf(".")) 
+							+ "_" 
+							+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
 					
 					ArffLoader validatorInputLoader = new ArffLoader();
@@ -545,14 +561,34 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						// Go to the next description
 						String newInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
 						
+						
 						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 							newInputFile = 
-								((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator +
-								newInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-								newInputFile.lastIndexOf(".")) + File.separator +
-								newInputFile.substring(newInputFile.lastIndexOf(File.separator)+1,newInputFile.lastIndexOf(".")) + "_" +
-								((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								+ File.separator 
+								+ newInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+										newInputFile.lastIndexOf("."))
+								+ File.separator
+								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
+										newInputFile.lastIndexOf("."))
+								+ "_" 
+								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
+						else{
+							newInputFile = 
+								((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								+ File.separator 
+								+ newInputFile.substring(0,
+										newInputFile.lastIndexOf(".")) 
+								+ File.separator 
+								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
+										newInputFile.lastIndexOf(".")) 
+								+ "_" 
+								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+						}
+						
+						
+						
 						
 						// Go to the next music file?
 						if(!newInputFile.equals(currentInputFile)) {

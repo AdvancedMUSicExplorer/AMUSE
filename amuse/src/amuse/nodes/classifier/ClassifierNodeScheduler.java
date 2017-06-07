@@ -53,6 +53,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
+import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -295,12 +296,30 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					String currentInputFile = ((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).
 						getInputFiles().get(0).toString();
 					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-						currentInputFile = ((ClassificationConfiguration)taskConfiguration).getProcessedFeatureDatabase()+ File.separator +
-							currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-									currentInputFile.lastIndexOf(".")) + File.separator +
-							currentInputFile.substring(currentInputFile.lastIndexOf(File.separator)+1,currentInputFile.lastIndexOf(".")) + "_" +
-							((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+						currentInputFile = 
+							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+							+ File.separator 
+							+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+									currentInputFile.lastIndexOf("."))
+							+ File.separator
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf("."))
+							+ "_" 
+							+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
+					else{
+						currentInputFile = 
+							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+							+ File.separator 
+							+ currentInputFile.substring(0,
+									currentInputFile.lastIndexOf(".")) 
+							+ File.separator 
+							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+									currentInputFile.lastIndexOf(".")) 
+							+ "_" 
+							+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+					}
+					
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
 					classifierInputLoader.setFile(new File(currentInputFile));
@@ -321,12 +340,31 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						// Save the name of music file for later conversion of classification output
 						String currentInputSong = new String(currentInputFile);
 						if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-							currentInputFile = ((ClassificationConfiguration)taskConfiguration).getProcessedFeatureDatabase()+ File.separator +
-								currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-										currentInputFile.lastIndexOf(".")) + File.separator +
-								currentInputFile.substring(currentInputFile.lastIndexOf(File.separator)+1,currentInputFile.lastIndexOf(".")) + "_" +
-								((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							currentInputFile = 
+								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								+ File.separator 
+								+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+										currentInputFile.lastIndexOf("."))
+								+ File.separator
+								+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+										currentInputFile.lastIndexOf("."))
+								+ "_" 
+								+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
+						else{
+							currentInputFile = 
+								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
+								+ File.separator 
+								+ currentInputFile.substring(0,
+										currentInputFile.lastIndexOf(".")) 
+								+ File.separator 
+								+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
+										currentInputFile.lastIndexOf(".")) 
+								+ "_" 
+								+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+						}
+						
+						
 						
 						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading:  " + currentInputFile);
 							
@@ -516,12 +554,16 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			// Find the classification model in the Amuse model database or set the path to a concrete
 			// model given in ClassificationConfiguration.pathToInputModel (for validator or optimizer)
 			String pathToModel = new String();
-			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))) {
-				File folderForModels = new File(AmusePreferences.get(KeysStringValue.MODEL_DATABASE) + "/" + 
-					this.categoryDescription + "/" + ((AmuseTask)this.cad).getProperties().getProperty("id") + 
-					"-" + ((AmuseTask)this.cad).getProperties().getProperty("name") +  
-					this.requiredParameters + "/" + 
-					((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
+			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
+					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))) {
+				File folderForModels = new File(AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
+						+ "/"
+						+ this.categoryDescription + "/" + ((AmuseTask)this.cad).getProperties().getProperty("id") 
+						+ "-" 
+						+ ((AmuseTask)this.cad).getProperties().getProperty("name") 
+						+ this.requiredParameters 
+						+ "/" 
+						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
 				pathToModel = folderForModels + "/model.mod";
 			} else {
 				pathToModel = ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel();
