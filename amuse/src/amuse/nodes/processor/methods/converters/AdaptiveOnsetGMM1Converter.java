@@ -83,6 +83,18 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();
 		
 		try {
+			// Load the attack start events and release end events
+			Double[] attackStarts = loadEventTimes("attack");
+			Double[] releaseEnds = loadEventTimes("release");
+			
+			// If no events were found..
+			if(attackStarts.length == 0 || releaseEnds.length == 0) {
+				throw new NodeException("Attack and/or release interval number is equal to zero!");
+			} 
+			// .. or the number of both events is not equal
+			else if(attackStarts.length != releaseEnds.length) {
+				throw new NodeException("Attack and release interval number must be the same!");
+			}
 
 			// Go through music features
 			for(int i=0;i<features.size();i++) {
@@ -108,18 +120,6 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 					}
 				}
 				
-				// Load the attack start events and release end events
-				Double[] attackStarts = loadEventTimes("attack");
-				Double[] releaseEnds = loadEventTimes("release");
-				
-				// If no events were found..
-				if(attackStarts.length == 0 || releaseEnds.length == 0) {
-					throw new NodeException("Attack and/or release interval number is equal to zero!");
-				} 
-				// .. or the number of both events is not equal
-				else if(attackStarts.length != releaseEnds.length) {
-					throw new NodeException("Attack and release interval number must be the same!");
-				}
 				
 			    int currentWindow = 0;
 				
