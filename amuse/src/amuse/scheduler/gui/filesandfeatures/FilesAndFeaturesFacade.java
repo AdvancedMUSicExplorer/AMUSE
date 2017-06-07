@@ -66,11 +66,19 @@ public class FilesAndFeaturesFacade {
 
     private final FileTreeController fileTreeController;
 
-    public FilesAndFeaturesFacade(boolean includeUnsuitableForProcessingFeatures) {
+    public FilesAndFeaturesFacade(FeatureTable pFeatureTable){
+    	featureTableModel = new FeatureTableModel(pFeatureTable);
+    	view = new JSplitPane();
+        view.add(featureTableView.getView(), JSplitPane.RIGHT);
+        view.add(fileTreeView.getView(), JSplitPane.LEFT);
+        featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
+        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView);
+    }
+    public FilesAndFeaturesFacade() {
         view = new JSplitPane();
         view.add(featureTableView.getView(), JSplitPane.RIGHT);
         view.add(fileTreeView.getView(), JSplitPane.LEFT);
-        featureTableController = new FeatureTableController(getFeatureTableModel(includeUnsuitableForProcessingFeatures), featureTableView);
+        featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
         fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView);
     }
 
@@ -89,12 +97,20 @@ public class FilesAndFeaturesFacade {
     public JComponent getView() {
         return view;
     }
+    
+    public FeatureTableView getFeatureTableView(){
+    	return featureTableView;
+    }
 
-    private FeatureTableModel getFeatureTableModel(boolean includeUnsuitableForProcessingFeatures) {
+    private FeatureTableModel getFeatureTableModel() {
         if (featureTableModel == null) {
-            featureTableModel = new FeatureTableModel(new FeatureTable(featureTableFile, includeUnsuitableForProcessingFeatures));
+            featureTableModel = new FeatureTableModel(new FeatureTable(featureTableFile));
         }
         return featureTableModel;
+    }
+    
+    public void setFeatureTableModel(FeatureTableModel pFeatureTableModel){
+    	featureTableModel = pFeatureTableModel;
     }
 
     private FileTreeModel getFileTreeModel() {

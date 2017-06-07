@@ -86,7 +86,7 @@ public class SelectedFeatures extends BinaryVector {
 			
 		// Load the feature table for the estimation of original raw feature number
 		Node featureTableNode = esConfiguration.getConstantParameterByName("Feature table");
-		FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()), true); //TODO
+		FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
 			
 		// Load the 
 		// (1) factor parameter (maximum number of features proceeded to classification is
