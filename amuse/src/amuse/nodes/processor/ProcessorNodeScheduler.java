@@ -704,8 +704,13 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			// TODO [1/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
 			// is to change Feature class and allow frames of different sizes (e.g. with a child class)
 			// Load the attack start events and release end events
-			Double[] attackStarts = loadEventTimes("attack");
-			Double[] releaseEnds = loadEventTimes("release");
+			Double[] attackStarts = null;
+			Double[] releaseEnds = null;
+			//only load eventtimes when they are really needed
+			if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1"))){
+				attackStarts = loadEventTimes("attack");
+				releaseEnds = loadEventTimes("release");		
+			}
 			
 			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize();
 			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap();
