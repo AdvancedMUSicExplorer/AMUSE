@@ -86,7 +86,6 @@ public class ProcessingConfiguration extends TaskConfiguration {
 			Integer partitionSize, Integer partitionOverlap, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputFeatureList = new FeatureTable(new File(inputFeatureList));
-		this.inputFeatureList.removeUnsuitableForFeatureMatrixProcessing();
 		this.reductionSteps = reductionSteps;
 		this.partitionSize = partitionSize;
 		this.partitionOverlap = partitionOverlap;
