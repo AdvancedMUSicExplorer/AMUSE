@@ -456,7 +456,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							+ "_" 
 							+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
-					
+					currentInputFile = currentInputFile.replaceAll("/+", "/");
 					ArffLoader validatorInputLoader = new ArffLoader();
 					Instance inputInstance;
 					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
@@ -586,6 +586,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								+ "_" 
 								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
+						currentInputFile = currentInputFile.replaceAll("/+", "/");
 						
 						
 						
