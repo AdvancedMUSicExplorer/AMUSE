@@ -85,9 +85,12 @@ public class FeatureTable implements Serializable {
      * This methods removes every feature, that has the attribute "IsSuitableForFeatureMatrixProcessing" set to zero.
      */
     public void removeUnsuitableForFeatureMatrixProcessing(){
-    	for(int i = 0; i < features.size(); i++){
+    	for(int i = 0; i < features.size();){
     		if(features.get(i).getSuitableForProcessing() == 0){
     			features.remove(i);
+    		}
+    		else{
+    			i++;
     		}
     	}
     }
