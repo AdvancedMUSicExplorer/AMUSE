@@ -87,7 +87,6 @@ public final class WizardController implements WizardControllerInterface {
 		setFrameSizeAndPosition();
 		wizardFrame.setVisible(true);
 		scheduler = Scheduler.getInstance();
-		System.out.println(System.getProperty("java.version"));
 	}
 
 	@Override
