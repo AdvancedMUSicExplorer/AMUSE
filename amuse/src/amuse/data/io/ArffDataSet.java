@@ -249,23 +249,7 @@ public class ArffDataSet extends DataSetAbstract {
 			// Write the attribute values of the current instance to file:
 			fileWriter.append(output);
 			output = new StringBuilder();
-		}/*
-		for (int i = 0; i < getValueCount(); i++) {
-			for (Attribute atr : attributes) {
-				if(i < atr.getValueCount()){
-					output.append(atr.getValueStrAt(i));
-					if (attributes.indexOf(atr) == attributes.size() - 1) {
-						output.append("\n");
-					} else {
-						output.append(",");
-					}
-				}
-			}
-		
-			// Write the attribute values of the current instance to file:
-			fileWriter.append(output);
-			output = new StringBuilder();
-		}*/
+		}
 		fileWriter.close();
 	}
 
