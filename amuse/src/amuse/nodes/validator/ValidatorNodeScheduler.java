@@ -51,7 +51,6 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
