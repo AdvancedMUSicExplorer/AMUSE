@@ -586,7 +586,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								+ "_" 
 								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
-						currentInputFile = currentInputFile.replaceAll("/+", "/");
+						newInputFile = newInputFile.replaceAll("/+", "/");
 						
 						
 						
