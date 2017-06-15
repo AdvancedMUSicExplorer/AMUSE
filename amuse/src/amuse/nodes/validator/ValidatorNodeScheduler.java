@@ -560,7 +560,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						// Go to the next description
 						String newInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
 						
-						
 						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 							newInputFile = 
 								((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
@@ -586,9 +585,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
 						newInputFile = newInputFile.replaceAll("/+", "/");
-						
-						
-						
 						
 						// Go to the next music file?
 						if(!newInputFile.equals(currentInputFile)) {
@@ -630,11 +626,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			String category = labelAttribute.getValueAt(0).toString();
 			if(category.startsWith("NOT")) {
 				category = category.substring(4,category.length());
+			} else if(category.startsWith("'NOT")) {
+				category = "'" + category.substring(5,category.length());
 			}
 			for(int i=1;i<labelAttribute.getValueCount();i++) {
 				String currentCategory = labelAttribute.getValueAt(i).toString();
 				if(currentCategory.startsWith("NOT")) {
 					currentCategory = currentCategory.substring(4,currentCategory.length());
+				} else if(currentCategory.startsWith("'NOT")) {
+					currentCategory = "'" + currentCategory.substring(5,currentCategory.length());
 				}
 				if(!currentCategory.equals(category)) {
 					isMulticlass = true;
@@ -673,7 +673,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					labels = new ArrayList<String>();
 				} 
 						
-				if(!labelAttribute.getValueAt(i).toString().startsWith("NOT")) {
+				if(!labelAttribute.getValueAt(i).toString().startsWith("NOT") && !labelAttribute.getValueAt(i).toString().startsWith("'NOT")) {
 					relationships.add(1d);
 				} else {
 					relationships.add(0d);
