@@ -225,8 +225,9 @@ public class MixingFloatAudioInputStream extends AudioInputStream {
         // This routine will handle clipping, i.e. if there are samples > 1.0f
         // in the mix buffer, they will be clipped to 1.0f and converted to the
         // specified audioFormat's sample format.
-        //mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
-        maxMixed += mixBuffer.convertToByteArray(abData, nOffset, getFormat()); //TODO 
+        // ***OLD*** mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
+        // TODO Old code (line above) did not compile; can be removed sometime..
+        maxMixed += mixBuffer.convertToByteArray(abData, nOffset, getFormat()); 
         return maxMixed * getFormat().getFrameSize();
     }
 
