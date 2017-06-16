@@ -115,14 +115,10 @@ public class StringAttribute extends Attribute {
 			return values;
 		}
 	}
-
+	
 	@Override
 	public String getHeaderStr() {
-		if (name.indexOf(' ') != -1) {
-			return attributeStr + " '" + name + "' " + typeStr;
-		} else {
-			return attributeStr + " " + name + " " + typeStr;
-		}
+		return attributeStr + " '" + name + "' " + typeStr;
 	}
 
 	@Override
