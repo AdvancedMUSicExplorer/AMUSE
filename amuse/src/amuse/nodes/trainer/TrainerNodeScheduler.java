@@ -390,6 +390,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							+ "_" 
 							+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
+					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 					
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
@@ -464,7 +465,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
-								//+ File.separator 
+								+ File.separator 
 								+ newInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
 										newInputFile.lastIndexOf("."))
 								+ File.separator
@@ -476,7 +477,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						else{
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
-								//+ File.separator 
+								+ File.separator 
 								+ newInputFile.substring(1,
 										newInputFile.lastIndexOf(".")) 
 								+ File.separator 
@@ -485,7 +486,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								+ "_" 
 								+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
-						
+						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
 						
 						
