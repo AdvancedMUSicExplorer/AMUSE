@@ -139,13 +139,9 @@ public class NominalAttribute extends Attribute {
 	this(name, Arrays.asList(string));
     }
 
-	@Override
+    @Override
 	public String getHeaderStr() {
-		if (name.indexOf(' ') != -1) {
-			return attributeStr + " '" + name + "' " + getTypeStr();
-		} else {
-			return attributeStr + " " + name + " " + getTypeStr();
-		}
+		return attributeStr + " '" + name + "' " + getTypeStr();
 	}
 
 	@Override
