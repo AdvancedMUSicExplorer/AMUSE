@@ -77,7 +77,7 @@ public class WizardView {
     
     JButton buttonValidation = new JButton("Classification Validation");
     
-    JButton buttonAnnotation = new JButton("Create Annotation"); //TODO better name?
+    //JButton buttonAnnotation = new JButton("Create Annotation"); 
 
     JPanelAmuseLogger scrollableLogger;
 
@@ -108,8 +108,8 @@ public class WizardView {
         buttonAmuseSettings.addActionListener(new AmuseSettingsListener());
         newLoadPreferencesButtons.addButton(buttonAmuseSettings);
         
-        buttonAnnotation.addActionListener(new AnnotationListener());
-        newLoadPreferencesButtons.addButton(buttonAnnotation);
+        //buttonAnnotation.addActionListener(new AnnotationListener());
+        //newLoadPreferencesButtons.addButton(buttonAnnotation);
 
         // Create New Experiment ButtonPanel:
         buttonFeatureExtraction.addActionListener(new FeatureExtractionListener());
