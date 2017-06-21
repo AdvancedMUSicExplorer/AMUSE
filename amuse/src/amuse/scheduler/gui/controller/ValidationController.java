@@ -164,6 +164,7 @@ public class ValidationController extends AbstractController {
             validationView.setSelectedCategoryID(new Integer(set.getInputToValidateAttribute().getValueAt(0)));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             metricsView.loadSelection(new File(set.getMetricListAttribute().getValueAt(0)));
+            validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }

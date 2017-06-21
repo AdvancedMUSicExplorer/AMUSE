@@ -55,7 +55,15 @@ public class ValidationView {
 	public String getProcessingModelString() {
 		return trainingView.getProcessingModelString();
 	}
-
+	
+	/**
+	 * Sets the text for the processing steps description
+	 * @param processingSteps - The String that should be put in the textbox
+	 */
+	public void setProcessingModelString(String processingSteps){
+		trainingView.setProcessingModelString(processingSteps);
+	}
+	
 	/**
 	 * @return
 	 */
