@@ -65,362 +65,362 @@ import amuse.util.AmuseLogger;
  */
 public class AlgorithmConfigurationFacade {
 
-    List<Algorithm> availableAlgorithms = new ArrayList<Algorithm>();
-    Algorithm selectedAlgorithm;
-    private final JComboBox comboBox = new JComboBox();
-    private final JPanel pnlParameterDisplay = new JPanel(new BorderLayout());
-    private final JPanel pnlComboBox = new JPanel(new MigLayout("fillx"));
-    private String algorithmsName;
-    private JCheckBox useAlgorithmBox = new JCheckBox();
-    private JPopupMenu algorithmMenu = new JPopupMenu();
-    private boolean usesCategories = true;
-    private JButton algorithmButton = new JButton("Select Algorithm");
+	List<Algorithm> availableAlgorithms = new ArrayList<Algorithm>();
+	Algorithm selectedAlgorithm;
+	private final JComboBox comboBox = new JComboBox();
+	private final JPanel pnlParameterDisplay = new JPanel(new BorderLayout());
+	private final JPanel pnlComboBox = new JPanel(new MigLayout("fillx"));
+	private String algorithmsName;
+	private JCheckBox useAlgorithmBox = new JCheckBox();
+	private JPopupMenu algorithmMenu = new JPopupMenu();
+	private boolean usesCategories = true;
+	private JButton algorithmButton = new JButton("Select Algorithm");
 
-    public AlgorithmConfigurationFacade() {
-	setAlgorithmName("");
-    }
-
-    /**
-     *
-     * @param name Name of the Category of algorithm to setup.
-     * @param algorithmTableFile arff file to get AlgorithmTable from.
-     */
-    public AlgorithmConfigurationFacade(String name, File algorithmTableFile) {
-	setFile(algorithmTableFile);
-	setAlgorithmName(name);
-	createViews();
-	useAlgorithmBox.setText("Use " + name);
-	useAlgorithmBox.setSelected(true);
-	useAlgorithmBox.addActionListener(new ActionListener() {
-
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-		comboBoxClicked();
-	    }
-	});
-	pnlComboBox.add(new JLabel("Algorithm:"), "");
-	pnlComboBox.add(comboBox, "gap rel, pushx,  wrap");
-	if (usesCategories) {
-	    pnlComboBox.remove(comboBox);
-	    pnlComboBox.add(algorithmButton, "gap rel, pushx,  wrap");
-             updateAlgrithmButtonText();
+	public AlgorithmConfigurationFacade() {
+		setAlgorithmName("");
 	}
-    }
-
-    private void comboBoxClicked() {
-	if (useAlgorithmBox.isSelected() == true) {
-	    setChildsEnabled(pnlComboBox, true);
-	    setChildsEnabled(pnlParameterDisplay, true);
-	} else {
-	    setChildsEnabled(pnlComboBox, false);
-	    setChildsEnabled(pnlParameterDisplay, false);
-	    useAlgorithmBox.setEnabled(true);
-	}
-    }
-
-    private void updateAlgrithmButtonText() {
-	    algorithmButton.setText(comboBox.getSelectedItem().toString());
-    }
-
-    public void setToolTip(String text) {
-	pnlComboBox.setToolTipText(text);
-	comboBox.setToolTipText(text);
-    }
-
-    private void setChildsEnabled(Component comp, boolean b) {
-	if (comp instanceof JComponent) {
-	    for (Component c : ((JComponent) comp).getComponents()) {
-		c.setEnabled(b);
-		setChildsEnabled(c, b);
-	    }
-	}
-    }
-
-    /**
-     *
-     */
-    private void addListenerToComboBox() {
-	comboBox.getModel().addListDataListener(new ListDataListener() {
-
-	    @Override
-	    public void intervalRemoved(ListDataEvent e) {
-	    }
-
-	    @Override
-	    public void intervalAdded(ListDataEvent e) {
-	    }
-
-	    @Override
-	    public void contentsChanged(ListDataEvent e) {
-		if (e.getIndex0() == -1 && e.getIndex1() == -1) {
-		    updateAlgorithmParameterView();
-		}
-	    }
-	});
-    }
-
-    private void setFile(File file) {
-	loadTable(file);
-	createViews();
-    }
-
-    /**
-     *
-     */
-    private void createViews() {
-	DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(new Vector<AlgorithmInterface>(availableAlgorithms));
-	comboBox.setModel(comboBoxModel);
-	addListenerToComboBox();
-	updateAlgorithmParameterView();
-	createMenu();
-	algorithmButton.addActionListener(new ActionListener() {
-
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-		showPopupMenu();
-	    }
-	});
-    }
-
-    private void showPopupMenu() {
-	algorithmMenu.show(pnlComboBox, algorithmButton.getX(), algorithmButton.getY() + algorithmButton.getHeight());
-    }
-
-    public void setUseEnableButton(boolean use) {
-	if (use) {
-	    if (!pnlComboBox.isAncestorOf(useAlgorithmBox)) {
-		pnlComboBox.add(useAlgorithmBox, "spanx 2, wrap", 0);
-	    }
-	} else if (pnlComboBox.isAncestorOf(useAlgorithmBox)) {
-	    pnlComboBox.remove(useAlgorithmBox);
-	}
-    }
-
-    private boolean isEnableButtonInUse() {
-	return pnlComboBox.isAncestorOf(useAlgorithmBox);
-    }
-
-    public void setAlgorithmName(String title) {
-	algorithmsName = title;
-	if (algorithmsName.equalsIgnoreCase("")) {
-	    pnlParameterDisplay.setBorder(new TitledBorder("Setup Parameters"));
-	    pnlComboBox.setBorder(new TitledBorder("Select Algorithm"));
-	} else {
-	    pnlParameterDisplay.setBorder(new TitledBorder("Setup " + algorithmsName + " Algorithm Parameters"));
-	    pnlComboBox.setBorder(new TitledBorder("Select " + algorithmsName + " Algorithm"));
-	}
-    }
-
-    /**
-     *
-     */
-    protected void updateAlgorithmParameterView() {
-	pnlParameterDisplay.removeAll();
-	AlgorithmInterface al = (AlgorithmInterface) comboBox.getModel().getSelectedItem();
-	pnlParameterDisplay.add(new AlgorithmView(al).getPanel(), BorderLayout.CENTER);
-	pnlParameterDisplay.revalidate();
-        if (isEnableButtonInUse()) {
-            comboBoxClicked();
-        }
-    }
-
-    /**
-     * Place the Algorithm Selection ComboBox in your panel.
-     * @return the <class>ComboBox</class> to select algorithms.
-     */
-    public JComponent getAlgorithmSelectionComboBox() {
-	return pnlComboBox;
-    }
-
-    /**
-     * This methods loads an Algorithm Table from arff file.
-     * @param file The file to load from.
-     */
-    private void loadTable(File file) {
-	// Load DataSet:
-	AlgorithmTableSet algorithmDataSet;
-	try {
-	    algorithmDataSet = new AlgorithmTableSet(file);
-	} catch (IOException e) {
-	    AmuseLogger.write(this.getClass().toString(), Level.ERROR, "Unable to load Algorithm Table from: \"" + file.getAbsolutePath() + "\"\n" + e.getLocalizedMessage());
-	    return;
-	} catch (DataSetException e) {
-	    AmuseLogger.write(this.getClass().toString(), Level.ERROR, "Unable to load Algorithm Table from: \"" + file.getAbsolutePath() + "\"\n" + e.getLocalizedMessage());
-	    return;
-	}
-	// Get Attributes of AlgorithmDataSet:
-	NumericAttribute idAttr = algorithmDataSet.getIdAttribute();
-	StringAttribute nameAttr = algorithmDataSet.getNameAttribute();
-	NominalAttribute categoryAttr = null;
-	try {
-	    categoryAttr = algorithmDataSet.getCategoryAttribute();
-	    if (categoryAttr.getNominalValues().length <= 1) {
-		usesCategories = false;
-	    }
-	} catch (DataSetException ex) {
-	    usesCategories = false;
-	}
-	StringAttribute descAttr = algorithmDataSet.getAlgorithmDescriptionAttribute();
-	StringAttribute exParamNamesAttr = algorithmDataSet.getParameterNamesAttribute();
-	StringAttribute exParamAttr = algorithmDataSet.getParameterDefinitionsAttribute();
-	StringAttribute defaultValsAttr = algorithmDataSet.getDefaultParameterValuesAttribute();
-	StringAttribute paramDescAttr = algorithmDataSet.getParameterDescriptionsAttribute();
-	// Create Model:
-	this.availableAlgorithms = new ArrayList<Algorithm>();
-	for (int i = 0; i < algorithmDataSet.getValueCount(); i++) {
-	    // Create ProcessingAlgorithm Object:
-	    String category;
-	    if (usesCategories) {
-		category = categoryAttr.getValueAt(i);
-	    } else {
-		category = "";
-	    }
-	    Algorithm al = new Algorithm(idAttr.getValueAt(
-		    i).intValue(), nameAttr.getValueAt(i), descAttr.getValueAt(i), category,
-		    exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i),
-		    defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i));
-	    this.availableAlgorithms.add(al);
-	}
-
-    }
-
-    /**
-     * Place this Panel in your GUI to allow algorithm configuration.
-     * @return the panel to setup parameters for the currently selected algorithm.
-     */
-    public JComponent getPrameterPanel() {
-	return pnlParameterDisplay;
-    }
-
-    /**
-     * Get the selected Algorithm with its current configuration.
-     * @return the selected <class>Algorithm</class> containing selected parameters.
-     */
-    public Algorithm getSelectedAlgorithm() {
-	return (Algorithm) comboBox.getSelectedItem();
-    }
-
-    private void createMenu() {
-	algorithmMenu = new JPopupMenu();
-	algorithmMenu.setInvoker(algorithmButton);
-	JMenuItem item;
-	List<String> categories = new ArrayList<String>();
-	for (AlgorithmInterface al : availableAlgorithms) {
-	    if (!categories.contains(al.getCategory())) {
-		categories.add(al.getCategory());
-	    }
-	}
-	for (String cat : categories) {
-            JMenu submenu = null;
-            JMenu currentMenu = null;
-            String rest = cat;
-            if (!cat.contains(">")) {
-                Component[] components = algorithmMenu.getComponents();
-                for (Component c: components) {
-                    if (c instanceof JMenu) {
-                        JMenu men = (JMenu) c;
-                        if (men.getText().equals(cat)) {
-                            submenu = men;
-                        }
-                    }
-                }
-            }
-            while(rest.contains(">")) {
-                String path = rest.substring(0, rest.indexOf(">"));
-                rest = rest.substring(rest.indexOf(">") +1);
-                Component[] components = algorithmMenu.getComponents();
-                if (currentMenu != null) {
-                    components = currentMenu.getComponents();
-                }
-                for (Component c: components) {
-                    if (c instanceof JMenu) {
-                        JMenu men = (JMenu) c;
-                        if (men.getText().equals(path)) {
-                            currentMenu = men;
-                        } 
-                    }
-                }
-                JMenu newMenu = new JMenu(path);
-                if (currentMenu == null) {
-                    algorithmMenu.add(newMenu);
-                } else {
-                    currentMenu.add(newMenu);
-                }
-                currentMenu = newMenu;
-            }
-            if (submenu == null) {
-                submenu = new JMenu(rest);
-            }
-	    for (AlgorithmInterface al : availableAlgorithms) {
-		if (al.getCategory().equalsIgnoreCase(cat)) {
-		    item = new JMenuItem(al.getName());
-		    item.addActionListener(new MenuAlgorithmAction(al));
-                    item.setToolTipText(al.getDescription());
-		    if (categories.size() == 1) {
-			algorithmMenu.add(item);
-		    } else {
-			submenu.add(item);
-		    }
-		}
-		if (submenu.getItemCount() > 0) {
-                    if (currentMenu == null)
-                        algorithmMenu.add(submenu);
-                    else
-                        currentMenu.add(submenu);
-		}
-	    }
-	}
-    }
-
-    public boolean isEnabled() {
-	return useAlgorithmBox.isSelected();
-    }
-    
-    public void setSelectedAlgorithm(String str) {
-	String idStr = str;
-	int paramBegin = str.indexOf("[");
-	int paramEnd = str.lastIndexOf("]");
-	String parameters = "";
-	if (idStr.equalsIgnoreCase("-1") && isEnableButtonInUse()) {
-	    useAlgorithmBox.setSelected(false);
-	    comboBoxClicked();
-	} else {
-            useAlgorithmBox.setSelected(true);
-	    comboBoxClicked();
-        }
-	if (paramBegin != -1 && paramEnd != -1) {
-	    idStr = str.substring(0, paramBegin);
-	    parameters = str.substring(paramBegin, paramEnd + 1);
-	}
-	int id = new Integer(idStr);
-	for (Algorithm a : availableAlgorithms) {
-	    if (a.getID() == id) {
-		comboBox.setSelectedItem(a);
-		if (!parameters.equals("")) {
-			a.setCurrentParameters(Algorithm.scanParameters(parameters));
-		}
-	    }
-	}
-        updateAlgrithmButtonText();
-        updateAlgorithmParameterView();
-    }
-
-    private final class MenuAlgorithmAction implements ActionListener {
-
-	private AlgorithmInterface algorithm;
 
 	/**
-	 * @param algo
+	 *
+	 * @param name Name of the Category of algorithm to setup.
+	 * @param algorithmTableFile arff file to get AlgorithmTable from.
 	 */
-	public MenuAlgorithmAction(AlgorithmInterface algo) {
-	    algorithm = algo;
+	public AlgorithmConfigurationFacade(String name, File algorithmTableFile) {
+		setFile(algorithmTableFile);
+		setAlgorithmName(name);
+		createViews();
+		useAlgorithmBox.setText("Use " + name);
+		useAlgorithmBox.setSelected(true);
+		useAlgorithmBox.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				comboBoxClicked();
+			}
+		});
+		pnlComboBox.add(new JLabel("Algorithm:"), "");
+		pnlComboBox.add(comboBox, "gap rel, pushx,  wrap");
+		if (usesCategories) {
+			pnlComboBox.remove(comboBox);
+			pnlComboBox.add(algorithmButton, "gap rel, pushx,  wrap");
+			updateAlgrithmButtonText();
+		}
 	}
 
-	@Override
-	public void actionPerformed(ActionEvent e) {
-	    comboBox.setSelectedItem(algorithm);
-	    algorithmButton.setText(algorithm.getName());
-	    algorithmMenu.setVisible(false);
+	private void comboBoxClicked() {
+		if (useAlgorithmBox.isSelected() == true) {
+			setChildsEnabled(pnlComboBox, true);
+			setChildsEnabled(pnlParameterDisplay, true);
+		} else {
+			setChildsEnabled(pnlComboBox, false);
+			setChildsEnabled(pnlParameterDisplay, false);
+			useAlgorithmBox.setEnabled(true);
+		}
 	}
-    }
+
+	private void updateAlgrithmButtonText() {
+		algorithmButton.setText(comboBox.getSelectedItem().toString());
+	}
+
+	public void setToolTip(String text) {
+		pnlComboBox.setToolTipText(text);
+		comboBox.setToolTipText(text);
+	}
+
+	private void setChildsEnabled(Component comp, boolean b) {
+		if (comp instanceof JComponent) {
+			for (Component c : ((JComponent) comp).getComponents()) {
+				c.setEnabled(b);
+				setChildsEnabled(c, b);
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	private void addListenerToComboBox() {
+		comboBox.getModel().addListDataListener(new ListDataListener() {
+
+			@Override
+			public void intervalRemoved(ListDataEvent e) {
+			}
+
+			@Override
+			public void intervalAdded(ListDataEvent e) {
+			}
+
+			@Override
+			public void contentsChanged(ListDataEvent e) {
+				if (e.getIndex0() == -1 && e.getIndex1() == -1) {
+					updateAlgorithmParameterView();
+				}
+			}
+		});
+	}
+
+	private void setFile(File file) {
+		loadTable(file);
+		createViews();
+	}
+
+	/**
+	 *
+	 */
+	private void createViews() {
+		DefaultComboBoxModel comboBoxModel = new DefaultComboBoxModel(new Vector<AlgorithmInterface>(availableAlgorithms));
+		comboBox.setModel(comboBoxModel);
+		addListenerToComboBox();
+		updateAlgorithmParameterView();
+		createMenu();
+		algorithmButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showPopupMenu();
+			}
+		});
+	}
+
+	private void showPopupMenu() {
+		algorithmMenu.show(pnlComboBox, algorithmButton.getX(), algorithmButton.getY() + algorithmButton.getHeight());
+	}
+
+	public void setUseEnableButton(boolean use) {
+		if (use) {
+			if (!pnlComboBox.isAncestorOf(useAlgorithmBox)) {
+				pnlComboBox.add(useAlgorithmBox, "spanx 2, wrap", 0);
+			}
+		} else if (pnlComboBox.isAncestorOf(useAlgorithmBox)) {
+			pnlComboBox.remove(useAlgorithmBox);
+		}
+	}
+
+	private boolean isEnableButtonInUse() {
+		return pnlComboBox.isAncestorOf(useAlgorithmBox);
+	}
+
+	public void setAlgorithmName(String title) {
+		algorithmsName = title;
+		if (algorithmsName.equalsIgnoreCase("")) {
+			pnlParameterDisplay.setBorder(new TitledBorder("Setup Parameters"));
+			pnlComboBox.setBorder(new TitledBorder("Select Algorithm"));
+		} else {
+			pnlParameterDisplay.setBorder(new TitledBorder("Setup " + algorithmsName + " Algorithm Parameters"));
+			pnlComboBox.setBorder(new TitledBorder("Select " + algorithmsName + " Algorithm"));
+		}
+	}
+
+	/**
+	 *
+	 */
+	protected void updateAlgorithmParameterView() {
+		pnlParameterDisplay.removeAll();
+		AlgorithmInterface al = (AlgorithmInterface) comboBox.getModel().getSelectedItem();
+		pnlParameterDisplay.add(new AlgorithmView(al).getPanel(), BorderLayout.CENTER);
+		pnlParameterDisplay.revalidate();
+		if (isEnableButtonInUse()) {
+			comboBoxClicked();
+		}
+	}
+
+	/**
+	 * Place the Algorithm Selection ComboBox in your panel.
+	 * @return the <class>ComboBox</class> to select algorithms.
+	 */
+	public JComponent getAlgorithmSelectionComboBox() {
+		return pnlComboBox;
+	}
+
+	/**
+	 * This methods loads an Algorithm Table from arff file.
+	 * @param file The file to load from.
+	 */
+	private void loadTable(File file) {
+		// Load DataSet:
+		AlgorithmTableSet algorithmDataSet;
+		try {
+			algorithmDataSet = new AlgorithmTableSet(file);
+		} catch (IOException e) {
+			AmuseLogger.write(this.getClass().toString(), Level.ERROR, "Unable to load Algorithm Table from: \"" + file.getAbsolutePath() + "\"\n" + e.getLocalizedMessage());
+			return;
+		} catch (DataSetException e) {
+			AmuseLogger.write(this.getClass().toString(), Level.ERROR, "Unable to load Algorithm Table from: \"" + file.getAbsolutePath() + "\"\n" + e.getLocalizedMessage());
+			return;
+		}
+		// Get Attributes of AlgorithmDataSet:
+		NumericAttribute idAttr = algorithmDataSet.getIdAttribute();
+		StringAttribute nameAttr = algorithmDataSet.getNameAttribute();
+		NominalAttribute categoryAttr = null;
+		try {
+			categoryAttr = algorithmDataSet.getCategoryAttribute();
+			if (categoryAttr.getNominalValues().length <= 1) {
+				usesCategories = false;
+			}
+		} catch (DataSetException ex) {
+			usesCategories = false;
+		}
+		StringAttribute descAttr = algorithmDataSet.getAlgorithmDescriptionAttribute();
+		StringAttribute exParamNamesAttr = algorithmDataSet.getParameterNamesAttribute();
+		StringAttribute exParamAttr = algorithmDataSet.getParameterDefinitionsAttribute();
+		StringAttribute defaultValsAttr = algorithmDataSet.getDefaultParameterValuesAttribute();
+		StringAttribute paramDescAttr = algorithmDataSet.getParameterDescriptionsAttribute();
+		// Create Model:
+		this.availableAlgorithms = new ArrayList<Algorithm>();
+		for (int i = 0; i < algorithmDataSet.getValueCount(); i++) {
+			// Create ProcessingAlgorithm Object:
+			String category;
+			if (usesCategories) {
+				category = categoryAttr.getValueAt(i);
+			} else {
+				category = "";
+			}
+			Algorithm al = new Algorithm(idAttr.getValueAt(
+					i).intValue(), nameAttr.getValueAt(i), descAttr.getValueAt(i), category,
+					exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i),
+					defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i));
+			this.availableAlgorithms.add(al);
+		}
+
+	}
+
+	/**
+	 * Place this Panel in your GUI to allow algorithm configuration.
+	 * @return the panel to setup parameters for the currently selected algorithm.
+	 */
+	public JComponent getPrameterPanel() {
+		return pnlParameterDisplay;
+	}
+
+	/**
+	 * Get the selected Algorithm with its current configuration.
+	 * @return the selected <class>Algorithm</class> containing selected parameters.
+	 */
+	public Algorithm getSelectedAlgorithm() {
+		return (Algorithm) comboBox.getSelectedItem();
+	}
+
+	private void createMenu() {
+		algorithmMenu = new JPopupMenu();
+		algorithmMenu.setInvoker(algorithmButton);
+		JMenuItem item;
+		List<String> categories = new ArrayList<String>();
+		for (AlgorithmInterface al : availableAlgorithms) {
+			if (!categories.contains(al.getCategory())) {
+				categories.add(al.getCategory());
+			}
+		}
+		for (String cat : categories) {
+			JMenu submenu = null;
+			JMenu currentMenu = null;
+			String rest = cat;
+			if (!cat.contains(">")) {
+				Component[] components = algorithmMenu.getComponents();
+				for (Component c: components) {
+					if (c instanceof JMenu) {
+						JMenu men = (JMenu) c;
+						if (men.getText().equals(cat)) {
+							submenu = men;
+						}
+					}
+				}
+			}
+			while(rest.contains(">")) {
+				String path = rest.substring(0, rest.indexOf(">"));
+				rest = rest.substring(rest.indexOf(">") +1);
+				Component[] components = algorithmMenu.getComponents();
+				if (currentMenu != null) {
+					components = currentMenu.getComponents();
+				}
+				for (Component c: components) {
+					if (c instanceof JMenu) {
+						JMenu men = (JMenu) c;
+						if (men.getText().equals(path)) {
+							currentMenu = men;
+						} 
+					}
+				}
+				JMenu newMenu = new JMenu(path);
+				if (currentMenu == null) {
+					algorithmMenu.add(newMenu);
+				} else {
+					currentMenu.add(newMenu);
+				}
+				currentMenu = newMenu;
+			}
+			if (submenu == null) {
+				submenu = new JMenu(rest);
+			}
+			for (AlgorithmInterface al : availableAlgorithms) {
+				if (al.getCategory().equalsIgnoreCase(cat)) {
+					item = new JMenuItem(al.getName());
+					item.addActionListener(new MenuAlgorithmAction(al));
+					item.setToolTipText(al.getDescription());
+					if (categories.size() == 1) {
+						algorithmMenu.add(item);
+					} else {
+						submenu.add(item);
+					}
+				}
+				if (submenu.getItemCount() > 0) {
+					if (currentMenu == null)
+						algorithmMenu.add(submenu);
+					else
+						currentMenu.add(submenu);
+				}
+			}
+		}
+	}
+
+	public boolean isEnabled() {
+		return useAlgorithmBox.isSelected();
+	}
+
+	public void setSelectedAlgorithm(String str) {
+		String idStr = str;
+		int paramBegin = str.indexOf("[");
+		int paramEnd = str.lastIndexOf("]");
+		String parameters = "";
+		if (idStr.equalsIgnoreCase("-1") && isEnableButtonInUse()) {
+			useAlgorithmBox.setSelected(false);
+			comboBoxClicked();
+		} else {
+			useAlgorithmBox.setSelected(true);
+			comboBoxClicked();
+		}
+		if (paramBegin != -1 && paramEnd != -1) {
+			idStr = str.substring(0, paramBegin);
+			parameters = str.substring(paramBegin, paramEnd + 1);
+		}
+		int id = new Integer(idStr);
+		for (Algorithm a : availableAlgorithms) {
+			if (a.getID() == id) {
+				comboBox.setSelectedItem(a);
+				if (!parameters.equals("")) {
+					a.setCurrentParameters(Algorithm.scanParameters(parameters));
+				}
+			}
+		}
+		updateAlgrithmButtonText();
+		updateAlgorithmParameterView();
+	}
+
+	private final class MenuAlgorithmAction implements ActionListener {
+
+		private AlgorithmInterface algorithm;
+
+		/**
+		 * @param algo
+		 */
+		public MenuAlgorithmAction(AlgorithmInterface algo) {
+			algorithm = algo;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			comboBox.setSelectedItem(algorithm);
+			algorithmButton.setText(algorithm.getName());
+			algorithmMenu.setVisible(false);
+		}
+	}
 }

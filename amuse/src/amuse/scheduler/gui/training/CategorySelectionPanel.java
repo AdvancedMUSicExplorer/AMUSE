@@ -52,157 +52,158 @@ import amuse.preferences.KeysStringValue;
  */
 public class CategorySelectionPanel extends JPanel {
 
-    private TitledBorder title = new TitledBorder("Select Category");
-    private JLabel comboBoxLabel = new JLabel("Category:");
-    private JComboBox comboBox = new JComboBox();
-    private CategoryComboBoxModel model;
+	private TitledBorder title = new TitledBorder("Select Category");
+	private JLabel comboBoxLabel = new JLabel("Category:");
+	private JComboBox comboBox = new JComboBox();
+	private CategoryComboBoxModel model;
 
-    public CategorySelectionPanel() {
-        super(new MigLayout("fillx"));
-        this.setBorder(title);
-        this.add(comboBoxLabel);
-        this.add(comboBox, "pushx, gap rel, wrap");
-        try {
-            model = new CategoryComboBoxModel();
-            comboBox.setModel(model);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Unable to load Categories: \""+ ex.getLocalizedMessage() + "\"", "Unable To Load Categories!", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public int getSelectedCategoryID() {
-            return model.getSelectedID();
-        }
-
-    void setSelectedCategory(int value) {
-	model.setSelectedCategory(value + "");
-    }
-
-    public void setOptional(boolean b) {
-        if (b) {
-            model.addDontUseEntry();
-        } else {
-            try {
-                model = new CategoryComboBoxModel();
-            } catch (IOException ex) {
-                Logger.getLogger(CategorySelectionPanel.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            comboBox.setModel(model);
-        }
-    }
-
-    public void setCategory(int id) {
-        setSelectedCategory(id);
-    }
-
-    private class CategoryComboBoxModel extends DefaultComboBoxModel {
-
-        private static final long serialVersionUID = -680154994516168686L;
-        private File file;
-        private String idStr = "Id";
-        private String fileNameStr = "Path";
-        private String categoryNameStr = "CategoryName";
-        private Category selected;
-	private List<Category> categories;
-
-        private CategoryComboBoxModel() throws IOException {
-            file = new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE));
-            DataSetAbstract categorySet = new ArffDataSet(file);
-            List<String> names = categorySet.getAttributeNames();
-            if (!names.contains(idStr) || !names.contains(fileNameStr) || !names.contains(categoryNameStr)) {
-                throw new IOException("Missing Attribute!");
-            }
-            if (!(categorySet.getAttribute(idStr) instanceof NumericAttribute)) {
-                throw new IOException(idStr + "-Attribute not Numeric!");
-            }
-            if (!(categorySet.getAttribute(fileNameStr) instanceof StringAttribute)) {
-                throw new IOException(fileNameStr + "-Attribute not String!");
-            }
-            if (!(categorySet.getAttribute(categoryNameStr) instanceof StringAttribute)) {
-                throw new IOException(categoryNameStr + "-Attribute not String!");
-            }
-            NumericAttribute idAttr = (NumericAttribute) categorySet.getAttribute(idStr);
-            StringAttribute fileNameAttr = (StringAttribute) categorySet.getAttribute(fileNameStr);
-            StringAttribute categoryAttr = (StringAttribute) categorySet.getAttribute(categoryNameStr);
-            // Create Model:
-            categories = new ArrayList<Category>();
-            for (int i = 0; i < categorySet.getValueCount(); i++) {
-                // Create ProcessingAlgorithm Object:
-                Category category = new Category(idAttr.getValueAt(i).intValue(), fileNameAttr.getValueAt(i), categoryAttr.getValueAt(i));
-                categories.add(category);
-            }
-            Collections.sort(categories);
-            for (Category cat : categories) {
-                super.addElement(cat);
-            }
-        }
-
-        @Override
-        public void setSelectedItem(Object item) {
-            if(item instanceof Category) {
-                selected = (Category) item;
-            } else {
-                throw new RuntimeException("Only Categories Supported!");
-            }
-        }
-
-        @Override
-        public Object getSelectedItem() {
-            return selected;
-        }
-
-        private int getSelectedID() {
-            return selected.getID();
-        }
-
-	private void setSelectedCategory(String value) {
-	    int id = new Integer(value);
-            setSelectedCategory(id);
+	public CategorySelectionPanel() {
+		super(new MigLayout("fillx"));
+		this.setBorder(title);
+		this.add(comboBoxLabel);
+		this.add(comboBox, "pushx, gap rel, wrap");
+		try {
+			model = new CategoryComboBoxModel();
+			comboBox.setModel(model);
+		} catch (IOException ex) {
+			JOptionPane.showMessageDialog(this, "Unable to load Categories: \""+ ex.getLocalizedMessage() + "\"", "Unable To Load Categories!", JOptionPane.ERROR_MESSAGE);
+		}
 	}
 
-        private void setSelectedCategory(int id) {
-	    for (Category cat:categories) {
-		if (cat.getID() == id) {
-		    setSelectedItem(cat);
-		    return;
+	public int getSelectedCategoryID() {
+		return model.getSelectedID();
+	}
+
+	void setSelectedCategory(int value) {
+		model.setSelectedCategory(value + "");
+	}
+
+	public void setOptional(boolean b) {
+		if (b) {
+			model.addDontUseEntry();
+		} else {
+			try {
+				model = new CategoryComboBoxModel();
+			} catch (IOException ex) {
+				Logger.getLogger(CategorySelectionPanel.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			comboBox.setModel(model);
 		}
-	    }
-        }
+	}
 
-        private void addDontUseEntry() {
-            Category dontUseCategory = new Category(-1, "-1", "Don't use");
-            super.addElement(dontUseCategory);
-            this.setSelectedItem(dontUseCategory);
-        }
+	public void setCategory(int id) {
+		setSelectedCategory(id);
+	}
 
-        protected class Category implements Comparable<Category> {
+	private class CategoryComboBoxModel extends DefaultComboBoxModel {
 
-            final int id;
-            final String fileName;
-            final String categoryName;
+		private static final long serialVersionUID = -680154994516168686L;
+		private File file;
+		private String idStr = "Id";
+		private String fileNameStr = "Path";
+		private String categoryNameStr = "CategoryName";
+		private Category selected;
+		private List<Category> categories;
 
-            public Category(int id, String fileName, String categoryName) {
-                this.id = id;
-                this.fileName = fileName;
-                this.categoryName = categoryName;
-            }
+		private CategoryComboBoxModel() throws IOException {
+			file = new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE));
+			DataSetAbstract categorySet = new ArffDataSet(file);
+			List<String> names = categorySet.getAttributeNames();
+			if (!names.contains(idStr) || !names.contains(fileNameStr) || !names.contains(categoryNameStr)) {
+				throw new IOException("Missing Attribute!");
+			}
+			if (!(categorySet.getAttribute(idStr) instanceof NumericAttribute)) {
+				throw new IOException(idStr + "-Attribute not Numeric!");
+			}
+			if (!(categorySet.getAttribute(fileNameStr) instanceof StringAttribute)) {
+				throw new IOException(fileNameStr + "-Attribute not String!");
+			}
+			if (!(categorySet.getAttribute(categoryNameStr) instanceof StringAttribute)) {
+				throw new IOException(categoryNameStr + "-Attribute not String!");
+			}
+			NumericAttribute idAttr = (NumericAttribute) categorySet.getAttribute(idStr);
+			StringAttribute fileNameAttr = (StringAttribute) categorySet.getAttribute(fileNameStr);
+			StringAttribute categoryAttr = (StringAttribute) categorySet.getAttribute(categoryNameStr);
+			// Create Model:
+			categories = new ArrayList<Category>();
+			for (int i = 0; i < categorySet.getValueCount(); i++) {
+				// Create ProcessingAlgorithm Object:
+				Category category = new Category(idAttr.getValueAt(i).intValue(), fileNameAttr.getValueAt(i), categoryAttr.getValueAt(i));
+				categories.add(category);
+			}
+			Collections.sort(categories);
+			for (Category cat : categories) {
+				super.addElement(cat);
+			}
+		}
 
-            @Override
-            public String toString() {
-                return this.categoryName;
-            }
+		@Override
+		public void setSelectedItem(Object item) {
+			if(item instanceof Category) {
+				selected = (Category) item;
+			    fireContentsChanged(this, -1, -1);
+			} else {
+				throw new RuntimeException("Only Categories Supported!");
+			}
+		}
 
-            /* (non-Javadoc)
-             * @see java.lang.Comparable#compareTo(java.lang.Object)
-             */
-            @Override
-            public int compareTo(Category o) {
-                return toString().toLowerCase().compareTo(o.toString().toLowerCase());
-            }
+		@Override
+		public Object getSelectedItem() {
+			return selected;
+		}
 
-            public int getID() {
-                return this.id;
-            }
-        }
-    }
+		private int getSelectedID() {
+			return selected.getID();
+		}
+
+		private void setSelectedCategory(String value) {
+			int id = new Integer(value);
+			setSelectedCategory(id);
+		}
+
+		private void setSelectedCategory(int id) {
+			for (Category cat:categories) {
+				if (cat.getID() == id) {
+					setSelectedItem(cat);
+					return;
+				}
+			}
+		}
+
+		private void addDontUseEntry() {
+			Category dontUseCategory = new Category(-1, "-1", "Don't use");
+			super.addElement(dontUseCategory);
+			this.setSelectedItem(dontUseCategory);
+		}
+
+		protected class Category implements Comparable<Category> {
+
+			final int id;
+			final String fileName;
+			final String categoryName;
+
+			public Category(int id, String fileName, String categoryName) {
+				this.id = id;
+				this.fileName = fileName;
+				this.categoryName = categoryName;
+			}
+
+			@Override
+			public String toString() {
+				return this.categoryName;
+			}
+
+			/* (non-Javadoc)
+			 * @see java.lang.Comparable#compareTo(java.lang.Object)
+			 */
+			@Override
+			public int compareTo(Category o) {
+				return toString().toLowerCase().compareTo(o.toString().toLowerCase());
+			}
+
+			public int getID() {
+				return this.id;
+			}
+		}
+	}
 }
