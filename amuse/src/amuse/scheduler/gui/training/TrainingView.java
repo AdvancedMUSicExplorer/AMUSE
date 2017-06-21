@@ -40,105 +40,105 @@ import javax.swing.JScrollPane;
  */
 public class TrainingView {
 
-    private JPanel viewLeft;
-    private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
-    private JSplitPane splitPane = new JSplitPane();
-    private CategorySelectionPanel categorySelectionPanel;
-    private ProcessingHistoryPanel processingHistoryPanel;
-    private AlgorithmConfigurationFacade trainingAlgorithmFacade;
-    private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
-    private static final String trainingViewName = "Setup Training";
-    private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
+	private JPanel viewLeft;
+	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
+	private JSplitPane splitPane = new JSplitPane();
+	private CategorySelectionPanel categorySelectionPanel;
+	private ProcessingHistoryPanel processingHistoryPanel;
+	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
+	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
+	private static final String trainingViewName = "Setup Training";
+	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
 
-    public TrainingView() {
-	this(trainingViewName);
-    }
-
-    public TrainingView(String leftTitle) {
-	this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config/classifierAlgorithmTable.arff"));
-	trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
-	this.categorySelectionPanel = new CategorySelectionPanel();
-	viewLeft = new JPanel(new MigLayout("fillx"));
-	viewLeft.setBorder(new TitledBorder(leftTitle));
-	splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
-	splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
-	this.processingHistoryPanel = new ProcessingHistoryPanel();
-	viewLeft.add(categorySelectionPanel, "growx, span, wrap");
-	if (leftTitle.equals(trainingViewName)) {
-	    preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config/classifierPreprocessingAlgorithmTable.arff"));
-	    preprocessingAlgorithmFacade.setUseEnableButton(true);
-            preprocessingAlgorithmFacade.setSelectedAlgorithm("-1");
-	    viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
-	    addRightSide(preprocessingAlgorithmFacade.getPrameterPanel());
+	public TrainingView() {
+		this(trainingViewName);
 	}
-	viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
-	viewLeft.add(processingHistoryPanel, "growx, span, wrap");
-	addRightSide(trainingAlgorithmFacade.getPrameterPanel());
-	splitPane.setDividerLocation(0.5);
-    }
 
-    public JComponent getView() {
-	return splitPane;
-    }
-
-    public void addLineInView(JComponent line) {
-	viewLeft.add(line, "growx, spanx, wrap");
-	splitPane.setDividerLocation(0.5);
-    }
-
-    /**
-     * @return
-     */
-    public String getProcessingModelString() {
-	return processingHistoryPanel.getProcessingHistoryString();
-    }
-
-    /**
-     * @param comp
-     */
-    public void addRightSide(JComponent comp) {
-	rightSide.add(comp, "grow, wrap");
-	splitPane.setDividerLocation(0.5);
-    }
-
-    public String getPreprocessingAlgorithmStr() {
-	if (preprocessingAlgorithmFacade == null || !preprocessingAlgorithmFacade.isEnabled()) {
-	    return "-1";
-	} else {
-	    Algorithm algo = preprocessingAlgorithmFacade.getSelectedAlgorithm();
-	    String algorithmStr = algo.getID() + "";
-	    if (algo.getCurrentParameterValues().length > 0) {
-		algorithmStr = algorithmStr + "[";
-		for (String parameter : algo.getCurrentParameterValues()) {
-		    algorithmStr = algorithmStr + parameter + "|";
+	public TrainingView(String leftTitle) {
+		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config/classifierAlgorithmTable.arff"));
+		trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
+		this.categorySelectionPanel = new CategorySelectionPanel();
+		viewLeft = new JPanel(new MigLayout("fillx"));
+		viewLeft.setBorder(new TitledBorder(leftTitle));
+		splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
+		splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
+		this.processingHistoryPanel = new ProcessingHistoryPanel();
+		viewLeft.add(categorySelectionPanel, "growx, span, wrap");
+		if (leftTitle.equals(trainingViewName)) {
+			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config/classifierPreprocessingAlgorithmTable.arff"));
+			preprocessingAlgorithmFacade.setUseEnableButton(true);
+			preprocessingAlgorithmFacade.setSelectedAlgorithm("-1");
+			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
+			addRightSide(preprocessingAlgorithmFacade.getPrameterPanel());
 		}
-		algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('|')) + "]";
-	    }
-	    return algorithmStr;
+		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
+		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+		addRightSide(trainingAlgorithmFacade.getPrameterPanel());
+		splitPane.setDividerLocation(0.5);
 	}
-    }
 
-    public int getSelectedCategoryID() {
-	return categorySelectionPanel.getSelectedCategoryID();
-    }
+	public JComponent getView() {
+		return splitPane;
+	}
 
-    public void setProcessingModelString(String value) {
-	processingHistoryPanel.setProcessingModelString(value);
-    }
+	public void addLineInView(JComponent line) {
+		viewLeft.add(line, "growx, spanx, wrap");
+		splitPane.setDividerLocation(0.5);
+	}
 
-    public void setPreprocessingAlgorithm(String value) {
-	preprocessingAlgorithmFacade.setSelectedAlgorithm(value);
-    }
+	/**
+	 * @return
+	 */
+	public String getProcessingModelString() {
+		return processingHistoryPanel.getProcessingHistoryString();
+	}
 
-    public void setSelectedCategoryID(int value) {
-	categorySelectionPanel.setSelectedCategory(value);
-    }
+	/**
+	 * @param comp
+	 */
+	public void addRightSide(JComponent comp) {
+		rightSide.add(comp, "grow, wrap");
+		splitPane.setDividerLocation(0.5);
+	}
 
-    public void setSelectedTrainingAlgorithm(String value) {
-        trainingAlgorithmFacade.setSelectedAlgorithm(value);
-    }
+	public String getPreprocessingAlgorithmStr() {
+		if (preprocessingAlgorithmFacade == null || !preprocessingAlgorithmFacade.isEnabled()) {
+			return "-1";
+		} else {
+			Algorithm algo = preprocessingAlgorithmFacade.getSelectedAlgorithm();
+			String algorithmStr = algo.getID() + "";
+			if (algo.getCurrentParameterValues().length > 0) {
+				algorithmStr = algorithmStr + "[";
+				for (String parameter : algo.getCurrentParameterValues()) {
+					algorithmStr = algorithmStr + parameter + "|";
+				}
+				algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('|')) + "]";
+			}
+			return algorithmStr;
+		}
+	}
 
-    public String getSelectedTrainingAlgorithmStr() {
-        return trainingAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
-    }
+	public int getSelectedCategoryID() {
+		return categorySelectionPanel.getSelectedCategoryID();
+	}
+
+	public void setProcessingModelString(String value) {
+		processingHistoryPanel.setProcessingModelString(value);
+	}
+
+	public void setPreprocessingAlgorithm(String value) {
+		preprocessingAlgorithmFacade.setSelectedAlgorithm(value);
+	}
+
+	public void setSelectedCategoryID(int value) {
+		categorySelectionPanel.setSelectedCategory(value);
+	}
+
+	public void setSelectedTrainingAlgorithm(String value) {
+		trainingAlgorithmFacade.setSelectedAlgorithm(value);
+	}
+
+	public String getSelectedTrainingAlgorithmStr() {
+		return trainingAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
+	}
 }
