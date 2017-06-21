@@ -318,6 +318,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							+ "_" 
 							+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 					}
+					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 					
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
@@ -362,6 +363,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								+ "_" 
 								+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
 						}
+						currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 						
 						
 						
@@ -556,14 +558,19 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
 					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))) {
 				File folderForModels = new File(AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
-						+ "/"
-						+ this.categoryDescription + "/" + ((AmuseTask)this.cad).getProperties().getProperty("id") 
+						+ File.separator
+						+ this.categoryDescription
+						+ File.separator
+						+ ((AmuseTask)this.cad).getProperties().getProperty("id") 
 						+ "-" 
 						+ ((AmuseTask)this.cad).getProperties().getProperty("name") 
 						+ this.requiredParameters 
-						+ "/" 
+						+ File.separator
 						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
-				pathToModel = folderForModels + "/model.mod";
+				pathToModel = folderForModels 
+						+ File.separator 
+						+ "model.mod";
+				pathToModel = pathToModel.replaceAll(File.separator + "+", File.separator);
 			} else {
 				pathToModel = ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel();
 			}
