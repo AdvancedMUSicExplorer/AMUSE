@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
-import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMetricCalculator;
+import amuse.nodes.validator.interfaces.ClassificationQualityStringMetricCalculator;
 import amuse.nodes.validator.interfaces.ValidationMetricString;
 
 /**
@@ -37,7 +37,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricString;
  * @author Igor Vatolkin
  * @version $Id: $
  */
-public class ListOfCorrectlyPredictedInstances extends ClassificationQualityDoubleMetricCalculator {
+public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStringMetricCalculator {
 
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface#setParameters(java.lang.String)
