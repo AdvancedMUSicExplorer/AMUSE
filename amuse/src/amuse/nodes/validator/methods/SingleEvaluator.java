@@ -54,7 +54,7 @@ import amuse.util.AmuseLogger;
  * Performs n-fold cross-validation
  * 
  * @author Igor Vatolkin
- * @version $Id: SingleEvaluator.java 1253 2010-08-03 14:05:51Z vatolkin $
+ * @version $Id$
  */
 public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	
@@ -299,7 +299,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	 * @see amuse.interfaces.AmuseTaskInterface#setParameters(java.lang.String)
 	 */
 	public void setParameters(String parameterString) throws NodeException {
-		if(parameterString.startsWith("\"") || parameterString.startsWith("'")) {
+		if(parameterString.startsWith("\"") || parameterString.startsWith("'") || parameterString.startsWith("|") && parameterString.endsWith("|")) {
 			this.pathToModelFile = parameterString.substring(1,parameterString.length()-1);
 		} else {
 			this.pathToModelFile = parameterString;
