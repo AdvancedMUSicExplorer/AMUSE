@@ -58,7 +58,7 @@ import amuse.util.AmuseLogger;
  * are used for the training of classification model. 
  * 
  * @author Igor Vatolkin
- * @version $Id: TrainerNodeScheduler.java 1226 2010-08-02 14:13:57Z waeltken $
+ * @version $Id$
  */
 public class TrainerNodeScheduler extends NodeScheduler { 
 
@@ -453,15 +453,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 						// Go to the next description
 						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
-						/*
-						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-							newInputFile = 
-								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator +
-								newInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1,
-								newInputFile.lastIndexOf(".")) + File.separator +
-								newInputFile.substring(newInputFile.lastIndexOf(File.separator)+1,newInputFile.lastIndexOf(".")) + "_" +
-								((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
-						}*/
+						
 						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
