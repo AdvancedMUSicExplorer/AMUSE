@@ -62,7 +62,7 @@ import amuse.util.AmuseLogger;
  * are classified with the previously learned classification model. 
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassifierNodeScheduler.java 1233 2010-08-02 14:51:50Z vatolkin $
+ * @version $Id$
  */
 public class ClassifierNodeScheduler extends NodeScheduler { 
 
@@ -365,8 +365,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						}
 						currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 						
-						
-						
 						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading:  " + currentInputFile);
 							
 						// Load processed features of the current file and save them to classifier input file
@@ -413,6 +411,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// Load only the song information if the data is already prepared
 		else {
 			if(((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput) {
+				// TODO v0.2: input sets to classify may be without ids!
 				amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ClassificationConfiguration)this.getConfiguration()).
 						getInputToClassify()).getDataSet().getAttribute("Id");
 				
@@ -503,7 +502,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						AmuseLogger.write(this.getClass().getName(), Level.INFO, 
 								"Classifier is configured: " + currentInstance.stringValue(classifierAdapterClassAttribute));
 					} catch(ClassNotFoundException e) {
-						e.printStackTrace();
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 								"Classifier class cannot be located: " + currentInstance.stringValue(classifierAdapterClassAttribute));
 						System.exit(1);
@@ -734,7 +732,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		}
 		
 	}
-
 	
 }
 
