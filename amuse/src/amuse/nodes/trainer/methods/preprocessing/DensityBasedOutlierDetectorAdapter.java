@@ -36,9 +36,14 @@ import amuse.util.LibraryInitializer;
 
 import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
+import com.rapidminer.example.set.Condition;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.IOObject;
+import com.rapidminer.operator.ModelApplier;
 import com.rapidminer.operator.Operator;
+import com.rapidminer.operator.io.ModelLoader;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.preprocessing.filter.ExampleFilter;
 import com.rapidminer.operator.preprocessing.outlier.DBOutlierOperator;
 import com.rapidminer.tools.OperatorService;
@@ -63,7 +68,7 @@ public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements Cla
 	 */
 	public void initialize() throws NodeException {
 		try {
-			LibraryInitializer.initializeRapidMiner(properties.getProperty("preprocessorFolder") + "/operatorsClassification.xml");
+			LibraryInitializer.initializeRapidMiner();
 		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}
@@ -76,10 +81,10 @@ public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements Cla
 	public void setParameters(String parameterString) throws NodeException {
 		
 		// Set the distance for objects
-		this.distance = new Double(parameterString.substring(0,parameterString.indexOf("_")));
+		this.distance = new Double(parameterString.substring(0,parameterString.indexOf("|")));
 		
 		// Set the proportion of objects related to distance
-		this.proportion = new Double(parameterString.substring(parameterString.indexOf("_")+1));
+		this.proportion = new Double(parameterString.substring(parameterString.indexOf("|")+1));
 	}
 
 
@@ -87,11 +92,11 @@ public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements Cla
 	 * (non-Javadoc)
 	 * @see amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface#runPreprocessing(java.lang.String)
 	 */
-	public void runPreprocessing()
-			throws NodeException {
+	public void runPreprocessing() throws NodeException {
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the density based outlier detection...");
 		try {
+			
 			Process process = new Process();
 
 			// (1) Create ExampleSet from the TrainingConfiguration 
@@ -103,23 +108,33 @@ public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements Cla
 			outlierDetector.setParameter("distance", distance.toString());
 			outlierDetector.setParameter("proportion", proportion.toString());
 			outlierDetector.setParameter("distance_function", "euclidian distance");
-			process.getRootOperator().addOperator(outlierDetector);
+			process.getRootOperator().getSubprocess(0).addOperator(outlierDetector);
 			
 			// (3) Remove outliers
 			Operator exampleFilter = OperatorService.createOperator(ExampleFilter.class);
 			exampleFilter.setParameter("condition_class", "attribute_value_filter");
-			exampleFilter.setParameter("parameter_string", "Outlier=false");
+			exampleFilter.setParameter("parameter_string", "outlier=false");
 			exampleFilter.setParameter("invert_filter", "false");
-			process.getRootOperator().addOperator(exampleFilter);
+			process.getRootOperator().getSubprocess(0).addOperator(exampleFilter);
 			
-			// (4) Run the process and update the example set (removing the outliers)
-			IOContainer container = process.run(new IOContainer(new IOObject[]{exampleSet}));
+			// (4) Connect the ports
+			InputPort outlierDetectorInputPort = outlierDetector.getInputPorts().getPortByName("example set input");
+			OutputPort outlierDetectorOutputPort = outlierDetector.getOutputPorts().getPortByName("example set output");
+			InputPort exampleFilterInputPort = exampleFilter.getInputPorts().getPortByName("example set input");
+			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			
+			outlierDetectorOutputPort.connectTo(exampleFilterInputPort);
+			processOutputPort.connectTo(outlierDetectorInputPort);
+			
+			// (5) Run the process and update the example set (removing the outliers)
+			IOContainer container = process.run(new IOContainer(exampleSet));
 			exampleSet = container.get(ExampleSet.class);
 			exampleSet.getAttributes().remove(exampleSet.getAttributes().getOutlier());
 			
-			// (5) Convert the results to AMUSE EditableDataSet
+			// (6) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
 					new DataSet(exampleSet)));
+			
 		} catch(Exception e) {
 			throw new NodeException("Density based outlier detection preprocessing failed: " + e.getMessage());
 		}
