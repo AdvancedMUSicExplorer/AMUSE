@@ -33,12 +33,19 @@ import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.util.LibraryInitializer;
 
+import com.rapidminer.Process;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.Model;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.io.ModelWriter;
 import com.rapidminer.operator.learner.Learner;
+import com.rapidminer.operator.learner.functions.kernel.JMySVMLearner;
+import com.rapidminer.operator.learner.functions.kernel.LinearMySVMLearner;
+import com.rapidminer.operator.learner.functions.kernel.jmysvm.svm.SVM;
+import com.rapidminer.operator.learner.tree.RandomForestLearner;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;
 
 /**
@@ -102,7 +109,7 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void initialize() throws NodeException {
 		try {
-			LibraryInitializer.initializeRapidMiner(properties.getProperty("homeFolder") + "/operatorsClassification.xml");
+			LibraryInitializer.initializeRapidMiner();
 		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}
@@ -117,18 +124,37 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 			
 		// Train the model and save it
 		try {
-			Learner learner = (Learner)OperatorService.createOperator("JMySVMLearner");
-			((Operator)learner).setParameter("kernel_type", this.kernel);
-			((Operator)learner).setParameter("kernel_gamma", this.kernelGamma.toString());
-			((Operator)learner).setParameter("kernel_degree", this.kernelDegree.toString());
-			((Operator)learner).setParameter("kernel_a", this.kernelA.toString());
-			((Operator)learner).setParameter("kernel_b", this.kernelB.toString());
-			((Operator)learner).setParameter("C", this.c.toString());
-			((Operator)learner).setParameter("epsilon", this.epsilon.toString());
-			Model model = learner.learn(dataSet.convertToRapidMinerExampleSet());
+			Process process = new Process();
+			
+			// Train the model
+			Operator modelLearner = OperatorService.createOperator(JMySVMLearner.class);
+			
+			// Set the parameters
+			modelLearner.setParameter("kernel_type", this.kernel);
+			modelLearner.setParameter("kernel_gamma", this.kernelGamma.toString());
+			modelLearner.setParameter("kernel_degree", this.kernelDegree.toString());
+			modelLearner.setParameter("kernel_a", this.kernelA.toString());
+			modelLearner.setParameter("kernel_b", this.kernelB.toString());
+			modelLearner.setParameter("C", this.c.toString());
+			modelLearner.setParameter("epsilon", this.epsilon.toString());
+			process.getRootOperator().getSubprocess(0).addOperator(modelLearner);
+			
+			// Save the model
 			Operator modelWriter = OperatorService.createOperator(ModelWriter.class);
 			modelWriter.setParameter("model_file", outputModel);
-			modelWriter.apply(new IOContainer(new IOObject[]{model}));
+			process.getRootOperator().getSubprocess(0).addOperator(modelWriter);
+			
+			// Connect the ports
+			InputPort modelLearnerInputPort = modelLearner.getInputPorts().getPortByName("training set");
+			OutputPort modelLearnerOutputPort = modelLearner.getOutputPorts().getPortByName("model");
+			InputPort modelWriterInputPort = modelWriter.getInputPorts().getPortByName("input");
+			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			
+			modelLearnerOutputPort.connectTo(modelWriterInputPort);
+			processOutputPort.connectTo(modelLearnerInputPort);
+			
+			// Run the process
+			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());
 		}

@@ -23,9 +23,10 @@
  */
 package amuse.util;
 
-import java.io.FileInputStream;
+import java.io.File;
 
 import com.rapidminer.RapidMiner;
+import com.rapidminer.RapidMiner.ExecutionMode;
 
 /**
  * This class loads on demand libraries which are integrated in AMUSE 
@@ -36,15 +37,29 @@ public class LibraryInitializer {
 	
 	private static boolean rapidMinerInitialized = false;
 	
+
+	/**
+	 * Initializes RapidMiner as library
+	 * @deprecated use {@link #initializeRapidMiner()} instead.
+	 */
+	public static void initializeRapidMiner(String pathToXml) throws Exception{
+		throw new Exception("Method is outdated.");
+	}
 	/**
 	 * Initializes RapidMiner as library
 	 */
-	public static void initializeRapidMiner(String pathToXml) throws Exception {
+	public static void initializeRapidMiner() throws Exception {
 		if(!rapidMinerInitialized) {
-			FileInputStream fis;
 			try {
-				fis = new FileInputStream(pathToXml);
-				RapidMiner.init(fis,true,false,false,false);
+				String pathToRapidMinerHome = System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + "RapidMiner5";
+				pathToRapidMinerHome = pathToRapidMinerHome.replaceAll(File.separator + "+", File.separator); // Make sure there are no consecutive separators 
+				System.setProperty("rapidminer.home", pathToRapidMinerHome);
+				System.setProperty("rapidminer.init.weka", "true");
+				System.setProperty("rapidminer.init.plugins", "false");
+				System.setProperty("rapidminer.init.jdbc.lib", "false");
+				System.setProperty("rapidminer.init.jdbc.classpath", "false");
+				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
+				RapidMiner.init();
 			} catch(Exception e) {
 				throw e;
 			}

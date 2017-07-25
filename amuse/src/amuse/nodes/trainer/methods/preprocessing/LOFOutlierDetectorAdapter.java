@@ -61,7 +61,7 @@ public class LOFOutlierDetectorAdapter extends AmuseTask implements Classificati
 	 */
 	public void initialize() throws NodeException {
 		try {
-			LibraryInitializer.initializeRapidMiner(properties.getProperty("preprocessorFolder") + "/operatorsClassification.xml");
+			LibraryInitializer.initializeRapidMiner();
 		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}

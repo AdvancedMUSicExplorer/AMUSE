@@ -35,7 +35,13 @@ import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.IOObject;
+import com.rapidminer.operator.ModelApplier;
 import com.rapidminer.operator.Operator;
+import com.rapidminer.operator.io.ModelLoader;
+import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.learner.tree.RandomForestLearner;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;
 
 /**
@@ -61,7 +67,7 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 	 */
 	public void initialize() throws NodeException {
 		try {
-			LibraryInitializer.initializeRapidMiner(properties.getProperty("classifierFolder") + "/operatorsClassification.xml");
+			LibraryInitializer.initializeRapidMiner();
 		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}
@@ -77,31 +83,39 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 		
 		try {
 			Process process = new Process();
-			process.getLog().setVerbosityLevel(9);
 			
 			// (1) Create ExampleSet from the ClassificationConfiguration 
 			ExampleSet exampleSet = dataSetToClassify.convertToRapidMinerExampleSet();
-
+			
 			// (2) Load the model
-			Operator modelLoader = OperatorService.createOperator("ModelLoader"); 
-			modelLoader.getLog().setVerbosityLevel(9);
-			modelLoader.setParameter("model_file", pathToModelFile); 
-			process.getRootOperator().addOperator(modelLoader);
+			Operator modelLoader = OperatorService.createOperator(ModelLoader.class); 
+			modelLoader.setParameter(ModelLoader.PARAMETER_MODEL_FILE, pathToModelFile);
+			process.getRootOperator().getSubprocess(0).addOperator(modelLoader);
 			
 			// (3) Apply the model
-			Operator modelApp = OperatorService.createOperator("ModelApplier");
-			modelApp.getLog().setVerbosityLevel(9);
-			process.getRootOperator().addOperator(modelApp);
+			Operator modelApplier = OperatorService.createOperator(ModelApplier.class);
+			process.getRootOperator().getSubprocess(0).addOperator(modelApplier);
+
+			// (4) Connect the ports
+			InputPort modelApplierModelInputPort = modelApplier.getInputPorts().getPortByName("model");
+			InputPort modelApplierUnlabelledDataInputPort = modelApplier.getInputPorts().getPortByName("unlabelled data");
+			OutputPort modelLoaderOutputPort = modelLoader.getOutputPorts().getPortByName("output");
+			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+
+			modelLoaderOutputPort.connectTo(modelApplierModelInputPort);
+			processOutputPort.connectTo(modelApplierUnlabelledDataInputPort);
 			
-			// (4) Run the process
-			process.run(new IOContainer(new IOObject[]{exampleSet}));
+			// (5) Run the process
+			process.run(new IOContainer(exampleSet));
 			
-			// (5) Convert the results to AMUSE EditableDataSet
+			
+			// (6) Convert the results to AMUSE EditableDataSet
 			exampleSet.getAttributes().getPredictedLabel().setName("PredictedCategory");
 			((ClassificationConfiguration)(this.correspondingScheduler.getConfiguration())).setInputToClassify(new DataSetInput(
 					new DataSet(exampleSet)));
-
+			
 		} catch(Exception e) {
+			e.printStackTrace();
 			throw new NodeException("Error classifying data: " + e.getMessage());
 		}
 	}

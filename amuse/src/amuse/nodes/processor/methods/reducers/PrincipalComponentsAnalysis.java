@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import com.rapidminer.Process;
 import com.rapidminer.example.Attribute;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.table.AttributeFactory;
@@ -41,6 +42,10 @@ import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorCreationException;
 import com.rapidminer.operator.OperatorException;
 import com.rapidminer.operator.features.transformation.PCA;
+import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.learner.tree.RandomForestLearner;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.Ontology;
 import com.rapidminer.tools.OperatorService;
 
@@ -76,7 +81,7 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 	 */
 	public void initialize() throws NodeException {
 		try {
-			LibraryInitializer.initializeRapidMiner(properties.getProperty("processorFolder") + "/operatorsClassification.xml");
+			LibraryInitializer.initializeRapidMiner();
 		} catch (Exception e) {
 			throw new NodeException("Could not initialize RapidMiner: " + e.getMessage());
 		}
@@ -138,17 +143,31 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 		// (II) Apply PCA
 		// --------------
 		try {
+			Process process = new Process();
 			
-			// Create the model
+			// Train the model
 			Operator pca = OperatorService.createOperator(PCA.class);
 			pca.setParameter("number_of_components", numberOfComponents.toString());
-			IOContainer container = new IOContainer(new IOObject[] {exampleSet});
-			container =	pca.apply(container); 
+			process.getRootOperator().getSubprocess(0).addOperator(pca);
 			
 			// Apply the model
 			Operator modelApp = OperatorService.createOperator(ModelApplier.class);
-			container = modelApp.apply(container);
-			exampleSet = container.get(ExampleSet.class);
+			process.getRootOperator().getSubprocess(0).addOperator(modelApp);
+			
+			// Connect the Ports
+			InputPort pcaInputPort = pca.getInputPorts().getPortByName("example set input");
+			OutputPort pcaDataOutputPort = pca.getOutputPorts().getPortByName("original");
+			OutputPort pcaModelOutputPort = pca.getOutputPorts().getPortByName("preprocessing model");
+			InputPort modelAppModelInputPort = modelApp.getInputPorts().getPortByName("model");
+			InputPort modelAppDataInputPort = modelApp.getInputPorts().getPortByName("unlabelled data");
+			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+
+			processOutputPort.connectTo(pcaInputPort);
+			pcaModelOutputPort.connectTo(modelAppModelInputPort);
+			pcaDataOutputPort.connectTo(modelAppDataInputPort);
+			
+			// Run the process
+			process.run(new IOContainer(exampleSet));
 		} catch(OperatorException e) {
 			throw new NodeException("Problem occured during PCA: " + e.getMessage());
 		} catch (OperatorCreationException e) {

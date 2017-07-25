@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<extensions>
+  <extension>
+    <id>rmx_weka</id>
+    <name>Weka Extension</name>
+    <active>true</active>
+    <license>AGPL</license>
+    <selected-version>5.3.1</selected-version>
+    <installed-version>5.3.1</installed-version>
+  </extension>
+</extensions>
