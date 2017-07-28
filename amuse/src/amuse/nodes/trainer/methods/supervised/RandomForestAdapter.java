@@ -31,13 +31,9 @@ import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.util.LibraryInitializer;
 
-import com.rapidminer.RapidMiner;
 import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.IOObject;
-import com.rapidminer.operator.Model;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.io.ModelWriter;
-import com.rapidminer.operator.learner.Learner;
 import com.rapidminer.operator.learner.tree.RandomForestLearner;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
@@ -93,6 +89,7 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 			
 			// Train the model
 			Operator modelLearner = OperatorService.createOperator(RandomForestLearner.class);
+			modelLearner.setParameter("number_of_trees", "" + this.treeNumber);
 			process.getRootOperator().getSubprocess(0).addOperator(modelLearner);
 			
 			// Write the model
