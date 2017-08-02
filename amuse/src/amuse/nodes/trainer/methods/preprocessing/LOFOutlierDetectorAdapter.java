@@ -37,9 +37,10 @@ import amuse.util.LibraryInitializer;
 import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.io.ArffExampleSetWriter;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.preprocessing.filter.ExampleFilter;
 import com.rapidminer.operator.preprocessing.outlier.LOFOutlierOperator;
 import com.rapidminer.tools.OperatorService;
@@ -96,23 +97,51 @@ public class LOFOutlierDetectorAdapter extends AmuseTask implements Classificati
 			
 			// (2) Find outliers
 			Operator outlierDetector = OperatorService.createOperator(LOFOutlierOperator.class);
-			process.getRootOperator().addOperator(outlierDetector);
+			process.getRootOperator().getSubprocess(0).addOperator(outlierDetector);
 			
 			// (3) Remove outliers
 			Operator outlierFilter = OperatorService.createOperator(ExampleFilter.class);
 			outlierFilter.setParameter("condition_class", "attribute_value_filter");
-			outlierFilter.setParameter("parameter_string", "Outlier < " + boundary);
-			process.getRootOperator().addOperator(outlierFilter);
+			outlierFilter.setParameter("parameter_string", "outlier < " + boundary);
+			process.getRootOperator().getSubprocess(0).addOperator(outlierFilter);
 			
 			// (4) Save the ExampleSet and replace the original data file for classification
 			Operator exampleWriter = OperatorService.createOperator(ArffExampleSetWriter.class);
 			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
-			process.getRootOperator().addOperator(exampleWriter);
+			process.getRootOperator().getSubprocess(0).addOperator(exampleWriter);
+			
+			
+			InputPort outlierDetectorInputPort = outlierDetector.getInputPorts().getPortByName("example set input");
+			OutputPort outlierDetectorOutputPort = outlierDetector.getOutputPorts().getPortByName("example set output");
+			
+			InputPort outlierFilterInputPort = outlierFilter.getInputPorts().getPortByName("example set input");
+			OutputPort outlierFilterOutputPort = outlierFilter.getOutputPorts().getPortByName("example set output");
+			
+			InputPort exampleWriterInputPort = exampleWriter.getInputPorts().getPortByName("input");
+			OutputPort exampleWriterOutputPort = exampleWriter.getOutputPorts().getPortByName("through");
+			
+			OutputPort processSourceOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			InputPort processSinkInputPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(0);
+			
+			processSourceOutputPort.connectTo(outlierDetectorInputPort);
+			outlierDetectorOutputPort.connectTo(outlierFilterInputPort);
+			outlierFilterOutputPort.connectTo(exampleWriterInputPort);
+			exampleWriterOutputPort.connectTo(processSinkInputPort);
+			
 			
 			// (4) Run the process and update the example set (removing the outliers)
-			IOContainer container = process.run(new IOContainer(new IOObject[]{exampleSet}));
+			int oldSize = exampleSet.size();
+			IOContainer container = process.run(new IOContainer(exampleSet));
+
 			exampleSet = container.get(ExampleSet.class);
-			exampleSet.getAttributes().remove(exampleSet.getAttributes().getOutlier());
+			
+			int newSize = exampleSet.size();
+			
+			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Outlier detection reduced the dataset from " + oldSize + " to " + newSize + ".");
+			
+			if(newSize == 0){
+				throw new Exception("Every example was marked as outlier.");
+			}
 			
 			// (5) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
