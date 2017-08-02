@@ -227,7 +227,7 @@ public class TrainingController extends AbstractController {
             trainingView.setSelectedTrainingAlgorithm(trainConf.getAlgorithmDescription());
             trainingView.setProcessingModelString(trainConf.getProcessedFeaturesModelName());
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
-            trainingView.setSelectedCategoryID(new Integer(((FileInput)trainConf.getGroundTruthSource()).toString()));
+            trainingView.setSelectedCategoryID(new Integer(trainConf.getGroundTruthSource().toString()));
         }
     }
 }
