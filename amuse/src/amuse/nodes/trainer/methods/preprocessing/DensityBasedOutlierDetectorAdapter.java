@@ -36,12 +36,8 @@ import amuse.util.LibraryInitializer;
 
 import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
-import com.rapidminer.example.set.Condition;
 import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.IOObject;
-import com.rapidminer.operator.ModelApplier;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelLoader;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.preprocessing.filter.ExampleFilter;
@@ -121,16 +117,27 @@ public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements Cla
 			InputPort outlierDetectorInputPort = outlierDetector.getInputPorts().getPortByName("example set input");
 			OutputPort outlierDetectorOutputPort = outlierDetector.getOutputPorts().getPortByName("example set output");
 			InputPort exampleFilterInputPort = exampleFilter.getInputPorts().getPortByName("example set input");
-			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			OutputPort exampleFilterOutputPort = exampleFilter.getOutputPorts().getPortByName("example set output");
+			OutputPort processSourceOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			InputPort processSinkInputPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(0);
 			
 			outlierDetectorOutputPort.connectTo(exampleFilterInputPort);
-			processOutputPort.connectTo(outlierDetectorInputPort);
+			processSourceOutputPort.connectTo(outlierDetectorInputPort);
+			exampleFilterOutputPort.connectTo(processSinkInputPort);
 			
 			// (5) Run the process and update the example set (removing the outliers)
+			int oldSize = exampleSet.size();
 			IOContainer container = process.run(new IOContainer(exampleSet));
+
 			exampleSet = container.get(ExampleSet.class);
-			exampleSet.getAttributes().remove(exampleSet.getAttributes().getOutlier());
 			
+			int newSize = exampleSet.size();
+			
+			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Outlier detection reduced the dataset from " + oldSize + " to " + newSize + ".");
+			
+			if(newSize == 0){
+				throw new Exception("Every example was marked as outlier.");
+			}
 			// (6) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
 					new DataSet(exampleSet)));
