@@ -32,5 +32,5 @@
 
 @DATA
 0, "Density-based Outlier Detector", "Outlier Removal", amuse.nodes.trainer.methods.preprocessing.DensityBasedOutlierDetectorAdapter, "RapidMiner5", -1, -1, -1, "Density-based outlier detector", "Distance:|Proportion:", "[%d|%d]", "[0.5_0.7]", "The distance for objects|The proportion of objects related to distance"
-1, "Distance-based Outlier Detector", "Outlier Removal", amuse.nodes.trainer.methods.preprocessing.DistanceBasedOutlierDetectorAdapter, "RapidMiner5", -1, -1, -1, "Distance-based outlier detector", "Outlier Number:", "[%d]", "[5]", "The number of outliers"
+1, "Distance-based Outlier Detector", "Outlier Removal", amuse.nodes.trainer.methods.preprocessing.DistanceBasedOutlierDetectorAdapter, "RapidMiner5", -1, -1, -1, "Distance-based outlier detector", "Outlier Number:", "[%d]", "[5]", "The number of outliers that should be sorted out."
 2, "LOF Outlier Detector", "Outlier Removal", amuse.nodes.trainer.methods.preprocessing.LOFOutlierDetectorAdapter, "RapidMiner5", -1, -1, -1, "LOF outlier detector", "Boundry number", "[%d]", "[0.5]", "The threshold for outliers"
