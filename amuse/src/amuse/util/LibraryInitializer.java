@@ -24,9 +24,14 @@
 package amuse.util;
 
 import java.io.File;
+import java.util.logging.Filter;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
+import com.rapidminer.tools.LogService;
+import com.rapidminer.tools.WrapperLoggingHandler;
 
 /**
  * This class loads on demand libraries which are integrated in AMUSE 
@@ -58,7 +63,9 @@ public class LibraryInitializer {
 				System.setProperty("rapidminer.init.plugins", "false");
 				System.setProperty("rapidminer.init.jdbc.lib", "false");
 				System.setProperty("rapidminer.init.jdbc.classpath", "false");
+				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_GLOBAL_LOG_FILE,pathToRapidMinerHome + File.separator + "rapidminer.log");
 				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
+				LogService.getRoot().setLevel(Level.OFF);
 				RapidMiner.init();
 			} catch(Exception e) {
 				throw e;
