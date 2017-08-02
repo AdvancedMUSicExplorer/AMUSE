@@ -259,4 +259,11 @@ public class TrainingConfiguration extends TaskConfiguration {
 	public void setPathToOutputModel(String pathToOutputModel) {
 		this.pathToOutputModel = pathToOutputModel;
 	}
+	
+	/**
+	 * Creates a copy of this configuration
+	 */
+	public TrainingConfiguration clone(){
+		return new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType);
+	}
 }

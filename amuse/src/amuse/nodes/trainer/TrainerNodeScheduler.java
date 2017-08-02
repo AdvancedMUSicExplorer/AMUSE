@@ -130,7 +130,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
-		this.taskConfiguration = trainingConfiguration;
+		this.taskConfiguration = ((TrainingConfiguration) trainingConfiguration).clone();
 		
 		// If this node is started directly, the properties are loaded from AMUSEHOME folder;
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
