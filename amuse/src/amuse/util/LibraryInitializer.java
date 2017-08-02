@@ -24,19 +24,16 @@
 package amuse.util;
 
 import java.io.File;
-import java.util.logging.Filter;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
 import com.rapidminer.tools.LogService;
-import com.rapidminer.tools.WrapperLoggingHandler;
 
 /**
  * This class loads on demand libraries which are integrated in AMUSE 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class LibraryInitializer {
 	
