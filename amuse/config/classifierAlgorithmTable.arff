@@ -38,14 +38,14 @@
 
 @DATA
 % Supervised methods
-0, "J48", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.J48Adapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner4.5", -1, -1, -1, -1, -1, "C4.5 learner from Weka Toolbox", "C:", "[%d]", "[0.25]", "Confidence threshold for pruning"
+0, "J48", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.J48Adapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner5", -1, -1, -1, -1, -1, "C4.5 learner from Weka Toolbox", "C:", "[%d]", "[0.25]", "Confidence threshold for pruning"
 
-1, "RandomForest", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.RandomForestAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner4.5", -1, -1, -1, -1, -1, "Random forest learner from Weka Toolbox", "Number of trees:", "[%i]", "[10]", "The number of decision trees"
+1, "RandomForest", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.RandomForestAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner5", -1, -1, -1, -1, -1, "Random forest learner from Weka Toolbox", "Number of trees:", "[%i]", "[10]", "The number of decision trees"
 
 2, "LinearDiscriminantAnalysis", "Supervised", amuse.nodes.trainer.methods.supervised.LinearDiscriminantAnalysisAdapter, amuse.nodes.classifier.methods.supervised.LinearDiscriminantAnalysisAdapter, "MatlabClassification", "matlabStart.sh", -1, -1, -1, -1, "Linear Discriminant Analysis",  "", "", "", ""
 
-3, "KNN", "Supervised", amuse.nodes.trainer.methods.supervised.KNNAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner4.5", -1, -1, -1, -1, -1, "k-nearest neighbours", "Number of neigbours:", "[%i]", "[1]", "The number of neighbours"
+3, "KNN", "Supervised", amuse.nodes.trainer.methods.supervised.KNNAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner5", -1, -1, -1, -1, -1, "k-nearest neighbours", "Number of neigbours:", "[%i]", "[1]", "The number of neighbours"
 
-4, "NaiveBayes", "Supervised", amuse.nodes.trainer.methods.supervised.NaiveBayesAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner4.5", -1, -1, -1, -1, -1, "Naive Bayes learner", "", "", "", ""
+4, "NaiveBayes", "Supervised", amuse.nodes.trainer.methods.supervised.NaiveBayesAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner5", -1, -1, -1, -1, -1, "Naive Bayes learner", "", "", "", ""
 
-5, "SupportVectorMachine", "Supervised", amuse.nodes.trainer.methods.supervised.SVMAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner4.5", -1, -1, -1, -1, -1, "Support Vector Machine JMySVMLearner", "Kernel:|Kernel gamma:|Kernel degree:|Kernel a:|Kernel b:|C:|Epsilon:", "[%n{dot,radial,polynomial,neural} %d %d %d %d %d %d]", "[dot_1.0_2.0_1.0_0.0_0.0_0.0]", "The SVM kernel type|The SVM kernel parameter gamma (for radial kernel only)|The SVM kernel parameter degree (for polynomial kernel only)|The SVM kernel parameter a (for neural kernel only)|The SVM kernel parameter b (for neural kernel only)|The SVM complexity constant|Insensitivity constant"
+5, "SupportVectorMachine", "Supervised", amuse.nodes.trainer.methods.supervised.SVMAdapter, amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader, "RapidMiner5", -1, -1, -1, -1, -1, "Support Vector Machine JMySVMLearner", "Kernel:|Kernel gamma:|Kernel degree:|Kernel a:|Kernel b:|C:|Epsilon:", "[%n{dot,radial,polynomial,neural} %d %d %d %d %d %d]", "[dot_1.0_2.0_1.0_0.0_0.0_0.0]", "The SVM kernel type|The SVM kernel parameter gamma (for radial kernel only)|The SVM kernel parameter degree (for polynomial kernel only)|The SVM kernel parameter a (for neural kernel only)|The SVM kernel parameter b (for neural kernel only)|The SVM complexity constant|Insensitivity constant"
