@@ -36,14 +36,11 @@ import com.rapidminer.example.table.AttributeFactory;
 import com.rapidminer.example.table.DoubleArrayDataRow;
 import com.rapidminer.example.table.MemoryExampleTable;
 import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.IOObject;
 import com.rapidminer.operator.ModelApplier;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.OperatorCreationException;
 import com.rapidminer.operator.OperatorException;
 import com.rapidminer.operator.features.transformation.PCA;
-import com.rapidminer.operator.io.ModelWriter;
-import com.rapidminer.operator.learner.tree.RandomForestLearner;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.Ontology;
@@ -60,7 +57,7 @@ import amuse.util.LibraryInitializer;
  * Performs principal components analysis of the given features
  * 
  * @author Igor Vatolkin
- * @version $Id: PrincipalComponentsAnalysis.java 1078 2010-07-01 14:06:57Z vatolkin $
+ * @version $Id$
  */
 public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionProcessorInterface {
 
