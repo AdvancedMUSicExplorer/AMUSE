@@ -115,7 +115,6 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 					new DataSet(exampleSet)));
 			
 		} catch(Exception e) {
-			e.printStackTrace();
 			throw new NodeException("Error classifying data: " + e.getMessage());
 		}
 	}
