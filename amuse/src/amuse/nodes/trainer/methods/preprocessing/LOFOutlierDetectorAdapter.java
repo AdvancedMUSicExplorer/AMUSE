@@ -139,7 +139,7 @@ public class LOFOutlierDetectorAdapter extends AmuseTask implements Classificati
 			
 			int newSize = exampleSet.size();
 			
-			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Outlier detection reduced the dataset from " + oldSize + " to " + newSize + ".");
+			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Outlier detection reduced the size of the dataset from " + oldSize + " to " + newSize + ".");
 			
 			if(newSize == 0){
 				throw new Exception("Every example was marked as outlier.");
