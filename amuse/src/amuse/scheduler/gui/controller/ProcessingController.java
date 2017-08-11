@@ -64,7 +64,7 @@ public class ProcessingController extends AbstractController {
     ProcessingMethodsPanel pcmPanel;
     FilesAndFeaturesFacade filesAndFeatures;
     private File fpFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-            + "/experiments/FP");
+            + File.separator + "experiments" + File.separator + "FP");
 
     public ProcessingController(WizardController wizardController) {
         getFilesAndFeatures();
@@ -150,8 +150,8 @@ public class ProcessingController extends AbstractController {
         }
         /* Gather all neccessary information and create variables */
         File featureTableFile = new File(selectedFile.getParent()
-                + "/featurelists/" + selectedFile.getName());
-        File musicFilesFile = new File(selectedFile.getParent() + "/filelists/"
+                + File.separator + "featurelists" + File.separator + selectedFile.getName());
+        File musicFilesFile = new File(selectedFile.getParent() + File.separator + "filelists" + File.separator
                 + selectedFile.getName());
         String reductionSteps = pcmController.getReductionSteps();
         String unit = pcmController.getUnit();

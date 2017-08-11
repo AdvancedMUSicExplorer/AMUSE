@@ -52,7 +52,7 @@ public class FileTreeController implements ActionListener, KeyListener {
     FileTreeView view;
     private String fileFilterDescription = "wav and mp3 supported";
 
-    private File filelistFolder = new File("experiments/filelists");
+    private File filelistFolder = new File("experiments" + File.separator + "filelists");
 
     /**
      * Creates a new FileTreeController.

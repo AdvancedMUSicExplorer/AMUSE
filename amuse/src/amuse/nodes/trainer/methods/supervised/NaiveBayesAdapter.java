@@ -48,7 +48,7 @@ import com.rapidminer.operator.learner.bayes.NaiveBayes;
  * Adapter for Naive Bayes. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: vatolkin $
+ * @version $Id$
  */
 public class NaiveBayesAdapter extends AmuseTask implements TrainerInterface {
 

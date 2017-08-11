@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -45,7 +46,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts classification
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassificationStarter.java 1099 2010-07-01 14:13:01Z vatolkin $
+ * @version $Id$
  */
 public class ClassificationStarter extends AmuseTaskStarter {
 
@@ -85,7 +86,7 @@ public class ClassificationStarter extends AmuseTaskStarter {
 				FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(classifierConfig);
@@ -129,13 +130,13 @@ public class ClassificationStarter extends AmuseTaskStarter {
 				ClassifierNodeScheduler classifierThread = null;
 				try {
 					classifierThread = new ClassifierNodeScheduler(System.getenv("AMUSEHOME") + 
-							"/config/node/classifier/input/task_" + this.jobCounter);
+							File.separator + "config" + File.separator + "node" + File.separator + "classifier" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Classifier node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare classifier node scheduler arguments and start it as thread
-	   	    	classifierThread.setThreadParameters(System.getenv("AMUSEHOME") + "/config/node/classifier", this.jobCounter, classifierConfig);
+	   	    	classifierThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "classifier", this.jobCounter, classifierConfig);
 			    Thread newClassifierThread = new Thread(classifierThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

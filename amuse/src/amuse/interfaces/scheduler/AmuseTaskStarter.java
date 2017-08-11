@@ -39,12 +39,12 @@ import amuse.util.FileOperations;
  * All task starters should extend this class
  * 
  * @author Igor Vatolkin
- * @version $Id: AmuseTaskStarter.java 1207 2010-07-30 13:43:33Z vatolkin $
+ * @version $Id$
  */
 public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, NodeEventListener {
 
     /** The corresponding node location is:
-     *  System.getenv("AMUSEHOME") + "/config/node/" + this.nodeFolder */
+     *  System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder */
     private String nodeFolder = null;
     
     /** Each Amuse job has its own Id (unique during the lifecycle of Amuse scheduler);
@@ -96,7 +96,7 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * @throws Exception
      */
     protected void removeInputFolder() throws Exception {
-        File f = new File(System.getenv("AMUSEHOME") + "/config/node/" + this.nodeFolder + "/input");
+        File f = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder + File.separator + "input");
         boolean delete = FileOperations.delete(f, true);
         if (!delete) {
             throw new SchedulerException("Can't remove node input folder: " + f);

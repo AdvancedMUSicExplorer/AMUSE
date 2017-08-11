@@ -56,7 +56,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  * DataSet has the same length.
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ArffDataSet extends DataSetAbstract {
 

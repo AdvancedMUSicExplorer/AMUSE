@@ -27,7 +27,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 
 /**
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public interface ArffExperimentSetInterface {
     TaskConfiguration[] getTaskConfiguration();

@@ -54,7 +54,7 @@ class PluginSettings extends AmuseSettingsPageBody {
 
     private static final String name = "Manage Plugins";
     private final JTable installedPluginsTable = new JTable();
-    private final File pluginTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/config/pluginTable.arff");
+    private final File pluginTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff");
     private final JButton installButton = new JButton("Install New");
     private final JButton uninstallButton = new JButton("Uninstall Selected");
 

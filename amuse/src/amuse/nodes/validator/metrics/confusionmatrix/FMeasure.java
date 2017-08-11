@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * F-Measure metric 
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FMeasure extends ClassificationQualityDoubleMetricCalculator {
 

@@ -32,7 +32,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all feature extractors.
  * 
  * @author Igor Vatolkin
- * @version $Id: ExtractorInterface.java 1115 2010-07-02 11:24:22Z vatolkin $
+ * @version $Id$
  */
 public interface ExtractorInterface {
 	

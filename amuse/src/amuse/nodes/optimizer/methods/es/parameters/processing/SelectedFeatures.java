@@ -41,7 +41,7 @@ import amuse.util.AmuseLogger;
  * Features which are selected for classification training are set here. 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class SelectedFeatures extends BinaryVector {
 

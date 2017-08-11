@@ -38,7 +38,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * matrix entries.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FeatureVectorReductionRate extends DataReductionMetricCalculator {
 

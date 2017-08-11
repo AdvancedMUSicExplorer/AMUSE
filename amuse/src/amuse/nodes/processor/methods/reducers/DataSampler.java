@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Performs sampling of the given feature files
  * 
  * @author Igor Vatolkin
- * @version $Id: DataSampler.java 1210 2010-08-02 09:08:13Z vatolkin $
+ * @version $Id$
  */
 public class DataSampler extends AmuseTask implements DimensionProcessorInterface {
 
@@ -91,12 +91,12 @@ public class DataSampler extends AmuseTask implements DimensionProcessorInterfac
 				relativeName = currentInfoFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/"));
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator));
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName;
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+						File.separator + relativeName;
 			}	
 			
 			// Load the event number

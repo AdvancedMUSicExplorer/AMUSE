@@ -42,7 +42,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a feature extraction task 
  *  
  * @author Clemens Waeltken
- * @version $Id: ExtractionConfiguration.java 1173 2010-07-05 09:18:19Z waeltken $
+ * @version $Id$
  */
 public class ExtractionConfiguration extends TaskConfiguration {
 

@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * (,)-strategy: select candidates for new population only from the offspring population
  *
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class CommaSelection extends AbstractSelection {
 

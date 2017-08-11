@@ -38,7 +38,7 @@ import amuse.util.AmuseLogger;
  * Selects only the features from a given interval
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class IntervalSelector extends AmuseTask implements DimensionProcessorInterface {
 

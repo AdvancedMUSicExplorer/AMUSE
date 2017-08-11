@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * For validation metrics which consist of a string (e.g. the list of correctly predicted songs).
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ValidationMetricString extends ValidationMetric {
 	

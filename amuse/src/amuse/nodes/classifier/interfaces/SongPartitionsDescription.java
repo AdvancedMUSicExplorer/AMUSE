@@ -27,7 +27,7 @@ package amuse.nodes.classifier.interfaces;
  * This class describes the partitions from the given song
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class SongPartitionsDescription {
 	

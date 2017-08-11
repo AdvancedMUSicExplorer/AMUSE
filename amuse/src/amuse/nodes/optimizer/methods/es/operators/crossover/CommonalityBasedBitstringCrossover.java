@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Computation (CEC), San Diego, 2000
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class CommonalityBasedBitstringCrossover extends AbstractCrossover {
 

@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * Spearman's rank correlation coefficient is a special case of Pearson product-moment correlation coefficient.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMetricCalculator {
 

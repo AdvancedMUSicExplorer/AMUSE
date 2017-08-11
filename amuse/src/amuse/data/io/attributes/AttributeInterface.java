@@ -27,7 +27,7 @@ package amuse.data.io.attributes;
  * This Interface describes basic funktionality offered by Attributes.
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public interface AttributeInterface {
 

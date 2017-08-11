@@ -30,7 +30,7 @@ package amuse.interfaces.nodes;
  * Node event describes the status of corresponding task.
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeEvent.java 1054 2010-07-01 14:02:37Z vatolkin $
+ * @version $Id$
  */
 public class NodeEvent {
 	

@@ -37,7 +37,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for an optimization task 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class OptimizationConfiguration extends TaskConfiguration {
 

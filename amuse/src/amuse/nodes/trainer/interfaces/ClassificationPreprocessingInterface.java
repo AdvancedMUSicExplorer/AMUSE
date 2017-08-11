@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all classification preprocessing methods.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface ClassificationPreprocessingInterface {
 	

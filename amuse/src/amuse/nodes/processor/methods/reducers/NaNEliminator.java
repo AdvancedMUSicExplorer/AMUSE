@@ -37,7 +37,7 @@ import amuse.util.AmuseLogger;
  * Replaces NaN feature values with the median values 
  * 
  * @author Igor Vatolkin
- * @version $Id: NaNEliminator.java 1078 2010-07-01 14:06:57Z vatolkin $
+ * @version $Id$
  */
 public class NaNEliminator extends AmuseTask implements DimensionProcessorInterface {
 

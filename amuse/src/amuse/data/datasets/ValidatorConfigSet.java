@@ -38,7 +38,7 @@ import amuse.nodes.validator.ValidationConfiguration;
 /**
  * This class represents a list of ValidationTasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ValidatorConfigSet extends AbstractArffExperimentSet {
 

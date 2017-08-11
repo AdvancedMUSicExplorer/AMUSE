@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * correlated with already selected features
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class AddLeastCorrelatedFeature extends AbstractMutation {
 
@@ -143,7 +143,7 @@ public class AddLeastCorrelatedFeature extends AbstractMutation {
 			if(parameters.item(i).getNodeType() == Node.ELEMENT_NODE) {
 				String parameterName = parameters.item(i).getAttributes().getNamedItem("name").getNodeValue();
 				if(parameterName.equals(new String("Path to correlation table"))) {
-					pathToCorrelationTable = this.correspondingES.getCorrespondingScheduler().getHomeFolder() + "/" +  
+					pathToCorrelationTable = this.correspondingES.getCorrespondingScheduler().getHomeFolder() + File.separator +  
 							parameters.item(i).getAttributes().getNamedItem("fileValue").getNodeValue();
 					break;
 				} 

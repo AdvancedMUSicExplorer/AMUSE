@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -45,7 +46,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts classification training
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassificationTrainingStarter.java 1099 2010-07-01 14:13:01Z vatolkin $
+ * @version $Id$
  */
 public class ClassificationTrainingStarter extends AmuseTaskStarter {
 
@@ -85,7 +86,7 @@ public class ClassificationTrainingStarter extends AmuseTaskStarter {
 	   	   		FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(trainerConfig);
@@ -129,13 +130,13 @@ public class ClassificationTrainingStarter extends AmuseTaskStarter {
 				TrainerNodeScheduler trainerThread = null;
 				try {
 					trainerThread = new TrainerNodeScheduler(System.getenv("AMUSEHOME") + 
-							"/config/node/trainer/input/task_" + this.jobCounter);
+							File.separator + "config" + File.separator + "node" + File.separator + "trainer" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Trainer node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare trainer node scheduler arguments and start it as thread
-	   	    	trainerThread.setThreadParameters(System.getenv("AMUSEHOME") + "/config/node/trainer", this.jobCounter, trainerConfig);
+	   	    	trainerThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "trainer", this.jobCounter, trainerConfig);
 			    Thread newTrainerThread = new Thread(trainerThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

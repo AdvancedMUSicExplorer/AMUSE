@@ -34,7 +34,7 @@ import java.util.Arrays;
  * numeric data.
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class NumericAttribute extends Attribute {
 

@@ -49,7 +49,7 @@ import com.rapidminer.tools.OperatorService;
  * For more details about RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: RapidMinerModelLoader.java 1108 2010-07-02 09:39:44Z vatolkin $
+ * @version $Id$
  */
 public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterface {
 

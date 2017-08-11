@@ -57,7 +57,7 @@ public class ExtractionController extends AbstractController {
     WizardController wizardController;
     FilesAndFeaturesFacade filesAndFeatures;
     File feFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-            + "/experiments/FE");
+            + File.separator + "experiments" + File.separator + "FE");
 
     public ExtractionController(WizardController wc) {
         wizardController = wc;
@@ -96,10 +96,10 @@ public class ExtractionController extends AbstractController {
     public void saveTask(File selectedFile) {
         selectedFile = addArff(selectedFile);
         askOverwrite(selectedFile);
-        File fileTableFile = new File(selectedFile.getParent() + "/filelists/"
+        File fileTableFile = new File(selectedFile.getParent() + File.separator + "filelists" + File.separator
                 + selectedFile.getName());
         File featureTableFile = new File(selectedFile.getParent()
-                + "/featurelists/" + selectedFile.getName());
+                + File.separator + "featurelists" + File.separator + selectedFile.getName());
         try {
             fileTableFile.getParentFile().mkdirs();
             featureTableFile.getParentFile().mkdirs();

@@ -34,7 +34,7 @@ import amuse.util.AmuseLogger;
  * This enumeration lists all available keys to get presistent Booleans from <code>AmusePreferences</code>.
  * Unlike his related enumerations this enum has no <code>isValid()</code> method.
  * @author Clemens Waeltken
- * @version $Id: KeysBooleanValue.java 1091 2010-07-01 14:09:27Z vatolkin $
+ * @version $Id$
  */
 public enum KeysBooleanValue {
 

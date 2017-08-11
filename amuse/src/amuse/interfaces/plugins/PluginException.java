@@ -27,7 +27,7 @@ package amuse.interfaces.plugins;
  * Plugin exception.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class PluginException extends Exception {
 	

@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * and labeled data.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMetricCalculator {
 

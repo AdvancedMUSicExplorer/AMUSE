@@ -35,7 +35,7 @@ import amuse.interfaces.nodes.NodeException;
  * Logs ES output messages
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ESLogger {
 	

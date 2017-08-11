@@ -32,7 +32,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all feature and time dimension reducers.
  * 
  * @author Igor Vatolkin
- * @version $Id: DimensionProcessorInterface.java 1075 2010-07-01 14:06:24Z vatolkin $
+ * @version $Id$
  */
 public interface DimensionProcessorInterface  {
 	

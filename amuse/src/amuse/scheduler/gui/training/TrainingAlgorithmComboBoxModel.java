@@ -43,7 +43,7 @@ import amuse.scheduler.gui.algorithm.Algorithm;
 public class TrainingAlgorithmComboBoxModel extends DefaultComboBoxModel {
 
 	private static final long serialVersionUID = 9019195556557764573L;
-	private File file = new File("config/classifierAlgorithmTable.arff");
+	private File file = new File("config" + File.separator + "classifierAlgorithmTable.arff");
 	private AlgorithmTableSet algorithmTable;
 	private final List<Algorithm> availableAlgorithms;
 	

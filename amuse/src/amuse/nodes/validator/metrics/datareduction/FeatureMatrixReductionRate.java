@@ -38,7 +38,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * to the initial number of matrix entries.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FeatureMatrixReductionRate extends DataReductionMetricCalculator {
 

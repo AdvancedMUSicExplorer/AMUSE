@@ -35,7 +35,7 @@ import static amuse.util.FileOperations.*;
  * All node schedulers should extend this class
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeScheduler.java 1130 2010-07-02 11:42:32Z vatolkin $
+ * @version $Id$
  */
 public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable, NodeEventSource {
 
@@ -178,7 +178,7 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 			this.removeInputFolder();
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(),Level.ERROR, "Could not remove properly the folder with intermediate results '" + 
-					this.nodeHome + "/input/task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
 	
@@ -186,10 +186,10 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 	 * Removes node input folder with intermediate results
 	 */
 	protected void removeInputFolder() throws NodeException {
-            File f = new File(this.nodeHome + "/input/task_" + this.jobId);
+            File f = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
             if (!delete(f)) {
             	AmuseLogger.write(this.getClass().getName(),Level.WARN, "Could not remove properly the folder with intermediate results '" + 
-    					this.nodeHome + "/input/task_" + this.jobId + "; please delete it manually!");
+            			this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually!");
                 //throw new NodeException("Could not delete file: " + f.getAbsolutePath());
             }
 	}
@@ -200,7 +200,7 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 	protected void cleanInputFolder() throws NodeException {
 		if(!cleanInputFolder)
                     return;
-        File list = new File(this.nodeHome + "/input/task_" + this.jobId);
+        File list = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
         File[] a = null;
         if(list.exists() && list != null) {
         	a = list.listFiles();
@@ -210,7 +210,7 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 			
 			if(!delete(f, true))
                     	AmuseLogger.write(this.getClass().getName(),Level.WARN, "Could not clean the folder with intermediate results '" + 
-            					this.nodeHome + "/input/task_" + this.jobId + "; please delete it manually!");
+                    			this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually!");
                         // TODO v0.2 because of Weka ArffLoader bug (streams remain opened)
                     	// throw new NodeException("Could not delete file: " + f.getAbsolutePath());
                 }

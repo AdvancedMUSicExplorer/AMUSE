@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * (+)-strategy: select candidates for new population from both parent and offspring population
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class PlusSelection extends AbstractSelection {
 

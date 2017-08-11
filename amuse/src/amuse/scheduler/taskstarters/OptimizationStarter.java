@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts optimization
  * 
  * @author Igor Vatolkin
- * @version $Id: OptimizationStarter.java 1099 2010-07-01 14:13:01Z vatolkin $
+ * @version $Id$
  */
 public class OptimizationStarter extends AmuseTaskStarter {
 
@@ -86,7 +86,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 	   	   		FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(optimizerConfig);

@@ -34,7 +34,7 @@ import org.apache.log4j.PropertyConfigurator;
  * AmuseLogger takes care of log messages
  * TODO add support for multiple listeners.
  * @author Igor Vatolkin
- * @version $Id: AmuseLogger.java 1100 2010-07-01 14:14:41Z vatolkin $
+ * @version $Id$
  */
 public class AmuseLogger {
 	

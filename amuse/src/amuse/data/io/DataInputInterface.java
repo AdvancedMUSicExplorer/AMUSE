@@ -29,7 +29,7 @@ import java.io.Serializable;
  * All AMUSE data inputs (memory objects or links to files) should implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface DataInputInterface extends Serializable {
 

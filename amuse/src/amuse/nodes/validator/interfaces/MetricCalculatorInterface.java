@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * All metric calculators should implement this interface
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface MetricCalculatorInterface {
 	

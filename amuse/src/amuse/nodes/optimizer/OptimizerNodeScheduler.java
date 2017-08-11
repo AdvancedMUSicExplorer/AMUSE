@@ -48,7 +48,7 @@ import weka.core.converters.ArffLoader;
  * OptimizerNodeScheduler is responsible for the optimizer node. 
  * 
  * @author Igor Vatolkin
- * @version $Id: OptimizerNodeScheduler.java 1064 2010-07-01 14:04:42Z vatolkin $
+ * @version $Id$
  */
 public class OptimizerNodeScheduler extends NodeScheduler { 
 
@@ -75,7 +75,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		OptimizerNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new OptimizerNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new OptimizerNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(OptimizerNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for optimizer node intermediate results: " + e.getMessage());
@@ -91,7 +91,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(OptimizerNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_'" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_'" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -116,7 +116,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %optimizer home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/input/task_" + this.jobId + "/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
@@ -154,7 +154,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 			} catch(NodeException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_COMPLETED, this));
@@ -180,7 +180,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
-			fis = new FileInputStream(args[0] + "/task_" + args[1] + ".ser");
+			fis = new FileInputStream(args[0] + File.separator + "task_" + args[1] + ".ser");
 			in = new ObjectInputStream(fis);
 			Object o = in.readObject();
 			optimizerConfig = (OptimizationConfiguration[])o;
@@ -195,7 +195,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		for(int i=0;i<optimizerConfig.length;i++) {
 			proceedTask(args[0],new Long(args[1]),optimizerConfig[i]);
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Optimizer node is going to start job " + 
-					(i+1) + "/" + optimizerConfig.length);
+					(i+1) + File.separator + optimizerConfig.length);
 		}
 	}
 	
@@ -224,9 +224,9 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader optimizerTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		optimizerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/optimizerAlgorithmTable.arff"));
+	    		optimizerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff"));
 	    	} else {
-	    		optimizerTableLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/optimizerAlgorithmTable.arff"));
+	    		optimizerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "optimizerAlgorithmTable.arff"));
 	    	}
 			Instance currentInstance = optimizerTableLoader.getNextInstance(optimizerTableLoader.getStructure());
 			Attribute idAttribute = optimizerTableLoader.getStructure().attribute("Id");

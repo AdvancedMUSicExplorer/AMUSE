@@ -62,7 +62,7 @@ import weka.core.converters.ArffLoader;
  * are converted to vectors for classification algorithms 
  * 
  * @author Igor Vatolkin
- * @version $Id: ProcessorNodeScheduler.java 1238 2010-08-02 15:27:12Z waeltken $
+ * @version $Id$
  */
 public class ProcessorNodeScheduler extends NodeScheduler { 
 
@@ -103,7 +103,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		ProcessorNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new ProcessorNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new ProcessorNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(ProcessorNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for processor node intermediate results: " + e.getMessage());
@@ -119,7 +119,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(ProcessorNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_'" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_'" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -146,7 +146,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %processor home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/config/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "config" + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
@@ -207,7 +207,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			} catch(NodeException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_COMPLETED, this));
@@ -233,7 +233,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
-			fis = new FileInputStream(args[0] + "/task_" + args[1] + ".ser");
+			fis = new FileInputStream(args[0] + File.separator + "task_" + args[1] + ".ser");
 			in = new ObjectInputStream(fis);
 			Object o = in.readObject();
 			processorConfig = (ProcessingConfiguration[])o;
@@ -248,7 +248,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		for(int i=0;i<processorConfig.length;i++) {
 			proceedTask(args[0],new Long(args[1]),processorConfig[i]);
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Processor node is going to start job " + 
-					(i+1) + "/" + processorConfig.length);
+					(i+1) + File.separator + processorConfig.length);
 		}
 	}
 	
@@ -425,9 +425,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			ArffLoader processingToolsLoader = new ArffLoader();
 		    try {
 		    	if(this.directStart) {
-		    		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/processorAlgorithmTable.arff"));
+		    		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "processorAlgorithmTable.arff"));
 		    	} else {
-		    		processingToolsLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/processorAlgorithmTable.arff"));
+		    		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorAlgorithmTable.arff"));
 		    	}
 				Instance currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
 				Attribute idAttribute = processingToolsLoader.getStructure().attribute("Id");
@@ -454,9 +454,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 							processorProperties.setProperty("processorName",currentInstance.stringValue(processorNameAttribute));
 							processorProperties.setProperty("processorFolderName",currentInstance.stringValue(homeFolderAttribute));
 							if(directStart) {
-								processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+								processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 							} else {
-								processorProperties.setProperty("processorFolder",nodeHome + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+								processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 							}
 							processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
 							processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));
@@ -527,9 +527,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		ArffLoader processingToolsLoader = new ArffLoader();
 		try {
 		   	if(this.directStart) {
-		   		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/processorConversionAlgorithmTable.arff"));
+		   		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	} else {
-		   		processingToolsLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/processorConversionAlgorithmTable.arff"));
+		   		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	}
 			Instance currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
 			Attribute idAttribute = processingToolsLoader.getStructure().attribute("Id");
@@ -556,9 +556,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 						processorProperties.setProperty("processorName",currentInstance.stringValue(processorNameAttribute));
 						processorProperties.setProperty("processorFolderName",currentInstance.stringValue(homeFolderAttribute));
 						if(directStart) {
-							processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+							processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 						} else {
-							processorProperties.setProperty("processorFolder",nodeHome + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+							processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 						}
 						processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
 						processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));

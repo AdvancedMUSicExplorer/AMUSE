@@ -34,7 +34,7 @@ import amuse.data.io.attributes.StringAttribute;
 /**
  * This class represents a list of features as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class FeatureTableSet extends ArffDataSet {
 

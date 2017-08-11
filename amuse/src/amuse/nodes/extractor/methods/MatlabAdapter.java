@@ -53,7 +53,7 @@ import amuse.util.ExternalProcessBuilder;
  * Adapter to Matlab as feature extractor
  * 
  * @author Igor Vatolkin
- * @version $Id: MatlabAdapter.java 1168 2010-07-03 20:02:57Z vatolkin $
+ * @version $Id$
  */
 public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 
@@ -91,7 +91,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		Document currentBaseScript = null;
 		try {
 			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + "/" + 
+					properties.getProperty("extractorFolder") + File.separator + 
 					properties.getProperty("inputExtractorBaseBatch"));
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open Matlab base script: " + e.getMessage());
@@ -201,7 +201,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		
 		// Save the modified script as matlab file (content found in "text" nodes will be written)
 		try {
-		        BufferedWriter out = new BufferedWriter(new FileWriter(properties.getProperty("extractorFolder") + "/" + 
+		        BufferedWriter out = new BufferedWriter(new FileWriter(properties.getProperty("extractorFolder") + File.separator + 
 						   properties.getProperty("inputExtractorBatch")));
 		        
 		        nList = currentBaseScript.getElementsByTagName("text");
@@ -223,8 +223,8 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Starting feature extraction...");
 		
 		// Create a folder for Amuse feature files
-		File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + 
-				"/" + this.currentPart + "/" + properties.getProperty("extractorFolderName"));
+		File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));
 		if(!folder.exists() && !folder.mkdirs()) {
 			throw new NodeException("Extraction with Matlab failed: could not create temp folder " + 
 					folder.toString());

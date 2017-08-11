@@ -62,10 +62,10 @@ public class ValidationController extends AbstractController {
     private AlgorithmConfigurationFacade validationAlgorithmFacade;
     private String amusePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH);
     private File validationAlgorithmTableFile = new File(amusePath
-            + "/config/validationAlgorithmTable.arff");
+            + File.separator + "config" + File.separator + "validationAlgorithmTable.arff");
     private MetricsView metricsView;
     private static final File vtFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-            + "/experiments/VT");
+            + File.separator + "experiments" + File.separator + "VT");
 
     /**
      * @param wizardController
@@ -101,7 +101,7 @@ public class ValidationController extends AbstractController {
             return;
         }
         /* Gather all neccessary information and create variables */
-        File metricTableFile = new File(file.getParent() + "/metricTables/"
+        File metricTableFile = new File(file.getParent() + File.separator + "metricTables" + File.separator
                 + file.getName());
         String parameterStr = "";
         if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {

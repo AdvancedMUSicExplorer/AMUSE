@@ -37,7 +37,7 @@ import amuse.nodes.trainer.interfaces.TrainerInterface;
  * Adapter for Linear Discriminant Analysis. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: vatolkin $
+ * @version $Id$
  */
 public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements TrainerInterface {
 

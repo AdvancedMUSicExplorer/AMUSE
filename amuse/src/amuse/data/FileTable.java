@@ -40,7 +40,7 @@ import amuse.util.AmuseLogger;
  * Describes the list of files for Amuse tasks 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FileTable implements Serializable {
 

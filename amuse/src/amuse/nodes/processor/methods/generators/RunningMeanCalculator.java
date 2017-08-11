@@ -37,7 +37,7 @@ import amuse.util.AmuseLogger;
  * Performs the calculation of the running mean of the given features
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class RunningMeanCalculator extends AmuseTask implements DimensionProcessorInterface {
 

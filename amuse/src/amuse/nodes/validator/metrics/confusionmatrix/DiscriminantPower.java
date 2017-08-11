@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * limited if DP < 2, fair if DP < 3 and good in other cases
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class DiscriminantPower extends ClassificationQualityDoubleMetricCalculator {
 

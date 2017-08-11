@@ -37,7 +37,7 @@ import amuse.interfaces.nodes.NodeException;
  * All parameters of ES are stored here
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ESConfiguration {
 

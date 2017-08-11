@@ -69,7 +69,7 @@ public class AmuseMusicFileTreeView {
     private JTree fileTree;
     private File relativeToPath;
     private DefaultMutableTreeNode databaseNode = new DefaultMutableTreeNode("Music Database", true);
-    private DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode("/", true);
+    private DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(File.separator, true);
     private String[] fileEndings;
     private JPanel buttonPanel = null;
     private JButton addButton = null;
@@ -280,13 +280,13 @@ public class AmuseMusicFileTreeView {
             node = mainNode;
         }
         // Insert nodes:
-        StringBuilder donePath = new StringBuilder("/");
+        StringBuilder donePath = new StringBuilder(File.separator);
         // Drop first pathseperator:
         if (path.charAt(0) == '/') {
             path = path.deleteCharAt(0);
         }
-        while (path.indexOf("/") != -1) {
-            donePath.append(path.substring(0, path.indexOf("/") + 1));
+        while (path.indexOf(File.separator) != -1) {
+            donePath.append(path.substring(0, path.indexOf(File.separator) + 1));
             Enumeration<FileMutableTreeNode> children = node.children();
             File expectedFile = new File(donePath.toString());
             FileMutableTreeNode existingChild = null;
@@ -302,7 +302,7 @@ public class AmuseMusicFileTreeView {
                 node.add(existingChild);
             }
             node = existingChild;
-            path.delete(0, path.indexOf("/") + 1);
+            path.delete(0, path.indexOf(File.separator) + 1);
         }
         Enumeration<FileMutableTreeNode> children = node.children();
         FileMutableTreeNode existingChild = null;
@@ -383,7 +383,7 @@ public class AmuseMusicFileTreeView {
     private class SelectArffDialog extends JFileChooser {
 
         public SelectArffDialog() {
-            super("experiments/filelists");
+            super("experiments" + File.separator + "filelists");
             this.setAcceptAllFileFilterUsed(false);
             this.setFileSelectionMode(JFileChooser.FILES_ONLY);
             this.setDialogTitle("Select ARFF File List");

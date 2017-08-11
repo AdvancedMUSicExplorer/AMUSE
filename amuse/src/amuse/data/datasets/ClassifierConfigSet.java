@@ -38,7 +38,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 /**
  * This class represents a list of classification tasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ClassifierConfigSet extends AbstractArffExperimentSet {
 

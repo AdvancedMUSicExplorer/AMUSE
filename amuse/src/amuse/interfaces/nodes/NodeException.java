@@ -27,7 +27,7 @@ package amuse.interfaces.nodes;
  * Selector node exception.
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeException.java 1054 2010-07-01 14:02:37Z vatolkin $
+ * @version $Id$
  */
 public class NodeException extends Exception {
 

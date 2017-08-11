@@ -30,7 +30,7 @@ import amuse.nodes.optimizer.methods.es.representation.interfaces.AbstractRepres
  * This representation consists of a vector of boolean values
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class BinaryVector extends AbstractRepresentation {
 

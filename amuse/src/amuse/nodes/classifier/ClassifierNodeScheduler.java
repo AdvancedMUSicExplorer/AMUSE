@@ -96,7 +96,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		ClassifierNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new ClassifierNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new ClassifierNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for classifier node intermediate results: " + e.getMessage());
@@ -112,7 +112,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(ClassifierNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_'" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -139,7 +139,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %classifier home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/input/task_" + this.jobId + "/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
@@ -185,7 +185,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				this.cleanInputFolder();
 			} catch(NodeException e) {
 				throw new NodeException("Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.CLASSIFICATION_COMPLETED, this));
 		}
@@ -463,9 +463,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader classifierTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		classifierTableLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+	    		classifierTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
-	    		classifierTableLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/classifierAlgorithmTable.arff"));
+	    		classifierTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierAlgorithmTable.arff"));
 	    	}
 			Instance currentInstance = classifierTableLoader.getNextInstance(classifierTableLoader.getStructure());
 			Attribute idAttribute = classifierTableLoader.getStructure().attribute("Id");

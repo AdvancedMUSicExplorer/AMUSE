@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricString;
  * Returns the list with correctly predicted instances
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStringMetricCalculator {
 

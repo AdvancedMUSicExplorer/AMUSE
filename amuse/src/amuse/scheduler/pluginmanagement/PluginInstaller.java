@@ -51,7 +51,7 @@ import org.apache.log4j.Level;
  * PluginInstaller installs AMUSE plugins
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class PluginInstaller {
 	
@@ -85,7 +85,7 @@ public class PluginInstaller {
 		// TODO Save the information about OS (e.g. if some plugins or tools can be run only under certain OS)
 		
 		try {
-			FileInputStream propertiesInput = new FileInputStream(pathToPluginFolder + "/plugin.properties");
+			FileInputStream propertiesInput = new FileInputStream(pathToPluginFolder + File.separator + "plugin.properties");
 			this.installProperties.load(propertiesInput);
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the plugin properties: " + e.getMessage());
@@ -216,7 +216,7 @@ public class PluginInstaller {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the list with installed plugins: " + e.getMessage());
 		}
@@ -237,7 +237,7 @@ public class PluginInstaller {
 	private void checkToolVersions() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting tool state check...");
 		
-		File toolList = new File(pathToPluginFolder + "/toolTable.arff");
+		File toolList = new File(pathToPluginFolder + File.separator + "toolTable.arff");
 		
 		// Are any tools required?
 		if(toolList.exists()) {
@@ -246,7 +246,7 @@ public class PluginInstaller {
 			DataSetAbstract requiredToolList;
 			try {
 				requiredToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 				// Go through all required tools and check if they are already installed
 				for(int i=0;i<requiredToolList.getValueCount();i++) {
@@ -282,9 +282,9 @@ public class PluginInstaller {
 	private void copyPluginJar() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting copying of plugin jar...");
 		
-		File pathToPluginJar = new File(pathToPluginFolder + "/" + installProperties.getProperty("PLUGIN_JAR"));
-		File pluginFolder = new File(System.getenv("AMUSEHOME") + "/lib/plugins/");
-		File destination = new File(System.getenv("AMUSEHOME") + "/lib/plugins/" + installProperties.getProperty("PLUGIN_JAR"));
+		File pathToPluginJar = new File(pathToPluginFolder + File.separator + installProperties.getProperty("PLUGIN_JAR"));
+		File pluginFolder = new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins" + File.separator + "");
+		File destination = new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins" + File.separator + installProperties.getProperty("PLUGIN_JAR"));
 		
 		// Create folder for plugin jars if it does not exist
 		if(!pluginFolder.exists()) {
@@ -307,7 +307,7 @@ public class PluginInstaller {
 	private void updateTools() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting tool list update...");
 		
-		File toolList = new File(pathToPluginFolder + "/toolTable.arff");
+		File toolList = new File(pathToPluginFolder + File.separator + "toolTable.arff");
 		
 		// Are any tools required?
 		if(toolList.exists()) {
@@ -321,7 +321,7 @@ public class PluginInstaller {
 			HashMap<Integer,Integer> installedToolsMap = new HashMap<Integer,Integer>();
 			try {
 				newToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 				// Go through all installed tools
 				for(int j=0;j<installedToolList.getValueCount();j++) {
@@ -350,15 +350,15 @@ public class PluginInstaller {
 								newToolList.getAttribute("Name").getValueAt(currentId).toString() + "...");
 						
 						String toolFolder = newToolList.getAttribute("Folder").getValueAt(currentId).toString();
-						File destination = new File(System.getenv("AMUSEHOME") + "/tools/"+ toolFolder);
+						File destination = new File(System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + ""+ toolFolder);
 						if(destination.exists()) {
 							throw new SchedulerException("Tool folder " + destination.getAbsolutePath() + 
-								" exists; please remove corresponding tool/plugins at first!");
+								" exists; please remove corresponding tool" + File.separator + "plugins at first!");
 						} else {
 							destination.mkdirs();
 						}
 						
-						FileOperations.copy(new File(pathToPluginFolder + "/" + toolFolder),destination,Level.INFO);
+						FileOperations.copy(new File(pathToPluginFolder + File.separator + toolFolder),destination,Level.INFO);
 						
 						AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,".." +  
 								newToolList.getAttribute("Name").getValueAt(currentId).toString() + " is successfully installed");
@@ -369,7 +369,7 @@ public class PluginInstaller {
 				// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 				// e.g. comments for attributes etc. which will be written also!
 				DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
-						"/config/toolTableUpdated.arff")));
+						File.separator + "config" + File.separator + "toolTableUpdated.arff")));
 				String sep = System.getProperty("line.separator");	
 				values_writer.writeBytes("% Table with installed tools" + sep);
 				values_writer.writeBytes("@RELATION tools" + sep + sep);
@@ -444,8 +444,8 @@ public class PluginInstaller {
 				values_writer.close();
 				
 				// Replace toolTable with toolTableUpdated
-				FileOperations.move(new File(System.getenv("AMUSEHOME") + "/config/toolTableUpdated.arff"), 
-						new File(System.getenv("AMUSEHOME") + "/config/toolTable.arff"));
+				FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
+						new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 			} catch(IOException e) {
 				throw new SchedulerException("Could not update the list with installed tools: " + e.getMessage());
@@ -490,7 +490,7 @@ public class PluginInstaller {
 	private void updateFeatureTable() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting feature list update...");
 		
-		File featureList = new File(pathToPluginFolder + "/featureTable.arff");
+		File featureList = new File(pathToPluginFolder + File.separator + "featureTable.arff");
 		
 		DataSetAbstract newFeatureList;
 		DataSetAbstract installedFeatureList;
@@ -500,7 +500,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureList = new ArffDataSet(featureList);
-			installedFeatureList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/featureTable.arff"));
+			installedFeatureList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
 				
 			// Go through all installed features
 			for(int j=0;j<installedFeatureList.getValueCount();j++) {
@@ -529,7 +529,7 @@ public class PluginInstaller {
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
 			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
-					"/config/featureTableUpdated.arff")));
+					File.separator + "config" + File.separator + "featureTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Table with all audio signal features available" + sep);
 			values_writer.writeBytes("% for computation in Amuse. If you wish to use" + sep);
@@ -643,8 +643,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace featureTable with featureTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + "/config/featureTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + "/config/featureTable.arff"));
+			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
+					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed features: " + e.getMessage());
@@ -659,7 +659,7 @@ public class PluginInstaller {
 	private void updateFeatureExtractorToolTable() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting feature extractors list update...");
 		
-		File featureExtractorList = new File(pathToPluginFolder + "/featureExtractorToolTable.arff");
+		File featureExtractorList = new File(pathToPluginFolder + File.separator + "featureExtractorToolTable.arff");
 		
 		DataSetAbstract newFeatureExtractorList;
 		DataSetAbstract installedFeatureExtractorList;
@@ -669,7 +669,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureExtractorMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureExtractorList = new ArffDataSet(featureExtractorList);
-			installedFeatureExtractorList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/featureExtractorToolTable.arff"));
+			installedFeatureExtractorList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 				
 			// Go through all installed feature extractor tools
 			for(int j=0;j<installedFeatureExtractorList.getValueCount();j++) {
@@ -698,7 +698,7 @@ public class PluginInstaller {
 			// TODO Better way could be to create a corresponding data set (FeatureExtractorListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
 			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
-					"/config/featureExtractorToolTableUpdated.arff")));
+					File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Feature extractors table" + sep);
 			values_writer.writeBytes("@RELATION extractors" + sep + sep);
@@ -714,7 +714,7 @@ public class PluginInstaller {
 			values_writer.writeBytes("@ATTRIBUTE StartScript STRING" + sep);
 			values_writer.writeBytes("% Base script for feature extraction" + sep);
 			values_writer.writeBytes("@ATTRIBUTE InputBaseBatch STRING" + sep);
-			values_writer.writeBytes("% Script for feature extraction (after the parameters / options were saved to base script)" + sep);
+			values_writer.writeBytes("% Script for feature extraction (after the parameters " + File.separator + " options were saved to base script)" + sep);
 			values_writer.writeBytes("@ATTRIBUTE InputBatch STRING" + sep + sep);
 			values_writer.writeBytes("@DATA" + sep);
 							
@@ -776,8 +776,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace featureExtractorTable with featureExtractorTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + "/config/featureExtractorToolTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + "/config/featureExtractorToolTable.arff"));
+			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
+					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with feature extractors: " + e.getMessage());
 		}
@@ -796,7 +796,7 @@ public class PluginInstaller {
 		// Key: plugin id; value: position in the DataSet
 		HashMap<Integer,Integer> installedPluginMap = new HashMap<Integer,Integer>();
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 			// Go through all installed plugins
 			for(int j=0;j<installedPluginList.getValueCount();j++) {
@@ -807,7 +807,7 @@ public class PluginInstaller {
 			// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
 			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
-					"/config/pluginTableUpdated.arff")));
+					File.separator + "config" + File.separator + "pluginTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");	
 			values_writer.writeBytes("% Table with installed plugins" + sep);
 			values_writer.writeBytes("@RELATION plugins" + sep + sep);
@@ -853,8 +853,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace pluginTable with pluginTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + "/config/pluginTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + "/config/pluginTable.arff"));
+			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
+					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed plugins: " + e.getMessage());
@@ -869,7 +869,7 @@ public class PluginInstaller {
 	private void saveDataForDeinstallation() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Saving data for deinstallation...");
 		
-		File destinationFolder = new File(System.getenv("AMUSEHOME") + "/config/plugininfo/" + installProperties.getProperty("ID"));
+		File destinationFolder = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + installProperties.getProperty("ID"));
 		if(!destinationFolder.exists()) {
 			destinationFolder.mkdirs();
 		}
@@ -877,46 +877,46 @@ public class PluginInstaller {
 		try {
 			
 			// Save the plugin properties
-			FileOperations.copy(new File(pathToPluginFolder + "/plugin.properties"), new File(destinationFolder.getAbsolutePath() + "/plugin.properties"),Level.INFO);
+			FileOperations.copy(new File(pathToPluginFolder + File.separator + "plugin.properties"), new File(destinationFolder.getAbsolutePath() + File.separator + "plugin.properties"),Level.INFO);
 			
 			// Save the pluginManager.jar if it exists
-			File fileToCopy = new File(pathToPluginFolder + "/pluginManager.jar");
+			File fileToCopy = new File(pathToPluginFolder + File.separator + "pluginManager.jar");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/pluginManager.jar"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "pluginManager.jar"),Level.INFO);
 			}
 			
 			// Save the algorithm tables if they exist
-			fileToCopy = new File(pathToPluginFolder + "/featureTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "featureTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/featureTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "featureTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/featureExtractorToolTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "featureExtractorToolTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/featureExtractorToolTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "featureExtractorToolTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/classifierAlgorithmTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "classifierAlgorithmTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/classifierAlgorithmTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "classifierAlgorithmTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/metricTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "metricTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/metricTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "metricTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/processorAlgorithmTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "processorAlgorithmTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/processorAlgorithmTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "processorAlgorithmTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/processorConversionAlgorithmTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "processorConversionAlgorithmTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/processorConversionAlgorithmTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "processorConversionAlgorithmTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/validationAlgorithmTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "validationAlgorithmTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/validationAlgorithmTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "validationAlgorithmTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + "/optimizerAlgorithmTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "optimizerAlgorithmTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + "/optimizerAlgorithmTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "optimizerAlgorithmTable.arff"),Level.INFO);
 			}
 		} catch(IOException e) {
 			throw new SchedulerException("Could not save data for deinstallation: " + e.getMessage());
@@ -930,12 +930,12 @@ public class PluginInstaller {
 	 * pathToPluginFolder/pluginManager.jar
 	 */
 	private void runFurtherRoutines() throws SchedulerException {
-		if(new File(pathToPluginFolder + "/pluginManager.jar").exists()) {
+		if(new File(pathToPluginFolder + File.separator + "pluginManager.jar").exists()) {
  			AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting plugin-specific installation routines...");
 		
 			PluginInstallerInterface pluginInstaller = null;
 			try {
-				File installer = new File(pathToPluginFolder + "/pluginManager.jar");
+				File installer = new File(pathToPluginFolder + File.separator + "pluginManager.jar");
 				URL path = installer.toURI().toURL();
 				JarClassLoader loader = new JarClassLoader(path);
 				Class<?> c = loader.loadClass(loader.getMainClassName());

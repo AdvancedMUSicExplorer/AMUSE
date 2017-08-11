@@ -38,7 +38,7 @@ import amuse.util.AmuseLogger;
  * Performs the calculation of the 1st and 2nd derivations of the given features
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class DerivationCalculator extends AmuseTask implements DimensionProcessorInterface {
 

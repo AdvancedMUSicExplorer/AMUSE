@@ -29,7 +29,7 @@ package amuse.interfaces.nodes;
  * Listeners of NodeEvent should implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeEventListener.java 1054 2010-07-01 14:02:37Z vatolkin $
+ * @version $Id$
  */
 public interface NodeEventListener {
 	

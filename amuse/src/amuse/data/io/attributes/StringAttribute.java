@@ -34,7 +34,7 @@ import java.util.Arrays;
  * String data.
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class StringAttribute extends Attribute {
 

@@ -29,7 +29,7 @@ package amuse.interfaces.nodes;
  * The instances which generate NodeEvents should implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeEventSource.java 1054 2010-07-01 14:02:37Z vatolkin $
+ * @version $Id$
  */
 public interface NodeEventSource {
 	

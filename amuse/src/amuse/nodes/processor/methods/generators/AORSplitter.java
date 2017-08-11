@@ -51,7 +51,7 @@ import amuse.util.AmuseLogger;
  * f_i(r) from the end of the release interval
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class AORSplitter extends AmuseTask implements DimensionProcessorInterface {
 

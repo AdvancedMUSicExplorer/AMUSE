@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -45,7 +46,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts validation of classifiers
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassificationValidationStarter.java 1099 2010-07-01 14:13:01Z vatolkin $
+ * @version $Id$
  */
 public class ClassificationValidationStarter extends AmuseTaskStarter {
 
@@ -85,7 +86,7 @@ public class ClassificationValidationStarter extends AmuseTaskStarter {
 				FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(validatorConfig);
@@ -129,13 +130,13 @@ public class ClassificationValidationStarter extends AmuseTaskStarter {
 				ValidatorNodeScheduler validatorThread = null;
 				try {
 					validatorThread = new ValidatorNodeScheduler(System.getenv("AMUSEHOME") + 
-							"/config/node/validator/input/task_" + this.jobCounter);
+							File.separator + "config" + File.separator + "node" + File.separator + "validator" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Validator node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare validator node scheduler arguments and start it as thread
-	   	    	validatorThread.setThreadParameters(System.getenv("AMUSEHOME") + "/config/node/validator", this.jobCounter, validatorConfig);
+	   	    	validatorThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "validator", this.jobCounter, validatorConfig);
 			    Thread newValidatorThread = new Thread(validatorThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

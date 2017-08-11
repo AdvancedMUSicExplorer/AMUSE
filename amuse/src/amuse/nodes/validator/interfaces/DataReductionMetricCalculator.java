@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * Methods which calculate data reduction metrics should extend this class.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class DataReductionMetricCalculator implements DataReductionMetricCalculatorInterface {
 	

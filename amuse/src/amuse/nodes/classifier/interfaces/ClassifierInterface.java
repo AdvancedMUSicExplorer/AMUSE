@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all classifiers.
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassifierInterface.java 1059 2010-07-01 14:03:46Z vatolkin $
+ * @version $Id$
  */
 public interface ClassifierInterface {
 	

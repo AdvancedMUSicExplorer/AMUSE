@@ -29,7 +29,7 @@ import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
  * All selection operators must extend this abstract class
  *
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class AbstractSelection implements SelectionInterface {
 	

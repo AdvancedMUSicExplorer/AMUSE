@@ -47,7 +47,7 @@ import com.rapidminer.operator.learner.lazy.KNNLearner;
  * Adapter for k-Nearest Neighbours. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: vatolkin $
+ * @version $Id$
  */
 public class KNNAdapter extends AmuseTask implements TrainerInterface {
 

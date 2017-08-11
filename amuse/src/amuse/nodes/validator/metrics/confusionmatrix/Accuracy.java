@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class Accuracy extends ClassificationQualityDoubleMetricCalculator {
 

@@ -38,7 +38,7 @@ import java.util.Arrays;
  * be handled case insensitve. (Male == mAlE)
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class NominalAttribute extends Attribute {
 

@@ -41,7 +41,7 @@ import amuse.util.AmuseLogger;
  * Rudolph, G.: An Evolutionary Algorithm for Integer Programming. Parallel Problem Solving from Nature - PPSN III, 139-148 (1994)
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class IntegerMutation extends AbstractMutation {
 

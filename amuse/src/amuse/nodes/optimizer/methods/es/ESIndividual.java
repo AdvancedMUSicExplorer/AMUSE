@@ -45,7 +45,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * ES individual
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ESIndividual {
 	

@@ -35,7 +35,7 @@ import amuse.data.io.attributes.StringAttribute;
 /**
  * This class represents a list of files as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class FileTableSet extends ArffDataSet {
 

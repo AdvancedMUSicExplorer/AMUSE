@@ -37,7 +37,7 @@ import amuse.util.AmuseLogger;
  * Performs zero mean - unit variance normalization
  * 
  * @author Igor Vatolkin
- * @version $Id: ZeroMeanUnitVarianceNormalizer.java 1078 2010-07-01 14:06:57Z vatolkin $
+ * @version $Id$
  */
 public class ZeroMeanUnitVarianceNormalizer extends AmuseTask implements DimensionProcessorInterface {
 

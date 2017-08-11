@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all classification trainers.
  * 
  * @author Igor Vatolkin
- * @version $Id: TrainerInterface.java 1080 2010-07-01 14:07:47Z vatolkin $
+ * @version $Id$
  */
 public interface TrainerInterface {
 	

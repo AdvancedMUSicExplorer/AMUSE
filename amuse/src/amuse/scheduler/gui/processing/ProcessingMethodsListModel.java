@@ -48,7 +48,7 @@ import amuse.scheduler.gui.algorithm.AlgorithmChangeListener;
 public class ProcessingMethodsListModel implements ListModel {
 
 	private File algorithmTableFile = new File(
-			"config/processorAlgorithmTable.arff");
+			"config" + File.separator + "processorAlgorithmTable.arff");
 	private AlgorithmTableSet algorithmDataSet;
 	private List<ProcessingAlgorithm> availableAlgorithms = new ArrayList<ProcessingAlgorithm>();
 	private List<ProcessingAlgorithm> selectedAlgorithms = new ArrayList<ProcessingAlgorithm>();

@@ -55,7 +55,7 @@ public class TrainingController extends AbstractController {
     WizardController wizardController;
     TrainingView trainingView;
     File ctFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-                + "/experiments/CT");
+                + File.separator + "experiments" + File.separator + "CT");
 
     /**
      * @param wizardController
