@@ -48,7 +48,7 @@ public class FeatureTableController implements ActionListener {
     private FeatureTableModel model;
     private FeatureTableView view;
 
-    private File featureFolder = new File("experiments/featurelists");
+    private File featureFolder = new File("experiments" + File.separator + "featurelists");
 
     /**
      * Creates a new FeatureTableController linkin model and view.

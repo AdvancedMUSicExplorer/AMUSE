@@ -64,7 +64,7 @@ import amuse.util.audio.AudioFileConversion;
  * and is notified about the extraction status.
  * 
  * @author Igor Vatolkin
- * @version $Id: ExtractorNodeScheduler.java 1196 2010-07-26 13:55:36Z waeltken $
+ * @version $Id$
  */
 public class ExtractorNodeScheduler extends NodeScheduler {
 
@@ -100,7 +100,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		ExtractorNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new ExtractorNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new ExtractorNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(ExtractorNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for extractor node intermediate results: " + e.getMessage());
@@ -116,7 +116,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(ExtractorNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -141,13 +141,13 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %trainer home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/config/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "config" + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 			try {
-				PluginLoader.loadPlugins(new File(this.nodeHome + "/lib/plugins"));
+				PluginLoader.loadPlugins(new File(this.nodeHome + File.separator + "lib" + File.separator + "plugins"));
 			} catch(SchedulerException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Could not load the plugins from folder '" + 
-						this.nodeHome + "/lib/plugins': " + e.getMessage() + "; trying to proceed the task anyway..");
+						this.nodeHome + File.separator + "lib" + File.separator + "plugins': " + e.getMessage() + "; trying to proceed the task anyway..");
 			}
 		}
 		
@@ -173,7 +173,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (II) Convert mp3 file to wave(s)
 		// --------------------------------
 		try {
-			AudioFileConversion.processFile(new File(this.nodeHome + "/input/task_" + this.jobId), 
+			AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
 					new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
@@ -184,7 +184,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
 		
 		// Find out the number of parts if the music file was splitted
-		File file = new File(this.nodeHome + "/input/task_" + this.jobId);
+		File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
 		if(!file.exists()) {
 			System.out.println("No music files found: " + file.getAbsolutePath());
 			System.exit(1);
@@ -233,7 +233,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			} catch(NodeException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_COMPLETED, this));
@@ -258,7 +258,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
-			fis = new FileInputStream(args[0] + "/task_" + args[1] + ".ser");
+			fis = new FileInputStream(args[0] + File.separator + "task_" + args[1] + ".ser");
 			in = new ObjectInputStream(fis);
 			extractorConfig = (ExtractionConfiguration)in.readObject();
 		    in.close();
@@ -290,9 +290,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		DataSetAbstract extractorTableSet;
 	    try {
 	    	if(this.directStart) {
-	    		extractorTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/featureExtractorToolTable.arff"));
+	    		extractorTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 	    	} else {
-	    		extractorTableSet = new ArffDataSet(new File(this.nodeHome + "/input/task_" + this.jobId + "/featureExtractorToolTable.arff"));
+	    		extractorTableSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "featureExtractorToolTable.arff"));
 	    	}
 			Attribute idAttribute = extractorTableSet.getAttribute("Id");
 			Attribute extractorNameAttribute = extractorTableSet.getAttribute("Name");
@@ -396,12 +396,12 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (I) If the song was splitted, create a new arff feature file from several
 		// -------------------------------------------------------------------------
 		if(numberOfParts > 1) {
-			File file = new File(this.nodeHome + "/input/task_" + this.jobId + "/1/" + 
+			File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator + 
 					((AmuseTask)adapter).getProperties().getProperty("extractorFolderName"));
 			File[] files = file.listFiles();
 			
 			// Create a folder for consolidated features
-			File folder = new File(this.nodeHome + "/input/task_" + this.jobId + "/features/");
+			File folder = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "features" + File.separator);
 			if (!folder.exists() && !folder.mkdirs()) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 						"Error creating temp folder; could not consolidate the features extracted by '" + 
@@ -421,9 +421,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				try {
 					
 					// Create the ARFF feature file for all features
-					String featureFileName = files[i].toString().substring(files[i].toString().lastIndexOf("/"));
-					FileOutputStream values_to = new FileOutputStream(this.nodeHome + "/input/task_" + this.jobId + 
-							"/features/" + featureFileName);
+					String featureFileName = files[i].toString().substring(files[i].toString().lastIndexOf(File.separator));
+					FileOutputStream values_to = new FileOutputStream(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + 
+							File.separator + "features" + File.separator + featureFileName);
 					DataOutputStream values_writer = new DataOutputStream(values_to);
 					String sep = System.getProperty("line.separator");
 					
@@ -437,8 +437,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					if(files[i].getName().toString().endsWith("_400.arff")) {
 						columnNumber = 1;
 					} else if(files[i].getName().toString().endsWith("_601.arff")) {
-						File currentPartFile = new File(this.nodeHome + "/input/task_" + this.jobId + "/1/" + 
-								((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + "/" + files[i].getName());
+						File currentPartFile = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator + 
+								((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + File.separator + files[i].getName());
 						FileReader featuresInput = null;
 						featuresInput = new FileReader(currentPartFile);
 						BufferedReader featuresReader = new BufferedReader(featuresInput);
@@ -452,8 +452,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 						}
 					} else {
 						for(int j=1;j<=numberOfParts;j++) {
-							File currentPartFile = new File(this.nodeHome + "/input/task_" + this.jobId + "/" + j + "/" + 
-									((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + "/" + files[i].getName());
+							File currentPartFile = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + j + File.separator + 
+									((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + File.separator + files[i].getName());
 							FileReader featuresInput = null;
 							featuresInput = new FileReader(currentPartFile);
 							BufferedReader featuresReader = new BufferedReader(featuresInput);
@@ -477,8 +477,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 						// Currently hard-coded, better solution required!!!
 						if(files[i].getName().toString().endsWith("_601.arff") && j>1) break;
 						
-						File currentPartFile = new File((this.nodeHome + "/input/task_" + this.jobId + "/" + j + "/" + 
-								((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + "/" + files[i].getName()));
+						File currentPartFile = new File((this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + j + File.separator + 
+								((AmuseTask)adapter).getProperties().getProperty("extractorFolderName") + File.separator + files[i].getName()));
 						
 						FileReader featuresInput = null;
 						featuresInput = new FileReader(currentPartFile);
@@ -569,7 +569,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		}
 		
 		// Create folders for features equal to folder structure of music database
-		StringTokenizer paths2Add = new StringTokenizer(this.inputFileName,"/");
+		StringTokenizer paths2Add = new StringTokenizer(this.inputFileName,File.separator);
 		ArrayList<String> pathsArray = new ArrayList<String>();
 		while(paths2Add.hasMoreElements()) {
 			pathsArray.add(new String(paths2Add.nextToken()));
@@ -596,9 +596,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// Move the extracted features
 		try {
 			if(numberOfParts > 1) {
-				FileOperations.move(new File(this.nodeHome + "/input/task_" + this.jobId + "/features/"), new File(path2Create.toString()) );
+				FileOperations.move(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "features" + File.separator), new File(path2Create.toString()) );
 			} else {
-				FileOperations.move(new File(this.nodeHome + "/input/task_" + this.jobId + "/1/" +  
+				FileOperations.move(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator +  
 						((AmuseTask)adapter).getProperties().getProperty("extractorFolderName")), 
 						new File(path2Create.toString()));
 			}

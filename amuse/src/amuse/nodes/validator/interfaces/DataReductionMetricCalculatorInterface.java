@@ -31,7 +31,7 @@ import amuse.interfaces.nodes.NodeException;
  * Methods which calculate data reduction metrics implement this interface.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface DataReductionMetricCalculatorInterface extends MetricCalculatorInterface {
 	

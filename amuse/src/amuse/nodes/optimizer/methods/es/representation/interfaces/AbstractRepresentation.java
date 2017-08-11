@@ -29,7 +29,7 @@ import amuse.nodes.optimizer.methods.es.ESConfiguration;
  * All ES representations must extend this abstract class
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class AbstractRepresentation implements RepresentationInterface, Cloneable {
 	

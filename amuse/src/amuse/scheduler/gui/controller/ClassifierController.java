@@ -63,7 +63,7 @@ public class ClassifierController extends AbstractController {
     private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
     private FileTreeController ftController = new FileTreeController(ftModel, fileView);
     private ClassifierView classifierView;
-    private static final File clFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/experiments/CL");
+    private static final File clFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "experiments" + File.separator + "CL");
 
     public ClassifierController(WizardController wc) {
         this.wizardController = wc;
@@ -86,7 +86,7 @@ public class ClassifierController extends AbstractController {
             return;
         }
         /* Gather all neccessary information and create variables */
-        File musicFilesFile = new File(file.getParent() + "/filelists/" + file.getName());
+        File musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
         String processedFeatureDescription = classifierView.getProcessingModelStr();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
         int categoryId = classifierView.getCategoryID();

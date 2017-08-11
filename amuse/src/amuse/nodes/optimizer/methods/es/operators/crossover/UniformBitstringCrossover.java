@@ -43,7 +43,7 @@ import amuse.util.AmuseLogger;
  * Uniform bit string crossover
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class UniformBitstringCrossover extends AbstractCrossover {
 

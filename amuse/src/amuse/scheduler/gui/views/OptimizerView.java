@@ -63,7 +63,7 @@ public class OptimizerView {
 	categoryPanelOptimizing = new CategorySelectionPanel();
 	categoryPanelTest = new CategorySelectionPanel();
         categoryPanelTest.setOptional(true);
-        optimizierAlgorithm = new AlgorithmConfigurationFacade("Optimizer Algorithm", new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/config/optimizerAlgorithmTable.arff"));
+        optimizierAlgorithm = new AlgorithmConfigurationFacade("Optimizer Algorithm", new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff"));
 	outputPanel = new JPanel(new MigLayout("fillx"));
 	outputPanel.setBorder(new TitledBorder("Set Output Descriptor"));
         outputPanel.add(txtOutputDescriptor, "growx, wrap");

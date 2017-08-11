@@ -35,7 +35,7 @@ import java.util.List;
  * This class starts other processes
  *
  * @author waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ExternalProcessBuilder {
 

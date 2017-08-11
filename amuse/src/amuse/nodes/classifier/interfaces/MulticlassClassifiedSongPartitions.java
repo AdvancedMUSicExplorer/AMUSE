@@ -27,7 +27,7 @@ package amuse.nodes.classifier.interfaces;
  * This class saves the multiclass results of a classification task
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class MulticlassClassifiedSongPartitions extends ClassifiedSongPartitions {
 	

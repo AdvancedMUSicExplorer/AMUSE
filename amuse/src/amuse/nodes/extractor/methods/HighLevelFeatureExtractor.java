@@ -66,7 +66,7 @@ import amuse.util.AmuseLogger;
  * window, the feature value for this window is 0.7.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInterface {
 
@@ -102,7 +102,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 		Document currentBaseScript = null;
 		try {
 			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + "/" + 
+					properties.getProperty("extractorFolder") + File.separator + 
 					properties.getProperty("inputExtractorBaseBatch"));
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open HighLevelFeatureExtractor base script: " + e.getMessage());
@@ -179,7 +179,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 		Document modifiedBaseScript = null;
 		try {
 			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + "/" + 
+					properties.getProperty("extractorFolder") + File.separator + 
 					properties.getProperty("inputExtractorBatch"));
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open HighLevelFeatureExtractor script: " + e.getMessage());
@@ -194,7 +194,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 			relativePath = relativePath.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 		}
 		relativePath = relativePath.substring(0,relativePath.lastIndexOf("."));
-		String musicFile = relativePath.substring(relativePath.lastIndexOf("/")+1);
+		String musicFile = relativePath.substring(relativePath.lastIndexOf(File.separator)+1);
 				
 		// Search for all AmuseEnabler Nodes
 		NodeList nList = modifiedBaseScript.getElementsByTagName("amuseEnableFeature");
@@ -237,7 +237,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 			
 				// Load the data set with processed features for this file
 				DataSet processedFeatures = new DataSet(new File(AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE) +
-						relativePath + "/" + musicFile + "_" + 
+						relativePath + File.separator + musicFile + "_" + 
 						processedFeaturesDescription + ".arff"));
 				StringTokenizer currentClassifierTok = new StringTokenizer(classifierAlgorithmDescription,";");
 				StringTokenizer currentSelectedFeaturesModelTok = new StringTokenizer(selectedFeaturesModel,";");
@@ -279,10 +279,10 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						processedFeaturesDescription, 
 						currentClassifierTok.nextToken(),
 						0,
-						this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
+						this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 							
 					cConf.setPathToInputModel(currentClassificationModelTok.nextToken());
-					ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
+					ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 					cs.setCleanInputFolder(false);
 					predictedFeatures = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 				
@@ -319,7 +319,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 				} 
 				
 				// Create a folder for Amuse feature files
-				File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + 
+				File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
 					this.correspondingScheduler.getTaskId() + 
 					//properties.getProperty("taskId") + 
 					File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));

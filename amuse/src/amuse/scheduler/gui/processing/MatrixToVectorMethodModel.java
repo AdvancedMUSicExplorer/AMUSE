@@ -44,7 +44,7 @@ import amuse.scheduler.gui.algorithm.Algorithm;
  * @author Clemens Waeltken
  */
 public class MatrixToVectorMethodModel implements ComboBoxModel {
-    private File file = new File("config/processorConversionAlgorithmTable.arff");
+    private File file = new File("config" + File.separator + "processorConversionAlgorithmTable.arff");
     private AlgorithmTableSet matrixToVectorSet;
     private List<Algorithm> methods = new Vector<Algorithm>();
     private Algorithm selectedMethod;

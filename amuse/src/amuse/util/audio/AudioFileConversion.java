@@ -170,8 +170,8 @@ public class AudioFileConversion {
         File targetFile = new File(targetDir.getAbsolutePath() + File.separator + "1" + File.separator + wavFile.getName());
 
         // Create targetDir if necessary
-        if (!new File(targetDir.getAbsolutePath() + "/1").exists()) {
-            new File(targetDir.getAbsolutePath() + "/1").mkdirs();
+        if (!new File(targetDir.getAbsolutePath() + File.separator + "1").exists()) {
+            new File(targetDir.getAbsolutePath() + File.separator + "1").mkdirs();
         }
         try {
             convertWithSettings(musicFile, targetFile);
@@ -196,11 +196,11 @@ public class AudioFileConversion {
 
             while (index <= splitFileCount) {
                 // Create folders if necessary:
-                if (!new File(targetDir.getAbsolutePath() + "/" + index).exists()) { // Create targetDir if necessary.
-                    new File(targetDir.getAbsolutePath() + "/" + index).mkdirs();
+                if (!new File(targetDir.getAbsolutePath() + File.separator + index).exists()) { // Create targetDir if necessary.
+                    new File(targetDir.getAbsolutePath() + File.separator + index).mkdirs();
                 }
                 File src = new File(wavFile.getAbsolutePath() + "." + index);
-                File dest = new File(targetDir.getAbsolutePath() + "/" + index + "/" + wavFile.getName());
+                File dest = new File(targetDir.getAbsolutePath() + File.separator + index + File.separator + wavFile.getName());
                 fileCopy(src, dest);
                 src.delete();
                 index++;
@@ -226,7 +226,7 @@ public class AudioFileConversion {
             return 1;
         }
         try {
-            tempOutputFile = new File(waveFile.getParentFile().getAbsolutePath() + "/.tmp_" + waveFile.getName());
+            tempOutputFile = new File(waveFile.getParentFile().getAbsolutePath() + File.separator + ".tmp_" + waveFile.getName());
             tmpOutputStream = new FileOutputStream(tempOutputFile);
             ais = AudioSystem.getAudioInputStream(waveFile);
             // Size to split at in Byte.
@@ -338,24 +338,24 @@ public class AudioFileConversion {
         AmusePreferences.putBoolean(KeysBooleanValue.SPLIT_WAVE, false);
         AmusePreferences.putBoolean(KeysBooleanValue.REDUCE_TO_MONO, false);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 0);
-        File musicFile = new File("test/test.mp3");
-        File destFolder = new File("test/stereo44/");
+        File musicFile = new File("test" + File.separator + "test.mp3");
+        File destFolder = new File("test" + File.separator + "stereo44" + File.separator);
         processFile(destFolder, musicFile);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 1);
-        destFolder = new File("test/stereo22/");
+        destFolder = new File("test" + File.separator + "stereo22" + File.separator);
         processFile(destFolder, musicFile);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 2);
-        destFolder = new File("test/stereo11/");
+        destFolder = new File("test" + File.separator + "stereo11" + File.separator);
         processFile(destFolder, musicFile);
         AmusePreferences.putBoolean(KeysBooleanValue.REDUCE_TO_MONO, true);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 0);
-        destFolder = new File("test/mono44/");
+        destFolder = new File("test" + File.separator + "mono44" + File.separator);
         processFile(destFolder, musicFile);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 1);
-        destFolder = new File("test/mono22/");
+        destFolder = new File("test" + File.separator + "mono22" + File.separator);
         processFile(destFolder, musicFile);
         AmusePreferences.putInt(KeysIntValue.DOWNSAMPLING_TARGET_SIZE_IN_HZ, 2);
-        destFolder = new File("test/mono11/");
+        destFolder = new File("test" + File.separator + "mono11" + File.separator);
         processFile(destFolder, musicFile);
     }
 

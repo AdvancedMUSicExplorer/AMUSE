@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * Correlation coefficient calculates the correlation between labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class StandardCorrelationCoefficient extends ClassificationQualityDoubleMetricCalculator {
 

@@ -69,7 +69,7 @@ import java.util.List;
  * href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: YaleAdapter.java 1250 2010-08-03 13:55:08Z vatolkin $
+ * @version $Id$
  */
 public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
@@ -172,7 +172,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 					.newTransformer();
 			DOMSource domsource = new DOMSource(yaleScript);
 			File modifiedScript = new File(
-					properties.getProperty("extractorFolder") + "/"
+					properties.getProperty("extractorFolder") + File.separator
 							+ properties.getProperty("inputExtractorBatch"));
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite())
@@ -566,7 +566,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		try {
 			featureDescriptionsloader.setFile(new File(properties
 					.getProperty("extractorFolder")
-					+ "/extractorFeatureTable.arff"));
+					+ File.separator + "extractorFeatureTable.arff"));
 
 			// Set up the attributes
 			Attribute idAttribute = featureDescriptionsloader.getStructure().attribute("Id");
@@ -632,7 +632,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 									musicFile.lastIndexOf(".")) + "_" + id
 							+ ".arff";
 				} else {
-					currentFeatureFile += "/"
+					currentFeatureFile += File.separator
 							+ musicFile
 									.substring(0, musicFile.lastIndexOf("."))
 							+ "_" + id + ".arff";

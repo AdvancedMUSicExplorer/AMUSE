@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * Absolute error sums up the differences between labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class AbsoluteError extends ClassificationQualityDoubleMetricCalculator {
 

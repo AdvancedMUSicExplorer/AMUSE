@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification validation task 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ValidationConfiguration extends TaskConfiguration {
 

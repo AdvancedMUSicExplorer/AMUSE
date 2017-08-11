@@ -32,7 +32,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all feature matrix to vector converters.
  * 
  * @author Igor Vatolkin
- * @version $Id: MatrixToVectorConverterInterface.java 1075 2010-07-01 14:06:24Z vatolkin $
+ * @version $Id$
  */
 public interface MatrixToVectorConverterInterface  {
 	

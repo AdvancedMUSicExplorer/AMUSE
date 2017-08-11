@@ -30,7 +30,7 @@ import java.util.Properties;
  * must implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface PluginInstallerInterface {
 

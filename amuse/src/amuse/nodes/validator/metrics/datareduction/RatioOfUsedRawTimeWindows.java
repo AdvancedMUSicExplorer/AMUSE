@@ -41,7 +41,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * the extraction of the second feature requires 4 smallest time frames.   
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class RatioOfUsedRawTimeWindows extends DataReductionMetricCalculator {
 

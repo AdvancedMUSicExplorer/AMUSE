@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * release interval end events.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVectorConverterInterface {
 

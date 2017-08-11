@@ -42,7 +42,7 @@ import amuse.util.AmuseLogger;
  * Change on Multiple Time Scales As a Correlate of Musical Complexity. Proceedings of ISMIR 2011.
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class StructuralComplexityConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 

@@ -38,7 +38,7 @@ import amuse.util.AmuseLogger;
  * Calculates quartile boundaries for the given feature matrix
  * 
  * @author Igor Vatolkin
- * @version $Id: QuartileConverter.java 1184 2010-07-12 13:00:00Z waeltken $
+ * @version $Id$
  */
 public class QuartileConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 

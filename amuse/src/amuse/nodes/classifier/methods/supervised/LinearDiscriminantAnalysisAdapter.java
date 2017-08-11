@@ -58,7 +58,7 @@ import amuse.util.ExternalProcessBuilder;
  * Adapter for Matlab Linear Discriminant Analysis. 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements ClassifierInterface {
 
@@ -89,7 +89,7 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 		
 		// (1) Save the dataSet as ARFF
 		try {
-			dataSetToClassify.saveToArffFile(new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
+			dataSetToClassify.saveToArffFile(new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "input.arff"));
 		} catch(IOException e) {
 			throw new NodeException("Could not save the data: " + e.getMessage());
 		}
@@ -115,17 +115,16 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			commands.add("-r");
 			commands.add("matlabLDA('" + 
 				// ARFF input for LDA classification
-				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff" + "','" + 
+				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "input.arff" + "','" + 
 				// Model (here the training set)
 				pathToModelFile + "','" + 
 				// Temporal output
-				this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/output.arff" + "')");
+				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "output.arff" + "')");
 			commands.add("-logfile");
 			commands.add("\"" + properties.getProperty("classifierFolder") + File.separator + "MatlabClassification.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(properties.getProperty("classifierFolder")));
 			matlab.setEnv("MATLABPATH", properties.getProperty("classifierFolder"));
-			
 			
 			
 			
@@ -232,8 +231,8 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 		// (3) Convert the results to AMUSE format
 		try {
 			dataSetToClassify.addAttribute(new StringAttribute("PredictedCategory", new ArrayList<String>()));
-			FileReader inputReader = new FileReader(new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + 
-					this.correspondingScheduler.getTaskId() + "/output.arff"));
+			FileReader inputReader = new FileReader(new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
+					this.correspondingScheduler.getTaskId() + File.separator + "output.arff"));
 			BufferedReader bufferedInputReader = new BufferedReader(inputReader);
 			String line =  new String();
 			line = bufferedInputReader.readLine();

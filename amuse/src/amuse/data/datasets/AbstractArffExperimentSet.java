@@ -30,7 +30,7 @@ import amuse.data.io.ArffDataSet;
 
 /**
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class AbstractArffExperimentSet extends ArffDataSet implements ArffExperimentSetInterface {
 

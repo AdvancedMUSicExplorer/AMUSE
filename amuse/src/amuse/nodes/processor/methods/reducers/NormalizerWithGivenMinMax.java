@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * from theoretical analysis or empirical study on a large amount of music files
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionProcessorInterface {
 
@@ -107,10 +107,10 @@ public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionPro
 		try {
 			if(this.correspondingScheduler.getDirectStart()) {
 				featuresMinMaxSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + 
-					"/tools/Normalizer/featureTableMaxMin.arff"));
+					File.separator + "tools" + File.separator + "Normalizer" + File.separator + "featureTableMaxMin.arff"));
 			} else {
 				featuresMinMaxSet = new ArffDataSet(new File(this.correspondingScheduler.getHomeFolder() + 
-					"/tools/Normalizer/featureTableMaxMin.arff"));
+					File.separator + "tools" + File.separator + "Normalizer" + File.separator + "featureTableMaxMin.arff"));
 			}
 		} catch (IOException e) {
 			throw new NodeException("Could not load featureTableMaxMin.arff: " + e.getMessage());

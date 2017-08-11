@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * of instances.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class RelativeError extends ClassificationQualityDoubleMetricCalculator {
 

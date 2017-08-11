@@ -39,7 +39,7 @@ import amuse.nodes.processor.ProcessingConfiguration;
 /**
  * This class represents a list of processing tasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ProcessorConfigSet extends AbstractArffExperimentSet {
 

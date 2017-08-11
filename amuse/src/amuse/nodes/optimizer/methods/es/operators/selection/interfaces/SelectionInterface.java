@@ -27,7 +27,7 @@ package amuse.nodes.optimizer.methods.es.operators.selection.interfaces;
  * All selection operators must implement this interface
  *
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface SelectionInterface {
 	

@@ -29,7 +29,7 @@ import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
  * Abstract mutation operator class
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class AbstractMutation implements MutationInterface {
 

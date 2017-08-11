@@ -65,7 +65,7 @@ import amuse.util.AmuseLogger;
  * ValidationNodeScheduler configures and runs the appropriate classifier validation method.
  * 
  * @author Igor Vatolkin
- * @version $Id: ValidatorNodeScheduler.java 1226 2010-08-02 14:13:57Z waeltken $
+ * @version $Id$
  */
 public class ValidatorNodeScheduler extends NodeScheduler { 
 
@@ -106,7 +106,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		ValidatorNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new ValidatorNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new ValidatorNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(ValidatorNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for validator node intermediate results: " + e.getMessage());
@@ -122,7 +122,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(ValidatorNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_'" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_'" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -163,7 +163,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %trainer home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/config/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "config" + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
@@ -243,7 +243,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				this.cleanInputFolder();
 			} catch(NodeException e) {
 				throw new NodeException("Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.VALIDATION_COMPLETED, this));
 		}
@@ -268,7 +268,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
-			fis = new FileInputStream(args[0] + "/task_" + args[1] + ".ser");
+			fis = new FileInputStream(args[0] + File.separator + "task_" + args[1] + ".ser");
 			in = new ObjectInputStream(fis);
 			Object o = in.readObject();
 			validatorConfig = (ValidationConfiguration[])o;
@@ -283,7 +283,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		for(int i=0;i<validatorConfig.length;i++) {
 			proceedTask(args[0],new Long(args[1]),validatorConfig[i]);
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Validator node is going to start job " + 
-					(i+1) + "/" + validatorConfig.length);
+					(i+1) + File.separator + validatorConfig.length);
 		}
 	}
 	
@@ -315,9 +315,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		Instance currentInstance;
 		try {
 			if(this.directStart) {
-				validationMethodLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/validationAlgorithmTable.arff"));
+				validationMethodLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "validationAlgorithmTable.arff"));
 	    	} else {
-	    		validationMethodLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/validationAlgorithmTable.arff"));
+	    		validationMethodLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "validationAlgorithmTable.arff"));
 	    	}
 			Attribute idAttribute = validationMethodLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = validationMethodLoader.getStructure().attribute("Name");
@@ -717,11 +717,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			// If no metric file is there, save header
 			boolean saveHeader = false;
 			// FIXME Currently the file is overwritten each time for Windows compatibility during optimization task
-			//if(!new File(this.folderForMetrics + "/" + "metrics.arff").exists()) {
+			//if(!new File(this.folderForMetrics + File.separator + "metrics.arff").exists()) {
 				saveHeader = true;
 			//}
-			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + "/" + "metrics.arff",true);
-			FileOutputStream values_to = new FileOutputStream(folderForMetrics + "/" + "metrics.arff");
+			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + File.separator + "metrics.arff",true);
+			FileOutputStream values_to = new FileOutputStream(folderForMetrics + File.separator + "metrics.arff");
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
 			
@@ -776,9 +776,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 		try {
 			if(this.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
-	    		classificationAlgorithmLoader.setFile(new File(this.getHomeFolder() + "/input/task_" + this.getTaskId() + "/classifierAlgorithmTable.arff"));
+	    		classificationAlgorithmLoader.setFile(new File(this.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.getTaskId() + File.separator + "classifierAlgorithmTable.arff"));
 	    	}
 			Attribute idAttribute = classificationAlgorithmLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = classificationAlgorithmLoader.getStructure().attribute("Name");
@@ -800,7 +800,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					// Check if the folder for metric file exists; if not create it
 					folderForMetrics = new File(
-							((ValidationConfiguration)taskConfiguration).getMetricDatabase() + "/" + 
+							((ValidationConfiguration)taskConfiguration).getMetricDatabase() + File.separator + 
 							categoryDescription + 
 							File.separator + classifierDescription + File.separator +
 							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +

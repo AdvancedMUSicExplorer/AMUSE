@@ -34,7 +34,7 @@ import amuse.util.AmuseLogger;
 /**
  * This enumeration lists all available keys to get presistent Strings from <code>AmusePreferences</code>.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public enum KeysStringValue {
 
@@ -89,7 +89,7 @@ public enum KeysStringValue {
                     return false;
                 }
                 // Maybe no need for this in future release.
-                File amusePreferences = new File(amuseFolder.getAbsolutePath() + "/config/amuse.properties");
+                File amusePreferences = new File(amuseFolder.getAbsolutePath() + File.separator + "config" + File.separator + "amuse.properties");
                 if (!amusePreferences.isFile()) {
                     AmuseLogger.write(this.getClass().toString(), Level.DEBUG, "File amuse.properties not found in config-folder of Amuse!");
                     return false;

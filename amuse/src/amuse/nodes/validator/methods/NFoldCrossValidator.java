@@ -61,7 +61,7 @@ import amuse.preferences.KeysStringValue;
  * Performs n-fold cross-validation
  * 
  * @author Igor Vatolkin
- * @version $Id: NFoldCrossValidator.java 1253 2010-08-03 14:05:51Z vatolkin $
+ * @version $Id$
  */
 public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface {
 	
@@ -131,9 +131,9 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 		}
 		try {
 			if(this.correspondingScheduler.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
-	    		classificationAlgorithmLoader.setFile(new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/classifierAlgorithmTable.arff"));
+	    		classificationAlgorithmLoader.setFile(new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "classifierAlgorithmTable.arff"));
 	    	}
 			Attribute idAttribute = classificationAlgorithmLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = classificationAlgorithmLoader.getStructure().attribute("Name");
@@ -153,9 +153,9 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 					// Check if the folder for model file(s) exists; if not create it
 					this.folderForModels = new File( 
 							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase()
-							+ "/" + ((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription() + 
-							"/" + classifierDescription + "/" + 
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + "/" + 
+							+ File.separator + ((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription() + 
+							File.separator + classifierDescription + File.separator + 
+							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + File.separator + 
 							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getValidationAlgorithmDescription() +
 							"-" + properties.getProperty("name"));
 					if(!this.folderForModels.exists()) {
@@ -324,8 +324,8 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				"-1",
 				new DataSetInput(trainingSet),
 				TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
-			tConf.setPathToOutputModel(this.folderForModels + "/model_" + i + ".mod");
-			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
+			tConf.setPathToOutputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
+			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);
 			
@@ -336,9 +336,9 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
-						((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/result.arff");
-			cConf.setPathToInputModel(this.folderForModels + "/model_" + i + ".mod");
-			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId());
+						((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
+			cConf.setPathToInputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
+			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
 			ArrayList<ClassifiedSongPartitions> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 			
@@ -464,11 +464,11 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				if(musicFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 					musicFile = musicFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length(),musicFile.length());
 				}
-				String absoluteName = musicFile.substring(musicFile.lastIndexOf("/")+1,musicFile.lastIndexOf("."));
-				String pathToFile = musicFile.substring(0,musicFile.lastIndexOf("/"));
+				String absoluteName = musicFile.substring(musicFile.lastIndexOf(File.separator)+1,musicFile.lastIndexOf("."));
+				String pathToFile = musicFile.substring(0,musicFile.lastIndexOf(File.separator));
 				musicFile = 
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase() + pathToFile + "/" + 
-						absoluteName + "/" + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + 
+					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase() + pathToFile + File.separator + 
+						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + 
 						".arff";
 				listOfUsedProcessedFeatureFiles.add(musicFile);
 				currentInstance = inputDescriptionLoader.getNextInstance(inputDescriptionLoader.getStructure());

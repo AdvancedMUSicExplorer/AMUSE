@@ -48,7 +48,7 @@ import java.util.Date;
  * DataSet contains different attributes with values
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class DataSet extends DataSetAbstract {
 

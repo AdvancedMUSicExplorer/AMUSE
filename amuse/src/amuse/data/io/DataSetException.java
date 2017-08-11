@@ -28,7 +28,7 @@ package amuse.data.io;
  * DataSetException indicates invalid usage of DataSet and Attribute Classes.
  * Invalid usage means access to non existing Attributes or trying to destroy the Attribute-Relation by adding Attributes with differnt amounts of values in them.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class DataSetException extends RuntimeException {
     /**

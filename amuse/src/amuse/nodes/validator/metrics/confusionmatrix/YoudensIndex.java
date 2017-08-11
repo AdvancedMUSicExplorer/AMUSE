@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * (i.e. generally avoid failures).
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class YoudensIndex extends ClassificationQualityDoubleMetricCalculator {
 

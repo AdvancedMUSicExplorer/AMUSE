@@ -39,7 +39,7 @@ import amuse.util.AmuseLogger;
  * Partition size for feature processing is set here. 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class PartitionSize extends IntegerValue {
 

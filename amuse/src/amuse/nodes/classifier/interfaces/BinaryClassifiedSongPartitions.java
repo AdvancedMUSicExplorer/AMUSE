@@ -27,7 +27,7 @@ package amuse.nodes.classifier.interfaces;
  * This class saves the binary results of a classification task
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class BinaryClassifiedSongPartitions extends ClassifiedSongPartitions {
 	

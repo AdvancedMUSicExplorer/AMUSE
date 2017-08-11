@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  *  Number of false negatives
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FalseNegatives extends ClassificationQualityDoubleMetricCalculator {
 

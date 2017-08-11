@@ -37,7 +37,7 @@ import amuse.util.AmuseLogger;
  * PluginLoader loads plugin classes to CLASSPATH
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class PluginLoader {
 	

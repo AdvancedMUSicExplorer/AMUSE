@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * For all validation metrics.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class ValidationMetric {
 	

@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id: MeanSquaredError.java 1086 2010-07-01 14:08:46Z vatolkin $
+ * @version $Id$
  */
 public class MeanSquaredError extends ClassificationQualityDoubleMetricCalculator {
 

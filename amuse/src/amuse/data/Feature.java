@@ -32,7 +32,7 @@ import java.util.ArrayList;
  * Processed features are also stored in this object.
  * 
  * @author Clemens Waeltken
- * @version $Id: Feature.java 1050 2010-07-01 14:01:33Z vatolkin $
+ * @version $Id$
  */
 public class Feature implements Serializable {
 

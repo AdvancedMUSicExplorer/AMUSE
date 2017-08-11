@@ -27,7 +27,7 @@ package amuse.interfaces.nodes;
  * All node schedulers should implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: NodeSchedulerInterface.java 1054 2010-07-01 14:02:37Z vatolkin $
+ * @version $Id$
  */
 public interface NodeSchedulerInterface {
 

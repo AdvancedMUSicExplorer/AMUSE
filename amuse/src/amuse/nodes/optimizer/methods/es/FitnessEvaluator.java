@@ -63,7 +63,7 @@ import amuse.util.FileOperations;
  * Evaluates the fitness of ES individual (optimization solution) starting required AMUSE tasks
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FitnessEvaluator {
 
@@ -258,7 +258,7 @@ public class FitnessEvaluator {
 			} else {
 				idOfSearchedAlgorithm = new Integer(classifierConfig);
 			}
-			classifierDescriptionLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+			classifierDescriptionLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 			classifierDescriptionInstance = classifierDescriptionLoader.getNextInstance(classifierDescriptionLoader.getStructure());
 			Attribute idAttribute = classifierDescriptionLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = classifierDescriptionLoader.getStructure().attribute("Name");
@@ -457,8 +457,8 @@ public class FitnessEvaluator {
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
 				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
-					getCorrespondingScheduler().getHomeFolder() + "/input/task_" + 
-					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + "/validator");
+					getCorrespondingScheduler().getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
+					individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator + "validator");
 				vs.setCleanInputFolder(false);
 				vs.setCategoryDescription(categoryForLearningDescription);
 				vs.proceedTask(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder(), 
@@ -470,7 +470,7 @@ public class FitnessEvaluator {
 				
 				String pathToModels = new String(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
 						individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator +"Models"+ File.separator +
-						categoryForLearningDescription + "/" + classifierDescription + File.separator + processedModel);
+						categoryForLearningDescription + File.separator + classifierDescription + File.separator + processedModel);
 					
 				// Train the model only with the features selected by EA
 				DataSet trainingDataWithOnlySelectedFeatures = new DataSet("TrainingSet");
@@ -552,7 +552,7 @@ public class FitnessEvaluator {
 		else {
 			String pathToModels = new String(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
 				individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() + File.separator +"Models"+ File.separator +
-				categoryForLearningDescription + "/" + classifierDescription + File.separator + processedModel);
+				categoryForLearningDescription + File.separator + classifierDescription + File.separator + processedModel);
 			
 			// Train the model only with the features selected by EA
 			DataSet trainingDataWithOnlySelectedFeatures = new DataSet("TrainingSet");

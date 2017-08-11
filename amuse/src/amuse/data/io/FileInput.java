@@ -27,7 +27,7 @@ package amuse.data.io;
  * AMUSE input which is saved in a singular file
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FileInput implements DataInputInterface {
 	

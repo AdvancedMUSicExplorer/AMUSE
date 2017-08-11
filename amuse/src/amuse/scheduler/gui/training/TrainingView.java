@@ -55,7 +55,7 @@ public class TrainingView {
 	}
 
 	public TrainingView(String leftTitle) {
-		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config/classifierAlgorithmTable.arff"));
+		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config" + File.separator + "classifierAlgorithmTable.arff"));
 		trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
 		this.categorySelectionPanel = new CategorySelectionPanel();
 		viewLeft = new JPanel(new MigLayout("fillx"));
@@ -65,7 +65,7 @@ public class TrainingView {
 		this.processingHistoryPanel = new ProcessingHistoryPanel();
 		viewLeft.add(categorySelectionPanel, "growx, span, wrap");
 		if (leftTitle.equals(trainingViewName)) {
-			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config/classifierPreprocessingAlgorithmTable.arff"));
+			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 			preprocessingAlgorithmFacade.setUseEnableButton(true);
 			preprocessingAlgorithmFacade.setSelectedAlgorithm("-1");
 			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");

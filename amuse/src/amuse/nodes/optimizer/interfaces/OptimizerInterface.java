@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * This interface defines the operations which should be supported by all optimizers.
  * 
  * @author Igor Vatolkin
- * @version $Id: OptimizerInterface.java 1065 2010-07-01 14:04:50Z vatolkin $
+ * @version $Id$
  */
 public interface OptimizerInterface {
 	

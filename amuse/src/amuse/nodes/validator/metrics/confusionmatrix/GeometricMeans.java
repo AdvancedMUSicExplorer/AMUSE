@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * the distribution stays balanced.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class GeometricMeans extends ClassificationQualityDoubleMetricCalculator {
 

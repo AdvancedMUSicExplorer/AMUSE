@@ -29,7 +29,7 @@ import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
  * Abstract crossover operator class
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class AbstractCrossover implements CrossoverInterface {
 

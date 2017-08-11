@@ -61,7 +61,7 @@ import amuse.util.AmuseLogger;
  * file.
  * 
  * @author Igor Vatolkin
- * @version $Id: Scheduler.java 1092 2010-07-01 14:09:34Z vatolkin $
+ * @version $Id$
  */
 public class Scheduler implements Runnable {
 
@@ -81,7 +81,7 @@ public class Scheduler implements Runnable {
 	private Scheduler() {
 		this.jobCounter = 0l;
 		try {
-			PluginLoader.loadPlugins(new File(System.getenv("AMUSEHOME") + "/lib/plugins"));
+			PluginLoader.loadPlugins(new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins"));
 		} catch(SchedulerException e) {
 			AmuseLogger.write(schedulerInstance.getClass().getName(),Level.ERROR,"Could not load properly AMUSE plugins, further " +
 					"errors are possible (" + e.getMessage() + ")");
@@ -127,7 +127,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void run() {
 		// Create input directory for logs of ready grid jobs
-		File inputDir = new File(System.getenv("AMUSEHOME") + "/taskinput");
+		File inputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskinput");
 		if(!inputDir.exists()) {
 			if(!inputDir.mkdirs()) {
 				AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not create an input folder for task logs");
@@ -146,7 +146,7 @@ public class Scheduler implements Runnable {
 		} 
 		
 		// Create output directory for task configurations of ongoing grid jobs
-		File outputDir = new File(System.getenv("AMUSEHOME") + "/taskoutput");
+		File outputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskoutput");
 		if(!outputDir.exists()) {
 			if(!outputDir.mkdirs()) {
 				AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not create an output folder for job configurations");
@@ -272,7 +272,7 @@ public class Scheduler implements Runnable {
 	 * Waits until all grid jobs belonging to one task are finished 
 	 */
 	private void waitForJobs(Long numberOfJobsToWaitFor) {
-		File inputDir = new File(System.getenv("AMUSEHOME") + "/taskinput");
+		File inputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskinput");
 		
 		// Sleep and look up for finished jobs
 		boolean isReady = false;
@@ -291,7 +291,7 @@ public class Scheduler implements Runnable {
 						
 							// TODO extract the exact Amuse job ID 
 							AmuseLogger.write(this.getClass().getName(),Level.INFO,
-								"Job " + fileName/*.substring(fileName.lastIndexOf(".")+1)*/ + " ready");
+								"Job " + fileName + " ready");
 	
 							// TODO RELEASE 0.2 The log results from nodes can be saved somewhere if required...
 							

@@ -32,7 +32,7 @@ import amuse.data.io.ArffDataSet;
 /**
  * This is a stub implementation for Attributes. Extend this Class for each Attribute Type.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class Attribute implements AttributeInterface {
     private static double missingValue = Double.NaN;

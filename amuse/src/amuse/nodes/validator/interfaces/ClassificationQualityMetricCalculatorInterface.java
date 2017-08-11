@@ -33,7 +33,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * should implement this interface.
  *  
  * @author Igor Vatolkin
- * @version $Id: ClassificationQualityMetricCalculatorInterface.java 1084 2010-07-01 14:08:28Z vatolkin $
+ * @version $Id$
  */
 public interface ClassificationQualityMetricCalculatorInterface extends MetricCalculatorInterface {
 	

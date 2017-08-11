@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -48,7 +49,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts feature processing
  * 
  * @author Igor Vatolkin
- * @version $Id: FeatureProcessingStarter.java 1232 2010-08-02 14:43:19Z waeltken $
+ * @version $Id$
  */
 public class FeatureProcessingStarter extends AmuseTaskStarter {
 
@@ -121,7 +122,7 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
 	   	   		FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(processorConfig);
@@ -165,13 +166,13 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
 				ProcessorNodeScheduler processorThread = null;
 				try {
 					processorThread = new ProcessorNodeScheduler(System.getenv("AMUSEHOME") + 
-							"/config/node/processor/input/task_" + this.jobCounter);
+							File.separator + "config" + File.separator + "node" + File.separator + "processor" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Processor node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare processor node scheduler arguments and start it as thread
-	   	    	processorThread.setThreadParameters(System.getenv("AMUSEHOME") + "/config/node/processor", this.jobCounter, processorConfig);
+	   	    	processorThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "processor", this.jobCounter, processorConfig);
 			    Thread newProcessorThread = new Thread(processorThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

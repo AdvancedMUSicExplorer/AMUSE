@@ -33,7 +33,7 @@ import amuse.nodes.optimizer.methods.es.representation.interfaces.Representation
  * Each mutation operator must implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface MutationInterface {
 

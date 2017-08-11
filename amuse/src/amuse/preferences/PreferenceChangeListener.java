@@ -25,7 +25,7 @@ package amuse.preferences;
 
 /**
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  * This Interface is used in combination with <code>AmusePrefereces</code>
  * to be able to listen to changes in the persitent data of Amuse.
  */

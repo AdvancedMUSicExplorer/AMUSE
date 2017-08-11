@@ -23,6 +23,8 @@
  */ 
 package amuse.nodes.trainer.methods.preprocessing;
 
+import java.io.File;
+
 import org.apache.log4j.Level;
 
 import amuse.data.io.DataSet;
@@ -49,7 +51,7 @@ import com.rapidminer.tools.OperatorService;
  * Removes outliers with distance-based method 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements ClassificationPreprocessingInterface {
 
@@ -109,7 +111,7 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			
 			// (4) Save the ExampleSet and replace the original data file for classification
 			Operator exampleWriter = OperatorService.createOperator(ArffExampleSetWriter.class);
-			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + "/input/task_" + this.correspondingScheduler.getTaskId() + "/input.arff"));
+			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "input.arff"));
 			process.getRootOperator().getSubprocess(0).addOperator(exampleWriter);
 			
 			// (4) Connect the ports

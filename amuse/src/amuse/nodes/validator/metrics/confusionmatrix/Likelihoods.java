@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * Higher positive and lower negative likelihood mean better performance on positive and negative classes.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class Likelihoods extends ClassificationQualityDoubleMetricCalculator {
 

@@ -37,7 +37,7 @@ import amuse.nodes.trainer.TrainingConfiguration;
 /**
  * This class represents a Training Configuration as used in AMUSE. Serialization to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class TrainingConfigSet extends AbstractArffExperimentSet {
 

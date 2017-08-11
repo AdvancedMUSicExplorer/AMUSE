@@ -41,7 +41,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification training task 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class TrainingConfiguration extends TaskConfiguration {
 

@@ -40,7 +40,7 @@ import amuse.util.AmuseLogger;
  * Random bit flip mutation
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class RandomBitFlip extends AbstractMutation {
 

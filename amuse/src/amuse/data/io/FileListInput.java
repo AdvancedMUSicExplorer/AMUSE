@@ -30,7 +30,7 @@ import java.util.List;
  * AMUSE input which is saved in a list of files
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class FileListInput implements DataInputInterface {
 	

@@ -52,7 +52,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for JMySVMLearner. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: vatolkin $
+ * @version $Id$
  */
 public class SVMAdapter extends AmuseTask implements TrainerInterface {
 

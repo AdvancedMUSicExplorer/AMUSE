@@ -45,7 +45,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for J48. For further details of Yale see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: J48Adapter.java 1121 2010-07-02 11:33:00Z vatolkin $
+ * @version $Id$
  */
 public class J48Adapter extends AmuseTask implements TrainerInterface {
 

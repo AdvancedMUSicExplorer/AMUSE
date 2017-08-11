@@ -36,7 +36,7 @@ import amuse.nodes.validator.metrics.confusionmatrix.base.TruePositives;
  * Precision metric
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class Precision extends ClassificationQualityDoubleMetricCalculator {
 

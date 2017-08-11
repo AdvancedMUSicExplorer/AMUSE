@@ -59,7 +59,7 @@ import amuse.util.AmuseLogger;
  * Evolutionary Strategy (ES) algorithm
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterface {
 
@@ -140,8 +140,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 					optimizationCategoryId = categoryTrainingId.toString();
 				}
 			}
-			File folderForResults = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + "/" + 
-					optimizationCategoryId + "/" + 
+			File folderForResults = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + File.separator + 
+					optimizationCategoryId + File.separator + 
 					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getDestinationFolder());
 			if(!folderForResults.exists()) {
 				folderForResults.mkdirs();
@@ -151,7 +151,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			File newLog = null;
 			// FIXME Provide some stopping criterion! If the log exists, the loop continues without stopping..
 			while(!logCreated) {
-				newLog = new File(folderForResults + "/optimization_" + 
+				newLog = new File(folderForResults + File.separator + "optimization_" + 
 					folderForResults.listFiles().length + "_" + esConfiguration.getESParameterByName("Random seed").getAttributes().getNamedItem("longValue").getNodeValue() + ".arff");
 				try {
 					if(newLog.createNewFile()) {

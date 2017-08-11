@@ -30,7 +30,7 @@ import amuse.nodes.optimizer.methods.es.representation.interfaces.AbstractRepres
  * This representation consists of an integer value with given max/min boundaries
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class IntegerValue extends AbstractRepresentation {
 

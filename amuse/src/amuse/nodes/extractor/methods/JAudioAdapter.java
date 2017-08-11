@@ -66,7 +66,7 @@ import java.util.List;
  * Adapter to jAudio feature extractor. For further details of jAudio see <a href="http://jaudio.sourceforge.net/">http://jaudio.sourceforge.net/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id: JAudioAdapter.java 1196 2010-07-26 13:55:36Z waeltken $
+ * @version $Id$
  */
 public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 
@@ -270,12 +270,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		try {
 		String amuse = AmusePreferences.get(KeysStringValue.AMUSE_PATH);
 		    List<String> libs = new ArrayList<String>();
-		    libs.add(amuse + "/tools/jAudio/jhall.jar");
-		    libs.add(amuse + "/tools/jAudio/mp3plugin.jar");
-		    libs.add(amuse + "/tools/jAudio/tritonus_remaining-0.3.6.jar");
-		    libs.add(amuse + "/tools/jAudio/tritonus_share-0.3.6.jar");
-		    libs.add(amuse + "/tools/jAudio/jAudio.jar");
-		    libs.add(amuse + "/lib/xerces.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "jhall.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "mp3plugin.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "tritonus_remaining-0.3.6.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "tritonus_share-0.3.6.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "jAudio.jar");
+		    libs.add(amuse + File.separator + "lib" + File.separator + "xerces.jar");
 		    List<String> javaParameters = new ArrayList<String>();
 		    javaParameters.add("-Xmx1024m");
 		    List<String> commands = new ArrayList<String>();
@@ -315,7 +315,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		ArffLoader featureIDsMappingLoader = new ArffLoader();
 		try {
 			// Load the ARFF file which maps jAudio feature descriptions to Amuse feature descriptions
-			featureIDsMappingLoader.setFile(new File(properties.getProperty("extractorFolder") + "/extractorFeatureTable.arff"));
+			featureIDsMappingLoader.setFile(new File(properties.getProperty("extractorFolder") + File.separator + "extractorFeatureTable.arff"));
 			
 			// Set up the first two hash maps
 			Attribute extractorDescriptionAttribute = featureIDsMappingLoader.getStructure().attribute("ExtractorDescription");
@@ -359,7 +359,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				// Load jAudio output feature file
 				ArffLoader featureLoader = new ArffLoader();
 				featureLoader.setFile(new File(this.outputFeatureFile));
-				
+
 				// Calculate the number of instances
 				int window_number = 0;
 				currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
@@ -386,7 +386,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
 				
 				// Create a folder for Amuse feature files
-				File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + 
+				File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
 						this.correspondingScheduler.getTaskId() + 
 						//properties.getProperty("taskId") + 
 						File.separator + this.currentPart + File.separator + properties.getProperty("extractorName"));

@@ -35,7 +35,7 @@ import amuse.data.io.attributes.StringAttribute;
 /**
  * This class represents a list of algorithms as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class AlgorithmTableSet extends ArffDataSet {
 

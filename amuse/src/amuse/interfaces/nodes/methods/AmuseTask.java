@@ -33,7 +33,7 @@ import amuse.interfaces.nodes.NodeScheduler;
  * (completely implemented in Amuse) or "adapter" (runs an external tool). 
  * 
  * @author Igor Vatolkin
- * @version $Id: AmuseTask.java 14 2008-04-11 10:13:58Z vatolkin $
+ * @version $Id$
  */
 public abstract class AmuseTask implements AmuseTaskInterface {
 	

@@ -95,7 +95,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		// Create the node scheduler
 		TrainerNodeScheduler thisScheduler = null;
 		try {
-			thisScheduler = new TrainerNodeScheduler(args[0] + "/input/task_" + args[1]);
+			thisScheduler = new TrainerNodeScheduler(args[0] + File.separator + "input" + File.separator + "task_" + args[1]);
 		} catch(NodeException e) {
 			AmuseLogger.write(TrainerNodeScheduler.class.getName(), Level.ERROR,
 					"Could not create folder for trainer node intermediate results: " + e.getMessage());
@@ -111,7 +111,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 				AmuseLogger.write(TrainerNodeScheduler.class.getClass().getName(), Level.WARN,
 					"Could not remove properly the folder with intermediate results '" + 
-					thisScheduler.nodeHome + "/input/task_'" + thisScheduler.jobId + 
+					thisScheduler.nodeHome + File.separator + "input" + File.separator + "task_'" + thisScheduler.jobId + 
 					"; please delete it manually! (Exception: "+ e.getMessage() + ")");
 		}
 	}
@@ -136,7 +136,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		// if this node is started via command line (e.g. in a grid, the properties are loaded from
 		// %trainer home folder%/input
 		if(!this.directStart) {
-			File preferencesFile = new File(this.nodeHome + "/config/amuse.properties");
+			File preferencesFile = new File(this.nodeHome + File.separator + "config" + File.separator + "amuse.properties");
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
@@ -241,7 +241,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			} catch(NodeException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
-					this.nodeHome + "/input/task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
+					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
 				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_COMPLETED, this));
@@ -266,7 +266,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
 		try {
-			fis = new FileInputStream(args[0] + "/task_" + args[1] + ".ser");
+			fis = new FileInputStream(args[0] + File.separator + "task_" + args[1] + ".ser");
 			in = new ObjectInputStream(fis);
 			Object o = in.readObject();
 			trainerConfig = (TrainingConfiguration[])o;
@@ -281,7 +281,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		for(int i=0;i<trainerConfig.length;i++) {
 			proceedTask(args[0],new Long(args[1]),trainerConfig[i]);
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Trainer node is going to start job " + 
-					(i+1) + "/" + trainerConfig.length);
+					(i+1) + File.separator + trainerConfig.length);
 		}
 	}
 	
@@ -544,9 +544,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			try {
 		    	ArffLoader classificationTrainerTableLoader = new ArffLoader();
 		    	if(this.directStart) {
-		    		classificationTrainerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierPreprocessingAlgorithmTable.arff"));
+		    		classificationTrainerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 		    	} else {
-		    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/classifierPreprocessingAlgorithmTable.arff"));
+		    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 		    	}
 		    	Instance currentInstance = classificationTrainerTableLoader.getNextInstance(classificationTrainerTableLoader.getStructure());
 				Attribute idAttribute = classificationTrainerTableLoader.getStructure().attribute("Id");
@@ -650,9 +650,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader classificationTrainerTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		classificationTrainerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + "/config/classifierAlgorithmTable.arff"));
+	    		classificationTrainerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
-	    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + "/input/task_" + this.jobId + "/classifierAlgorithmTable.arff"));
+	    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierAlgorithmTable.arff"));
 	    	}
 	    	Instance currentInstance = classificationTrainerTableLoader.getNextInstance(classificationTrainerTableLoader.getStructure());
 			Attribute idAttribute = classificationTrainerTableLoader.getStructure().attribute("Id");
@@ -675,9 +675,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						trainerProperties.setProperty("id",id.toString());
 						trainerProperties.setProperty("name",currentInstance.stringValue(nameAttribute));
 						if(this.directStart) {
-							trainerProperties.setProperty("homeFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+							trainerProperties.setProperty("homeFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 						} else {
-							trainerProperties.setProperty("homeFolder",this.nodeHome + "/tools/" + currentInstance.stringValue(homeFolderAttribute));
+							trainerProperties.setProperty("homeFolder",this.nodeHome + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
 						}
 						trainerProperties.setProperty("startScript",currentInstance.stringValue(startScriptAttribute));
 						trainerProperties.setProperty("inputBaseBatch",currentInstance.stringValue(inputBaseTrainingBatchAttribute));
@@ -743,10 +743,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			File folderForModels;
 			
 			folderForModels = new File(
-				((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + "/" + 
-				this.categoryDescription + "/" + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
+				((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 
+				this.categoryDescription + File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
 				"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-				requiredParameters + "/" + 
+				requiredParameters + File.separator + 
 				((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName());
 			
 			if(!folderForModels.exists()) {
@@ -756,7 +756,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					System.exit(1);
 				}
 			}
-			this.outputModel = new String(folderForModels + "/model.mod");
+			this.outputModel = new String(folderForModels + File.separator + "model.mod");
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the classification training with " + 
 				((AmuseTask)this.ctad).getProperties().getProperty("name") + "...");

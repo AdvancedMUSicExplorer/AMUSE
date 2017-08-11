@@ -39,7 +39,7 @@ import amuse.util.AmuseLogger;
  * Performs GMM conversion of the given feature matrix
  * 
  * @author Igor Vatolkin
- * @version $Id: GMMConverter.java 1210 2010-08-02 09:08:13Z vatolkin $
+ * @version $Id$
  */
 public class GMMConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 

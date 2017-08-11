@@ -27,7 +27,7 @@ package amuse.data.io;
  * AMUSE data input as DataSet
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class DataSetInput implements DataInputInterface {
 

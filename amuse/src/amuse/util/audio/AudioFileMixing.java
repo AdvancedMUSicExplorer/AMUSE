@@ -37,7 +37,7 @@ import java.util.List;
  * This class provides methods to mix various audio files to one.
  *
  * @author Clemens Waeltken
- * @version $Id: AudioFileMixing.java 1101 2010-07-01 14:14:50Z vatolkin $
+ * @version $Id$
  */
 public class AudioFileMixing {
 

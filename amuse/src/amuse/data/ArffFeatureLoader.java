@@ -36,7 +36,7 @@ import amuse.interfaces.nodes.NodeException;
  * Loads feature from an arff file
  * 
  * @author Igor Vatolkin
- * @version $Id: ArffFeatureLoader.java 1050 2010-07-01 14:01:33Z vatolkin $
+ * @version $Id$
  */
 public class ArffFeatureLoader {
 	

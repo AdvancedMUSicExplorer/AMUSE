@@ -44,7 +44,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification task 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ClassificationConfiguration extends TaskConfiguration {
 

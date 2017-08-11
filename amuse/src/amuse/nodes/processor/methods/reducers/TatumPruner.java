@@ -44,7 +44,7 @@ import amuse.util.AmuseLogger;
  * Performs tatum reduction of the given feature files
  * 
  * @author Igor Vatolkin
- * @version $Id: TatumPruner.java 1078 2010-07-01 14:06:57Z vatolkin $
+ * @version $Id$
  */
 public class TatumPruner extends AmuseTask implements DimensionProcessorInterface {
 
@@ -162,12 +162,12 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 				relativeName = currentTatumFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/")) + idPostfix;
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + idPostfix;
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName + idPostfix;
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+						File.separator + relativeName + idPostfix;
 			}	
 			
 			DataSetAbstract eventTimesSet = new ArffDataSet(new File(relativeName));

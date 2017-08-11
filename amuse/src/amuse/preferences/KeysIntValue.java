@@ -33,7 +33,7 @@ import amuse.util.AmuseLogger;
 /**
  * This enumeration lists all available keys to get presistent Integers from <code>AmusePreferences</code>.
  * @author Clemens Waeltken
- * @version $Id: KeysIntValue.java 1091 2010-07-01 14:09:27Z vatolkin $
+ * @version $Id$
  */
 public enum KeysIntValue {
 

@@ -37,7 +37,7 @@ import amuse.nodes.extractor.ExtractionConfiguration;
 /**
  * This class represents a list of extraction tasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class ExtractorConfigSet extends AbstractArffExperimentSet {
 

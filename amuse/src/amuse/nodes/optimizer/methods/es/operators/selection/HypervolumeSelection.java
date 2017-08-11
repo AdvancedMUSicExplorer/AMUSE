@@ -41,7 +41,7 @@ import amuse.nodes.validator.interfaces.ValidationMetricDouble;
  * 3rd Int'l Conf. (EMO 2005), LNCS 3410, pp. 62-76. Springer, Berlin, 2005.
  *
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class HypervolumeSelection extends AbstractSelection {
 

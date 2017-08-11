@@ -36,7 +36,7 @@ import amuse.util.AmuseLogger;
  * This class handles all persistent preferences of Amuse.
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class AmusePreferences {
 

@@ -29,7 +29,7 @@ import org.apache.log4j.Level;
  * AmuseLogger takes care of log messages
  * TODO add support for multiple listeners.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public interface LoggerListener {
 	public void receiveLoggerEvent(String category, Level level, String message);

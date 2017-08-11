@@ -30,7 +30,7 @@ import amuse.interfaces.nodes.NodeException;
  * (completely implemented in Amuse) or "adapter" (runs an external tool). 
  * 
  * @author Igor Vatolkin
- * @version $Id: AmuseTaskInterface.java 14 2008-04-11 10:13:58Z vatolkin $
+ * @version $Id$
  */
 public interface AmuseTaskInterface {
 	

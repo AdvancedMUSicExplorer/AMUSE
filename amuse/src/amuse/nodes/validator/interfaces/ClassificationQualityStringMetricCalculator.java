@@ -32,7 +32,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * Methods which calculate string metrics based on classification results and ground truth information should extend this class.
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public abstract class ClassificationQualityStringMetricCalculator implements ClassificationQualityMetricCalculatorInterface {
 	

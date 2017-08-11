@@ -59,7 +59,7 @@ import amuse.util.AmuseLogger;
  * From Nature (PPSN), Krakow, 2010
  *  
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip {
 

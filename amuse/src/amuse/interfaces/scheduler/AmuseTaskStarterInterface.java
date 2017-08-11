@@ -32,7 +32,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
  * All task starters should implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: AmuseTaskStarterInterface.java 1057 2010-07-01 14:03:25Z vatolkin $
+ * @version $Id$
  */
 public interface AmuseTaskStarterInterface {
 	

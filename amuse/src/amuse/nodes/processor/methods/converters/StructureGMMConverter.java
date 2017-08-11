@@ -46,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Performs GMM conversion of the given feature matrix
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class StructureGMMConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 
@@ -86,12 +86,12 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 				relativeName = currentStructureFile;
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
-			if(relativeName.lastIndexOf("/") != -1) {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-					relativeName.substring(relativeName.lastIndexOf("/")) + "_601.arff";
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_601.arff";
 			} else {
-				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + "/" + relativeName +  
-						"/" + relativeName + "_601.arff";
+				relativeName = AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +  
+						File.separator + relativeName + "_601.arff";
 			}	
 			
 			ArffLoader structureArffLoader = new ArffLoader();

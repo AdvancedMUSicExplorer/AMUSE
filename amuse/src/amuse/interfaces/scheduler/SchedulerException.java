@@ -27,7 +27,7 @@ package amuse.interfaces.scheduler;
  * Scheduler exception.
  * 
  * @author Igor Vatolkin
- * @version $Id: SchedulerException.java 1057 2010-07-01 14:03:25Z vatolkin $
+ * @version $Id$
  */
 public class SchedulerException extends Exception {
 	

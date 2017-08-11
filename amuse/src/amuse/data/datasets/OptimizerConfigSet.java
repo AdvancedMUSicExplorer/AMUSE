@@ -34,7 +34,7 @@ import amuse.nodes.optimizer.OptimizationConfiguration;
 /**
  * This class represents a list of optimization tasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class OptimizerConfigSet extends AbstractArffExperimentSet {
 

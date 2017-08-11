@@ -41,7 +41,7 @@ import amuse.util.AmuseLogger;
  * Describes the list of features for Amuse tasks 
  * 
  * @author Clemens Waeltken
- * @version $Id: $
+ * @version $Id$
  */
 public class FeatureTable implements Serializable {
 

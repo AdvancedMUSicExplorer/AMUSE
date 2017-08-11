@@ -27,7 +27,7 @@ package amuse.nodes.optimizer.methods.es.representation.interfaces;
  * All ES representations must implement this interface
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public interface RepresentationInterface {
 	

@@ -60,9 +60,9 @@ public class LibraryInitializer {
 				System.setProperty("rapidminer.init.plugins", "false");
 				System.setProperty("rapidminer.init.jdbc.lib", "false");
 				System.setProperty("rapidminer.init.jdbc.classpath", "false");
-				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_GLOBAL_LOG_FILE,pathToRapidMinerHome + File.separator + "rapidminer.log");
+				//System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS, pathToRapidMinerHome + File.separator + "OperatorsCore.xml");
 				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
-				LogService.getRoot().setLevel(Level.OFF);
+				//LogService.getRoot().setLevel(Level.OFF);
 				RapidMiner.init();
 			} catch(Exception e) {
 				throw e;

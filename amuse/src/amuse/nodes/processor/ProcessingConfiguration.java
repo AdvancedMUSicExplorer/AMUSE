@@ -41,7 +41,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a feature processing task 
  * 
  * @author Igor Vatolkin
- * @version $Id: $
+ * @version $Id$
  */
 public class ProcessingConfiguration extends TaskConfiguration {
 

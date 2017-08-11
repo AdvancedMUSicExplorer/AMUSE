@@ -56,7 +56,7 @@ import amuse.util.AmuseLogger;
  * This scheduler class starts feature extraction
  * 
  * @author Igor Vatolkin
- * @version $Id: FeatureExtractionStarter.java 1208 2010-07-30 13:46:44Z vatolkin $
+ * @version $Id$
  */
 public class FeatureExtractionStarter extends AmuseTaskStarter {
 
@@ -121,7 +121,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					FileOutputStream fos = null;
 		   	   		ObjectOutputStream out = null;
 		   	   		try {
-		   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + "/taskoutput/task_" + 
+		   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
 		   	   					this.jobCounter + ".ser"));
 		   	   		    out = new ObjectOutputStream(fos);
 		   	   		    out.writeObject(extractorConfigWithOneFile);
@@ -245,7 +245,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 		// --------------------------------------
     	// Load ARFF extractor table
 		try {
-			DataSetAbstract toolTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + "/config/featureExtractorToolTable.arff"));
+			DataSetAbstract toolTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 			Attribute idAttribute = toolTableSet.getAttribute("Id");
 			Attribute extractorNameAttribute = toolTableSet.getAttribute("Name");
 			Attribute adapterClassAttribute = toolTableSet.getAttribute("AdapterClass");

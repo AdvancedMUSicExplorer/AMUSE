@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * For validation metrics which consist of one double value.
  *  
  * @author Igor Vatolkin
- * @version $Id: ValidationMetricDouble.java 1122 2010-07-02 11:33:30Z vatolkin $
+ * @version $Id$
  */
 public class ValidationMetricDouble extends ValidationMetric {
 	
