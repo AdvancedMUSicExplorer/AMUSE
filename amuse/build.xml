@@ -1,0 +1,97 @@
+<project name="AMUSE" default="all">
+	<property name="amuseHome" location="." />
+
+	<target name="all" depends="CreateClassifierNodeSchedulerJar, CreateExtractorNodeSchedulerJar, CreateOptimizerNodeSchedulerJar, CreateProcessorNodeSchedulerJar, CreateTrainerNodeSchedulerJar, CreateValidatorNodeSchedulerJar, CreateAmuseFrameJar, CreateAmuseGuiJar, CreateAmuseUtilsJar">
+	</target>
+	<target name="clean">
+		<delete dir="bin" />
+	</target>
+
+	<target name="compile" unless="alreadyCompiled">
+		<echo message="Compiling the sources" />
+		<mkdir dir="bin" />
+		<path id="compileLibs">
+			<fileset dir="${amuseHome}/lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+		<javac srcdir="src" destdir="bin" includeantruntime="false">
+			<classpath refid="compileLibs" />
+		</javac>
+		<property name="alreadyCompiled" value="x" />
+	</target>
+
+	<target name="CreateClassifierNodeSchedulerJar" depends="compile" description="Create the Jar for the ClassifierNodeScheduler">
+		<echo message="Creating the Jar for the ClassifierNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/classifier/classifierNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/classifier/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.classifier.ClassifierNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateExtractorNodeSchedulerJar" depends="compile" description="Create the Jar for the ExtractorNodeScheduler">
+		<echo message="Creating the Jar for the ExtractorNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/extractor/extractorNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/extractor/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.extractor.ExtractorNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateOptimizerNodeSchedulerJar" depends="compile" description="Create the Jar for the OptimizerNodeScheduler">
+		<echo message="Creating the Jar for the OptimizerNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/optimizer/optimizerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/optimizer/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.optimizer.OptimizerNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateProcessorNodeSchedulerJar" depends="compile" description="Create the Jar for the ProcessorNodeScheduler">
+		<echo message="Creating the Jar for the ProcessorNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/processor/processorNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/processor/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.processor.ProcessorNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateTrainerNodeSchedulerJar" depends="compile" description="Create the Jar for the TrainerNodeScheduler">
+		<echo message="Creating the Jar for the TrainerNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/trainer/trainerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/trainer/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.trainer.TrainerNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateValidatorNodeSchedulerJar" depends="compile" description="Create the Jar for the ValidatorNodeScheduler">
+		<echo message="Creating the Jar for the ValidatorNodeScheduler" />
+		<jar destfile="${amuseHome}/config/node/validator/validatorNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/validator/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.nodes.validator.ValidatorNodeScheduler" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateAmuseFrameJar" depends="compile" description="Create the Jar for the AmuseFrame">
+		<echo message="Creating the Jar for the AmuseFrame" />
+		<jar destfile="${amuseHome}/lib/amuse-frame.jar" basedir="${amuseHome}/bin" includes="amuse/data/**,amuse/interfaces/**,amuse/preferences/**,amuse/scheduler/**">
+		</jar>
+	</target>
+
+	<target name="CreateAmuseGuiJar" depends="compile" description="Create the Jar for the AmuseGui">
+		<echo message="Creating the Jar for the AmuseGui" />
+		<jar destfile="${amuseHome}/lib/amuse-gui.jar" basedir="${amuseHome}/bin" includes="amuse/scheduler/gui/**">
+			<manifest>
+				<attribute name="Main-Class" value="amuse.scheduler.gui.controller.WizardController" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="CreateAmuseUtilsJar" depends="compile" description="Create the Jar for the AmuseUtils">
+		<echo message="Creating the Jar for the AmuseUtils" />
+		<jar destfile="${amuseHome}/lib/amuse-utils.jar" basedir="${amuseHome}/bin" includes="amuse/util/**"/>
+	</target>
+</project>
