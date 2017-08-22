@@ -107,6 +107,22 @@ public class FrequentChordSharesBasedOnChordDuration implements NNLSDerivedFeatu
 		} catch(IOException e) {
 			throw new NodeException("Error reading the feature file '" + sourceFile + "': " + e.getMessage());
 		}
+		finally{
+			if(featuresReader != null){
+				try {
+					featuresReader.close();
+				} catch (IOException e) {
+					// The program can still continue, unclosed Streams may only effect deleting operations
+				}
+			}
+			if(featuresInput != null){
+				try {
+					featuresInput.close();
+				} catch (IOException e) {
+					// The program can still continue, unclosed Streams may only effect deleting operations
+				}
+			}
+		}
 		
 		Iterator<String> iterator = chord2Duration.keySet().iterator();
 	    while(iterator.hasNext()){
@@ -167,6 +183,22 @@ public class FrequentChordSharesBasedOnChordDuration implements NNLSDerivedFeatu
 			featuresReader.close();
 		} catch(IOException e) {
 			throw new NodeException("Error reading the feature file '" + sourceFile + "': " + e.getMessage());
+		}
+		finally{
+			if(featuresReader != null){
+				try {
+					featuresReader.close();
+				} catch (IOException e) {
+					// The program can still continue, unclosed Streams may only effect deleting operations
+				}
+			}
+			if(featuresInput != null){
+				try {
+					featuresInput.close();
+				} catch (IOException e) {
+					// The program can still continue, unclosed Streams may only effect deleting operations
+				}
+			}
 		}
 		
 		double lowerBound = 0d;
@@ -301,6 +333,7 @@ public class FrequentChordSharesBasedOnChordDuration implements NNLSDerivedFeatu
 						shareOf40PercentFrequentChords.get(i) + "," + shareOf60PercentFrequentChords.get(i) + "," + (i+1) + sep);
 			}
 			values_writer.close();
+			values_to.close();
 		} catch(IOException e) {
 			throw new NodeException("Error writing to the AMUSE feature file '" + targetFile + "':" + e.getMessage());
 		}

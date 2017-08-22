@@ -284,9 +284,11 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			int rows = currentFeature.getDimension();
 			
 			// Start writing the arff file
+			FileOutputStream values_to = null;
+			DataOutputStream writer = null;
 			try {
-				FileOutputStream values_to = new FileOutputStream(new File(outputAmuseFeature));
-				DataOutputStream writer = new DataOutputStream(values_to);
+				values_to = new FileOutputStream(new File(outputAmuseFeature));
+				writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
 								
 				// Start off by describing the feature (name, rows, columns, sample_rate, window_size)
@@ -332,13 +334,36 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 					i++;
 				}
 				writer.close();
+				values_to.close();
+				
 			}
 			catch(IOException e) {
 				throw new NodeException("Could not read the csv output from Sonic Annotator: " + e.getMessage());
 			}
-			
+			finally{
+				if(writer != null){
+					try {
+						writer.close();
+					} catch (IOException e) {
+		                AmuseLogger.write(SonicAnnotatorAdapter.class.getName(), Level.DEBUG, "Could not close a DataOutputStream.");
+					}
+				}
+				if(values_to != null){
+					try {
+						values_to.close();
+					} catch (IOException e) {
+		                AmuseLogger.write(SonicAnnotatorAdapter.class.getName(), Level.DEBUG, "Could not close a FileOutputStream.");
+					}
+				}
+			}
+
 			try {
 				featuresReader.close();
+			} catch (IOException e) {
+				throw new NodeException("Could not close the input stream: " + e.getMessage());
+			}
+			try {
+				featuresInput.close();
 			} catch (IOException e) {
 				throw new NodeException("Could not close the input stream: " + e.getMessage());
 			}
@@ -371,6 +396,8 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			{
 				attributeTypes[i] = strTok.nextToken().contains("\"") ? "STRING" : "NUMERIC"; // String values appear with "
 			}
+			featuresReader.close();
+			featuresInput.close();
 			return attributeTypes;
 		} catch (FileNotFoundException e) {
 			throw new NodeException("Could not find the file with extracted features: " + e.getMessage());
