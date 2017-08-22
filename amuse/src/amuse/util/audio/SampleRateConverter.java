@@ -24,7 +24,10 @@
 package amuse.util.audio;
 
 import javax.sound.sampled.*;
+
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class SampleRateConverter {
@@ -60,11 +63,16 @@ public class SampleRateConverter {
           */
         AudioFileFormat sourceFileFormat = AudioSystem.getAudioFileFormat(sourceFile);
         AudioFileFormat.Type targetFileType = sourceFileFormat.getType();
-
         /* Here, we are reading the source file.
+         * The sourceFile is only properly released when creating the AudioInputstream with another Inputstream.
            */
+        
+    
         AudioInputStream sourceStream = null;
-        sourceStream = AudioSystem.getAudioInputStream(sourceFile);
+        FileInputStream tmpFis = new FileInputStream(sourceFile);
+        BufferedInputStream tmpBis = new BufferedInputStream(tmpFis);
+        sourceStream = AudioSystem.getAudioInputStream(tmpBis);
+        
         if (sourceStream == null) {
             out("cannot open source audio file: " + sourceFile);
             System.exit(1);
@@ -73,7 +81,6 @@ public class SampleRateConverter {
         if (DEBUG) {
             out("source format: " + sourceFormat);
         }
-
         /* Currently, the only known and working sample rate
              converter for Java Sound requires that the encoding
              of the source stream is PCM (signed or unsigned).
@@ -126,7 +133,11 @@ public class SampleRateConverter {
           */
         int nWrittenBytes = 0;
         nWrittenBytes = AudioSystem.write(targetStream, targetFileType, targetFile);
+        targetStream.close();
         sourceStream.close();
+        tmpBis.close();
+        tmpFis.close();
+
         if (DEBUG) {
             out("Written bytes: " + nWrittenBytes);
         }

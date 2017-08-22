@@ -25,6 +25,7 @@ package amuse.nodes.extractor.methods;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -358,8 +359,16 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				
 				// Load jAudio output feature file
 				ArffLoader featureLoader = new ArffLoader();
-				featureLoader.setFile(new File(this.outputFeatureFile));
-
+				FileInputStream outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
+				featureLoader.setSource(outputFeatureFileStream);
+				
+				Object o = i.next();
+				
+				// If the feature from featureIdToFeatureList has not been extracted by jAudio, go on
+				if(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(0))) == null) {
+					outputFeatureFileStream.close();
+					continue;
+				}
 				// Calculate the number of instances
 				int window_number = 0;
 				currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
@@ -367,15 +376,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 					currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
 					window_number++;
 				}
-				featureLoader.reset();
-				featureLoader.setFile(new File(this.outputFeatureFile));
+				featureLoader = new ArffLoader();
+				outputFeatureFileStream.close();
+				outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
+				featureLoader.setSource(outputFeatureFileStream);
 				
-				Object o = i.next();
 				
-				// If the feature from featureIdToFeatureList has not been extracted by jAudio, go on
-				if(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(0))) == null) {
-					continue;
-				}
 				
 				// Get the jAudio ARFF attributes for current Amuse feature ID
 				FastVector atts = new FastVector();
@@ -412,6 +418,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 					}
 				if (!feature_values_save_file.exists())
 					feature_values_save_file.createNewFile();
+
 				FileOutputStream values_to = new FileOutputStream(feature_values_save_file);
 				DataOutputStream values_writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
@@ -467,6 +474,9 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				
 				// Close the feature file
 				values_writer.close();
+				values_to.close();
+				outputFeatureFileStream.close();
+				
 			}
 		}
 		catch(Exception e) {
@@ -474,6 +484,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 			throw new NodeException("Conversion of jAudio features failed: " + e.getMessage());
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extracted features has been converted to Amuse ARFF");
+
 	}
 
 	/*

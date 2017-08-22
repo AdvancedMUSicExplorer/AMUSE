@@ -180,7 +180,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				"Audio decoding error: " + e.getMessage());
 			System.exit(1);
 		}
-		
+
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
 		
 		// Find out the number of parts if the music file was splitted
@@ -364,7 +364,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		    
 			// Start the feature extractors for all parts
 			for(int currentPart = 1; currentPart <= this.numberOfParts; currentPart++) {
-                            String sep = File.separator;
+                String sep = File.separator;
 				String musicInput = new String(this.nodeHome + sep + "input" + sep + "task_" + this.jobId + sep + currentPart + sep + inputFileName);
 				String featureOutput = new String(this.nodeHome + sep + "input" + sep + "task_" + this.jobId + sep + currentPart + sep +
 						inputFileName.substring(0,inputFileName.lastIndexOf(".")) + "_" +  
