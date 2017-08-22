@@ -34,6 +34,8 @@ import org.apache.log4j.Level;
 
 import javax.sound.sampled.*;
 import javax.sound.sampled.AudioFileFormat.Type;
+
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -220,6 +222,8 @@ public class AudioFileConversion {
     public static int splitWaveFile(File waveFile, int splitSize) throws IOException {
         int part = 1;
         AudioInputStream ais = null;
+        FileInputStream tmpFis = null;
+        BufferedInputStream tmpBis = null;
         File tempOutputFile = null;
         FileOutputStream tmpOutputStream = null;
         if (waveFile.length() < splitSize) {
@@ -228,7 +232,9 @@ public class AudioFileConversion {
         try {
             tempOutputFile = new File(waveFile.getParentFile().getAbsolutePath() + File.separator + ".tmp_" + waveFile.getName());
             tmpOutputStream = new FileOutputStream(tempOutputFile);
-            ais = AudioSystem.getAudioInputStream(waveFile);
+            tmpFis = new FileInputStream(waveFile);
+            tmpBis = new BufferedInputStream(tmpFis);
+            ais = AudioSystem.getAudioInputStream(tmpBis);
             // Size to split at in Byte.
             int maxSize = 1024 * splitSize;
             File currentOutputFile = getNextSplitFile(waveFile, part);
@@ -261,6 +267,12 @@ public class AudioFileConversion {
         } finally {
             if (ais != null) {
                 ais.close();
+            }
+            if (tmpBis != null) {
+                tmpBis.close();
+            }
+            if (tmpFis != null) {
+                tmpFis.close();
             }
             if (tmpOutputStream != null) {
                 tmpOutputStream.close();
@@ -365,9 +377,9 @@ public class AudioFileConversion {
         fileCopy(file, tmpFile);
         float hz = format.getSampleRate();
         while (hz > targetKHZ) {
-	    hz = hz / 2;
-	}
-        SampleRateConverter.changeFormat(tmpFile, file, hz, isReduceToMono);
-        tmpFile.delete();
-    }
+		    hz = hz / 2;
+		}
+	        SampleRateConverter.changeFormat(tmpFile, file, hz, isReduceToMono);
+	        tmpFile.delete();
+	    }
 }

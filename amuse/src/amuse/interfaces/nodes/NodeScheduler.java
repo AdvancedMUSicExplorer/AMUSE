@@ -210,7 +210,7 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 			
 			if(!delete(f, true))
                     	AmuseLogger.write(this.getClass().getName(),Level.WARN, "Could not clean the folder with intermediate results '" + 
-                    			this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually!");
+                    			this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "'; please delete it manually!");
                         // TODO v0.2 because of Weka ArffLoader bug (streams remain opened)
                     	// throw new NodeException("Could not delete file: " + f.getAbsolutePath());
                 }

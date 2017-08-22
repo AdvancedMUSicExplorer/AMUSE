@@ -560,7 +560,16 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 			throw new NodeException("Problems loading the Yale output: "
 					+ e.getMessage());
 		}
-
+		finally{
+			try {
+				featuresReader.close();
+			} catch (IOException e) {
+				throw new NodeException("Problems loading the Yale output: "
+						+ e.getMessage());
+			}
+		}
+		
+		
 		// Load the IDs of features
 		ArffLoader featureDescriptionsloader = new ArffLoader();
 		try {
@@ -703,7 +712,8 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 				// Close the feature file
 				values_writer.close();
-
+				values_to.close();
+				
 				// Update the position of current feature in array
 				positionOfCurrentFeatureInArray += dimensions;
 
