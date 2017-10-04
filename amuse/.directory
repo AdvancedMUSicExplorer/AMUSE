@@ -1,9 +1,11 @@
 [Dolphin]
 AdditionalInfo=3
-Timestamp=2009,11,2,17,10,3
+Timestamp=2017,9,29,15,17,52
+Version=3
 ViewMode=1
 
 [Settings]
+HiddenFilesShown=true
 ShowDotFiles=true
 
 [URL properties]

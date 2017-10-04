@@ -61,7 +61,7 @@ public final class WizardController implements WizardControllerInterface {
 	private ValidationController validationController;
 	private Scheduler scheduler;
 	private OptimizationController optimizationController;
-	private AnnotationController annotationController;
+	//private AnnotationController annotationController;
 
 	private WizardController() {
 		instance = this;
@@ -319,8 +319,8 @@ public final class WizardController implements WizardControllerInterface {
 
 	@Override
 	public void goToAnnotationEditor(){
-		annotationController = new AnnotationController(instance);
-		wizard.showInWizardPane(annotationController.getView());
+		//annotationController = new AnnotationController(instance);
+		//wizard.showInWizardPane(annotationController.getView());
 
 	}
 }
