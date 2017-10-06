@@ -28,9 +28,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -39,6 +37,7 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 
@@ -62,7 +61,6 @@ import amuse.util.ExternalProcessBuilder;
  */
 public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements ClassifierInterface {
 
-	Process matlabProcess;
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.interfaces.AmuseTaskInterface#setParameters(java.lang.String)
@@ -134,31 +132,19 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			pathToWatch.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
 			
 			// Start the matlab process
-			matlabProcess = matlab.start();
-			
-			// This thread waits for Matlab to finish while the log is monitored
-			Thread waitingThread = new Thread(){
-				
-				public void run(){
-					try {
-						matlabProcess.waitFor();
-					} catch (InterruptedException e) {
-						
-					}
-				}
-			};
-			waitingThread.start();
-			
+			Process matlabProcess = matlab.start();
 			
 			// Monitor the log file as long as the process did not finish on its own.
-			waitingLoop:
-			while (waitingThread.isAlive()) {
+			while (matlabProcess.isAlive()) {
 
-			    WatchKey key;
+				WatchKey key;
 			    try {
-			        key = watcher.take(); // Waits until something has changed in the directory
+			        key = watcher.poll(1, TimeUnit.SECONDS); // Waits until something has changed in the directory
 			    } catch (InterruptedException x) {
-			        return;
+			        continue;
+			    }
+			    if(key == null){
+			    	continue;
 			    }
 
 			    for (WatchEvent<?> event: key.pollEvents()) {
@@ -198,9 +184,10 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			        	    
 			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
 			        	    if(errorComplete){
-			        	    	AmuseLogger.write("LinearDiscriminantAnalysisAdapter", Level.DEBUG, "Output from the Matlab-log:\n" +errortext);
-			        	    	matlabProcess.destroy();
-			        	    	break waitingLoop; // Classification was unsuccessful. Therefore, monitoring is not required anymore.
+			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" +errortext);
+
+			    				throw new NodeException("Classification with Matlab failed");
+			        	    
 			        	    }
 			        	} catch(FileNotFoundException e) { 
 			        	    throw new NodeException("Unable to monitor the log-File from Matlab. " + e.getMessage());
@@ -219,10 +206,6 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			    }
 			}
 			
-			// If the waitingThread is still alive at this point, the log contains an error and the classification failed.
-			if(waitingThread.isAlive()){
-				throw new NodeException("Classification with Matlab failed");
-			}
 		} catch (IOException e) {
         	throw new NodeException("Classification with Matlab failed: " + e.getMessage());
         } 
