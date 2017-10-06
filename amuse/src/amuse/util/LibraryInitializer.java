@@ -24,7 +24,10 @@
 package amuse.util;
 
 import java.io.File;
+import java.util.logging.Handler;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
@@ -59,9 +62,33 @@ public class LibraryInitializer {
 				System.setProperty("rapidminer.init.plugins", "false");
 				System.setProperty("rapidminer.init.jdbc.lib", "false");
 				System.setProperty("rapidminer.init.jdbc.classpath", "false");
-				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS,"/OperatorsCoreReduced.xml");//pathToRapidMinerHome + File.separator + "OperatorsCore.xml");
 				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
-				LogManager.getLogManager().reset(); // Prevent Rapidminer from logging
+				
+				// DEV_INFO: To load all operators, comment the next line
+				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS,"/OperatorsCoreReduced.xml");
+				
+
+				// This log handler redirects messages to the AmuseLogger
+				Handler logHandler = new Handler() {
+					
+					@Override
+					public void publish(LogRecord record) {
+						AmuseLogger.write("RapidMiner", org.apache.log4j.Level.DEBUG, record.getMessage());
+					}
+					
+					@Override
+					public void flush() {
+					}
+					
+					@Override
+					public void close() throws SecurityException {
+					}
+				};
+				
+				// Add the handler to Rapidminers logging system
+				Logger rootLogger = LogManager.getLogManager().getLogger("");
+				rootLogger.removeHandler(rootLogger.getHandlers()[0]);
+				rootLogger.addHandler(logHandler);
 				RapidMiner.init();
 			} catch(Exception e) {
 				throw e;
