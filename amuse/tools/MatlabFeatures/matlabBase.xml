@@ -26,7 +26,7 @@ k=strfind(input_file,'.');
 output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 
 % loads wav input file, called input.wav
-[x,fs] = wavread(input_file);
+[x,fs] = amuse_audio_read(input_file);
 
 % determine number of windows
 s = size(x);
