@@ -28,7 +28,7 @@ tic
 nFeatures = CMRARE_GetFeatures(polyOrder);
     
 % read audio data
-[inl,fs] = wavread(char(pathToWave));
+[inl,fs] = amuse_audio_read(char(pathToWave));
         
 % change sampling rate to desired value if necessary
 if fs ~= sampFreq
