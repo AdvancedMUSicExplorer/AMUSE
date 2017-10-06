@@ -126,6 +126,9 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
 	    default:
 		selectedLevel = Level.ALL;
 	}
+	if (selectedLevel == Level.ALL){
+		return true;
+	}
 	if (level == Level.ERROR) {
 	    return true;
 	}
