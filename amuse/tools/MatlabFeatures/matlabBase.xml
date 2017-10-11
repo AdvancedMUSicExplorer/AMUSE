@@ -19,11 +19,11 @@ wlength = 512;
 woffset = wlength;
 
 % for the cutting of the path to file and its extension
-p=strfind(input_file,'/');
+p=strfind(input_file,filesep);
 k=strfind(input_file,'.');
 
 % create Amuse ARFF feature file
-output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
+output_file_prefix = [output_dir,filesep,input_file(p(end)+1:k(end)-1),'_'];
 
 % loads wav input file, called input.wav
 [x,fs] = amuse_audio_read(input_file);
@@ -81,6 +81,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	arff_saver_with_windows_number([output_file_prefix,'45.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,110250);
 </text>
 </amuseEnableFeature>
+
 <amuseEnableFeature id="46" dimensions="12">
 <text>
 	% compute CMRARE cepstral modulation features with polynomial order 5
