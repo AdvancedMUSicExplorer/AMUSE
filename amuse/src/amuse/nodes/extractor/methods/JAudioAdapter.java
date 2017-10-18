@@ -276,7 +276,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "tritonus_remaining-0.3.6.jar");
 		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "tritonus_share-0.3.6.jar");
 		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "jAudio.jar");
-		    libs.add(amuse + File.separator + "lib" + File.separator + "xerces.jar");
+		    libs.add(amuse + File.separator + "tools" + File.separator + "jAudio" + File.separator + "xerces.jar");
 		    List<String> javaParameters = new ArrayList<String>();
 		    javaParameters.add("-Xmx1024m");
 		    List<String> commands = new ArrayList<String>();
