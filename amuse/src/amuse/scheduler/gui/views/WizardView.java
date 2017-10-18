@@ -61,24 +61,6 @@ public class WizardView {
 
     JTabbedPane tabbedPane;
 
-    JButton buttonCreateExperiment = new JButton("Create Amuse Experiments");
-
-    JButton buttonLoadExperiment = new JButton("Load Amuse Experiment");
-
-    JButton buttonAmuseSettings = new JButton("Edit Amuse Settings");
-
-    JButton buttonFeatureExtraction = new JButton("Feature Extraction");
-
-    JButton buttonFeatureProcessing = new JButton("Feature Processing");
-    
-    JButton buttonTraining = new JButton("Classification Training");
-
-    JButton buttonClassifier = new JButton("Classification");
-    
-    JButton buttonValidation = new JButton("Classification Validation");
-    
-    //JButton buttonAnnotation = new JButton("Create Annotation"); 
-
     JPanelAmuseLogger scrollableLogger;
 
     ButtonPanelInterface newLoadPreferencesButtons = new JButtonPanelWithHeading("What are you going to do?");
@@ -96,32 +78,55 @@ public class WizardView {
         overallLayoutPanel.setLayout(layout);
 
         // CreatscrollableLoggere Scrollable Logger Pane:
-	scrollableLogger = new JPanelAmuseLogger();
-	scrollableLogger.startListening();
+		scrollableLogger = new JPanelAmuseLogger();
+		scrollableLogger.startListening();
+		
+		
+		// Adding buttons to the main screen
+		JButton buttonCreateExperiment = new JButton("Create Amuse Experiments");
+		buttonCreateExperiment.addActionListener(e -> showCreateExperimentPane());
+		newLoadPreferencesButtons.addButton(buttonCreateExperiment);
 
-        // Create New/Load/Settings ButtonPanel:
-        buttonCreateExperiment.addActionListener(new CreateExprimentListener());
-        newLoadPreferencesButtons.addButton(buttonCreateExperiment);
-        buttonLoadExperiment.addActionListener(new LoadExperimentListener());
-        buttonLoadExperiment.setEnabled(false);
-        newLoadPreferencesButtons.addButton(buttonLoadExperiment);
-        buttonAmuseSettings.addActionListener(new AmuseSettingsListener());
-        newLoadPreferencesButtons.addButton(buttonAmuseSettings);
-        
-        //buttonAnnotation.addActionListener(new AnnotationListener());
-        //newLoadPreferencesButtons.addButton(buttonAnnotation);
+	    JButton buttonLoadExperiment = new JButton("Load Amuse Experiment");
+	    buttonLoadExperiment.addActionListener(new ActionListener() {
+	    	@Override
+	    	public void actionPerformed(ActionEvent e) {
+	    		throw new UnsupportedOperationException("Not yet implemented1");
+	    	}
+	    });
+	    buttonLoadExperiment.setEnabled(false);
+	    newLoadPreferencesButtons.addButton(buttonLoadExperiment);
+	    
+	    JButton buttonAmuseSettings = new JButton("Edit Amuse Settings");
+	    buttonAmuseSettings.addActionListener(e -> wizardController.goToSettings());
+	    newLoadPreferencesButtons.addButton(buttonAmuseSettings);
 
-        // Create New Experiment ButtonPanel:
-        buttonFeatureExtraction.addActionListener(new FeatureExtractionListener());
-        newExperimentButtons.addButton(buttonFeatureExtraction);
-        buttonFeatureProcessing.addActionListener(new FeatureProcessingListener());
-        newExperimentButtons.addButton(buttonFeatureProcessing);
-        buttonTraining.addActionListener(new TrainingExperimentListener());
-        newExperimentButtons.addButton(buttonTraining);
-        newExperimentButtons.addButton(buttonClassifier);
-        buttonClassifier.addActionListener(new ClassifierButtonListener());
-        newExperimentButtons.addButton(buttonValidation);
-        buttonValidation.addActionListener(new ValidationButtonListener());
+	    //JButton buttonAnnotation = new JButton("Create Annotation"); 
+	    //buttonAnnotation.addActionListener(e -> wizardController.goToAnnotationEditor());
+	    //newLoadPreferencesButtons.addButton(buttonAnnotation);
+
+	    
+	    // Create New Experiment ButtonPanel:
+	    JButton buttonFeatureExtraction = new JButton("Feature Extraction");
+	    buttonFeatureExtraction.addActionListener(e -> wizardController.goToFeatureExtraction());
+	    newExperimentButtons.addButton(buttonFeatureExtraction);
+
+	    JButton buttonFeatureProcessing = new JButton("Feature Processing");
+	    buttonFeatureProcessing.addActionListener(e -> wizardController.goToFeatureProcessing());
+	    newExperimentButtons.addButton(buttonFeatureProcessing);
+	    
+	    JButton buttonTraining = new JButton("Classification Training");
+	    buttonTraining.addActionListener(e -> wizardController.goToTrainingExperiment());
+	    newExperimentButtons.addButton(buttonTraining);
+
+	    JButton buttonClassifier = new JButton("Classification");
+	    buttonClassifier.addActionListener(e -> wizardController.goToClassification());
+	    newExperimentButtons.addButton(buttonClassifier);
+	    
+	    JButton buttonValidation = new JButton("Classification Validation");
+	    newExperimentButtons.addButton(buttonValidation);
+	    buttonValidation.addActionListener(e -> wizardController.goToValidation());
+		
 
         // Initialise WizardView Panel with New/Load/Preferences:
         contentArea = new JPanel(new BorderLayout());
@@ -164,79 +169,6 @@ public class WizardView {
     }
 
     
-	private final class ValidationButtonListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			wizardController.goToValidation();
-		}
-	}
-
-	private final class ClassifierButtonListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			wizardController.goToClassification();
-		}
-	}
-
-	/**
-     * Listeners for Buttons:
-     */
-    private class CreateExprimentListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            showCreateExperimentPane();
-        }
-    }
-
-    private class LoadExperimentListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            throw new UnsupportedOperationException("Not yet implemented1");
-        }
-    }
-
-    private class AmuseSettingsListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            wizardController.goToSettings();
-        }
-    }
-    
-    private class AnnotationListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            wizardController.goToAnnotationEditor();
-        }
-    }
-
-    private class FeatureExtractionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            wizardController.goToFeatureExtraction();
-        }
-    }
-
-    private class FeatureProcessingListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            wizardController.goToFeatureProcessing();
-        }
-    }
-    
-
-	private class TrainingExperimentListener implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			wizardController.goToTrainingExperiment();
-		}
-	}
-
 
 	/**
 	 * 
