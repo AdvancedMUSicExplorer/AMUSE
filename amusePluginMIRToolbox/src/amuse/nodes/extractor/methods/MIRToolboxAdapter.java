@@ -26,11 +26,20 @@ package amuse.nodes.extractor.methods;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -244,13 +253,92 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
-			Process pc = matlab.start();
 			
-		    pc.waitFor();
+			
+			// Monitor the path that contains the log file
+			WatchService watcher = FileSystems.getDefault().newWatchService();
+			Path pathToWatch = FileSystems.getDefault().getPath(properties.getProperty("extractorFolder"));
+			pathToWatch.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
+						
+			// Start the matlab process
+			Process matlabProcess = matlab.start();
+			
+			// Monitor the log file as long as the process did not finish on its own.
+			while (matlabProcess.isAlive()) {
+			    WatchKey key;
+			    try {
+			        key = watcher.poll(1, TimeUnit.SECONDS); // Waits until something has changed in the directory
+			    } catch (InterruptedException x) {
+			        continue;
+			    }
+			    if(key == null){
+			    	continue;
+			    }
+	
+			    for (WatchEvent<?> event: key.pollEvents()) {
+			        WatchEvent.Kind<?> kind = event.kind();
+			        
+			        // OVERFLOW signals that an event may be lost, in which case we do not need to consider it.
+			        if (kind == StandardWatchEventKinds.OVERFLOW) {
+			            continue;
+			        }
+	
+			        Path filename = ((WatchEvent<Path>)event).context(); // Get the filename of the modified/ new file.
+	
+			        // Only open the log if it was modified
+			        if(filename.toString().equals("MIRToolbox.log")){
+			        	File logFile = new File(pathToWatch.resolve(filename).toString());
+			        	Scanner scanner = null;
+			        	
+			        	// Iterate through the file and search for errors.
+			        	try {
+			        	    scanner = new Scanner(logFile);
+			        	    String errortext = "";
+			        	    Boolean errorOccurred = false;
+			        	    Boolean errorComplete = false;
+			        	    
+			        	    // When an error occurred, concatenate the whole error message
+			        	    while (scanner.hasNextLine()) {
+			        	        String line = scanner.nextLine();
+			        	        errorOccurred = errorOccurred | line.contains("Error");
+			        	        if(errorOccurred) { 
+			        	            errortext += line + "\n";
+			        	        }
+			        	        if(line.contains("}")){ // The error message ends with "}"
+			        	        	errorComplete = true;
+			        	        	break;
+			        	        }
+			        	    }
+			        	    
+			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
+			        	    if(errorComplete){
+			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" + errortext);
+
+			        	    	throw new NodeException("Extraction with Matlab failed");
+			        	    }
+			        	} catch(FileNotFoundException e) { 
+			        	    throw new NodeException("Unable to monitor the log-File from Matlab. " + e.getMessage());
+			        	} finally {
+			        		if(scanner != null){
+				        		scanner.close();
+				        	}
+						}
+			        }
+			    }
+	
+			    // Reset the key
+			    boolean valid = key.reset();
+			    if (!valid) {
+			        break;
+			    }
+			}
+			
+			
+			
+			
+			
 		} catch (IOException e) {
         	throw new NodeException("Extraction with MIR Toolbox failed: " + e.getMessage());
-        } catch (InterruptedException e) {
-            throw new NodeException("Extraction with MIR Toolbox interrupted! " + e.getMessage());
         }
 	}
 	
