@@ -38,7 +38,7 @@ import amuse.util.AmuseLogger;
  */
 public enum KeysStringValue {
 
-    AMUSE_PATH, AMUSE_VERSION, MUSIC_DATABASE, FEATURE_DATABASE, PROCESSED_FEATURE_DATABASE, CATEGORY_DATABASE, MODEL_DATABASE, METRIC_DATABASE, OPTIMIZATION_DATABASE,
+    AMUSE_PATH, AMUSE_VERSION, MUSIC_DATABASE, ANNOTATION_DATABASE, FEATURE_DATABASE, PROCESSED_FEATURE_DATABASE, CATEGORY_DATABASE, MODEL_DATABASE, METRIC_DATABASE, OPTIMIZATION_DATABASE,
     GRID_SCRIPT_EXTRACTOR, GRID_SCRIPT_PROCESSOR, GRID_SCRIPT_TRAINER, GRID_SCRIPT_CLASSIFIER, GRID_SCRIPT_VALIDATOR, GRID_SCRIPT_OPTIMIZER, JAVA_PATH, MATLAB_PATH;
 
     /**
@@ -77,6 +77,7 @@ public enum KeysStringValue {
                 return !value.equalsIgnoreCase("NO_VALUE");
             case METRIC_DATABASE:
             case MUSIC_DATABASE:
+            case ANNOTATION_DATABASE:
             case FEATURE_DATABASE:
             case PROCESSED_FEATURE_DATABASE:
             case MODEL_DATABASE:
@@ -141,6 +142,7 @@ public enum KeysStringValue {
 		map.put(AMUSE_PATH.toString(), "Absolute path to Amuse folder:");
 		map.put(AMUSE_VERSION.toString(), "Amuse version:");
 		map.put(MUSIC_DATABASE.toString(), "Absolute path to database folder with music files:");
+		map.put(ANNOTATION_DATABASE.toString(), "Absolute path to database folder with annotations:");
 		map.put(FEATURE_DATABASE.toString(), "Absolute path to database folder with features:");
 		map.put(OPTIMIZATION_DATABASE.toString(), "Absolute path to database folder with optimization results:");
 		map.put(PROCESSED_FEATURE_DATABASE.toString(), "Absolute path to database folder with processed features:");

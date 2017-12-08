@@ -32,13 +32,21 @@ import amuse.scheduler.gui.navigation.JPanelAmuseNavigator;
 import amuse.scheduler.gui.navigation.NavigatorInterface;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+import javax.swing.plaf.synth.SynthSplitPaneUI;
 
 
 /**
@@ -63,7 +71,7 @@ public class WizardView {
 
     JPanelAmuseLogger scrollableLogger;
 
-    ButtonPanelInterface newLoadPreferencesButtons = new JButtonPanelWithHeading("What are you going to do?");
+    JPanel newLoadPreferencesButtons;
 
     ButtonPanelInterface newExperimentButtons = new JButtonPanelWithHeading("What kind of experiment?");
 
@@ -81,11 +89,23 @@ public class WizardView {
 		scrollableLogger = new JPanelAmuseLogger();
 		scrollableLogger.startListening();
 		
+		JPanel startPanel = new JPanel(new BorderLayout());
+		JLabel label = new JLabel("What are you going to do?");
+		label.setHorizontalAlignment(SwingConstants.CENTER);
+		startPanel.add(label, BorderLayout.NORTH);
+		
+		JPanel startButtonsPanel = new JPanel();
+		startButtonsPanel.setLayout(new BoxLayout(startButtonsPanel, BoxLayout.LINE_AXIS));
+		startPanel.add(startButtonsPanel, BorderLayout.CENTER);
+		
+		// Panel for experiment buttons
+		JPanel experimentsPanel = new JPanel();
+		experimentsPanel.setLayout(new BoxLayout(experimentsPanel, BoxLayout.PAGE_AXIS));
+		experimentsPanel.setBorder(new TitledBorder("Experiments"));
 		
 		// Adding buttons to the main screen
 		JButton buttonCreateExperiment = new JButton("Create Amuse Experiments");
 		buttonCreateExperiment.addActionListener(e -> showCreateExperimentPane());
-		newLoadPreferencesButtons.addButton(buttonCreateExperiment);
 
 	    JButton buttonLoadExperiment = new JButton("Load Amuse Experiment");
 	    buttonLoadExperiment.addActionListener(new ActionListener() {
@@ -95,16 +115,51 @@ public class WizardView {
 	    	}
 	    });
 	    buttonLoadExperiment.setEnabled(false);
-	    newLoadPreferencesButtons.addButton(buttonLoadExperiment);
+	    
 	    
 	    JButton buttonAmuseSettings = new JButton("Edit Amuse Settings");
 	    buttonAmuseSettings.addActionListener(e -> wizardController.goToSettings());
-	    newLoadPreferencesButtons.addButton(buttonAmuseSettings);
 
-	    //JButton buttonAnnotation = new JButton("Create Annotation"); 
-	    //buttonAnnotation.addActionListener(e -> wizardController.goToAnnotationEditor());
-	    //newLoadPreferencesButtons.addButton(buttonAnnotation);
+	    // Panel for annotation buttons
+		JPanel annotationPanel = new JPanel();
+		annotationPanel.setLayout(new BoxLayout(annotationPanel, BoxLayout.PAGE_AXIS));
+		annotationPanel.setBorder(new TitledBorder("Annotation"));
+		
+	    JButton buttonSingleAnnotation = new JButton("Create Annotation"); 
+	    buttonSingleAnnotation.addActionListener(e -> wizardController.goToAnnotationEditor());
+	    
+	    JButton buttonMultipleAnnotation = new JButton("Multiple Annotations");
+	    buttonMultipleAnnotation.setEnabled(false);
 
+	    // Adding all together
+	    final int panelWidth = 250;
+
+	    buttonCreateExperiment.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    buttonLoadExperiment.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    experimentsPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+	    experimentsPanel.add(buttonCreateExperiment);
+	    experimentsPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+	    experimentsPanel.add(buttonLoadExperiment);
+	    experimentsPanel.add(Box.createRigidArea(new Dimension(panelWidth, 5)));
+
+	    buttonSingleAnnotation.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    buttonMultipleAnnotation.setAlignmentX(Component.CENTER_ALIGNMENT);
+	    annotationPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+	    annotationPanel.add(buttonSingleAnnotation);
+	    annotationPanel.add(Box.createRigidArea(new Dimension(5, 5)));
+	    annotationPanel.add(buttonMultipleAnnotation);
+	    annotationPanel.add(Box.createRigidArea(new Dimension(panelWidth, 5)));
+	    buttonMultipleAnnotation.addActionListener(e -> System.out.println(annotationPanel.getWidth()));
+	    
+	    
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    startButtonsPanel.add(experimentsPanel);
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    startButtonsPanel.add(buttonAmuseSettings);
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    startButtonsPanel.add(annotationPanel);
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    
 	    
 	    // Create New Experiment ButtonPanel:
 	    JButton buttonFeatureExtraction = new JButton("Feature Extraction");
@@ -130,7 +185,7 @@ public class WizardView {
 
         // Initialise WizardView Panel with New/Load/Preferences:
         contentArea = new JPanel(new BorderLayout());
-        contentArea.add(newLoadPreferencesButtons.getPanel(), BorderLayout.CENTER);
+        contentArea.add(startPanel, BorderLayout.CENTER);
         wizardPanel = new JPanel(new BorderLayout());
         wizardPanel.add(contentArea, BorderLayout.CENTER);
         // Create TabbedPane for Log and WizardView:

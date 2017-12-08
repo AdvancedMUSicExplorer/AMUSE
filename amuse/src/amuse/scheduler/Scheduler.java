@@ -27,12 +27,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.interfaces.scheduler.AmuseTaskStarter;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -520,19 +523,22 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedExtractionTasks(ExtractionConfiguration[] extractionConfigurations) throws SchedulerException {
-		
+		FeatureExtractionStarter fes;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_EXTRACTOR) == true) {
-			FeatureExtractionStarter fes = new FeatureExtractionStarter("extractor", schedulerInstance.jobCounter, false);
+			fes = new FeatureExtractionStarter("extractor", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = fes.startTask(extractionConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			FeatureExtractionStarter fes = new FeatureExtractionStarter("extractor", schedulerInstance.jobCounter, true);
+			fes = new FeatureExtractionStarter("extractor", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = fes.startTask(extractionConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All feature extraction jobs ready!");
+		fes.logResults();
+		
 	}
+	
+	
 	
 	/**
 	 * Delegates the processing task(s) to the corresponding task starter
@@ -540,18 +546,18 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedProcessingTasks(ProcessingConfiguration[] processingConfigurations) throws SchedulerException {
-		
+		FeatureProcessingStarter fps;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_PROCESSOR) == true) {
-			FeatureProcessingStarter fps = new FeatureProcessingStarter("processor", schedulerInstance.jobCounter, false);
+			fps = new FeatureProcessingStarter("processor", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = fps.startTask(processingConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			FeatureProcessingStarter fps = new FeatureProcessingStarter("processor", schedulerInstance.jobCounter, true);
+			fps = new FeatureProcessingStarter("processor", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = fps.startTask(processingConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All feature processing jobs ready!");
+		fps.logResults();
 	}
 	
 	/**
@@ -560,18 +566,18 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedClassificationTrainingTasks(TrainingConfiguration[] trainingConfigurations) throws SchedulerException {
-		
+		ClassificationTrainingStarter cts;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_TRAINER) == true) {
-			ClassificationTrainingStarter cts = new ClassificationTrainingStarter("trainer", schedulerInstance.jobCounter, false);
+			cts = new ClassificationTrainingStarter("trainer", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = cts.startTask(trainingConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			ClassificationTrainingStarter cts = new ClassificationTrainingStarter("trainer", schedulerInstance.jobCounter, true);
+			cts = new ClassificationTrainingStarter("trainer", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = cts.startTask(trainingConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All classification training jobs ready!");
+		cts.logResults();
 	}
 	
 	/**
@@ -580,18 +586,18 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedClassificationTasks(ClassificationConfiguration[] classificationConfigurations) throws SchedulerException {
-		
+		ClassificationStarter cs;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_CLASSIFIER) == true) {
-			ClassificationStarter cs = new ClassificationStarter("classifier", schedulerInstance.jobCounter, false);
+			cs = new ClassificationStarter("classifier", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = cs.startTask(classificationConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			ClassificationStarter cs = new ClassificationStarter("classifier", schedulerInstance.jobCounter, true);
+			cs = new ClassificationStarter("classifier", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = cs.startTask(classificationConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All classification jobs ready!");
+		cs.logResults();
 	}
 	
 	/**
@@ -600,18 +606,18 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedValidationTasks(ValidationConfiguration[] validationConfigurations) throws SchedulerException {
-		
+		ClassificationValidationStarter cvs;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_VALIDATOR) == true) {
-			ClassificationValidationStarter cvs = new ClassificationValidationStarter("validator", schedulerInstance.jobCounter, false);
+			cvs = new ClassificationValidationStarter("validator", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = cvs.startTask(validationConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			ClassificationValidationStarter cvs = new ClassificationValidationStarter("validator", schedulerInstance.jobCounter, true);
+			cvs = new ClassificationValidationStarter("validator", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = cvs.startTask(validationConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All validation jobs ready!");
+		cvs.logResults();
 	}
 	
 	/**
@@ -620,17 +626,17 @@ public class Scheduler implements Runnable {
 	 * @throws SchedulerException
 	 */
 	private void proceedOptimizationTasks(OptimizationConfiguration[] optimizationConfigurations) throws SchedulerException {
-		
+		OptimizationStarter os;
 		// If the task will be started via grid, wait until they are ready
 		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_OPTIMIZER) == true) {
-			OptimizationStarter os = new OptimizationStarter("optimizer", schedulerInstance.jobCounter, false);
+			os = new OptimizationStarter("optimizer", schedulerInstance.jobCounter, false);
 			Long currentLastJob = new Long(jobCounter);
 			schedulerInstance.jobCounter = os.startTask(optimizationConfigurations, properties);
 			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
 		} else {
-			OptimizationStarter os = new OptimizationStarter("optimizer", schedulerInstance.jobCounter, true);
+			os = new OptimizationStarter("optimizer", schedulerInstance.jobCounter, true);
 			schedulerInstance.jobCounter = os.startTask(optimizationConfigurations, properties);
 		}
-		AmuseLogger.write(this.getClass().getName(),Level.INFO, "All optimization jobs ready!");
+		os.logResults();
 	}
 }

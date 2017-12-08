@@ -126,10 +126,12 @@ public class AudioFileConversion {
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to perform down-sampling: " + ex.getMessage());
             fileCopy(wavFile, targetFile);
             deleteConvertedFile(wavFile, isOriginal);
+            throw ex;
         } catch (UnsupportedAudioFileException ex) {
             fileCopy(wavFile, targetFile);
             deleteConvertedFile(wavFile, isOriginal);
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unsupported Audio-File: \"" + ex.getLocalizedMessage() + "\"");
+            throw new IOException(ex.getMessage());
         }
 
     }

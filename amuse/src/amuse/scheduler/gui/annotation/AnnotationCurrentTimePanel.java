@@ -1,0 +1,104 @@
+package amuse.scheduler.gui.annotation;
+
+import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.plaf.metal.MetalSliderUI;
+
+import amuse.scheduler.gui.controller.AnnotationController;
+
+/**
+ * Displays a slider that is used to indicate the currently playing moment of the audio file and to change it.
+ * @author Frederik Heerde
+ * @version $Id$
+ */
+public class AnnotationCurrentTimePanel extends JScrollPane{
+
+	JSlider slider;
+	boolean triggerEvent;
+	AnnotationController annotationController;
+	
+	public AnnotationCurrentTimePanel(AnnotationController pAnnotationController) {
+		super();
+		annotationController = pAnnotationController;
+		triggerEvent = true;
+		slider = new JSlider(JSlider.HORIZONTAL, 0, 10000, 0){
+			
+			@Override
+			public Dimension getPreferredSize() {
+				int width = ((AnnotationView) annotationController.getView()).getAnnotationAudioSpectrumPanel().getContentSize().width; 
+				double relativeValue = slider.getValue() / (double) slider.getMaximum();
+				slider.setMaximum(width);
+				slider.setValue((int) (relativeValue * slider.getMaximum()));
+				return new Dimension(width + 14, 18);//Add 14 to ensure that the actual slider will span over the whole width
+			}
+			
+			@Override 
+			public Dimension getMinimumSize(){
+				return getPreferredSize();
+			}
+		};
+		slider.addChangeListener(e -> {
+				if(triggerEvent){
+					double totalTime = annotationController.getDurationInMs();
+					double selectedTime = (totalTime * slider.getValue()) / slider.getMaximum();
+					annotationController.seekInMusic(selectedTime);
+				}
+				triggerEvent = true;
+		});
+		slider.setUI(new MetalSliderUI(){
+			@Override
+			protected void scrollDueToClickInTrack(int direction){
+				slider.setValue(this.valueForXPosition(slider.getMousePosition().x));
+			}
+		});
+
+		JPanel sliderPanel = new JPanel();
+		sliderPanel.addMouseMotionListener(new MouseMotionListener() {
+			
+			@Override
+			public void mouseMoved(MouseEvent e) {
+				int totalWidth = ((AnnotationView) annotationController.getView()).getAnnotationAudioSpectrumPanel().getContentSize().width;
+				double totalMillis = annotationController.getDurationInMs();
+				double millisPerPixel = totalMillis / totalWidth;
+				((AnnotationView) annotationController.getView()).setMouseTime((getX() + e.getX()) * millisPerPixel);
+			}
+			
+			@Override
+			public void mouseDragged(MouseEvent e) {}
+		});
+		sliderPanel.add(slider);
+		this.setViewportView(sliderPanel);
+		
+		// Disable Scrollbars
+		this.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
+		this.getHorizontalScrollBar().setPreferredSize(new Dimension(0,0));
+		this.setWheelScrollingEnabled(false);
+
+		this.getHorizontalScrollBar().setModel(new DefaultBoundedRangeModel(){
+			@Override
+			public void setValue(int n){
+				// This should align the Slider exactly with the other Panels.
+				super.setValue((int)(n + 12));
+			}
+		});
+		
+	}
+	
+	@Override
+	public void revalidate(){
+		if(slider != null){
+			slider.revalidate();
+		}
+		super.revalidate();
+	}
+	
+	public void setCurrentTime(double millis){
+		triggerEvent = false;
+		slider.setValue((int)(slider.getMaximum() * millis / annotationController.getDurationInMs()));
+	}
+}

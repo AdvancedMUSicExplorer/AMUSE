@@ -23,11 +23,14 @@
  */
 package amuse.nodes.extractor.methods;
 
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -286,6 +289,29 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    ExternalProcessBuilder jAudio = ExternalProcessBuilder.buildJavaProcess(javaParameters, libs, commands);
 		    jAudio.setWorkingDirectory(new File(amuse + File.separator +"tools"+ File.separator + "jAudio"));
 		    Process pc = jAudio.start();
+		    
+		    // Ausgabe für JAudio 
+		    InputStream inputStream = pc.getInputStream();
+		    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+		    BufferedReader inputReader = new BufferedReader(inputStreamReader);
+
+		    InputStream errorStream = pc.getErrorStream();
+		    InputStreamReader errorStreamReader = new InputStreamReader(errorStream);
+		    BufferedReader errorReader = new BufferedReader(errorStreamReader);
+		    String line = "";
+		    while(pc.isAlive()){
+		    	System.out.println("Output von JAudios InputStream");
+		    	while ((line = inputReader.readLine()) != null){
+		    		System.out.println(line);
+		    	}
+
+		    	System.out.println("Output von JAudios ErrorStream");
+		    	while ((line = errorReader.readLine()) != null){
+		    		System.out.println(line);
+		    	}
+		    }
+		    
+		    
             pc.waitFor();
 		    convertOutput();
 		} catch (InterruptedException e) {

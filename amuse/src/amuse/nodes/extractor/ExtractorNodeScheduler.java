@@ -74,6 +74,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	/** Input music file */
 	private String inputFileName = null;
 	
+	
 	/** If the music file is splitted into several parts.. */
 	private int numberOfParts = 0;
 	
@@ -178,7 +179,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Audio decoding error: " + e.getMessage());
-			System.exit(1);
+			returnStringBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
 		}
 
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
@@ -187,7 +190,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
 		if(!file.exists()) {
 			System.out.println("No music files found: " + file.getAbsolutePath());
-			System.exit(1);
+			returnStringBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
 		}
 		
 		File[] files = file.listFiles();
@@ -205,7 +210,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Could not configure feature extractor(s): " + e.getMessage());
-			System.exit(1);
+			returnStringBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
 		}
 		
 		// -------------------------------------------------------------
@@ -214,7 +221,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	    if(this.extractors.size() == 0) {
     		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
     				"No extractor has been properly loaded, exiting the extractor node...");
-	    	System.exit(1);
+			returnStringBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
 	    }
 		
 		// --------------------------------
@@ -234,7 +243,6 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
 					this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
-				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_COMPLETED, this));
 		}

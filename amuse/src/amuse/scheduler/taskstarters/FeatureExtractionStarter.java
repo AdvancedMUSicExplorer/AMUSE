@@ -199,6 +199,8 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 						    throw new SchedulerException(this.getClass().getName() + " was interrupted: " + e.getMessage());
 						}
 				    }
+				    this.addReturnStringBuilderToNodeScheduler(extractorThread);
+
 				    nodeSchedulers.add(extractorThread);
 				    extractorThread.addListener(this);
 				    newExtractorThread.start();

@@ -236,7 +236,7 @@ public class ValidationController extends AbstractController {
         public void loadButtonClicked() {
             vtFolder.mkdirs();
             JFileChooser fc = new SelectArffFileChooser(
-                    "Feature Processing Task", vtFolder);
+                    "Validation Task", vtFolder);
             if (fc.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) {
                 return;
             }
