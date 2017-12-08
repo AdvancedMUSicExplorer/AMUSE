@@ -148,6 +148,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 					    throw new SchedulerException(this.getClass().getName() + " was interrupted: " + e.getMessage());
 					}
 			    }
+			    this.addReturnStringBuilderToNodeScheduler(optimizerThread);
 			    nodeSchedulers.add(optimizerThread);
 			    optimizerThread.addListener(this);
 			    newOptimizerThread.start();

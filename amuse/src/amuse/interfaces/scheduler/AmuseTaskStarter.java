@@ -25,6 +25,8 @@ package amuse.interfaces.scheduler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.log4j.Level;
 
@@ -32,6 +34,12 @@ import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeEventListener;
 import amuse.interfaces.nodes.NodeEventSource;
 import amuse.interfaces.nodes.NodeScheduler;
+import amuse.scheduler.taskstarters.ClassificationStarter;
+import amuse.scheduler.taskstarters.ClassificationTrainingStarter;
+import amuse.scheduler.taskstarters.ClassificationValidationStarter;
+import amuse.scheduler.taskstarters.FeatureExtractionStarter;
+import amuse.scheduler.taskstarters.FeatureProcessingStarter;
+import amuse.scheduler.taskstarters.OptimizationStarter;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 
@@ -51,6 +59,8 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * task starter receives the Id of the last job and increments it for the jobs of a new task */
     protected long jobCounter;
     
+    protected List<StringBuilder> returnStringBuilderList;
+    
     /** If the tasks should be started locally as threads, currently working node schedulers are
      * keeped in this list */
     protected ArrayList<NodeEventSource> nodeSchedulers = null;
@@ -63,6 +73,7 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * Constructor
      */
     public AmuseTaskStarter(String nodeFolder, long jobCounter, boolean startNodeDirectly) throws SchedulerException {
+    	this.returnStringBuilderList = Collections.synchronizedList(new ArrayList<StringBuilder>());
         this.nodeSchedulers = new ArrayList<NodeEventSource>();
         this.nodeFolder = new String(nodeFolder);
         this.jobCounter = jobCounter;
@@ -77,6 +88,53 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
             }
         }
     }
+    
+    public List<StringBuilder> getReturnStringBuilderList(){
+    	return returnStringBuilderList;
+    }
+    
+    public void addReturnStringBuilderToNodeScheduler(NodeScheduler scheduler){
+	    returnStringBuilderList.add(scheduler.getReturnStringBuilder());
+    }
+    
+    public void logResults(){
+		String errorText = "";
+		int numErrors = 0;
+		for(StringBuilder s:returnStringBuilderList){
+			if(!s.toString().equals("")){
+				errorText += "\n" + s;
+				numErrors++;
+			}
+		}
+		
+		String jobType = "";
+		if(this instanceof FeatureExtractionStarter){
+			jobType = "feature extraction";
+		}
+		else if(this instanceof FeatureProcessingStarter){
+			jobType = "feature processing";
+		}
+		else if(this instanceof ClassificationTrainingStarter){
+			jobType = "classification training";
+		}
+		else if(this instanceof ClassificationStarter){
+			jobType = "classification";
+		}
+		else if(this instanceof ClassificationValidationStarter){
+			jobType = "validation";
+		}
+		else if(this instanceof OptimizationStarter){
+			jobType = "optimization";
+		}
+		if(numErrors == 0){
+			AmuseLogger.write(this.getClass().getName(),Level.INFO, returnStringBuilderList.size() + "/" + returnStringBuilderList.size() + " " + jobType + " jobs finished sucessfully!");
+		}
+		else{
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR, (returnStringBuilderList.size() - numErrors) + "/" + returnStringBuilderList.size() + " " + jobType + " jobs finished sucessfully!");
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR, "Error occured while processing the following files:" + errorText);
+
+		}
+	}
 
     /*
      * (non-Javadoc)

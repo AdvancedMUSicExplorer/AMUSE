@@ -44,6 +44,8 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 	
 	/** If this node scheduler is started directly as a thread, Amuse scheduler listens for events */
 	private NodeEventListener amuseScheduler = null;
+
+	protected StringBuilder returnStringBuilder;
 	
 	/** Id of amuse task performed by this scheduler. Used for: 
 	 * (1) naming of folder for intermediate data (this.nodeHome/input/task_xx)
@@ -68,6 +70,7 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
 	 * Constructor, here the folder for input and intermediate results of this node is created 
 	 */
 	public NodeScheduler(String folderForResults) throws NodeException {
+		returnStringBuilder = new StringBuilder("");
 		nodeHome = new String();
 		properties = new Properties();
 		if(!new File(folderForResults).exists()) {
@@ -214,6 +217,10 @@ public abstract class NodeScheduler implements NodeSchedulerInterface, Runnable,
                         // TODO v0.2 because of Weka ArffLoader bug (streams remain opened)
                     	// throw new NodeException("Could not delete file: " + f.getAbsolutePath());
                 }
+	}
+
+	public StringBuilder getReturnStringBuilder() {
+		return returnStringBuilder;
 	}
 	
 }

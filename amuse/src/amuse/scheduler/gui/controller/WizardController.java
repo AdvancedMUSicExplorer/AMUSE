@@ -61,7 +61,7 @@ public final class WizardController implements WizardControllerInterface {
 	private ValidationController validationController;
 	private Scheduler scheduler;
 	private OptimizationController optimizationController;
-	//private AnnotationController annotationController;
+	private AnnotationController annotationController;
 
 	private WizardController() {
 		instance = this;
@@ -126,7 +126,7 @@ public final class WizardController implements WizardControllerInterface {
 		if (suffix.equals("")) {
 			wizardFrame.setTitle(applicationTitle);
 		} else {
-			wizardFrame.setTitle(applicationTitle + " - " + suffix);
+			wizardFrame.setTitle(suffix);
 		}
 	}
 
@@ -319,8 +319,10 @@ public final class WizardController implements WizardControllerInterface {
 
 	@Override
 	public void goToAnnotationEditor(){
-		//annotationController = new AnnotationController(instance);
-		//wizard.showInWizardPane(annotationController.getView());
+		if(annotationController == null){
+			annotationController = new AnnotationController(instance);
+		}
+		wizard.showInWizardPane(annotationController.getView());
 
 	}
 }

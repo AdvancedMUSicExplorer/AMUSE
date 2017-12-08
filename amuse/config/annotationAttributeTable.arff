@@ -1,0 +1,16 @@
+@RELATION 'Annotation Attribute Table'
+%rows=5
+%columns=3
+
+@ATTRIBUTE 'ID' NUMERIC
+@ATTRIBUTE 'Attribute Type' STRING
+@ATTRIBUTE 'Name' STRING
+@DATA
+1, {'Intro','Verse','Chorus','Bridge','Outro','?'}, 'Segments'
+2, {'Vocals','No Vocals','?'}, 'Occurrence of Vocals'
+3, Event, 'Onset Times'
+4, Event, 'Beat Times'
+5, Event, 'Tatum Times'
+6, Event, 'Bar Lines'
+7, Numeric, 'Number of Instruments'
+8, String, 'Lyrics'

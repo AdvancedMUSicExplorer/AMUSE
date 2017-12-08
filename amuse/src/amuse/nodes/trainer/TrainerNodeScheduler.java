@@ -168,7 +168,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			try {
 				categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
 			} catch (IOException e) {
-				AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+				AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 						"Could not load the category table: " + e.getMessage()); 
 				return;
 			}
@@ -193,9 +193,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 			this.prepareTrainerInput();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 				"Could not prepare trainer input: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
+			return;
 		}
 		
 		// ---------------------------------------------------------------------------------------
@@ -205,9 +207,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 			this.runDataPreprocessing();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Could not run data preprocessing: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
+			return;
 		}
 		
 		// -----------------------------------
@@ -216,9 +220,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 			this.configureTrainingMethod();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Configuration of trainer failed: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
+			return;
 		}
 		
 		// ------------------------------
@@ -227,9 +233,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 			this.trainModel();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Classification training failed: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
+			return;
 		}
 		
 		// ---------------------------------------------------------------------------------
@@ -242,7 +250,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
 					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
-				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_COMPLETED, this));
 		}

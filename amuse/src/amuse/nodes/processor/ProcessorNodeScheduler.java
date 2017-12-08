@@ -162,7 +162,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during feature list generation: " + e.getMessage());
-			System.exit(1);
+			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
+			return;
 		}
 		
 		// --------------------------------------------------------------------
@@ -173,7 +175,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during feature processing steps: " + e.getMessage());
-			System.exit(1);
+			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
+			return;
 		}
 		
 		// -------------------------------------------------------------------------
@@ -184,7 +188,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during conversion from matrix to vector: " + e.getMessage());
-			System.exit(1);
+			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
+			return;
 		}
 		
 		// ---------------------------------------------------
@@ -195,7 +201,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Problem(s) occured during saving of processed features to database: " + e.getMessage());
-				e.printStackTrace();
+			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
+			return;
 		}
 		
 		// ----------------------------------------------------------------------------------
@@ -208,7 +216,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
 					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
-				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_COMPLETED, this));
 		}

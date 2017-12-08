@@ -129,9 +129,11 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		try {
 			this.configureOptimizationMethod();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Configuration of optimizer failed: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_FAILED, this));
+			return;
 		}
 		
 		// -------------------------------
@@ -140,9 +142,11 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		try {
 			this.optimize();
 		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Optimization failed: " + e.getMessage()); 
-			System.exit(1);
+			returnStringBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_FAILED, this));
+			return;
 		}
 		
 		// ----------------------------------------------------------------------------------
@@ -155,7 +159,6 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Could not remove properly the intermediate results '" + 
 					this.nodeHome + File.separator + "input" + File.separator + "task_'" + this.jobId + "; please delete it manually! (Exception: "+ e.getMessage() + ")");
-				System.exit(1);
 			}
 			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_COMPLETED, this));
 		}
