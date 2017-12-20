@@ -68,7 +68,7 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 			public void mouseMoved(MouseEvent e) {
 				double totalHeight = contentPanel.getHeight();
 				double relativePos = (double) (totalHeight - 1.0 - e.getY()) / totalHeight;
-				((AnnotationView) annotationController.getView()).setMouseFreq(relativePos * annotationController.getSampleRate());
+				((AnnotationView) annotationController.getView()).setMouseFreq(relativePos * annotationController.getSampleRate() / 2);
 			}
 
 			@Override
