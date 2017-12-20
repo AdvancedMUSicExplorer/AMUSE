@@ -31,6 +31,7 @@ import amuse.nodes.annotation.AnnotationAttributeValue;
 import amuse.nodes.annotation.AnnotationNominalAttribute;
 import amuse.scheduler.gui.controller.AnnotationController;
 import net.miginfocom.swing.MigLayout;
+import weka.gui.visualize.AttributePanel;
 
 /**
  * Displays the different attributes and attribute values of the currently open annotation.
@@ -110,7 +111,6 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			LinkedHashMap<Integer, AnnotationAttribute<?>> idToAttributeMap = (LinkedHashMap<Integer, AnnotationAttribute<?>>) annotationController.getAnnotationAttributeTable().clone(); 
 			String[] columnNames = {"ID", "Name", "Type"};
 			int numberOfAvailableAttributes = idToAttributeMap.size() - attributeList.getModel().getSize();
-			System.out.println(idToAttributeMap.size() + " " + attributeList.getModel().getSize() + " " + numberOfAvailableAttributes);
 			if(numberOfAvailableAttributes <= 0){
 				JOptionPane.showMessageDialog(null, "No more attributes in the available in the currently loaded annotation attribute table!");
 			}
@@ -236,19 +236,16 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			}
 			AnnotationAttributeValue<?> selectedAttributeValue = (AnnotationAttributeValue<?>) attributeValueList.getSelectedValue();
 			attributeValuePanel.removeAll();
+			JPanel panel = new JPanel();
 			if (selectedAttributeValue != null) {
-
 				switch(selectedAttributeValue.getAnnotationAttribute().getType()){
-				case NUMERIC: attributeValuePanel.add(new NumericAttributeValuePanel((AnnotationAttributeValue<Double>) selectedAttributeValue)); break;
-				case NOMINAL: attributeValuePanel.add(new NominalAttributeValuePanel((AnnotationAttributeValue<String>) selectedAttributeValue)); break;
-				case STRING: attributeValuePanel.add(new StringAttributeValuePanel((AnnotationAttributeValue<String>) selectedAttributeValue)); break;
-				case EVENT: attributeValuePanel.add(new EventAttributeValuePanel((AnnotationAttributeValue<Integer>) selectedAttributeValue)); break;
-				default: 
+				case NUMERIC: panel = new NumericAttributeValuePanel((AnnotationAttributeValue<Double>) selectedAttributeValue); break;
+				case NOMINAL: panel = new NominalAttributeValuePanel((AnnotationAttributeValue<String>) selectedAttributeValue); break;
+				case STRING: panel = new StringAttributeValuePanel((AnnotationAttributeValue<String>) selectedAttributeValue); break;
+				case EVENT: panel = new EventAttributeValuePanel((AnnotationAttributeValue<Integer>) selectedAttributeValue); break;
 				}
-			} 
-			else{
-				attributeValuePanel.add(new JPanel());
 			}
+			attributeValuePanel.add(panel);
 			((CardLayout)attributeValuePanel.getLayout()).first(attributeValuePanel);
 		});
 
@@ -553,10 +550,11 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			});
 
 			JScrollPane attributeValueListPane = new JScrollPane(attributeValueList);
-			this.add(attributeValueListPane, "span 2, w 100%, pushy");
-			this.add(addValueButton, "span, center, split 3");
-			this.add(editValueButton);
-			this.add(removeValueButton);
+			attributeValueListPane.setMaximumSize(new Dimension(1000, attributeValueList.getModel().getSize() * 20));
+			this.add(attributeValueListPane, "span, pushy, w 100%");
+			//this.add(addValueButton, "span, center, split 3");
+			//this.add(editValueButton);
+			//this.add(removeValueButton);
 			this.add(saveButton, "span, center, bottom, pushy");
 
 			attributeValueList.setSelectedValue(annotationAttributeValue.getValue(), true);
