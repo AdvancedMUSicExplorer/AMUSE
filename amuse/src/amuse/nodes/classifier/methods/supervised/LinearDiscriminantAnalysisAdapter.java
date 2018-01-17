@@ -185,7 +185,11 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
 			        	    if(errorComplete){
 			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" +errortext);
-
+			        	    	scanner.close();
+			        			try{
+			        				watcher.close();
+			        			}
+			        			catch(IOException e){}
 			    				throw new NodeException("Classification with Matlab failed");
 			        	    
 			        	    }
@@ -195,10 +199,17 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			        		if(scanner != null){
 				        		scanner.close();
 				        	}
+			    			try{
+			    				watcher.close();
+			    			}
+			    			catch(IOException e){}
 						}
 			        }
 			    }
-
+				try{
+					watcher.close();
+				}
+				catch(IOException e){}
 			    // Reset the key
 			    boolean valid = key.reset();
 			    if (!valid) {

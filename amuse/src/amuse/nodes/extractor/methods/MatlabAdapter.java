@@ -209,18 +209,37 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		}
 		
 		// Save the modified script as matlab file (content found in "text" nodes will be written)
+		BufferedWriter out = null;
+		FileWriter fileWriter = null;
 		try {
-		        BufferedWriter out = new BufferedWriter(new FileWriter(properties.getProperty("extractorFolder") + File.separator + 
-						   properties.getProperty("inputExtractorBatch")));
+				fileWriter = new FileWriter(properties.getProperty("extractorFolder")
+						+ File.separator
+						+ properties.getProperty("inputExtractorBatch"));
+		        out = new BufferedWriter(fileWriter);
 		        
 		        nList = currentBaseScript.getElementsByTagName("text");
 				for(int i=0;i<nList.getLength();i++) {
 					Node node = nList.item(i);
 					out.write(node.getTextContent());
 				}
-		        out.close();
 		} catch (IOException e) {
 		    	e.printStackTrace();
+		}
+		finally{
+			if(out != null){
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			if(fileWriter != null){
+				try {
+					fileWriter.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		
 	}
@@ -258,7 +277,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			WatchService watcher = FileSystems.getDefault().newWatchService();
 			Path pathToWatch = FileSystems.getDefault().getPath(properties.getProperty("extractorFolder"));
 			pathToWatch.register(watcher, StandardWatchEventKinds.ENTRY_MODIFY);
-						
+					
 			// Start the matlab process
 			Process matlabProcess = matlab.start();
 			
@@ -312,7 +331,13 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
 			        	    if(errorComplete){
 			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" + errortext);
-
+			        	    	if(scanner != null){
+					        		scanner.close();
+					        	}
+			        			try{
+			        				watcher.close();
+			        			}
+			        			catch(IOException e){}
 			        	    	throw new NodeException("Extraction with Matlab failed");
 			        	    }
 			        	} catch(FileNotFoundException e) { 
@@ -321,6 +346,10 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        		if(scanner != null){
 				        		scanner.close();
 				        	}
+			    			try{
+			    				watcher.close();
+			    			}
+			    			catch(IOException e){}
 						}
 			        }
 			    }
@@ -331,6 +360,10 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        break;
 			    }
 			}
+			try{
+				watcher.close();
+			}
+			catch(IOException e){}
 		} catch (IOException e) {
         	throw new NodeException("Extraction with Matlab failed: " + e.getMessage());
         } 
