@@ -135,6 +135,7 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			Process matlabProcess = matlab.start();
 			
 			// Monitor the log file as long as the process did not finish on its own.
+			whileMatlabProcessAlive:
 			while (matlabProcess.isAlive()) {
 
 				WatchKey key;
@@ -185,24 +186,21 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
 			        	    if(errorComplete){
 			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" +errortext);
-			        	    	scanner.close();
 			        			try{
 			        				watcher.close();
 			        			}
 			        			catch(IOException e){}
+			        			matlabProcess.destroy();
 			    				throw new NodeException("Classification with Matlab failed");
 			        	    
 			        	    }
-			        	} catch(FileNotFoundException e) { 
-			        	    throw new NodeException("Unable to monitor the log-File from Matlab. " + e.getMessage());
+			        	} catch(FileNotFoundException e) {
+		        	    	AmuseLogger.write(this.getClass().getName(), Level.WARN, "Unable to monitor the log-File from Matlab. " + e.getMessage());
+		        	    	break whileMatlabProcessAlive;
 			        	} finally {
 			        		if(scanner != null){
 				        		scanner.close();
 				        	}
-			    			try{
-			    				watcher.close();
-			    			}
-			    			catch(IOException e){}
 						}
 			        }
 			    }
@@ -215,6 +213,19 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			    if (!valid) {
 			        break;
 			    }
+			}
+			
+			
+			try{
+				watcher.close();
+			}
+			catch(IOException e){}
+			
+
+			try {
+				matlabProcess.waitFor();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 			
 		} catch (IOException e) {
