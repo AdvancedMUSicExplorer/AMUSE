@@ -282,6 +282,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			Process matlabProcess = matlab.start();
 			
 			// Monitor the log file as long as the process did not finish on its own.
+			whileMatlabProcessAlive:
 			while (matlabProcess.isAlive()) {
 			    WatchKey key;
 			    try {
@@ -331,25 +332,20 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        	    // If the complete error was written to the log file, the matlabProcess does not do anything anymore.
 			        	    if(errorComplete){
 			        	    	AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Output from the Matlab-log:\n" + errortext);
-			        	    	if(scanner != null){
-					        		scanner.close();
-					        	}
-			        			try{
-			        				watcher.close();
-			        			}
-			        			catch(IOException e){}
-			        	    	throw new NodeException("Extraction with Matlab failed");
+				    			try{
+				    				watcher.close();
+				    			}
+				    			catch(IOException e){}
+				    			matlabProcess.destroy();
+				    			throw new NodeException("Extraction with Matlab failed");
 			        	    }
-			        	} catch(FileNotFoundException e) { 
-			        	    throw new NodeException("Unable to monitor the log-File from Matlab. " + e.getMessage());
+			        	} catch(FileNotFoundException e) {
+		        	    	AmuseLogger.write(this.getClass().getName(), Level.WARN, "Unable to monitor the log-File from Matlab. " + e.getMessage());
+		        	    	break whileMatlabProcessAlive;
 			        	} finally {
 			        		if(scanner != null){
 				        		scanner.close();
 				        	}
-			    			try{
-			    				watcher.close();
-			    			}
-			    			catch(IOException e){}
 						}
 			        }
 			    }
@@ -360,10 +356,20 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        break;
 			    }
 			}
+			
+			
 			try{
 				watcher.close();
 			}
 			catch(IOException e){}
+			
+
+			try {
+				matlabProcess.waitFor();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
 		} catch (IOException e) {
         	throw new NodeException("Extraction with Matlab failed: " + e.getMessage());
         } 
