@@ -1,6 +1,7 @@
 @RELATION 'Annotation Attribute Table'
-%rows=5
+%rows=8
 %columns=3
+%max id=8
 
 @ATTRIBUTE 'ID' NUMERIC
 @ATTRIBUTE 'Attribute Type' STRING

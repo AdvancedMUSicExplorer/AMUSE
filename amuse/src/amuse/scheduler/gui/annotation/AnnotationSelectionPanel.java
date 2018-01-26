@@ -5,12 +5,17 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.text.DecimalFormat;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.NumberFormat;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -20,18 +25,23 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.NumberFormatter;
 
 import amuse.nodes.annotation.AnnotationAttribute;
+import amuse.nodes.annotation.AnnotationAttributeType;
 import amuse.nodes.annotation.AnnotationAttributeValue;
+import amuse.nodes.annotation.AnnotationEventAttribute;
 import amuse.nodes.annotation.AnnotationNominalAttribute;
+import amuse.nodes.annotation.AnnotationNumericAttribute;
+import amuse.nodes.annotation.AnnotationStringAttribute;
 import amuse.scheduler.gui.controller.AnnotationController;
 import net.miginfocom.swing.MigLayout;
-import weka.gui.visualize.AttributePanel;
 
 /**
  * Displays the different attributes and attribute values of the currently open annotation.
@@ -76,81 +86,13 @@ public class AnnotationSelectionPanel extends JSplitPane {
 		/*
 		 * Init Buttons
 		 */
-		JButton editAttributeButton = new JButton("Edit");
-		editAttributeButton.addActionListener(e -> {
-			AnnotationAttribute<?> att = (AnnotationAttribute<?>) attributeList.getSelectedValue();
-			if (att != null) {
-				String input = null;
-				while ((input = JOptionPane.showInputDialog("Enter the new name for the Attribute " + att.getName() + ".")) != null) {
-					if (input.equals("")) {
-						JOptionPane.showMessageDialog(null, "The name of the attribute cannot be empty");
-					} 
-					else if (!annotationController.isAttributeNameValid(input)) {
-						JOptionPane.showMessageDialog(null, "The name of the attribute already exists.");
-					}
-					else if (input.contains("'")){
-						JOptionPane.showMessageDialog(null, "The name of the attribute cannot contain the character '");
-					}
-					else {
-						break;
-					}
-				}
-				if (input != null) {
-					att.setName(input);
-				}
-				attributeList.repaint();
-			}
-		});
 
+		AddAttributeButton addAttributeButton = new AddAttributeButton();
+		addAttributeButton.setToolTipText("Create or add an attribute");
 		
-		
-		
-		
-		JButton addAttributeButton = new JButton("Add");
-		addAttributeButton.addActionListener(e -> {
-			LinkedHashMap<Integer, AnnotationAttribute<?>> idToAttributeMap = (LinkedHashMap<Integer, AnnotationAttribute<?>>) annotationController.getAnnotationAttributeTable().clone(); 
-			String[] columnNames = {"ID", "Name", "Type"};
-			int numberOfAvailableAttributes = idToAttributeMap.size() - attributeList.getModel().getSize();
-			if(numberOfAvailableAttributes <= 0){
-				JOptionPane.showMessageDialog(null, "No more attributes in the available in the currently loaded annotation attribute table!");
-			}
-			else{
-				
-				for(int i = 0; i < attributeList.getModel().getSize(); i++){
-					idToAttributeMap.remove(attributeList.getModel().getElementAt(i).getId());
-				}
-				Object[][] data = new Object[idToAttributeMap.size()][3];
-				int i = 0;
-				for(AnnotationAttribute<?> att: idToAttributeMap.values()){
-					data[i][0] = att.getId();
-					data[i][1] = att.getName();
-					data[i][2] = att.getType();
-					i++;
-				}
-				JTable annotationAttributeTable = new JTable(new DefaultTableModel(data, columnNames) {
-					@Override
-					public boolean isCellEditable(int rowIndex, int columnIndex){
-						return false;
-					}
-				});
-				annotationAttributeTable.setRowSelectionAllowed(true);
-				final JComponent[] inputs = new JComponent[] {new JScrollPane(annotationAttributeTable)};
-				int result = JOptionPane.showConfirmDialog(null, inputs, "Adding a new Attribute",
-						JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE); 
-				if (result == JOptionPane.OK_OPTION) {
-					if(annotationAttributeTable.getSelectedRowCount() > 0){
-						for(int selectedRow: annotationAttributeTable.getSelectedRows()){
-							annotationController.addAttribute((Integer) annotationAttributeTable.getModel().getValueAt(selectedRow, 0));
-						}
-					}
-				}
-		
-				attributeList.repaint();
-				((AnnotationView) annotationController.getView()).resizePanels();
-			}
-		});
 
 		JButton removeAttributeButton = new JButton("Remove");
+		removeAttributeButton.setToolTipText("Remove an attribute from the list");
 		removeAttributeButton.addActionListener(e -> {
 			AnnotationAttribute<?> att = (AnnotationAttribute<?>) attributeList.getSelectedValue();
 			if (att != null) {
@@ -182,13 +124,53 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			}
 
 		});
+		
+		// Set the focus that is needed for key events
+		attributeList.addMouseListener(new MouseListener(){
+
+			@Override
+			public void mouseClicked(MouseEvent e) {}
+
+			@Override
+			public void mousePressed(MouseEvent e) {}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				attributeList.requestFocus();
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				attributeValueList.requestFocus();
+			}
+			
+		});
+		
+		// Associates the delete key with the removeAttributeButton
+		attributeList.addKeyListener(new KeyListener(){
+
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_DELETE){
+					removeAttributeButton.doClick();
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {}
+		});
 
 		/*
 		 * Assembling of Buttons and JList
 		 */
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(addAttributeButton);
-		buttonPanel.add(editAttributeButton);
 		buttonPanel.add(removeAttributeButton);
 
 		JScrollPane attributeListScrollPane = new JScrollPane(attributeList);
@@ -208,6 +190,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 		 */
 
 		JButton addAttributeValueButton = new JButton("Add");
+		addAttributeValueButton.setToolTipText("Add a new entry starting at the current playing time for the selected attribute");
 		addAttributeValueButton.addActionListener(e -> {
 			AnnotationAttribute<?> selectedAttribute = (AnnotationAttribute<?>) attributeList.getSelectedValue();
 			if(selectedAttribute != null){
@@ -216,11 +199,14 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			}
 		});
 		JButton removeAttributeValueButton = new JButton("Remove");
+		removeAttributeValueButton.setToolTipText("Remove the selected entry for the selected attribute");
 		removeAttributeValueButton.addActionListener(e -> {
 			AnnotationAttribute<?> selectedAttribute = (AnnotationAttribute<?>) attributeList.getSelectedValue();
 			AnnotationAttributeValue<?> selectedAttributeValue = (AnnotationAttributeValue<?>) attributeValueList.getSelectedValue();
+			int selectedIndex = attributeValueList.getSelectedIndex();
 			if(selectedAttribute != null && selectedAttributeValue != null){
 				annotationController.removeValue(attributeValueList.getSelectedValue());
+				attributeValueList.setSelectedIndex(Math.min(selectedIndex, attributeValueList.getModel().getSize() - 1));
 			}
 		});
 
@@ -247,6 +233,23 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			}
 			attributeValuePanel.add(panel);
 			((CardLayout)attributeValuePanel.getLayout()).first(attributeValuePanel);
+		});
+
+		// Associates the delete key with the removeAttributeValueButton
+		attributeValueList.addKeyListener(new KeyListener(){
+
+			@Override
+			public void keyTyped(KeyEvent e) {}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_DELETE){
+					removeAttributeValueButton.doClick();
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {}
 		});
 
 		/*
@@ -304,8 +307,8 @@ public class AnnotationSelectionPanel extends JSplitPane {
 	}
 
 	public void selectAttributeValue(AnnotationAttributeValue<?> value) {
-		attributeList.setSelectedValue(value.getAnnotationAttribute(), false);
-		attributeValueList.setSelectedValue(value, false);
+		attributeList.setSelectedValue(value.getAnnotationAttribute(), true);
+		attributeValueList.setSelectedValue(value, true);
 	}
 
 	public void refreshAttributeValuePanel(){
@@ -360,6 +363,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			this.annotationAttributeValue = annotationAttributeValue;
 
 			saveButton = new JButton("Save");
+			saveButton.setToolTipText("Save the changes");
 			saveButton.addActionListener(e -> {
 				saveChanges();
 				attributeValueList.repaint();
@@ -441,7 +445,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 
 		public NumericAttributeValuePanel(AnnotationAttributeValue<Double> annotationAttributeValue) {
 			super(annotationAttributeValue);
-			DecimalFormat decimalFormat = new DecimalFormat();
+			NumberFormat decimalFormat = NumberFormat.getNumberInstance(Locale.ROOT);
 			decimalFormat.setGroupingUsed(false);
 
 			fieldValue = new JFormattedTextField(decimalFormat);
@@ -472,89 +476,16 @@ public class AnnotationSelectionPanel extends JSplitPane {
 	}
 
 	private class NominalAttributeValuePanel extends TimeAttributeValuePanel<String>{
-		JList<?> attributeValueList;
+		JList<String> attributeValueList;
 
 		public NominalAttributeValuePanel(AnnotationAttributeValue<String> annotationAttributeValue) {
 			super(annotationAttributeValue);
 
-			attributeValueList = new JList<String>(((AnnotationNominalAttribute)this.annotationAttributeValue.getAnnotationAttribute()).getAllowedValues());
-			attributeValueList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-
-			JButton addValueButton = new JButton("Add");
-			addValueButton.addActionListener(e -> {
-				String input = null;
-				while ((input = JOptionPane.showInputDialog("Enter the name for the new value.")) != null) {
-					if (input.equals("")) {
-						JOptionPane.showMessageDialog(null, "The name of the new value cannot be empty");
-					} 
-					else if (((DefaultListModel<?>) attributeValueList.getModel()).contains(input)) {
-						JOptionPane.showMessageDialog(null, "The name of the new value already exists.");
-					}
-					else if (input.contains("'")){
-						JOptionPane.showMessageDialog(null, "The name of the new value cannot contain the character '");
-					}
-					else {
-						break;
-					}
-				}
-				if (input != null) {
-					((AnnotationNominalAttribute) attributeList.getSelectedValue()).addAllowedValue(input);
-				}
-				attributeValueList.repaint();
-			});
-
-			JButton editValueButton = new JButton("Edit");
-			editValueButton.addActionListener(e -> {
-				String selectedValue = (String) attributeValueList.getSelectedValue();
-				if (attributeValueList.getSelectedValue() != null) {
-					String input = null;
-					while ((input = JOptionPane.showInputDialog("Enter the new name for the value.")) != null) {
-						if (input.equals("")) {
-							JOptionPane.showMessageDialog(null, "The name of the value cannot be empty");
-						} 
-						else if (!input.equals(selectedValue)
-								&& ((DefaultListModel<?>) attributeValueList.getModel()).contains(input)) {
-							JOptionPane.showMessageDialog(null, "The name of the value already exists.");
-						}
-						else if (input.contains("'")){
-							JOptionPane.showMessageDialog(null, "The name of the value cannot contain the character '");
-						}
-						else {
-							break;
-						}
-					}
-					if (input != null && !input.equals(selectedValue)) {
-						((AnnotationNominalAttribute) attributeList.getSelectedValue())
-						.editAllowedValue(selectedValue, input);
-					}
-					saveButton.doClick();
-					attributeValueList.repaint();
-				}
-			});
-
-			JButton removeValueButton = new JButton("Remove");
-			removeValueButton.addActionListener(e -> {
-				String selectedValue = (String) attributeValueList.getSelectedValue();
-				if (selectedValue != null) {
-					int result = JOptionPane.showConfirmDialog(null,
-							"Do you really want to delete the attribute value '" + selectedValue
-							+ "' and all its corresponding annotation values?",
-							"Delete Attribute Value?", JOptionPane.YES_NO_OPTION);
-					if (result == JOptionPane.YES_OPTION) {
-						((AnnotationNominalAttribute) attributeList.getSelectedValue())
-						.removeAllowedValue(selectedValue);
-					}
-					attributeValueList.repaint();
-				}
-			});
-
+			
+			attributeValueList = new JList<String>( ((AnnotationNominalAttribute) annotationAttributeValue.getAnnotationAttribute()).getAllowedValues());
 			JScrollPane attributeValueListPane = new JScrollPane(attributeValueList);
 			attributeValueListPane.setMaximumSize(new Dimension(1000, attributeValueList.getModel().getSize() * 20));
 			this.add(attributeValueListPane, "span, pushy, w 100%");
-			//this.add(addValueButton, "span, center, split 3");
-			//this.add(editValueButton);
-			//this.add(removeValueButton);
 			this.add(saveButton, "span, center, bottom, pushy");
 
 			attributeValueList.setSelectedValue(annotationAttributeValue.getValue(), true);
@@ -609,6 +540,193 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			fieldValue.setText(annotationAttributeValue.getStart() + "");			
 		}
 
+	}
+	
+	
+	
+	private class AddAttributeButton extends JButton{
+		public AddAttributeButton(){
+			super("Add");
+			this.addActionListener(e -> {
+				LinkedHashMap<Integer, AnnotationAttribute<?>> idToAttributeMap = (LinkedHashMap<Integer, AnnotationAttribute<?>>) annotationController.getAnnotationAttributeTable().clone(); 
+				String[] columnNames = {"ID", "Name", "Type"};
+				
+					
+				for(int i = 0; i < attributeList.getModel().getSize(); i++){
+					idToAttributeMap.remove(attributeList.getModel().getElementAt(i).getId());
+				}
+				Object[][] data = new Object[idToAttributeMap.size()][3];
+				int i = 0;
+				for(AnnotationAttribute<?> att: idToAttributeMap.values()){
+					data[i][0] = att.getId();
+					data[i][1] = att.getName();
+					data[i][2] = att.getType();
+					i++;
+				}
+				JTable annotationAttributeTable = new JTable(new DefaultTableModel(data, columnNames) {
+					@Override
+					public boolean isCellEditable(int rowIndex, int columnIndex){
+						return false;
+					}
+				});
+				annotationAttributeTable.setRowSelectionAllowed(true);
+				
+				JButton createAttributeButton = new JButton("Create new Attribute");
+				createAttributeButton.addActionListener(event -> {
+					// Close the frame that contains the list of the attributes
+					SwingUtilities.getWindowAncestor(createAttributeButton).dispose();
+					
+					JList nominalValueList = new JList<String>(new DefaultListModel<String>());
+					nominalValueList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+
+					JButton addAllowedValueForNominalButton = new JButton("Add");
+					addAllowedValueForNominalButton.addActionListener(evt -> {
+						String input = null;
+						while ((input = JOptionPane.showInputDialog("Enter the name for the new value.")) != null) {
+							if (input.equals("")) {
+								JOptionPane.showMessageDialog(null, "The name of the new value cannot be empty");
+							} 
+							else if (((DefaultListModel<String>) nominalValueList.getModel()).contains(input)) {
+								JOptionPane.showMessageDialog(null, "The name of the new value already exists.");
+							}
+							else if (input.contains("'")){
+								JOptionPane.showMessageDialog(null, "The name of the new value cannot contain the character '");
+							}
+							else {
+								((DefaultListModel<String>) nominalValueList.getModel()).addElement(input);
+								break;
+							}
+						}
+						nominalValueList.repaint();
+					});
+					
+					
+					JButton editAllowedValueForNominalButton = new JButton("Edit");
+					editAllowedValueForNominalButton.addActionListener(evt -> {
+						String selectedValue = (String) nominalValueList.getSelectedValue();
+						if (selectedValue != null) {
+							String input = null;
+							while ((input = JOptionPane.showInputDialog("Enter the new name for the value.")) != null) {
+								if (input.equals("")) {
+									JOptionPane.showMessageDialog(null, "The name of the value cannot be empty");
+								} 
+								else if (!input.equals(selectedValue)
+										&& ((DefaultListModel<?>) nominalValueList.getModel()).contains(input)) {
+									JOptionPane.showMessageDialog(null, "The name of the value already exists.");
+								}
+								else if (input.contains("'")){
+									JOptionPane.showMessageDialog(null, "The name of the value cannot contain the character '");
+								}
+								else {
+									((DefaultListModel<String>) nominalValueList.getModel()).set(nominalValueList.getSelectedIndex(), input);
+									break;
+								}
+							}
+							nominalValueList.repaint();
+						}
+					});
+
+					JButton removeAllowedValueForNominalButton = new JButton("Remove");
+					removeAllowedValueForNominalButton.addActionListener(evt -> {
+						int selectedIndex = nominalValueList.getSelectedIndex();
+						if (selectedIndex != -1) {
+							((DefaultListModel<String>) nominalValueList.getModel()).remove(selectedIndex);
+							nominalValueList.repaint();
+						}
+					});
+					
+					
+					
+					
+					JPanel nominalCardPanel = new JPanel(new MigLayout("fill, wrap"));
+					JScrollPane attributeValueListPane = new JScrollPane(nominalValueList);
+					nominalCardPanel.add(attributeValueListPane, "span, pushy, w 100%");
+					nominalCardPanel.add(addAllowedValueForNominalButton, "span, center, split 3");
+					nominalCardPanel.add(editAllowedValueForNominalButton);
+					nominalCardPanel.add(removeAllowedValueForNominalButton);
+					
+					JPanel nominalAttributePanel = new JPanel(new CardLayout());
+					nominalAttributePanel.add(nominalCardPanel, AnnotationAttributeType.NOMINAL.toString());
+					nominalAttributePanel.add(new JPanel(), "");
+					
+					
+					JPanel panel = new JPanel(new MigLayout("fill, wrap 2"));
+					JTextField nameTextField = new JTextField();
+					
+					JComboBox<AnnotationAttributeType> typeComboBox = new JComboBox<AnnotationAttributeType>(AnnotationAttributeType.values());
+					typeComboBox.addActionListener(evt ->{
+						if(typeComboBox.getSelectedItem().equals(AnnotationAttributeType.NOMINAL)){
+							((CardLayout) nominalAttributePanel.getLayout()).show(nominalAttributePanel, AnnotationAttributeType.NOMINAL.toString());
+						}
+						else{
+							((CardLayout) nominalAttributePanel.getLayout()).show(nominalAttributePanel, "");
+						}
+						
+					});
+
+					panel.add(new JLabel("Name", JLabel.RIGHT), "w 20%");
+					panel.add(nameTextField, "w 70%");
+					panel.add(new JLabel("Type", JLabel.RIGHT), "w 20%");
+					panel.add(typeComboBox, "w 70%");
+					
+					typeComboBox.setSelectedIndex(0);
+					
+					int result;
+					while( (result = JOptionPane.showConfirmDialog(null, new JComponent[] {panel, nominalAttributePanel}, "Adding a new Attribute",
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE)) == JOptionPane.OK_OPTION){
+						String name = nameTextField.getText();
+						// Check name
+						if(name.equals("")){
+							JOptionPane.showMessageDialog(null, "The name cannot be empty.");
+						}
+						else if(name.contains("'")){
+							JOptionPane.showMessageDialog(null, "The name cannot contain the character \" ' \".");
+						}
+						else if(!annotationController.isAttributeNameAvailable(name)){
+							JOptionPane.showMessageDialog(null, "The id is already taken."); //TODO is this neccessary?
+						}
+						// Check nominal values, if neccessary
+						else if(typeComboBox.getSelectedItem().equals(AnnotationAttributeType.NOMINAL)
+								&& ((DefaultListModel<String>) nominalValueList.getModel()).isEmpty()){
+							JOptionPane.showMessageDialog(null, "At least one allowed value needs to be specified.");
+						}
+						else{
+							AnnotationAttribute<?> att = null;
+							switch((AnnotationAttributeType) typeComboBox.getSelectedItem()){
+							case NOMINAL: att = new AnnotationNominalAttribute(name, annotationController.getNextAvailableId()); 
+								for(int index = 0; index < nominalValueList.getModel().getSize(); index++){
+									((AnnotationNominalAttribute) att).addAllowedValue((String) nominalValueList.getModel().getElementAt(index));
+								}
+							break;
+							case STRING: att = new AnnotationStringAttribute(name, annotationController.getNextAvailableId()); break;
+							case NUMERIC: att = new AnnotationNumericAttribute(name, annotationController.getNextAvailableId()); break;
+							case EVENT: att = new AnnotationEventAttribute(name, annotationController.getNextAvailableId()); break;
+							}
+							annotationController.addNewAttribute(att);
+							break;
+						}
+					}
+					
+					// Show the list of the attributes again
+					this.doClick();
+				});
+				
+				final JComponent[] inputs = new JComponent[] {new JScrollPane(annotationAttributeTable), createAttributeButton};
+				int result = JOptionPane.showConfirmDialog(null, inputs, "Adding a new Attribute",
+						JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE); 
+				if (result == JOptionPane.OK_OPTION) {
+					if(annotationAttributeTable.getSelectedRowCount() > 0){
+						for(int selectedRow: annotationAttributeTable.getSelectedRows()){
+							annotationController.addAttribute((Integer) annotationAttributeTable.getModel().getValueAt(selectedRow, 0));
+						}
+					}
+				}
+		
+				attributeList.repaint();
+				((AnnotationView) annotationController.getView()).resizePanels();
+			});
+		}
 	}
 
 }

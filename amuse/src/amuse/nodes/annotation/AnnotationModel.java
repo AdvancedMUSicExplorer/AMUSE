@@ -27,13 +27,60 @@ public class AnnotationModel {
 	private DefaultListModel<AnnotationAttribute<?>> attributeListModel;
 	private AnnotationController annotationController;
 	private LinkedHashMap<Integer, AnnotationAttribute<?>> idToAttributeMap;
+	private int maxAssignedId;
 
 	public AnnotationModel(AnnotationController annotationController){
 		this.annotationController = annotationController;
 		attributeListModel = new DefaultListModel<AnnotationAttribute<?>>();
+		maxAssignedId = -1;
 		
 		idToAttributeMap = new LinkedHashMap<Integer, AnnotationAttribute<?>>();
 		loadAnnotationAttributeTable();
+	}
+	
+	/**
+	 * Saves the table called "annotationAttributeTable.arff" that should be placed in the annotation database.
+	 */
+	private void saveAnnotationAttributeTable(){
+		String tablePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH)
+				+ File.separator
+				+ "config"
+				+ File.separator
+				+ "annotationAttributeTable.arff";
+		PrintWriter writer = null;
+		try{
+			writer = new PrintWriter(tablePath);
+			
+			writer.write("@RELATION 'Annotation Attribute Table'\n"
+						+ "%rows=" + idToAttributeMap.size() + "\n"
+						+ "%columns=3\n"
+						+ "%max id=" + maxAssignedId + "\n\n"
+						+ "@ATTRIBUTE 'ID' NUMERIC\n"
+						+ "@ATTRIBUTE 'Attribute Type' STRING\n"
+						+ "@ATTRIBUTE 'Name' STRING\n"
+						+ "@DATA\n");
+			for(AnnotationAttribute<?> att: idToAttributeMap.values()){
+				String typeString = att.getType().toString();
+				if(att.getType() == AnnotationAttributeType.NOMINAL){
+					typeString = "{";
+					for(int i = 0; i < ((AnnotationNominalAttribute) att).getAllowedValues().size(); i++){
+						typeString += "'" + ((AnnotationNominalAttribute) att).getAllowedValues().get(i) + "',";
+					}
+					typeString = typeString.substring(0, typeString.length() - 1) + "}";
+				}
+				
+				writer.write(att.getId() + ", " + typeString + ", '" + att.getName() + "'\n");
+			}
+		}
+		catch(FileNotFoundException e){
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
+					"Could not find the annotationAttributeTable '" + tablePath + "'");
+		}
+		finally{
+			if(writer != null){
+				writer.close();
+			}
+		}
 	}
 	
 	/**
@@ -56,8 +103,11 @@ public class AnnotationModel {
 			while((line = reader.readLine()) != null){
 				// If the line is empty or a comment, do nothing
 				String lowerCaseLine = line.toLowerCase();
-				if(line.isEmpty() || line.equals("\n") || line.startsWith("%") || line.startsWith("@relation")){
+				if(line.isEmpty() || line.equals("\n") || line.startsWith("@relation")){
 					continue;
+				}
+				else if(lowerCaseLine.startsWith("%max id")){
+					maxAssignedId = Integer.parseInt(lowerCaseLine.substring(lowerCaseLine.indexOf('=') + 1).replace(" ", ""));
 				}
 				else if(lowerCaseLine.startsWith("@attribute")){
 					if(lowerCaseLine.contains("attribute type")){
@@ -179,6 +229,14 @@ public class AnnotationModel {
 				}
 			}
 		}
+		
+		// If the comment for the max id was not recognized, set maxAssignedId to the maximum id of all attributes.
+		if(maxAssignedId < 0){
+			for(int id: idToAttributeMap.keySet()){
+				maxAssignedId = Math.max(maxAssignedId, id);
+			}
+		}
+		
 	}
 	
 	
@@ -210,13 +268,23 @@ public class AnnotationModel {
 		attributeListModel.addElement(att);
 	}
 	
-	public boolean isAttributeNameValid(String name){
-		for (int i = 0; i < attributeListModel.size(); i++){
-			if(((AnnotationAttribute<?>) attributeListModel.getElementAt(i)).getName().equalsIgnoreCase(name)){
+	public void addNewAttribute(AnnotationAttribute<?> att){
+		idToAttributeMap.put(att.getId(), att);
+		maxAssignedId = Math.max(att.getId(), maxAssignedId);
+		this.saveAnnotationAttributeTable();
+	}
+	
+	public boolean isAttributeNameAvailable(String name){
+		for (AnnotationAttribute<?> att: idToAttributeMap.values()){
+			if(att.getName().equalsIgnoreCase(name)){
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	public boolean isAttributeIdAvailable(String id){
+		return !idToAttributeMap.keySet().contains(id);
 	}
 	
 	public void deleteAttribute(AnnotationAttribute<?> att){
@@ -245,13 +313,22 @@ public class AnnotationModel {
 				try {
 					reader = new BufferedReader(new FileReader(entry));
 					String line = "";
-					String id = entry.getName();
-					id = id.substring(0,id.indexOf('.'));
+					String entryName = entry.getName();
+					String id;
+					if(entryName.contains("-")){
+						id = entryName.substring(0, entryName.indexOf('-'));
+					}
+					else{
+						id = entryName.substring(0,entryName.indexOf('.'));
+					}
 					AnnotationAttribute<?> att = null;
 					try{
 						att = idToAttributeMap.get(Integer.parseInt(id));
 					}
 					catch(NumberFormatException e){
+						continue;
+					}
+					if(att == null){
 						continue;
 					}
 					LinkedList<String> attributeOrder = new LinkedList<String>();
@@ -316,7 +393,7 @@ public class AnnotationModel {
 									case NUMERIC:
 										((AnnotationAttributeValue<Double>) value).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
 										break;
-									case EVENT: // This case is impossible because EventAttributes does not have a value
+									case EVENT: // This case is impossible because EventAttributes do not have a value
 									}
 								}
 								
@@ -373,7 +450,7 @@ public class AnnotationModel {
 		new File(pathToDir).mkdirs();
 		for(int i = 0; i < attributeListModel.size(); i++){
 			AnnotationAttribute<?> att = attributeListModel.getElementAt(i);
-			saveAnnotation(pathToDir + att.getId() + ".arff", att);
+			saveAnnotation(pathToDir + att.getId() + "-" + att.getName().replace(" ", "_") + ".arff", att);
 		}
 	}
 	
@@ -383,7 +460,8 @@ public class AnnotationModel {
 			writer = new PrintWriter(pathToArff);
 			writer.write("@RELATION 'Annotation " + att.getType() + "'\n");
 			writer.write("%rows=" + att.getValueList().size() + "\n");
-			writer.write("%columns=" + (att.getType() == AnnotationAttributeType.EVENT? "1": "3") + "\n\n");
+			writer.write("%columns=" + (att.getType() == AnnotationAttributeType.EVENT? "1": "3") + "\n");
+			writer.write("%file path=" + annotationController.getMusicFilePath() + "\n\n");
 			
 			// Write the header according to the type of the attribute
 			String quotMarks = att.getType() == AnnotationAttributeType.NUMERIC ? "" : "'";
@@ -429,9 +507,14 @@ public class AnnotationModel {
 			}
 			else{
 				for(int i = 0; i < att.getValueList().size(); i++) {
-					writer.write(att.getValueList().getElementAt(i).getStart() + ", " 
-								+ att.getValueList().getElementAt(i).getEnd() + ", "
-								+ quotMarks + att.getValueList().getElementAt(i).getValue() + quotMarks + "\n");
+					writer.write(att.getValueList().getElementAt(i).getStart()
+								+ ", " 
+								+ att.getValueList().getElementAt(i).getEnd()
+								+ ", "
+								+ quotMarks
+								+ att.getValueList().getElementAt(i).getValue()
+								+ quotMarks
+								+ "\n");
 				}
 			}
 		}
@@ -448,6 +531,10 @@ public class AnnotationModel {
 
 	public LinkedHashMap<Integer, AnnotationAttribute<?>> getAnnotationAttributeTable() {
 		return idToAttributeMap;
+	}
+
+	public int getNextAvailableId() {
+		return maxAssignedId + 1;
 	}
 	
 }

@@ -1,12 +1,15 @@
 package amuse.scheduler.gui.annotation;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.metal.MetalSliderUI;
 
 import amuse.scheduler.gui.controller.AnnotationController;
@@ -21,6 +24,7 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 	JSlider slider;
 	boolean triggerEvent;
 	AnnotationController annotationController;
+	ChangeListener scrollListener;
 	
 	public AnnotationCurrentTimePanel(AnnotationController pAnnotationController) {
 		super();
@@ -86,6 +90,20 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 				super.setValue((int)(n + 12));
 			}
 		});
+		scrollListener = new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				Rectangle visibleRect = slider.getVisibleRect();
+				int totalWidth = ((AnnotationView) annotationController.getView()).getAnnotationAudioSpectrumPanel().getContentSize().width;
+				double totalMillis = annotationController.getDurationInMs();
+				double millisPerPixel = totalMillis / totalWidth;
+				double sliderPos = slider.getValue() * totalMillis / slider.getMaximum() / millisPerPixel;
+				if(sliderPos > visibleRect.getX() + visibleRect.getWidth()){
+					annotationController.scrollToTime((int) annotationController.getCurrentMs()); 
+				}
+				
+			}
+		};
 		
 	}
 	
@@ -95,6 +113,20 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 			slider.revalidate();
 		}
 		super.revalidate();
+	}
+	
+	public void enableScrolling(boolean b){
+		if(b){
+			for(ChangeListener listener:slider.getChangeListeners()){
+				if(listener.equals(scrollListener)){
+					return;
+				}
+			}
+			slider.addChangeListener(scrollListener);
+		}
+		else{
+			slider.removeChangeListener(scrollListener);
+		}
 	}
 	
 	public void setCurrentTime(double millis){

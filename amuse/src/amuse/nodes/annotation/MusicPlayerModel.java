@@ -21,15 +21,17 @@ import javafx.util.Duration;
 public class MusicPlayerModel{
 	MediaPlayer mediaPlayer;
 	ChangeListener<? super Duration> durationListener;
+	ChangeListener<? super Status> statusListener;
 	
-	public MusicPlayerModel(ChangeListener<? super Duration> durationListener){
+	public MusicPlayerModel(ChangeListener<? super Duration> durationListener, ChangeListener<? super Status> statusListener){
 		this.durationListener = durationListener;
+		this.statusListener = statusListener;
 		new JFXPanel(); // Needed to initialize the JavaFX toolkit
 		mediaPlayer = null;
 	}
 	
-	public MusicPlayerModel(String path, ChangeListener<? super Duration> durationListener){
-		this(durationListener);
+	public MusicPlayerModel(String path, ChangeListener<? super Duration> durationListener, ChangeListener<? super Status> statusListener){
+		this(durationListener, statusListener);
 		this.load(path);
 	}
 	
@@ -40,6 +42,7 @@ public class MusicPlayerModel{
 		Media media = new Media(new File(path).toURI().toString());
 		mediaPlayer = new MediaPlayer(media);
 		mediaPlayer.currentTimeProperty().addListener(durationListener);
+		mediaPlayer.statusProperty().addListener(statusListener);
 		
 		/*  The durationListener only works when the mediaPlayer was started once, but it is needed before the user starts the mediaPlayer manually.
 		 *  Therefore, the mediaPlayer needs to be started and paused once.
@@ -101,6 +104,7 @@ public class MusicPlayerModel{
 			mediaPlayer.seek(new Duration(millis));
 		}
 	}
+	
 
 	public String getMusicFilePath() {
 		if(mediaPlayer != null){

@@ -31,10 +31,8 @@ public class AnnotationController extends AbstractController{
 	public AnnotationController(WizardController wc){
 		wizardController = wc;
 		annotationModel = new AnnotationModel(this);
-		musicPlayerModel = new MusicPlayerModel((value, oldDuration, newDuration) -> {
-			annotationView.setCurrentTime(newDuration.toMillis());
-			
-		});
+		musicPlayerModel = new MusicPlayerModel((value, oldDuration, newDuration) -> annotationView.setCurrentTime(newDuration.toMillis()),
+				(observable, oldValue, newValue) -> annotationView.getAnnotationUserInterfacePanel().refreshButtonPlayPauseIcon());
 		annotationView = new AnnotationView(this);
 	}
 	
@@ -51,8 +49,12 @@ public class AnnotationController extends AbstractController{
 		
 	}
 	
-	public boolean isAttributeNameValid(String name){
-		return annotationModel.isAttributeNameValid(name);
+	public boolean isAttributeNameAvailable(String name){
+		return annotationModel.isAttributeNameAvailable(name);
+	}
+	
+	public boolean isAttributeIdAvailable(String id){
+		return annotationModel.isAttributeIdAvailable(id);
 	}
 	
 	public void removeAttribute(AnnotationAttribute<?> att){
@@ -148,6 +150,10 @@ public class AnnotationController extends AbstractController{
 		annotationView.getAnnotationSelectionPanel().selectAttributeValue(value);
 	}
 	
+	public void scrollToTime(int millis){
+		annotationView.getAnnotationAudioSpectrumPanel().scrollToTime(millis);
+	}
+	
 	public void selectAttributeWithValue(int attributeNumber, double millis) {
 		annotationView.getAnnotationSelectionPanel().selectAttributeWithValue(attributeNumber, millis);
 	}
@@ -160,6 +166,14 @@ public class AnnotationController extends AbstractController{
 	
 	public void saveAnnotation(){ 
 		annotationModel.saveAnnotation();
+	}
+
+	public void addNewAttribute(AnnotationAttribute<?> att) {
+		annotationModel.addNewAttribute(att);
+	}
+
+	public int getNextAvailableId() {
+		return annotationModel.getNextAvailableId();
 	}
 	
 }

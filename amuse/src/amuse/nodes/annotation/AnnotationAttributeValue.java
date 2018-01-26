@@ -1,5 +1,7 @@
 package amuse.nodes.annotation;
 
+import javax.swing.DefaultListModel;
+
 /**
  * Holds the start, end and actual value of one annotated instance
  * @author Frederik Heerde
@@ -16,6 +18,28 @@ public class AnnotationAttributeValue<T>{
 		start = pStart;
 		end = pEnd;
 		value = pValue;
+	}
+	
+	public AnnotationAttributeValue<T> getNextValue(){
+		DefaultListModel<AnnotationAttributeValue<T>> values = annotationAttribute.getValueList();
+		int nextIndex = values.indexOf(this) + 1;
+		if(nextIndex >= values.size()){
+			return null;
+		}
+		else{
+			return values.get(nextIndex);
+		}
+	}
+	
+	public AnnotationAttributeValue<T> getPreviousValue(){
+		DefaultListModel<AnnotationAttributeValue<T>> values = annotationAttribute.getValueList();
+		int nextIndex = values.indexOf(this) - 1;
+		if(nextIndex < 0){
+			return null;
+		}
+		else{
+			return values.get(nextIndex);
+		}
 	}
 	
 	public AnnotationAttribute<T> getAnnotationAttribute(){
