@@ -31,8 +31,8 @@ import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
-import amuse.preferences.*;
 import amuse.scheduler.Scheduler;
+import amuse.scheduler.gui.annotation.AnnotationView;
 import amuse.scheduler.gui.navigation.TitleUpdater;
 import amuse.scheduler.gui.settings.JPanelSettings;
 import amuse.scheduler.gui.views.TaskManagerView;
@@ -323,6 +323,9 @@ public final class WizardController implements WizardControllerInterface {
 			annotationController = new AnnotationController(instance);
 		}
 		wizard.showInWizardPane(annotationController.getView());
+		if(annotationController.getMusicFilePath().equals("")){
+			((AnnotationView) annotationController.getView()).loadButtonClicked();
+		}
 
 	}
 }

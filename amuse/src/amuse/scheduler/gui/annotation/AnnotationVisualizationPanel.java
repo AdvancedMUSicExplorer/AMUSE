@@ -34,7 +34,7 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 		millisPerPixel = 1;
 		contentPanel.setLayout(null);
 		newValuePanel = null;
-
+		
 		contentPanel.addMouseListener(new MouseListener() {
 
 			@Override
@@ -103,19 +103,18 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				if (newValuePanel != null) {
+					AnnotationAttributeValue<?> value = newValuePanel.getValue();
+					int maxTime = (int) annotationController.getDurationInMs();
+					AnnotationAttributeValue<?> nextValue = value.getNextValue();
+					if(nextValue != null){
+						maxTime = nextValue.getStart();
+					}
 					int difference = (int) ((e.getX() - newValuePanel.getX() - newValuePanel.getWidth())
 							* millisPerPixel);
-					int newEnd = Math.min(newValuePanel.getValue().getEnd() + difference,
-							(int) annotationController.getDurationInMs()); // No
-																			// values
-																			// longer
-																			// than
-																			// the
-																			// song
-					newEnd = Math.max(newEnd, newValuePanel.getValue().getStart() + 1); // No
-																						// negative
-																						// duration
-					newValuePanel.getValue().setEnd(newEnd);
+					// Bound the Start to the end of the previous value or zero
+					int newEnd = Math.min(value.getEnd() + difference, maxTime); 
+					newEnd = Math.max(newEnd, value.getStart() + 1); // No negative duration
+					value.setEnd(newEnd);
 					newValuePanel.refreshBounds();
 
 					// Refresh the values written in the lower part of the panel
@@ -194,6 +193,7 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 		public ValuePanel(AnnotationAttributeValue<T> pValue) {
 			super();
+			this.setOpaque(false);
 			this.value = pValue;
 			mouseDragStart = 0;
 			this.refreshBounds();
@@ -274,37 +274,39 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				@Override
 				public void mouseDragged(MouseEvent e) {
 					int cursorType = getCursor().getType();
+					int minTime = 0;
+					int maxTime = (int) annotationController.getDurationInMs();
+					AnnotationAttributeValue<?> nextValue = value.getNextValue();
+					if(nextValue != null){
+						maxTime = nextValue.getStart();
+					}
+					AnnotationAttributeValue<?> previousValue = value.getPreviousValue();
+					if(previousValue != null){
+						minTime = previousValue.getEnd();
+					}
 					if (cursorType == Cursor.W_RESIZE_CURSOR) {
 						int difference = (int) (e.getX() * millisPerPixel);
-						int newStart = Math.max(value.getStart() + difference, 0); // No
-																					// negative
-																					// values
-						newStart = Math.min(newStart, value.getEnd() - 1); // No
-																			// negative
-																			// duration
+						// Bound the Start to the end of the previous value or zero
+						int newStart = Math.max(value.getStart() + difference, minTime); 
+						// No negative duration
+						newStart = Math.min(newStart, value.getEnd() - 1); 
 						value.setStart(newStart);
 					} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
 						int difference = (int) ((e.getX() - getWidth()) * millisPerPixel);
-						int newEnd = Math.min(value.getEnd() + difference,
-								(int) annotationController.getDurationInMs()); // No
-																				// values
-																				// longer
-																				// than
-																				// the
-																				// song
-						newEnd = Math.max(newEnd, value.getStart() + 1); // No
-																			// negative
-																			// duration
+						// Bound the Start to the end of the next value or song duration
+						int newEnd = Math.min(value.getEnd() + difference, maxTime); 
+						// No negative duration
+						newEnd = Math.max(newEnd, value.getStart() + 1); 
 						value.setEnd(newEnd);
 					} else {
 						int difference = (int) ((e.getX() - mouseDragStart) * millisPerPixel);
 						int durationOfMusic = (int) annotationController.getDurationInMs();
-						if (value.getStart() + difference <= 0) {
-							value.setEnd(value.getEnd() - value.getStart());
-							value.setStart(0);
-						} else if (value.getEnd() + difference >= durationOfMusic) {
-							value.setStart(durationOfMusic - value.getDuration());
-							value.setEnd(durationOfMusic);
+						if (value.getStart() + difference <= minTime) {
+							value.setEnd(minTime + value.getEnd() - value.getStart());
+							value.setStart(minTime);
+						} else if (value.getEnd() + difference >= maxTime) {
+							value.setStart(maxTime - value.getDuration());
+							value.setEnd(maxTime);
 						} else {
 							value.setStart(value.getStart() + difference);
 							value.setEnd(value.getEnd() + difference);
@@ -397,15 +399,8 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				@Override
 				public void mouseDragged(MouseEvent e) {
 					int difference = (int) ((e.getX() - mouseDragStart) * millisPerPixel);
-					int newStart = Math.max(value.getStart() + difference, 0); // No
-																				// negative
-																				// values
-					newStart = Math.min(newStart, (int) annotationController.getDurationInMs()); // No
-																									// values
-																									// longer
-																									// than
-																									// the
-																									// song
+					int newStart = Math.max(value.getStart() + difference, 0); // No negative values
+					newStart = Math.min(newStart, (int) annotationController.getDurationInMs()); // No values longer than the song
 					value.setStart(newStart);
 
 					annotationController.selectAttributeValue(value);
