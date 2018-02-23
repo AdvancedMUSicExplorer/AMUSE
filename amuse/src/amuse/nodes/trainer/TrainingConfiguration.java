@@ -264,6 +264,8 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		return new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType);
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType); 
+		conf.setPathToOutputModel(pathToOutputModel);
+		return conf;
 	}
 }
