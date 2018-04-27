@@ -89,13 +89,22 @@ public class ClassifierController extends AbstractController {
         File musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
         String processedFeatureDescription = classifierView.getProcessingModelStr();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
-        int categoryId = classifierView.getCategoryID();
+        String groundTruthSource = classifierView.getGroundTruthSource();
+        String groundTruthSourceType = classifierView.getGroundTruthSourceType().toString();
         int mergeSongResults = 1;
         if (!classifierView.isAverageCalculationSelected()) {
             mergeSongResults = 0;
         }
         String outputResultPath = classifierView.getTargetFilePath();
-        ClassifierConfigSet dataSet = new ClassifierConfigSet(musicFilesFile, "FILE_LIST", processedFeatureDescription, algorithmId, categoryId, mergeSongResults, outputResultPath);
+        ClassifierConfigSet dataSet = new ClassifierConfigSet(
+        		musicFilesFile, 
+        		"FILE_LIST", 
+        		processedFeatureDescription, 
+        		algorithmId, 
+        		groundTruthSource, 
+        		groundTruthSourceType,
+        		mergeSongResults, 
+        		outputResultPath);
         // Create folders...
         musicFilesFile.getParentFile().mkdirs();
         FileTableSet fileTableSet = new FileTableSet(ftModel.getFiles());
@@ -132,7 +141,8 @@ public class ClassifierController extends AbstractController {
     private void setConfiguration(ClassificationConfiguration conf) {
         classifierView.setProcessingModelStr(conf.getProcessedFeaturesModelName());
         classifierView.setSelectedTrainingAlgorithm(conf.getAlgorithmDescription());
-        classifierView.setSelectedCategoryID(conf.getCategoryId());
+        classifierView.setGroundTruthSourceType(conf.getGroundTruthSourceType());
+        classifierView.setGroundTruthSource(conf.getGroundTruthSource());
         classifierView.setAverageCalculationSelected(conf.getMergeSongResults());
         classifierView.setTargetFilePath(conf.getClassificationOutput());
         if (conf.getInputToClassify() instanceof FileListInput) {
@@ -151,7 +161,8 @@ public class ClassifierController extends AbstractController {
             musicFilesFile.deleteOnExit();
             String processedFeatureDescription = classifierView.getProcessingModelStr();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
-            int categoryId = classifierView.getCategoryID();
+            String groundTruthSource = classifierView.getGroundTruthSource();
+            String groundTruthSourceType = classifierView.getGroundTruthSourceType().toString();
             int mergeSongResults = 1;
             if (!classifierView.isAverageCalculationSelected()) {
                 mergeSongResults = 0;
@@ -162,7 +173,15 @@ public class ClassifierController extends AbstractController {
             FileTableSet fileTableSet = new FileTableSet(ftModel.getFiles());
             // Save Files and Features:
             fileTableSet.saveToArffFile(musicFilesFile);
-            conf = new ClassificationConfiguration(ClassificationConfiguration.InputSourceType.FILE_LIST, musicFilesFile.getAbsolutePath(), processedFeatureDescription, algorithmStr, categoryId, mergeSongResults, outputResultPath);
+            conf = new ClassificationConfiguration(
+            		ClassificationConfiguration.InputSourceType.FILE_LIST, 
+            		musicFilesFile.getAbsolutePath(), 
+            		processedFeatureDescription, 
+            		algorithmStr, 
+            		groundTruthSource,
+            		groundTruthSourceType,
+            		mergeSongResults, 
+            		outputResultPath);
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }

@@ -51,10 +51,10 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
-import amuse.nodes.validator.ValidationConfiguration.GroundTruthSourceType;
 import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
@@ -387,7 +387,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			
 				// If the ground truth has been previously prepared, the input is ready! 
 				if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().
-						equals(ValidationConfiguration.GroundTruthSourceType.READY_INPUT)) {
+						equals(GroundTruthSourceType.READY_INPUT)) {
 					labeledInputForValidation = new DataSet(new File(((ValidationConfiguration)this.getConfiguration()).getInputToValidate().toString()),
 						"ValidationSet");
 				} else {
@@ -396,7 +396,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					// Load the ground truth
 					String pathToCategoryFile = ((FileInput)((ValidationConfiguration)this.getConfiguration()).getInputToValidate()).toString();
 					if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().equals(
-							ValidationConfiguration.GroundTruthSourceType.CATEGORY_ID)) {
+							GroundTruthSourceType.CATEGORY_ID)) {
 						
 						// Search for the category file
 						Integer categoryId = new Integer(((FileInput)((ValidationConfiguration)this.getConfiguration()).

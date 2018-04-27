@@ -32,6 +32,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.trainer.TrainingConfiguration;
 
 /**
@@ -108,7 +109,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         preprocessingAlgorithmIdAttribute = new StringAttribute(preprocessingAlgorithmIdStr, preprocessingStr);
         groundTruthSourceAttribute = new StringAttribute(groundTruthSourceStr, groundTruthList);
         List<String> allowedValues = new ArrayList<String>();
-        for (TrainingConfiguration.GroundTruthSourceType type : TrainingConfiguration.GroundTruthSourceType.values()) {
+        for (GroundTruthSourceType type : GroundTruthSourceType.values()) {
             allowedValues.add(type.toString());
         }
         groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);

@@ -22,7 +22,7 @@ public abstract class AnnotationScrollPane extends JScrollPane{
 	JPanel contentPanel;
 	
 	public AnnotationScrollPane(AnnotationController pAnnotationController) {
-		super();
+		super(VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_ALWAYS);
 		contentPanel = new JPanel() {
 
 			@Override

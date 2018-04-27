@@ -33,6 +33,7 @@ import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -61,12 +62,6 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth source */
 	private DataInputInterface groundTruthSource;
 	
-	/** Defines the ground truth type. Can be either
-	 * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
-	 * - Path to the labeled file list or
-	 * - Path to the ready training input (prepared e.g. by a validator method) */
-	public enum GroundTruthSourceType {CATEGORY_ID, FILE_LIST, READY_INPUT};
-	
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
@@ -94,7 +89,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType/*, String pathToOutputModel*/) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
@@ -102,6 +97,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 		this.groundTruthSourceType = groundTruthSourceType;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.pathToOutputModel = pathToOutputModel;
 	}
 
 	/**
@@ -130,8 +126,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst);
-			trConfig.setPathToOutputModel(currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -264,8 +259,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType); 
-		conf.setPathToOutputModel(pathToOutputModel);
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, pathToOutputModel); 
 		return conf;
 	}
 }

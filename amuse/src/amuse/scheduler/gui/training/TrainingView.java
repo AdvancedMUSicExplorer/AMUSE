@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.training;
 
+import amuse.nodes.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.Algorithm;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -43,7 +44,7 @@ public class TrainingView {
 	private JPanel viewLeft;
 	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
 	private JSplitPane splitPane = new JSplitPane();
-	private CategorySelectionPanel categorySelectionPanel;
+	private GroundTruthSelectionPanel groundTruthSelectionPanel;
 	private ProcessingHistoryPanel processingHistoryPanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
@@ -57,13 +58,13 @@ public class TrainingView {
 	public TrainingView(String leftTitle) {
 		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config" + File.separator + "classifierAlgorithmTable.arff"));
 		trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
-		this.categorySelectionPanel = new CategorySelectionPanel();
+		this.groundTruthSelectionPanel = new GroundTruthSelectionPanel();
 		viewLeft = new JPanel(new MigLayout("fillx"));
 		viewLeft.setBorder(new TitledBorder(leftTitle));
 		splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
 		splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
 		this.processingHistoryPanel = new ProcessingHistoryPanel();
-		viewLeft.add(categorySelectionPanel, "growx, span, wrap");
+		viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
 		if (leftTitle.equals(trainingViewName)) {
 			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 			preprocessingAlgorithmFacade.setUseEnableButton(true);
@@ -117,21 +118,25 @@ public class TrainingView {
 			return algorithmStr;
 		}
 	}
-
-	public int getSelectedCategoryID() {
-		return categorySelectionPanel.getSelectedCategoryID();
+	
+	public void setGroundTruthSourceType(GroundTruthSourceType type){
+		groundTruthSelectionPanel.setGroundTruthSourceType(type);
 	}
-
+	
+	public GroundTruthSourceType getGroundTruthSourceType(){
+		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
+	}
+	
+	public String getGroundTruthSource(){
+		return groundTruthSelectionPanel.getSelectedGroundTruthSource();
+	}
+		
 	public void setProcessingModelString(String value) {
 		processingHistoryPanel.setProcessingModelString(value);
 	}
 
 	public void setPreprocessingAlgorithm(String value) {
 		preprocessingAlgorithmFacade.setSelectedAlgorithm(value);
-	}
-
-	public void setSelectedCategoryID(int value) {
-		categorySelectionPanel.setSelectedCategory(value);
 	}
 
 	public void setSelectedTrainingAlgorithm(String value) {
@@ -141,4 +146,9 @@ public class TrainingView {
 	public String getSelectedTrainingAlgorithmStr() {
 		return trainingAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
 	}
+
+	public void setGroundTruthSource(String groundTruthSource) {
+		groundTruthSelectionPanel.setGroundTruthSource(groundTruthSource);
+	}
+
 }

@@ -64,6 +64,7 @@ public class EditableAmuseSettingsFactory {
 	private void createSettingsDialogs() {
 		allEditableAmuseSettings.add(new GeneralAmuseSettings());
 		allEditableAmuseSettings.add(new GridSettings());
-                allEditableAmuseSettings.add(new PluginSettings());
+        allEditableAmuseSettings.add(new PluginSettings());
+        allEditableAmuseSettings.add(new AnnotationSettings());
 	}
 }

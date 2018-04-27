@@ -37,6 +37,7 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.validator.interfaces.ValidationMetric;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -65,12 +66,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 	
 	/** Input to validate */
 	private DataInputInterface inputToValidate;
-	
-	/** Defines the ground truth type. Can be either
-	 * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
-	 * - Path to the labeled file list or
-	 * - Path to the ready training input (prepared e.g. by a validator method) */
-	public enum GroundTruthSourceType {CATEGORY_ID, FILE_LIST, READY_INPUT};
 	
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;

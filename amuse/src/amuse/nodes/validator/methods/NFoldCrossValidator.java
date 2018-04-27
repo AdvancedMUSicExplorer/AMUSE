@@ -41,6 +41,7 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
@@ -323,8 +324,8 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				"-1",
 				new DataSetInput(trainingSet),
-				TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
-			tConf.setPathToOutputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
+				GroundTruthSourceType.READY_INPUT,
+				this.folderForModels + File.separator + "model_" + i + ".mod");
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);

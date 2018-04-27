@@ -25,7 +25,7 @@ package amuse.scheduler.gui.validation;
 
 import javax.swing.JComponent;
 
-
+import amuse.nodes.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
 
@@ -71,16 +71,41 @@ public class ValidationView {
         return trainingView.getSelectedTrainingAlgorithmStr();
     }
 
-    public int getSelectedCategoryID() {
-        return trainingView.getSelectedCategoryID();
-    }
-
-    public void setSelectedCategoryID(int value) {
-        trainingView.setSelectedCategoryID(value);
+    public void setSelecstedCategoryID(int value) {
+        //trainingView.setSelectedCategoryID(value);
     }
 
     public void setClassifierAlgorithm(String string) {
         trainingView.setSelectedTrainingAlgorithm(string);
     }
+    
+    public void setGroundTruthSourceType(GroundTruthSourceType type){
+    	trainingView.setGroundTruthSourceType(type);
+	}
+	
+	public GroundTruthSourceType getGroundTruthSourceType(){
+		return trainingView.getGroundTruthSourceType();
+	}
+	
+	/*public String getSelectedReadyInputFile(){
+		return trainingView.getReadyInputSelectionPanel().getSelectedReadyInputFile();
+	}
+
+	public void setSelectedReadyInputFile(String groundTruthSource) {
+		trainingView.getReadyInputSelectionPanel().setSelectedReadyInputFile(groundTruthSource);
+	}*/
+
+	public String getPathToOutputModel() {
+		// TODO Auto-generated method stub
+		return "/home/heerde/workspace/Music/Models/randomforest/model.mod";
+	}
+	
+	public String getGroundTruthSource(){
+		return trainingView.getGroundTruthSource();
+	}
+
+	public void setGroundTruthSource(String groundTruthSource) {
+		trainingView.setGroundTruthSource(groundTruthSource);
+	}
 
 }

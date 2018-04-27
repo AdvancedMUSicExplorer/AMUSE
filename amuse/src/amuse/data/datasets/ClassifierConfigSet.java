@@ -26,6 +26,8 @@ package amuse.data.datasets;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import amuse.data.io.DataSetAbstract;
@@ -34,6 +36,7 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 
 /**
  * This class represents a list of classification tasks as used in AMUSE. Serialisation to ARFF is supported.
@@ -47,7 +50,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     private static final String strInputSourceType = "InputSourceType";
     private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
     private static final String strTrainingAlgorithmID = "AlgorithmId";
-    private static final String strCategoryID = "CategoryId";
+    private static final String strGroundTruthSource = "GroundTruthSource";
+    private static final String strGroundTruthSourceType = "GroundTruthSourceType";
     private static final String strMergeSongResults = "MergeSongResults";
     private static final String strOutputResult = "OutputResult";
     private static final String strDataSetName = "ClassifierConfiguration";
@@ -57,7 +61,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     private final NominalAttribute inputSourceTypeAttribute;
     private final StringAttribute processedFeatureDescriptionAttribute;
     private final StringAttribute classificationAlgorithmIdAttribute;
-    private final NumericAttribute categoryIdAttribute;
+    private final StringAttribute groundTruthSourceAttribute;
+    private final NominalAttribute groundTruthSourceTypeAttribute;
     private final NumericAttribute mergeSongResultsAttribute;
     private final StringAttribute outputResultAttribute;
     
@@ -74,20 +79,47 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         dataSet.checkNominalAttribute(strInputSourceType);
         dataSet.checkStringAttribute(strProcessedFeatureDescription);
         dataSet.checkStringAttribute(strTrainingAlgorithmID);
-        dataSet.checkNumericAttribute(strCategoryID);
+        
+        NumericAttribute categoryIdAttribute = null;
+        try{
+        	dataSet.checkStringAttribute(strGroundTruthSource);
+        	dataSet.checkNominalAttribute(strGroundTruthSourceType);
+        }
+        catch(DataSetException e){ // In case of older configurations, there is only a numeric attribute for "CategoryId"
+        	try{
+        		dataSet.checkNumericAttribute("CategoryId");
+        		categoryIdAttribute = (NumericAttribute) dataSet.getAttribute("CategoryId");
+        	}
+        	catch (DataSetException e1) { // If no CategoryId Attribute is defined, throw the actual exception
+				throw e;
+			}
+        }
+        if(categoryIdAttribute == null){
+        	groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(strGroundTruthSource);
+            groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
+        }
+        else{
+        	List<String> categoryIdList = new ArrayList<String>(categoryIdAttribute.getValueCount());
+    		for(Double d: categoryIdAttribute.getValues()){
+    			categoryIdList.add(d.intValue() + "");
+    		}
+        	groundTruthSourceAttribute = new StringAttribute(strGroundTruthSource, categoryIdList);
+        	groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Collections.nCopies(categoryIdAttribute.getValueCount(), GroundTruthSourceType.CATEGORY_ID.toString()));
+        }
+        
         dataSet.checkNumericAttribute(strMergeSongResults);
         dataSet.checkStringAttribute(strOutputResult);
         inputFileListAttribute = (StringAttribute) dataSet.getAttribute(strInputFileList);
         inputSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputSourceType);
         processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
         classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strTrainingAlgorithmID);
-        categoryIdAttribute = (NumericAttribute) dataSet.getAttribute(strCategoryID);
         mergeSongResultsAttribute = (NumericAttribute) dataSet.getAttribute(strMergeSongResults);
         outputResultAttribute = (StringAttribute) dataSet.getAttribute(strOutputResult);
         addAttribute(inputFileListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(classificationAlgorithmIdAttribute);
-        addAttribute(categoryIdAttribute);
+        addAttribute(groundTruthSourceAttribute);
+        addAttribute(groundTruthSourceTypeAttribute);
         addAttribute(mergeSongResultsAttribute);
         addAttribute(outputResultAttribute);
         addAttribute(inputSourceTypeAttribute);
@@ -106,14 +138,41 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         checkNominalAttribute(strInputSourceType);
         checkStringAttribute(strProcessedFeatureDescription);
         checkStringAttribute(strTrainingAlgorithmID);
-        checkNumericAttribute(strCategoryID);
+        
+		NumericAttribute categoryIdAttribute = null;
+        try{
+        	checkStringAttribute(strGroundTruthSource);
+        	checkNominalAttribute(strGroundTruthSourceType);
+        }
+        catch(DataSetException e){ // In case of older configurations, there is only a numeric attribute for "CategoryId"
+        	try{
+        		checkNumericAttribute("CategoryId");
+        		categoryIdAttribute = (NumericAttribute) getAttribute("CategoryId");
+        	}
+        	catch (DataSetException e1) { // If no CategoryId Attribute is defined, throw the actual exception
+				throw e;
+			}
+        }
+        if(categoryIdAttribute == null){
+        	groundTruthSourceAttribute = (StringAttribute) getAttribute(strGroundTruthSource);
+            groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
+        }
+        else{
+        	List<String> categoryIdList = new ArrayList<String>(categoryIdAttribute.getValueCount());
+    		for(Double d: categoryIdAttribute.getValues()){
+    			categoryIdList.add(d.intValue() + "");
+    		}
+        	groundTruthSourceAttribute = new StringAttribute(strGroundTruthSource, categoryIdList);
+        	groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Collections.nCopies(categoryIdAttribute.getValueCount(), GroundTruthSourceType.CATEGORY_ID.toString()));
+        }
+        
+        
         checkNumericAttribute(strMergeSongResults);
         checkStringAttribute(strOutputResult);
         inputFileListAttribute = (StringAttribute) getAttribute(strInputFileList);
         inputSourceTypeAttribute = (NominalAttribute) getAttribute(strInputSourceType);
         processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
         classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strTrainingAlgorithmID);
-        categoryIdAttribute = (NumericAttribute) getAttribute(strCategoryID);
         mergeSongResultsAttribute = (NumericAttribute) getAttribute(strMergeSongResults);
         outputResultAttribute = (StringAttribute) getAttribute(strOutputResult);
     }
@@ -122,7 +181,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     							List<String> inputSourceTypeList,
                                 List<String> processedFeatureDescription,
                                 List<String> algorithmIDs,
-                                List<Integer> categoryIDs,
+                                List<String> groundTruthSources,
+                                List<String> groundTruthSourceTypes,
                                 List<Integer> mergeSongResults,
                                 List<String> outputResultPaths) {
         super(strDataSetName);
@@ -133,13 +193,15 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, getAllowedValues(), inputSourceTypeList);
         processedFeatureDescriptionAttribute = new StringAttribute(strProcessedFeatureDescription, processedFeatureDescription);
         classificationAlgorithmIdAttribute = new StringAttribute(strTrainingAlgorithmID, algorithmIDs);
-        categoryIdAttribute = NumericAttribute.createFromIntList(strCategoryID, categoryIDs);
+        groundTruthSourceAttribute = new StringAttribute(strGroundTruthSource, groundTruthSources);
+        groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Arrays.asList(GroundTruthSourceType.stringValues()), groundTruthSourceTypes);
         mergeSongResultsAttribute = NumericAttribute.createFromIntList(strMergeSongResults, mergeSongResults);
         outputResultAttribute = new StringAttribute(strOutputResult, outputResultPaths);
         addAttribute(inputFileListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(classificationAlgorithmIdAttribute);
-        addAttribute(categoryIdAttribute);
+        addAttribute(groundTruthSourceAttribute);
+        addAttribute(groundTruthSourceTypeAttribute);
         addAttribute(mergeSongResultsAttribute);
         addAttribute(outputResultAttribute);
         addAttribute(inputSourceTypeAttribute);
@@ -149,7 +211,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 								String inputSourceType,
                                 String processedFeatureDescription,
                                 String algorithmId,
-                                int categoryId,
+                                String groundTruthSource,
+                                String groundTruthType,
                                 int mergeSongResults,
                                 String outputResultPath) {
         super(strDataSetName);
@@ -159,13 +222,18 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, getAllowedValues(), values);
         processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
         classificationAlgorithmIdAttribute = StringAttribute.createFromString(strTrainingAlgorithmID, algorithmId);
-        categoryIdAttribute = NumericAttribute.createFromDouble(strCategoryID, categoryId);
+        groundTruthSourceAttribute = StringAttribute.createFromString(strGroundTruthSource, groundTruthSource);
+        
+        List <String> groundTruthSourceTypeValues = new ArrayList<String>();
+        groundTruthSourceTypeValues.add(groundTruthType);
+        groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Arrays.asList(GroundTruthSourceType.stringValues()), groundTruthSourceTypeValues);
         mergeSongResultsAttribute = NumericAttribute.createFromDouble(strMergeSongResults, mergeSongResults);
         outputResultAttribute = StringAttribute.createFromString(strOutputResult, outputResultPath);
         addAttribute(inputFileListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(classificationAlgorithmIdAttribute);
-        addAttribute(categoryIdAttribute);
+        addAttribute(groundTruthSourceAttribute);
+        addAttribute(groundTruthSourceTypeAttribute);
         addAttribute(mergeSongResultsAttribute);
         addAttribute(outputResultAttribute);
         addAttribute(inputSourceTypeAttribute);
@@ -185,9 +253,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     public String getDescription() {
         if (description.equals("")) {
             String processedFeatureStr = processedFeatureDescriptionAttribute.getValueAt(0);
-            int categoryId = categoryIdAttribute.getValueAt(0).intValue();
+            String groundTruthSource = groundTruthSourceAttribute.getValueAt(0);
             String result = outputResultAttribute.getValueAt(0);
-            description = "Features: " + processedFeatureStr + " Category: " + categoryId + " Output: " + result;
+            description = "Features: " + processedFeatureStr + " Source: " + groundTruthSource + " Output: " + result;
         }
         return description;
     }
@@ -200,8 +268,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         return classificationAlgorithmIdAttribute;
     }
 
-    public NumericAttribute getCategoryIdAttribute() {
-        return categoryIdAttribute;
+    public StringAttribute getGroundTruthSourceAttribute() {
+        return groundTruthSourceAttribute;
     }
 
     public NumericAttribute getMergeSongResultsAttribute() {
@@ -230,5 +298,10 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		 allowedValues.add("FILE_LIST");
 	     allowedValues.add("READY_INPUT");
 	     return allowedValues;
+	}
+
+
+	public NominalAttribute getGroundTruthSourceTypeAttribute() {
+		return groundTruthSourceTypeAttribute;
 	}
 }

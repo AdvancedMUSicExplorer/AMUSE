@@ -36,6 +36,7 @@ import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -109,7 +110,18 @@ public class TrainingController extends AbstractController {
         trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
-        trainingView.setSelectedCategoryID(new Integer(ttSet.getGroundTruthSourceAttribute().getValueAt(0)));
+
+        String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
+        if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
+        }
+        else if(groundTruthSourceType.equals(GroundTruthSourceType.FILE_LIST)){
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
+        }
+        else if(groundTruthSourceType.equals(GroundTruthSourceType.READY_INPUT.toString())){
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.READY_INPUT);
+        }
+        trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
     }
 
     private class TrainingPanel extends JPanel implements NextButtonUsable,
@@ -209,8 +221,28 @@ public class TrainingController extends AbstractController {
     }
 
     private TrainingConfiguration getTrainingConfiguration() {
-        return new TrainingConfiguration(trainingView.getProcessingModelString(), trainingView.getSelectedTrainingAlgorithmStr(), trainingView.getPreprocessingAlgorithmStr(), 
-        		new FileInput(trainingView.getSelectedCategoryID() + ""), TrainingConfiguration.GroundTruthSourceType.CATEGORY_ID);
+    	String folder = trainingView.getGroundTruthSource();
+    	if(trainingView.getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID){
+    		folder = folder.substring(folder.lastIndexOf(File.separatorChar) + 1, folder.lastIndexOf('.'));
+    	}
+    	String pathToOutputModel = AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
+    			+ File.separator
+    			+ folder
+    			+ File.separator
+    			+ trainingView.getSelectedTrainingAlgorithmStr()
+    			+ File.separator
+    			+ trainingView.getProcessingModelString()
+    			+ File.separator
+    			+ "model.mod";
+    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
+    	TrainingConfiguration conf = new TrainingConfiguration(
+    			trainingView.getProcessingModelString(),
+    			trainingView.getSelectedTrainingAlgorithmStr(),
+    			trainingView.getPreprocessingAlgorithmStr(), 
+    			new FileInput(trainingView.getGroundTruthSource()),
+    			trainingView.getGroundTruthSourceType(),
+    			pathToOutputModel); //TODO pathToOutputModel
+        return conf;
     }
 
     /*
@@ -227,7 +259,8 @@ public class TrainingController extends AbstractController {
             trainingView.setSelectedTrainingAlgorithm(trainConf.getAlgorithmDescription());
             trainingView.setProcessingModelString(trainConf.getProcessedFeaturesModelName());
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
-            trainingView.setSelectedCategoryID(new Integer(trainConf.getGroundTruthSource().toString()));
+            trainingView.setGroundTruthSourceType(trainConf.getGroundTruthSourceType());
+            trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());
         }
     }
 }

@@ -1,4 +1,4 @@
-package amuse.nodes.annotation;
+package amuse.nodes.annotation.attribute;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -33,8 +33,13 @@ public class AnnotationModel {
 		this.annotationController = annotationController;
 		attributeListModel = new DefaultListModel<AnnotationAttribute<?>>();
 		maxAssignedId = -1;
-		
-		idToAttributeMap = new LinkedHashMap<Integer, AnnotationAttribute<?>>();
+		idToAttributeMap = new LinkedHashMap<Integer, AnnotationAttribute<?>>(){
+			
+			@Override
+			public AnnotationAttribute<?> get(Object key) {
+				return super.get(key).newInstance();
+			}
+		};
 		loadAnnotationAttributeTable();
 	}
 	
@@ -82,6 +87,7 @@ public class AnnotationModel {
 			}
 		}
 	}
+	
 	
 	/**
 	 * Loads the table called "annotationAttributeTable.arff" that should be placed in the annotation database.
@@ -239,33 +245,36 @@ public class AnnotationModel {
 		
 	}
 	
+	public void addEntryToItsAttribute(AnnotationAttributeEntry<?> entry){
+		((AnnotationAttribute<Object>) entry.getAnnotationAttribute()).addEntry((AnnotationAttributeEntry<Object>) entry);
+	}
 	
-	
-	public AnnotationAttributeValue<?> addNewValueToAttribute(AnnotationAttribute<?> annotationAttribute){
-		int start = (int) annotationController.getCurrentMs();
-		switch(annotationAttribute.getType()){
+	public AnnotationAttributeEntry<?> addNewValueToAttribute(AnnotationAttribute<?> att){
+		double start = annotationController.getCurrentMs() / 1000.;
+		switch(att.getType()){
 		case NOMINAL:
-			if(((AnnotationNominalAttribute) annotationAttribute).getAllowedValues().isEmpty()){
-				((AnnotationNominalAttribute) annotationAttribute).addAllowedValue("new value");
-				return ((AnnotationNominalAttribute) annotationAttribute).addValue(start, start + 1, "new value");
+			if(((AnnotationNominalAttribute) att).getAllowedValues().isEmpty()){
+				((AnnotationNominalAttribute) att).addAllowedValue("new value");
+				return ((AnnotationNominalAttribute) att).addEntry(start, start + 0.001, "new value");
 			}
 			else{
-				return ((AnnotationNominalAttribute) annotationAttribute).addValue(start, start + 1, ((AnnotationNominalAttribute) annotationAttribute).getAllowedValues().get(0));
+				return ((AnnotationNominalAttribute) att).addEntry(start, start + 0.001, ((AnnotationNominalAttribute) att).getAllowedValues().get(0));
 			}
 		case EVENT: 
-			return ((AnnotationEventAttribute) annotationAttribute).addValue(start, -1, null);
+			return ((AnnotationEventAttribute) att).addEntry(start, -1, null);
 		case NUMERIC:
-			return ((AnnotationNumericAttribute) annotationAttribute).addValue(start, start + 1, 0.);
+			return ((AnnotationNumericAttribute) att).addEntry(start, start + 0.001, 0.);
 		case STRING: 
-			return ((AnnotationStringAttribute) annotationAttribute).addValue(start, start + 1, "new value");
+			return ((AnnotationStringAttribute) att).addEntry(start, start + 0.001, "new value");
 		default: 
-			return annotationAttribute.addValue(start, start + 1, null);
+			return att.addEntry(start, start + 1, null);
 		}
 	}
 	
-	public void addAttribute(int id){
+	public AnnotationAttribute<?> addAttribute(int id){
 		AnnotationAttribute<?> att = idToAttributeMap.get(id);
 		attributeListModel.addElement(att);
+		return att;
 	}
 	
 	public void addNewAttribute(AnnotationAttribute<?> att){
@@ -273,7 +282,7 @@ public class AnnotationModel {
 		maxAssignedId = Math.max(att.getId(), maxAssignedId);
 		this.saveAnnotationAttributeTable();
 	}
-	
+
 	public boolean isAttributeNameAvailable(String name){
 		for (AnnotationAttribute<?> att: idToAttributeMap.values()){
 			if(att.getName().equalsIgnoreCase(name)){
@@ -287,7 +296,7 @@ public class AnnotationModel {
 		return !idToAttributeMap.keySet().contains(id);
 	}
 	
-	public void deleteAttribute(AnnotationAttribute<?> att){
+	public void removeAttribute(AnnotationAttribute<?> att){
 		attributeListModel.removeElement(att);
 	}
 	
@@ -307,13 +316,13 @@ public class AnnotationModel {
 			return;
 		}
 		annotationController.clearAnnotation();
-		for(File entry: new File(pathToDir).listFiles()){
-			if(!entry.isDirectory() && entry.getName().endsWith(".arff")){
+		for(File file: new File(pathToDir).listFiles()){
+			if(!file.isDirectory() && file.getName().endsWith(".arff")){
 				BufferedReader reader = null;
 				try {
-					reader = new BufferedReader(new FileReader(entry));
+					reader = new BufferedReader(new FileReader(file));
 					String line = "";
-					String entryName = entry.getName();
+					String entryName = file.getName();
 					String id;
 					if(entryName.contains("-")){
 						id = entryName.substring(0, entryName.indexOf('-'));
@@ -360,7 +369,7 @@ public class AnnotationModel {
 					int expectedAttributeNumber = att.getType() == AnnotationAttributeType.EVENT? 1:3;
 					if(attributeOrder.size() != expectedAttributeNumber){
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-								"Could not load the annotation file '" + entry.getAbsolutePath() 
+								"Could not load the annotation file '" + file.getAbsolutePath() 
 								+ "' because of the wrong number of attributes. Read: " + attributeOrder.size() +  " Expected: " + expectedAttributeNumber);
 						continue;
 					}
@@ -373,25 +382,33 @@ public class AnnotationModel {
 							continue;
 						}
 						else{
-							AnnotationAttributeValue<?> value = annotationController.addNewValueToAttribute(att);
+							AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
 							line = line + ","; // Add a comma to the end of the line to ensure that line.indexOf(',') always returns something positive
 							for(String currentAttribute: attributeOrder){
 								int indexOfComma = line.indexOf(',');
 								
 								if(currentAttribute.equals("start")){
-									value.setStart(Integer.parseInt(line.substring(0,indexOfComma)));
+									String start = line.substring(0,indexOfComma);
+									entry.setStart(Double.parseDouble(start));
+									if (!start.contains(".")){ // start is in ms and must be converted to seconds 
+										entry.setStart(entry.getStart() / 1000);
+									}
 								}
 								else if(currentAttribute.equals("end")){
-									value.setEnd(Integer.parseInt(line.substring(0,indexOfComma)));
+									String end = line.substring(0,indexOfComma);
+									entry.setEnd(Double.parseDouble(end));
+									if (!end.contains(".")){ // end is in ms and must be converted to seconds 
+										entry.setEnd(entry.getEnd() / 1000);
+									}
 								}
 								else if(currentAttribute.equals("value")){
 									switch(att.getType()){
 									case STRING: 
 									case NOMINAL: 
-										((AnnotationAttributeValue<String>) value).setValue(line.substring(1, line.lastIndexOf('\'')));
+										((AnnotationAttributeEntry<String>) entry).setValue(line.substring(1, line.lastIndexOf('\'')));
 										break;
 									case NUMERIC:
-										((AnnotationAttributeValue<Double>) value).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
+										((AnnotationAttributeEntry<Double>) entry).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
 										break;
 									case EVENT: // This case is impossible because EventAttributes do not have a value
 									}
@@ -424,6 +441,7 @@ public class AnnotationModel {
 				}
 			}
 		}
+
 	}
 	
 	/**
@@ -459,7 +477,7 @@ public class AnnotationModel {
 		try {
 			writer = new PrintWriter(pathToArff);
 			writer.write("@RELATION 'Annotation " + att.getType() + "'\n");
-			writer.write("%rows=" + att.getValueList().size() + "\n");
+			writer.write("%rows=" + att.getEntryList().size() + "\n");
 			writer.write("%columns=" + (att.getType() == AnnotationAttributeType.EVENT? "1": "3") + "\n");
 			writer.write("%file path=" + annotationController.getMusicFilePath() + "\n\n");
 			
@@ -501,18 +519,18 @@ public class AnnotationModel {
 			writer.write("@DATA\n");
 			
 			if(att.getType() == AnnotationAttributeType.EVENT){
-				for(int i = 0; i < att.getValueList().size(); i++) {
-					writer.write(att.getValueList().getElementAt(i).getStart() + "\n");
+				for(int i = 0; i < att.getEntryList().size(); i++) {
+					writer.write(att.getEntryList().getElementAt(i).getStart() + "\n");
 				}
 			}
 			else{
-				for(int i = 0; i < att.getValueList().size(); i++) {
-					writer.write(att.getValueList().getElementAt(i).getStart()
+				for(int i = 0; i < att.getEntryList().size(); i++) {
+					writer.write(att.getEntryList().getElementAt(i).getStart()
 								+ ", " 
-								+ att.getValueList().getElementAt(i).getEnd()
+								+ att.getEntryList().getElementAt(i).getEnd()
 								+ ", "
 								+ quotMarks
-								+ att.getValueList().getElementAt(i).getValue()
+								+ att.getEntryList().getElementAt(i).getValue()
 								+ quotMarks
 								+ "\n");
 				}
@@ -536,5 +554,6 @@ public class AnnotationModel {
 	public int getNextAvailableId() {
 		return maxAssignedId + 1;
 	}
+
 	
 }

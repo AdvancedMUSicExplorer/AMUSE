@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.controller.ClassifierController;
@@ -156,16 +157,6 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         txtTargetFilePath.setText(value);
     }
 
-    /**
-     * @return
-     */
-    public int getCategoryID() {
-        return trainingView.getSelectedCategoryID();
-    }
-    public void setSelectedCategoryID(int id) {
-        trainingView.setSelectedCategoryID(id);
-    }
-
     public boolean isAverageCalculationSelected() {
         return selectAverageCalculation.isSelected();
     }
@@ -185,4 +176,20 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
     public String getSelectedTrainingAlgorithmStr() {
         return trainingView.getSelectedTrainingAlgorithmStr();
     }
+
+	public String getGroundTruthSource() {
+		return trainingView.getGroundTruthSource();
+	}
+
+	public GroundTruthSourceType getGroundTruthSourceType() {
+		return trainingView.getGroundTruthSourceType();
+	}
+
+	public void setGroundTruthSource(String groundTruthSource) {
+		trainingView.setGroundTruthSource(groundTruthSource);
+	}
+	
+	public void setGroundTruthSourceType(GroundTruthSourceType type){
+		trainingView.setGroundTruthSourceType(type);
+	}
 }

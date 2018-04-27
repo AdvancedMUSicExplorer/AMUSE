@@ -23,14 +23,17 @@ public class MusicPlayerModel{
 	ChangeListener<? super Duration> durationListener;
 	ChangeListener<? super Status> statusListener;
 	
-	public MusicPlayerModel(ChangeListener<? super Duration> durationListener, ChangeListener<? super Status> statusListener){
+	Duration pauseTime;
+	
+	public MusicPlayerModel(ChangeListener<Duration> durationListener, ChangeListener<Status> statusListener){
 		this.durationListener = durationListener;
 		this.statusListener = statusListener;
 		new JFXPanel(); // Needed to initialize the JavaFX toolkit
 		mediaPlayer = null;
+
 	}
 	
-	public MusicPlayerModel(String path, ChangeListener<? super Duration> durationListener, ChangeListener<? super Status> statusListener){
+	public MusicPlayerModel(String path, ChangeListener<Duration> durationListener, ChangeListener<Status> statusListener){
 		this(durationListener, statusListener);
 		this.load(path);
 	}
@@ -44,6 +47,19 @@ public class MusicPlayerModel{
 		mediaPlayer.currentTimeProperty().addListener(durationListener);
 		mediaPlayer.statusProperty().addListener(statusListener);
 		
+		// Pauses the mediaPlayer at the end
+		mediaPlayer.setOnEndOfMedia(() -> {
+			this.seek(getDurationInMs() - 1);
+			this.pause();
+		});
+				
+		pauseTime = new Duration(0);
+		/*
+		 *  When the mediaPlayer is paused, it takes some time until it actually stops. 
+		 *  As this is unwanted behavior, this listener forces the mediaPlayer to seek the time where it was paused. 
+		 */
+		mediaPlayer.setOnPaused(() -> mediaPlayer.seek(pauseTime));
+		
 		/*  The durationListener only works when the mediaPlayer was started once, but it is needed before the user starts the mediaPlayer manually.
 		 *  Therefore, the mediaPlayer needs to be started and paused once.
 		 */
@@ -54,12 +70,10 @@ public class MusicPlayerModel{
 				
 				// The mediaPlayer can only be started when ready.
 				if(newValue == Status.READY){
-					play();
+					mediaPlayer.play();
 				}
 				else if(newValue == Status.PLAYING){
-					pause();
-					mediaPlayer.seek(new Duration(0));
-					
+					mediaPlayer.pause();
 					// As this Listener only needs to start and pause the mediaPlayer once, it is now removed.
 					mediaPlayer.statusProperty().removeListener(this);
 				}
@@ -76,6 +90,7 @@ public class MusicPlayerModel{
 	
 	public void pause(){
 		if(mediaPlayer != null){
+			pauseTime = mediaPlayer.getCurrentTime();
 			mediaPlayer.pause();
 		}
 	}

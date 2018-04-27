@@ -3,8 +3,6 @@ package amuse.scheduler.gui.annotation;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,10 +59,10 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 		JPanel contentPanel = new JPanel(new MigLayout("wrap 1", "[align center]"));
 		annotationController = pAnnotationController;
 		audioSpectrumPanel = new AnnotationAudioSpectrumPanel(annotationController);
-		visualizationPanel = new AnnotationVisualizationPanel(annotationController);
-		currentTimePanel = new AnnotationCurrentTimePanel(annotationController);
 		selectionPanel = new AnnotationSelectionPanel(annotationController);
+		currentTimePanel = new AnnotationCurrentTimePanel(annotationController);
 		userInterfacePanel = new AnnotationUserInterfacePanel();
+		visualizationPanel = new AnnotationVisualizationPanel(annotationController, selectionPanel.getAttributeEntryList());
 		
 		
 		horizontalScrollBar = new JScrollBar(JScrollBar.HORIZONTAL){
@@ -80,26 +78,8 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			currentTimePanel.getHorizontalScrollBar().setValue(horizontalScrollBar.getValue());
 			audioSpectrumPanel.repaint();
 		});
-		horizontalScrollBar.addMouseListener(new MouseListener() {
+		horizontalScrollBar.addAdjustmentListener(e -> visualizationPanel.repaint());
 
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				//audioSpectrumPanel.repaint();
-				visualizationPanel.repaint();
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {}
-
-			@Override
-			public void mouseExited(MouseEvent e) {}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {}
-
-			@Override
-			public void mouseClicked(MouseEvent e) {}
-		});
 		
 		// The visualizationPanel and selectionPanel are in competition regarding the height.
 		// Therefore, encapsulate both in one JPanel
@@ -273,10 +253,10 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 				currentTimePanel.enableScrolling(checkBoxAutoScroll.isSelected());
 			});
 			
-			JSlider sliderTimeZoom = new JSlider(JSlider.HORIZONTAL, 0, 80, 0);
+			JSlider sliderTimeZoom = new JSlider(JSlider.HORIZONTAL, 0, 99, 19);
 			sliderTimeZoom.setToolTipText("Horizontal extent of the audio spectrum");
 			sliderTimeZoom.addChangeListener((ChangeEvent e) -> {
-				audioSpectrumPanel.setPixelWidth(sliderTimeZoom.getValue() / 10. + 2);
+				audioSpectrumPanel.setPixelWidth(sliderTimeZoom.getValue() / 10. + 0.1);
 				resizePanels();
 			});
 			
@@ -290,6 +270,40 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			JButton normalizeCurrentViewButton = new JButton("Normalize Window");
 			normalizeCurrentViewButton.setToolTipText("Normalize the audio spectrum for the currently visible part");
 			normalizeCurrentViewButton.addActionListener(e -> audioSpectrumPanel.normalizeCurrentView());
+			
+			
+			ImageIcon iconRedo = null;
+			try {
+				String path = "jar:file:lib/jlfgr-1_0.jar!/toolbarButtonGraphics/general/Redo16.gif";
+				InputStream is = ((JarURLConnection)new URL(path).openConnection()).getInputStream();
+				iconRedo = new ImageIcon(ImageIO.read(is));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			JButton redoButton = new JButton();
+			redoButton.setIcon(iconRedo);
+			redoButton.addActionListener(e -> {
+				annotationController.getUndoRedoManager().redo();
+				redoButton.setEnabled(annotationController.getUndoRedoManager().isRedoable());
+			});
+			redoButton.setEnabled(false);
+			
+			ImageIcon iconUndo = null;
+			try {
+				String path = "jar:file:lib/jlfgr-1_0.jar!/toolbarButtonGraphics/general/Undo16.gif";
+				InputStream is = ((JarURLConnection)new URL(path).openConnection()).getInputStream();
+				iconUndo = new ImageIcon(ImageIO.read(is));
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			JButton undoButton = new JButton();
+			undoButton.setIcon(iconUndo);
+			undoButton.addActionListener(e -> {
+				annotationController.getUndoRedoManager().undo();
+				redoButton.setEnabled(true);
+			});
+			
+			
 			
 			this.add(buttonPlayPause, "");
 			this.add(labelCurrentTime, "");
@@ -305,6 +319,8 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			this.add(normalizeCurrentViewButton, "");
 			this.add(new JLabel("Keep Scrolling:"), "split 2");
 			this.add(checkBoxAutoScroll, "");
+			//this.add(undoButton, "");
+			//this.add(redoButton, "");
 		}
 		
 		public void refreshButtonPlayPauseIcon(){

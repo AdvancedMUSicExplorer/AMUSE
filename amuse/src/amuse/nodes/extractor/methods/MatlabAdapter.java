@@ -322,10 +322,10 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        	        errorOccurred = errorOccurred | line.contains("Error");
 			        	        if(errorOccurred) { 
 			        	            errortext += line + "\n";
-			        	        }
-			        	        if(line.contains("}")){ // The error message ends with "}"
-			        	        	errorComplete = true;
-			        	        	break;
+			        	            if(line.contains("}")){ // The error message ends with "}"
+			        	            	errorComplete = true;
+			        	            	break;
+			        	            }
 			        	        }
 			        	    }
 			        	    

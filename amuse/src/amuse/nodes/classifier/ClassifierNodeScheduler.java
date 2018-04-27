@@ -281,8 +281,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					while(i < categoryList.getValueCount()) {
 						Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
 						if(id.toString().equals(
-								((ClassificationConfiguration)this.taskConfiguration).getCategoryId().toString())) {
-							this.categoryDescription = ((ClassificationConfiguration)this.taskConfiguration).getCategoryId().toString() + 
+								((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString())) {
+							this.categoryDescription = ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString() + 
 								"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
 							break;
 						}

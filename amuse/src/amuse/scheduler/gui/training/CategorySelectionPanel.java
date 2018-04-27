@@ -52,15 +52,13 @@ import amuse.preferences.KeysStringValue;
  */
 public class CategorySelectionPanel extends JPanel {
 
-	private TitledBorder title = new TitledBorder("Select Category");
-	private JLabel comboBoxLabel = new JLabel("Category:");
 	private JComboBox comboBox = new JComboBox();
 	private CategoryComboBoxModel model;
 
 	public CategorySelectionPanel() {
 		super(new MigLayout("fillx"));
-		this.setBorder(title);
-		this.add(comboBoxLabel);
+		this.setBorder(new TitledBorder("Select Category"));
+		this.add(new JLabel("Category:"));
 		this.add(comboBox, "pushx, gap rel, wrap");
 		try {
 			model = new CategoryComboBoxModel();
