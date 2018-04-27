@@ -47,6 +47,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
@@ -147,7 +148,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		// Set the i/o files
 		pathToFileWithLabeledInstances = new String();		
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
-				equals(TrainingConfiguration.GroundTruthSourceType.FILE_LIST)) {
+				equals(GroundTruthSourceType.FILE_LIST)) {
 			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			if(this.outputModel.equals(new String("-1")))  {
@@ -156,7 +157,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			}
 					
 		} else if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
-				equals(TrainingConfiguration.GroundTruthSourceType.READY_INPUT)) {
+				equals(GroundTruthSourceType.READY_INPUT)) {
 			pathToFileWithLabeledInstances = new String("-1"); // Input is already labeled!
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			if(this.outputModel.equals(new String("-1")))  {
@@ -303,7 +304,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			// If the ground truth has been previously prepared (e.g. from validator), the input is ready! 
 			if(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSourceType().
-					equals(TrainingConfiguration.GroundTruthSourceType.READY_INPUT)) {
+					equals(GroundTruthSourceType.READY_INPUT)) {
 				try {
 					labeledInputForTraining = new DataSet(new File(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource().toString()),
 							"TrainingSet");
@@ -746,7 +747,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		
 		// If the model(s) should be saved to the Amuse model database..
 		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) &&
-				((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(TrainingConfiguration.GroundTruthSourceType.CATEGORY_ID)) {
+				((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
 			File folderForModels;
 			
 			folderForModels = new File(

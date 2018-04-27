@@ -1,7 +1,6 @@
 package amuse.scheduler.gui.annotation;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -11,11 +10,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.DefaultListModel;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import amuse.nodes.annotation.AnnotationAttribute;
-import amuse.nodes.annotation.AnnotationAttributeType;
-import amuse.nodes.annotation.AnnotationAttributeValue;
-import amuse.nodes.annotation.AnnotationNominalAttribute;
+import amuse.nodes.annotation.action.AnnotationAddAttributeEntryAction;
+import amuse.nodes.annotation.action.AnnotationEditAttributeEntryAction;
+import amuse.nodes.annotation.attribute.AnnotationAttribute;
+import amuse.nodes.annotation.attribute.AnnotationAttributeType;
+import amuse.nodes.annotation.attribute.AnnotationAttributeEntry;
 import amuse.scheduler.gui.controller.AnnotationController;
 
 /**
@@ -26,20 +27,37 @@ import amuse.scheduler.gui.controller.AnnotationController;
 public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 	public static final int DRAWHEIGHT_PER_ATTRIBUTE = 21;
-	private double millisPerPixel;
-	private ValuePanel<?> newValuePanel;
+	private double secsPerPixel;
+	private EntryPanel<?> newEntryPanel;
+	private AnnotationAttributeEntry<?> selectedEntry;
 
-	public AnnotationVisualizationPanel(AnnotationController pAnnotationController) {
+	public AnnotationVisualizationPanel(AnnotationController pAnnotationController, JList<AnnotationAttributeEntry<?>> entryList) {
 		super(pAnnotationController);
-		millisPerPixel = 1;
+		secsPerPixel = 1.;
 		contentPanel.setLayout(null);
-		newValuePanel = null;
+		newEntryPanel = null;
+		
+		selectedEntry = null;
+		entryList.addListSelectionListener(e -> {
+			if(selectedEntry != null){
+				selectedEntry.getEntryPanel().setSelected(false);
+				selectedEntry.getEntryPanel().repaint();
+			}
+			selectedEntry = entryList.getSelectedValue();
+			if(selectedEntry != null){
+				selectedEntry.getEntryPanel().setSelected(true);
+				selectedEntry.getEntryPanel().repaint();
+			}
+		});
 		
 		contentPanel.addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				newValuePanel = null;
+				if(newEntryPanel != null){
+					annotationController.addUndoableAction(new AnnotationAddAttributeEntryAction(annotationController, newEntryPanel.getEntry()));
+				}
+				newEntryPanel = null;
 			}
 
 			@Override
@@ -51,33 +69,22 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				AnnotationAttribute<?> att = annotationController.getAttributeListModel()
 						.getElementAt(selectedIndex);
 				if (e.getClickCount() >= 2 && att.getType() == AnnotationAttributeType.EVENT) {
-					AnnotationAttributeValue<?> value = annotationController.addNewValueToAttribute(att);
-					annotationController.selectAttributeValue(value);
-					value.setStart((int) (e.getX() * millisPerPixel));
-					annotationController.selectAttributeValue(value);
-					for (int i = 0; i < contentPanel.getComponentCount(); i++) {
-						Component c = contentPanel.getComponent(i);
-						if (c instanceof ValuePanel && ((ValuePanel<?>) c).getValue().equals(value)) {
-							((ValuePanel<?>) c).refreshBounds();
-							break;
-						}
-					}
+					AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
+					annotationController.selectAttributeEntry(entry);
+					entry.setStart(e.getX() * secsPerPixel);
+					annotationController.selectAttributeEntry(entry);
+					entry.getEntryPanel().refreshBounds();
+					annotationController.addUndoableAction(new AnnotationAddAttributeEntryAction(annotationController, entry));
 				} else if (e.getClickCount() == 1 && att.getType() != AnnotationAttributeType.EVENT) {
-					AnnotationAttributeValue<?> value = annotationController.addNewValueToAttribute(att);
-					annotationController.selectAttributeValue(value);
-					double totalMillis = annotationController.getDurationInMs();
-					value.setStart((int) (e.getX() * millisPerPixel));
-					value.setEnd((int) Math.min(value.getStart() + 1, totalMillis));
-
-					for (int i = 0; i < contentPanel.getComponentCount(); i++) {
-						Component c = contentPanel.getComponent(i);
-						if (c instanceof ValuePanel && ((ValuePanel<?>) c).getValue().equals(value)) {
-							newValuePanel = (ValuePanel<?>) c;
-							break;
-						}
-					}
-					annotationController.selectAttributeValue(value);
-					newValuePanel.refreshBounds();
+					AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
+					annotationController.selectAttributeEntry(entry);
+					double totalSecs = annotationController.getDurationInSecs();
+					entry.setStart(e.getX() * secsPerPixel);
+					entry.setEnd(Math.min(entry.getStart() + 0.001, totalSecs));
+					newEntryPanel = entry.getEntryPanel();
+					newEntryPanel.refreshBounds();
+					
+					annotationController.selectAttributeEntry(entry);
 				}
 			}
 
@@ -102,22 +109,22 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				if (newValuePanel != null) {
-					AnnotationAttributeValue<?> value = newValuePanel.getValue();
-					int maxTime = (int) annotationController.getDurationInMs();
-					AnnotationAttributeValue<?> nextValue = value.getNextValue();
-					if(nextValue != null){
-						maxTime = nextValue.getStart();
+				if (newEntryPanel != null) {
+					AnnotationAttributeEntry<?> entry = newEntryPanel.getEntry();
+					double maxTime = annotationController.getDurationInSecs();
+					AnnotationAttributeEntry<?> nextEntry = entry.getNextEntry();
+					if(nextEntry != null){
+						maxTime = nextEntry.getStart();
 					}
-					int difference = (int) ((e.getX() - newValuePanel.getX() - newValuePanel.getWidth())
-							* millisPerPixel);
-					// Bound the Start to the end of the previous value or zero
-					int newEnd = Math.min(value.getEnd() + difference, maxTime); 
-					newEnd = Math.max(newEnd, value.getStart() + 1); // No negative duration
-					value.setEnd(newEnd);
-					newValuePanel.refreshBounds();
+					double difference = ((e.getX() - newEntryPanel.getX() - newEntryPanel.getWidth())
+							* secsPerPixel);
+					// Bound the Start to the end of the previous entry or zero
+					double newEnd = Math.min(entry.getEnd() + difference, maxTime); 
+					newEnd = Math.max(newEnd, entry.getStart() + 0.001); // No negative duration
+					entry.setEnd(newEnd);
+					newEntryPanel.refreshBounds();
 
-					// Refresh the values written in the lower part of the panel
+					// Refresh the entries written in the lower part of the panel
 					((AnnotationView) annotationController.getView()).getAnnotationSelectionPanel().repaint();
 				}
 			}
@@ -131,51 +138,45 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 		contentPanel.revalidate();
 	}
 
-	public void addValuePanel(AnnotationAttributeValue<?> value) {
-		if (value != null) {
-			ValuePanel<?> panel;
-			switch (value.getAnnotationAttribute().getType()) {
+	public void addEntryPanel(AnnotationAttributeEntry<?> entry) {
+		if (entry != null) {
+			EntryPanel<?> panel;
+			switch (entry.getAnnotationAttribute().getType()) {
 			case EVENT:
-				panel = new ValueEventPanel((AnnotationAttributeValue<Integer>) value);
+				panel = new EntryEventPanel((AnnotationAttributeEntry<Integer>) entry);
 				break;
 			case NOMINAL:
-				panel = new ValueNominalPanel((AnnotationAttributeValue<String>) value);
+				panel = new EntryNominalPanel((AnnotationAttributeEntry<String>) entry);
 				break;
 			case STRING:
-				panel = new ValueStringPanel((AnnotationAttributeValue<String>) value);
+				panel = new EntryStringPanel((AnnotationAttributeEntry<String>) entry);
 				break;
 			case NUMERIC:
-				panel = new ValueNumericPanel((AnnotationAttributeValue<Double>) value);
+				panel = new EntryNumericPanel((AnnotationAttributeEntry<Double>) entry);
 				break;
 			default:
-				panel = new ValueTimePanel(value);
+				panel = new EntryTimePanel(entry);
 			}
 			contentPanel.add(panel);
 			panel.repaint();
 		}
 	}
 
-	public void removeValuePanel(AnnotationAttributeValue<?> value) {
-		if (value != null) {
-			for (int i = 0; i < contentPanel.getComponentCount(); i++) {
-				Component c = contentPanel.getComponent(i);
-				if (c instanceof ValuePanel && ((ValuePanel<?>) c).getValue().equals(value)) {
-					contentPanel.remove(c);
-					contentPanel.repaint();
-					return;
-				}
-			}
+	public void removeEntryPanel(AnnotationAttributeEntry<?> entry) {
+		if (entry != null) {
+			contentPanel.remove(entry.getEntryPanel());
+			contentPanel.repaint();
 		}
 	}
 
 	public void drawContent(Graphics g) {
 		int totalWidth = ((AnnotationView) annotationController.getView()).getAnnotationAudioSpectrumPanel()
 				.getContentSize().width;
-		double totalMillis = annotationController.getDurationInMs();
-		millisPerPixel = totalMillis / totalWidth;
+		double totalSecs = annotationController.getDurationInSecs();
+		secsPerPixel = totalSecs / totalWidth;
 
 		for (int i = 0; i < contentPanel.getComponentCount(); i++) {
-			((ValuePanel<?>) contentPanel.getComponent(i)).refreshBounds();
+			((EntryPanel<?>) contentPanel.getComponent(i)).refreshBounds();
 		}
 	}
 
@@ -187,24 +188,36 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				.getContentSize().width, height);
 	}
 
-	private abstract class ValuePanel<T> extends JPanel {
-		protected AnnotationAttributeValue<T> value;
+	public abstract class EntryPanel<T> extends JPanel {
+		protected AnnotationAttributeEntry<T> entry;
+		protected double oldStart, oldEnd;
+		protected Object oldValue;
 		protected int mouseDragStart;
+		protected boolean isSelected;
 
-		public ValuePanel(AnnotationAttributeValue<T> pValue) {
+		public EntryPanel(AnnotationAttributeEntry<T> entry) {
 			super();
+			isSelected = false;
+			entry.setEntryPanel(this);
 			this.setOpaque(false);
-			this.value = pValue;
+			this.entry = entry;
+			oldStart = entry.getStart();
+			oldEnd = entry.getEnd();
+			oldValue = entry.getValue();
 			mouseDragStart = 0;
 			this.refreshBounds();
 			this.addMouseListener(new MouseListener() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
+					annotationController.addUndoableAction(new AnnotationEditAttributeEntryAction(annotationController, entry, oldStart, oldEnd, oldValue));
 				}
 
 				@Override
 				public void mousePressed(MouseEvent e) {
-					annotationController.selectAttributeValue(value);
+					annotationController.selectAttributeEntry(entry);
+					oldStart = entry.getStart();
+					oldEnd = entry.getEnd();
+					oldValue = entry.getValue();
 					mouseDragStart = e.getX();
 				}
 
@@ -224,11 +237,11 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					int totalWidth = getContentSize().width;
-					double totalMillis = annotationController.getDurationInMs();
-					double millisPerPixel = totalMillis / totalWidth;
+					//int totalWidth = getContentSize().width;
+					//double totalSecs = annotationController.getDurationInSecs();
+					//double secsPerPixel = totalSecs / totalWidth;
 					((AnnotationView) annotationController.getView())
-							.setMouseTime((getX() + e.getX()) * millisPerPixel);
+							.setMouseTime((getX() + e.getX()) * secsPerPixel);
 				}
 
 				@Override
@@ -236,27 +249,34 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				}
 			});
 		}
+		
+		public void setSelected(boolean isSelected){
+			this.isSelected = isSelected;
+		}
 
 		public abstract void refreshBounds();
 
-		public AnnotationAttributeValue<T> getValue() {
-			return value;
+		public AnnotationAttributeEntry<T> getEntry() {
+			return entry;
 		}
 
 		@Override
 		public void paintComponent(Graphics g) {
+			int indexOfSelectedValue = this.getBounds().y / DRAWHEIGHT_PER_ATTRIBUTE;
+			g.setColor(new Color(Color.HSBtoRGB(indexOfSelectedValue * 0.16667f, 0.8f, 0.7f)));
+			//g.setColor(new Color(Color.HSBtoRGB(0.0f, 0.8f, 0.8f)));
 			super.paintComponent(g);
-			paintValuePanel(g);
+			paintEntryPanel(g);
 		}
 
-		protected abstract void paintValuePanel(Graphics g);
+		protected abstract void paintEntryPanel(Graphics g);
 
 	}
 
-	private class ValueTimePanel<T> extends ValuePanel<T> {
+	public class EntryTimePanel<T> extends EntryPanel<T> {
 
-		public ValueTimePanel(AnnotationAttributeValue<T> pValue) {
-			super(pValue);
+		public EntryTimePanel(AnnotationAttributeEntry<T> pEntry) {
+			super(pEntry);
 			this.addMouseMotionListener(new MouseMotionListener() {
 
 				@Override
@@ -274,48 +294,47 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				@Override
 				public void mouseDragged(MouseEvent e) {
 					int cursorType = getCursor().getType();
-					int minTime = 0;
-					int maxTime = (int) annotationController.getDurationInMs();
-					AnnotationAttributeValue<?> nextValue = value.getNextValue();
-					if(nextValue != null){
-						maxTime = nextValue.getStart();
+					double minTime = 0;
+					double maxTime = annotationController.getDurationInSecs();
+					AnnotationAttributeEntry<?> nextEntry = entry.getNextEntry();
+					if(nextEntry != null){
+						maxTime = nextEntry.getStart();
 					}
-					AnnotationAttributeValue<?> previousValue = value.getPreviousValue();
-					if(previousValue != null){
-						minTime = previousValue.getEnd();
+					AnnotationAttributeEntry<?> previousEntry = entry.getPreviousEntry();
+					if(previousEntry != null){
+						minTime = previousEntry.getEnd();
 					}
 					if (cursorType == Cursor.W_RESIZE_CURSOR) {
-						int difference = (int) (e.getX() * millisPerPixel);
-						// Bound the Start to the end of the previous value or zero
-						int newStart = Math.max(value.getStart() + difference, minTime); 
+						double difference = e.getX() * secsPerPixel;
+						// Bound the Start to the end of the previous entry or zero
+						double newStart = Math.max(entry.getStart() + difference, minTime); 
 						// No negative duration
-						newStart = Math.min(newStart, value.getEnd() - 1); 
-						value.setStart(newStart);
+						newStart = Math.min(newStart, entry.getEnd() - 0.001); 
+						entry.setStart(newStart);
 					} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
-						int difference = (int) ((e.getX() - getWidth()) * millisPerPixel);
-						// Bound the Start to the end of the next value or song duration
-						int newEnd = Math.min(value.getEnd() + difference, maxTime); 
+						double difference = (e.getX() - getWidth()) * secsPerPixel;
+						// Bound the Start to the end of the next entry or song duration
+						double newEnd = Math.min(entry.getEnd() + difference, maxTime); 
 						// No negative duration
-						newEnd = Math.max(newEnd, value.getStart() + 1); 
-						value.setEnd(newEnd);
+						newEnd = Math.max(newEnd, entry.getStart() + 0.001); 
+						entry.setEnd(newEnd);
 					} else {
-						int difference = (int) ((e.getX() - mouseDragStart) * millisPerPixel);
-						int durationOfMusic = (int) annotationController.getDurationInMs();
-						if (value.getStart() + difference <= minTime) {
-							value.setEnd(minTime + value.getEnd() - value.getStart());
-							value.setStart(minTime);
-						} else if (value.getEnd() + difference >= maxTime) {
-							value.setStart(maxTime - value.getDuration());
-							value.setEnd(maxTime);
+						double difference = (e.getX() - mouseDragStart) * secsPerPixel;
+						if (entry.getStart() + difference <= minTime) {
+							entry.setEnd(minTime + entry.getEnd() - entry.getStart());
+							entry.setStart(minTime);
+						} else if (entry.getEnd() + difference >= maxTime) {
+							entry.setStart(maxTime - entry.getDuration());
+							entry.setEnd(maxTime);
 						} else {
-							value.setStart(value.getStart() + difference);
-							value.setEnd(value.getEnd() + difference);
+							entry.setStart(entry.getStart() + difference);
+							entry.setEnd(entry.getEnd() + difference);
 						}
 					}
 					refreshBounds();
-					annotationController.selectAttributeValue(value);
+					annotationController.selectAttributeEntry(entry);
 
-					// Refresh the values written in the lower part of the panel
+					// Refresh the entries written in the lower part of the panel
 					((AnnotationView) annotationController.getView()).getAnnotationSelectionPanel().repaint();
 				}
 			});
@@ -324,72 +343,78 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 		@Override
 		public void refreshBounds() {
-			this.setBounds(new Rectangle((int) (value.getStart() / millisPerPixel),
-					annotationController.getAttributeListModel().indexOf(value.getAnnotationAttribute())
+			this.setBounds(new Rectangle((int) (entry.getStart() / secsPerPixel),
+					annotationController.getAttributeListModel().indexOf(entry.getAnnotationAttribute())
 							* DRAWHEIGHT_PER_ATTRIBUTE,
-					Math.max(1, (int) ((value.getEnd() - value.getStart()) / millisPerPixel)),
+					Math.max(2, (int) ((entry.getEnd() - entry.getStart()) / secsPerPixel)),
 					DRAWHEIGHT_PER_ATTRIBUTE));
 		}
 
-		protected void paintValuePanel(Graphics g) {
-			g.fillRect(0, 0, this.getWidth() - 1, this.getHeight() - 1);
+		protected void paintEntryPanel(Graphics g) {
+			int width = this.getWidth();
+			int height = this.getHeight();
+			
+			g.fillRect(0, 0, width - 1, height - 1);
 
 			g.setColor(Color.WHITE);
-			g.drawString(value.getValue() + "", 5, this.getHeight() - 5);
-
+			g.drawString(entry.getValue() + "", Math.max(5, getViewport().getViewPosition().x - getX() + 5), height - 5);
+			
 			g.setColor(Color.BLACK);
-			g.drawRect(0, 0, this.getWidth() - 1, this.getHeight() - 1);
+			g.drawRect(0, 0, width - 1, height - 1);
+			if(isSelected){
+				g.drawRect(1, 1, width - 3, height - 3);
+				g.drawRect(2, 2, width - 5, height - 5);
+			}
+			
 		}
 	}
 
-	private class ValueNominalPanel extends ValueTimePanel<String> {
+	public class EntryNominalPanel extends EntryTimePanel<String> {
 
-		public ValueNominalPanel(AnnotationAttributeValue<String> pValue) {
-			super(pValue);
+		public EntryNominalPanel(AnnotationAttributeEntry<String> entry) {
+			super(entry);
 		}
 
 		@Override
-		protected void paintValuePanel(Graphics g) {
-			int indexOfSelectedValue = ((AnnotationNominalAttribute) value.getAnnotationAttribute()).getAllowedValues()
-					.indexOf(value.getValue());
-			g.setColor(new Color(Color.HSBtoRGB(indexOfSelectedValue * 0.3f, 0.8f, 0.8f)));
-			super.paintValuePanel(g);
+		protected void paintEntryPanel(Graphics g) {
+			//int indexOfSelectedValue = ((AnnotationNominalAttribute) entry.getAnnotationAttribute()).getAllowedValues()
+			//		.indexOf(entry.getValue());
+			//g.setColor(new Color(Color.HSBtoRGB(indexOfSelectedValue * 0.3f, 0.8f, 0.8f)));
+			super.paintEntryPanel(g);
 		}
 
 	}
 
-	private class ValueStringPanel extends ValueTimePanel<String> {
+	public class EntryStringPanel extends EntryTimePanel<String> {
 
-		public ValueStringPanel(AnnotationAttributeValue<String> pValue) {
-			super(pValue);
+		public EntryStringPanel(AnnotationAttributeEntry<String> entry) {
+			super(entry);
 		}
 
 		@Override
-		protected void paintValuePanel(Graphics g) {
-			g.setColor(new Color(Color.HSBtoRGB(0.0f, 0.8f, 0.8f)));
-			super.paintValuePanel(g);
+		protected void paintEntryPanel(Graphics g) {
+			super.paintEntryPanel(g);
 		}
 
 	}
 
-	private class ValueNumericPanel extends ValueTimePanel<Double> {
+	public class EntryNumericPanel extends EntryTimePanel<Double> {
 
-		public ValueNumericPanel(AnnotationAttributeValue<Double> pValue) {
-			super(pValue);
+		public EntryNumericPanel(AnnotationAttributeEntry<Double> entry) {
+			super(entry);
 		}
 
 		@Override
-		protected void paintValuePanel(Graphics g) {
-			g.setColor(new Color(Color.HSBtoRGB(0.0f, 0.8f, 0.8f)));
-			super.paintValuePanel(g);
+		protected void paintEntryPanel(Graphics g) {
+			super.paintEntryPanel(g);
 		}
 
 	}
 
-	private class ValueEventPanel extends ValuePanel<Integer> {
+	public class EntryEventPanel extends EntryPanel<Integer> {
 
-		public ValueEventPanel(AnnotationAttributeValue<Integer> pValue) {
-			super(pValue);
+		public EntryEventPanel(AnnotationAttributeEntry<Integer> pEntry) {
+			super(pEntry);
 			this.addMouseMotionListener(new MouseMotionListener() {
 
 				@Override
@@ -398,12 +423,12 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 				@Override
 				public void mouseDragged(MouseEvent e) {
-					int difference = (int) ((e.getX() - mouseDragStart) * millisPerPixel);
-					int newStart = Math.max(value.getStart() + difference, 0); // No negative values
-					newStart = Math.min(newStart, (int) annotationController.getDurationInMs()); // No values longer than the song
-					value.setStart(newStart);
+					double difference = ((e.getX() - mouseDragStart) * secsPerPixel);
+					double newStart = Math.max(entry.getStart() + difference, 0); // No negative values
+					newStart = Math.min(newStart, annotationController.getDurationInSecs()); // No values longer than the song
+					entry.setStart(newStart);
 
-					annotationController.selectAttributeValue(value);
+					annotationController.selectAttributeEntry(entry);
 					refreshBounds();
 
 					// Refresh the values written in the lower part of the panel
@@ -415,20 +440,29 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 		@Override
 		public void refreshBounds() {
-			int locationX = (int) (value.getStart() / millisPerPixel);
+			int locationX = (int) (entry.getStart() / secsPerPixel);
 			this.setBounds(new Rectangle(locationX - (DRAWHEIGHT_PER_ATTRIBUTE / 2),
-					annotationController.getAttributeListModel().indexOf(value.getAnnotationAttribute())
+					annotationController.getAttributeListModel().indexOf(entry.getAnnotationAttribute())
 							* DRAWHEIGHT_PER_ATTRIBUTE,
 					DRAWHEIGHT_PER_ATTRIBUTE, DRAWHEIGHT_PER_ATTRIBUTE));
 		}
 
 		@Override
-		protected void paintValuePanel(Graphics g) {
-			g.setColor(new Color(200, 0, 0));
+		protected void paintEntryPanel(Graphics g) {
 			g.fillPolygon(new Polygon(
 					new int[] { 0, (this.getWidth() - 1) / 2, this.getWidth() - 1, (this.getWidth() - 1) / 2 },
 					new int[] { (this.getHeight() - 1) / 2, 0, (this.getHeight() - 1) / 2, this.getHeight() - 1 }, 4));
 			g.setColor(Color.BLACK);
+
+			if(isSelected){
+				g.drawPolygon(new Polygon(
+						new int[] { 1, (this.getWidth() - 1) / 2, this.getWidth() - 2, (this.getWidth() - 1) / 2},
+						new int[] { (this.getHeight() - 1) / 2, 1, (this.getHeight() - 1) / 2, this.getHeight() - 2 }, 4));
+				g.drawPolygon(new Polygon(
+						new int[] { 2, (this.getWidth() - 1) / 2, this.getWidth() - 3, (this.getWidth() - 1) / 2},
+						new int[] { (this.getHeight() - 1) / 2, 2, (this.getHeight() - 1) / 2, this.getHeight() - 3 }, 4));
+			}
+			
 			g.drawPolygon(new Polygon(
 					new int[] { 0, (this.getWidth() - 1) / 2, this.getWidth() - 1, (this.getWidth() - 1) / 2 },
 					new int[] { (this.getHeight() - 1) / 2, 0, (this.getHeight() - 1) / 2, this.getHeight() - 1 }, 4));

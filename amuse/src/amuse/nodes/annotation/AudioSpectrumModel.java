@@ -11,6 +11,8 @@ import javax.sound.sampled.AudioSystem;
 
 import org.apache.log4j.Level;
 
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysIntValue;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 import amuse.util.audio.AudioFileConversion;
@@ -70,8 +72,8 @@ public class AudioSpectrumModel {
 	
 	private void calculateAudioSpectrumImage(File musicFile){
 		AudioInputStream decodedStream = null;
-		final int WINDOWSIZE = 512;
-		final int HOPSIZE = WINDOWSIZE;
+		final int WINDOWSIZE = (int) Math.pow(2, AmusePreferences.getInt(KeysIntValue.AUDIOSPECTRUM_WINDOWSIZE) + 8);
+		final int HOPSIZE = (int) Math.pow(2, AmusePreferences.getInt(KeysIntValue.AUDIOSPECTRUM_HOPSIZE) + 8);
 		try {
 			
 			AudioInputStream stream = AudioSystem.getAudioInputStream(musicFile);

@@ -1,4 +1,4 @@
-package amuse.nodes.annotation;
+package amuse.nodes.annotation.attribute;
 
 import javax.swing.DefaultListModel;
 
@@ -9,10 +9,15 @@ import javax.swing.DefaultListModel;
  */
 public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 
-	DefaultListModel<String> allowedValues; // The List of the values, that are allowed to use in an attribute value
+	private DefaultListModel<String> allowedValues; // The List of the values, that are allowed to use in an attribute value
 	
-	public AnnotationNominalAttribute(String pName, int id) {
-		super(pName, id);
+	public AnnotationNominalAttribute(String name, int id, DefaultListModel<String> allowedValues) {
+		this(name, id);
+		this.allowedValues = allowedValues;
+	}
+	
+	public AnnotationNominalAttribute(String name, int id) {
+		super(name, id);
 		type = AnnotationAttributeType.NOMINAL;
 		allowedValues = new DefaultListModel<String>();
 	}
@@ -30,10 +35,10 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 	 */
 	public void removeAllowedValue(String allowedValueToRemove){
 		allowedValues.removeElement(allowedValueToRemove);
-		for(int i = 0; i < valueList.size(); i++){
-			AnnotationAttributeValue<String> value = valueList.getElementAt(i);
-			if(value.getValue().equals(allowedValueToRemove)){
-				valueList.removeElement(value);
+		for(int i = 0; i < entryList.size(); i++){
+			AnnotationAttributeEntry<String> entry = entryList.getElementAt(i);
+			if(entry.getValue().equals(allowedValueToRemove)){
+				entryList.removeElement(entry);
 			}
 		}
 	}
@@ -47,9 +52,9 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 	 * @return The added AnnotationAttributeValue
 	 */
 	@Override
-	public AnnotationAttributeValue<String> addValue(int start, int end, String value){
+	public AnnotationAttributeEntry<String> addEntry(double start, double end, String value){
 		if(allowedValues.contains(value)){
-			return super.addValue(start, end, value);
+			return super.addEntry(start, end, value);
 		}
 		return null;
 	}
@@ -61,8 +66,8 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 	 */
 	public void editAllowedValue(String oldAllowedValue, String newAllowedValue) {
 		allowedValues.set(allowedValues.lastIndexOf(oldAllowedValue), newAllowedValue);
-		for(int i = 0; i < valueList.size(); i++){
-			AnnotationAttributeValue<String> value = valueList.getElementAt(i);
+		for(int i = 0; i < entryList.size(); i++){
+			AnnotationAttributeEntry<String> value = entryList.getElementAt(i);
 			if(value.getValue().equals(oldAllowedValue)){
 				value.setValue(newAllowedValue);
 			}
@@ -71,5 +76,10 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 	
 	public DefaultListModel<String> getAllowedValues(){
 		return allowedValues;
+	}
+
+	@Override
+	public AnnotationAttribute<String> newInstance() {
+		return new AnnotationNominalAttribute(getName(), getId(), allowedValues);
 	}
 }

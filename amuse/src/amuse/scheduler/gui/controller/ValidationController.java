@@ -36,6 +36,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -100,7 +101,7 @@ public class ValidationController extends AbstractController {
         if (!askOverwrite(file)) {
             return;
         }
-        /* Gather all neccessary information and create variables */
+        /* Gather all necessary information and create variables */
         File metricTableFile = new File(file.getParent() + File.separator + "metricTables" + File.separator
                 + file.getName());
         String parameterStr = "";
@@ -118,10 +119,15 @@ public class ValidationController extends AbstractController {
         String validationMethodId = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
         MetricTable metricTable = metricsView.getMetricTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
-        int categoryId = validationView.getSelectedCategoryID();
+        String groundTruthSource = validationView.getGroundTruthSource();
+        String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
-        ValidatorConfigSet dataSet = new ValidatorConfigSet(validationMethodId,
-                metricTableFile, processedFeatureDescription, new Integer(categoryId).toString(), "CATEGORY_ID",
+        ValidatorConfigSet dataSet = new ValidatorConfigSet(
+        		validationMethodId,
+                metricTableFile, 
+                processedFeatureDescription, 
+                groundTruthSource, 
+                groundTruthSourceType,
                 classificationAlgorithmId);
         // Create folders...
         metricTableFile.getParentFile().mkdirs();
@@ -161,7 +167,9 @@ public class ValidationController extends AbstractController {
         	*/
         	validationAlgorithmFacade.setSelectedAlgorithm(set.getValidationMethodIdAttribute().getValueAt(0));
             // FIXME was tun wenn kein Int?
-            validationView.setSelectedCategoryID(new Integer(set.getInputToValidateAttribute().getValueAt(0)));
+        	String groundTruthSourceType = set.getGroundTruthSourceAttribute().getValueAt(0);
+        	validationView.setGroundTruthSourceType(GroundTruthSourceType.valueOf(groundTruthSourceType));
+        	validationView.setGroundTruthSource(set.getInputToValidateAttribute().getValueAt(0));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             metricsView.loadSelection(new File(set.getMetricListAttribute().getValueAt(0)));
             validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
@@ -177,11 +185,16 @@ public class ValidationController extends AbstractController {
         String validationMethodStr = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
         MetricTable metricTable = metricsView.getMetricTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
-        int categoryId = validationView.getSelectedCategoryID();
+        FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
+        GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
-        conf = new ValidationConfiguration(validationMethodStr, metricTable,
-                processedFeatureDescription, classificationAlgorithmStr, new FileInput(categoryId + ""),
-                ValidationConfiguration.GroundTruthSourceType.CATEGORY_ID);
+        conf = new ValidationConfiguration(
+        		validationMethodStr, 
+        		metricTable,
+                processedFeatureDescription, 
+                classificationAlgorithmStr, 
+                groundTruthSource,
+                groundTruthSourceType);
         return conf;
     }
 
@@ -310,7 +323,8 @@ public class ValidationController extends AbstractController {
         if (conf instanceof ValidationConfiguration) {
             ValidationConfiguration valConf = (ValidationConfiguration) conf;
             validationAlgorithmFacade.setSelectedAlgorithm(valConf.getValidationAlgorithmDescription());
-            validationView.setSelectedCategoryID(new Integer(((FileInput)valConf.getInputToValidate()).toString()));
+            validationView.setGroundTruthSourceType(valConf.getGroundTruthSourceType());
+            validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());
             validationView.setClassifierAlgorithm(valConf.getClassificationAlgorithmDescription());
             metricsView.loadSelection(valConf.getMetrics());
         }

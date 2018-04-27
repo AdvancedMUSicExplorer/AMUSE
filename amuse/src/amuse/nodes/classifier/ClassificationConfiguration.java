@@ -36,6 +36,7 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -69,8 +70,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * (optionally with parameters listed in brackets) */
 	private final String algorithmDescription;
 	
-	/** Id of the music category which describes the ground truth */
-	private final Integer categoryId;
+	/** Descriptor of the ground truth */
+	private final String groundTruthSource;
+	
+	private final GroundTruthSourceType groundTruthSourceType;
 	
 	/** Flag if song relationship grade should be averaged over all partitions (="1") */
 	private final Integer mergeSongResults;
@@ -105,7 +108,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.algorithmDescription = algorithmDescription;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
-		this.categoryId = null;
+		this.groundTruthSource = null;
+		this.groundTruthSourceType = null;
 	}
 	
 	/**
@@ -114,12 +118,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param pathToInputSource Input for classification
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
-	 * @param categoryId Id of the music category
+	 * @param groundTruthSource Id of the music category
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, Integer categoryId, Integer mergeSongResults,
+			String algorithmDescription, String groundTruthSource, String groundTruthSourceType, Integer mergeSongResults,
 			String classificationOutput) {
 		List<File> input;
 		List<Integer> ids = null;
@@ -145,7 +149,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.inputToClassify = new FileListInput(input,ids);
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
-		this.categoryId = categoryId;
+		this.groundTruthSource = groundTruthSource;
+		this.groundTruthSourceType = GroundTruthSourceType.valueOf(groundTruthSourceType);
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -164,7 +169,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentInputFileList = classifierConfig.getInputFileListAttribute().getValueAt(i).toString();
 			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
-			Integer currentCategoryId = (new Double(classifierConfig.getCategoryIdAttribute().getValueAt(i).toString())).intValue();
+			String currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).toString();
+			String currentGroundTruthSourceType = classifierConfig.getGroundTruthSourceTypeAttribute().getValueAt(i);
 			Integer currentMergeSongResults = (new Double(classifierConfig.getMergeSongResultsAttribute().getValueAt(i).toString())).intValue();
 			String currentOutputResult = classifierConfig.getOutputResultAttribute().getValueAt(i).toString();
 			InputSourceType ist;
@@ -175,7 +181,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			}	
 			// Create a classification task
 		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputFileList, currentProcessedFeaturesDescription, 
-		    		currentAlgorithmDescription, currentCategoryId, currentMergeSongResults, currentOutputResult));
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentGroundTruthSourceType, currentMergeSongResults, currentOutputResult));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -220,10 +226,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the categoryId
+	 * @return the ground truth source
 	 */
-	public Integer getCategoryId() {
-		return categoryId;
+	public String getGroundTruthSource() {
+		return groundTruthSource;
 	}
 
 	/**
@@ -275,7 +281,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @see amuse.interfaces.nodes.TaskConfiguration#getDescription()
 	 */
 	public String getDescription() {
-        return new String("Category: " + categoryId + " Output: " + classificationOutput);
+        return new String("Ground Truth Source: " + groundTruthSource + " Output: " + classificationOutput);
 	}
 
 	/**
@@ -297,6 +303,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public void setPathToInputModel(String pathToInputModel) {
 		this.pathToInputModel = pathToInputModel;
+	}
+
+	public GroundTruthSourceType getGroundTruthSourceType() {
+		return groundTruthSourceType;
 	}
 
 

@@ -27,7 +27,7 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 	ChangeListener scrollListener;
 	
 	public AnnotationCurrentTimePanel(AnnotationController pAnnotationController) {
-		super();
+		super(VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_ALWAYS);
 		annotationController = pAnnotationController;
 		triggerEvent = true;
 		slider = new JSlider(JSlider.HORIZONTAL, 0, 10000, 0){
@@ -57,7 +57,12 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 		slider.setUI(new MetalSliderUI(){
 			@Override
 			protected void scrollDueToClickInTrack(int direction){
-				slider.setValue(this.valueForXPosition(slider.getMousePosition().x));
+				try{
+					slider.setValue(this.valueForXPosition(slider.getMousePosition().x));
+				}
+				catch(NullPointerException e){
+					
+				}
 			}
 		});
 
@@ -79,7 +84,7 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 		this.setViewportView(sliderPanel);
 		
 		// Disable Scrollbars
-		this.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
+		//this.getVerticalScrollBar().setPreferredSize(new Dimension(0,0));
 		this.getHorizontalScrollBar().setPreferredSize(new Dimension(0,0));
 		this.setWheelScrollingEnabled(false);
 

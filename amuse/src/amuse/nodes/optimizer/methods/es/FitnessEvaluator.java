@@ -44,6 +44,7 @@ import amuse.data.io.DataSetInput;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.methods.es.parameters.processing.SelectedFeatures;
 import amuse.nodes.processor.ProcessingConfiguration;
@@ -452,8 +453,7 @@ public class FitnessEvaluator {
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
-						new DataSetInput(optimizationDataWithOnlySelectedFeatures), ValidationConfiguration.
-						GroundTruthSourceType.READY_INPUT);
+						new DataSetInput(optimizationDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
 				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
@@ -493,13 +493,15 @@ public class FitnessEvaluator {
 				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-2));
 				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 			
-				TrainingConfiguration tConf = new TrainingConfiguration(processedModel, 
+				TrainingConfiguration tConf = new TrainingConfiguration(
+						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
 							getAttributes().getNamedItem("stringValue").getNodeValue(),
-						new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
-				tConf.setPathToOutputModel(pathToModels + File.separator + "model.mod");
+						new DataSetInput(trainingDataWithOnlySelectedFeatures), 
+						GroundTruthSourceType.READY_INPUT,
+						pathToModels + File.separator + "model.mod");
 				tConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				tConf.setModelDatabase(pathToModelDatabase);
 				TrainerNodeScheduler ts = new TrainerNodeScheduler(individual.getCorrespondingES().
@@ -534,8 +536,7 @@ public class FitnessEvaluator {
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
-						new DataSetInput(testDataWithOnlySelectedFeatures), ValidationConfiguration.
-						GroundTruthSourceType.READY_INPUT);
+						new DataSetInput(testDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 				vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 				vConf.setModelDatabase(pathToModelDatabase);
 				ValidatorNodeScheduler vs = new ValidatorNodeScheduler(individual.getCorrespondingES().
@@ -581,8 +582,9 @@ public class FitnessEvaluator {
 						getAttributes().getNamedItem("stringValue").getNodeValue(), 
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
 						getAttributes().getNamedItem("stringValue").getNodeValue(),
-					new DataSetInput(trainingDataWithOnlySelectedFeatures), TrainingConfiguration.GroundTruthSourceType.READY_INPUT);
-			tConf.setPathToOutputModel(pathToModels + File.separator + "model.mod");
+					new DataSetInput(trainingDataWithOnlySelectedFeatures), 
+					GroundTruthSourceType.READY_INPUT,
+					pathToModels + File.separator + "model.mod");
 			tConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 			tConf.setModelDatabase(pathToModelDatabase);
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(individual.getCorrespondingES().
@@ -630,15 +632,13 @@ public class FitnessEvaluator {
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
-						new DataSetInput(optimizationDataWithOnlySelectedFeatures), ValidationConfiguration.
-						GroundTruthSourceType.READY_INPUT);
+						new DataSetInput(optimizationDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 			} else {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
-						new DataSetInput(testDataWithOnlySelectedFeatures), ValidationConfiguration.
-						GroundTruthSourceType.READY_INPUT);
+						new DataSetInput(testDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 			}
 			vConf.setProcessedFeatureDatabase(pathToProcessingDatabase);
 			vConf.setModelDatabase(pathToModelDatabase);

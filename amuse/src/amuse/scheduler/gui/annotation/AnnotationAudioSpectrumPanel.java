@@ -13,8 +13,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysBooleanValue;
 import amuse.scheduler.gui.controller.AnnotationController;
 
 /**
@@ -28,6 +32,8 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 	double pixelHeight, pixelWidth;
 	Point posMouseOrigin;
 	Rectangle rectViewOrigin;
+	JLayeredPane layeredPane;
+	JPanel currentTimeBeamPanel;
 
 	public AnnotationAudioSpectrumPanel(AnnotationController pAnnotationController) {
 		super(pAnnotationController);
@@ -36,7 +42,34 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 		audiospectrumImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
 		rectViewOrigin = getViewport().getViewRect();
 		posMouseOrigin = new Point(0, 0);
+		
+		currentTimeBeamPanel = new JPanel(){
+			
+			@Override
+			public void paintComponent(Graphics g) {
+				super.paintComponent(g);
+				g.setColor(Color.BLACK);
+				g.drawLine(0, 0, 0, getHeight());
+			}
+			
+			@Override
+			public Dimension getPreferredSize() {
+				return getContentSize();
+			}
+		};
+		currentTimeBeamPanel.setOpaque(false);
+		
+		layeredPane = new JLayeredPane(){
+			@Override
+			public Dimension getPreferredSize() {
+				return getContentSize();
+			}
+		};
+		layeredPane.add(contentPanel, new Integer(1), 0);
+		layeredPane.add(currentTimeBeamPanel, new Integer(2), 10);
 
+		this.setViewportView(layeredPane);
+		
 		contentPanel.addMouseListener(new MouseListener() {
 
 			@Override
@@ -97,7 +130,7 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 
 	@Override
 	public Dimension getPreferredSize(){
-		return new Dimension(getContentSize().width, audiospectrumImage.getHeight() + 3);
+		return new Dimension(getContentSize().width + getVerticalScrollBar().getWidth() + 3, 3 + 256); // Height = 3 for the border + height of an audiospectrum image extracted with windowsize 512
 	}
 
 	public void drawContent(Graphics g) {
@@ -122,6 +155,14 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 			g.drawImage(scaledAudiospectrumImage, offset.x - (int) (offset.x % pixelWidth), offset.y - (int) (offset.y % pixelHeight), null);
 		}
 	}
+	
+	public void repaintCurrentTimeBeam(){
+		Dimension preferredSize = getContentSize();
+		int x = (int) (annotationController.getCurrentMs() / annotationController.getDurationInMs() * preferredSize.getWidth());
+		currentTimeBeamPanel.setBounds(x,0,1, (int) (preferredSize.height * pixelHeight));
+
+		//currentTimeBeamPanel.repaint();
+	}
 
 	public void setPixelHeight(double pPixelHeight){
 		Rectangle viewRectOrigin = getViewport().getViewRect();
@@ -133,20 +174,24 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 		
 		SwingUtilities.invokeLater(new Runnable() {
 	        public void run() {
-			Rectangle viewRect = getViewport().getViewRect();
-			Point2D relativeMiddleViewPoint = new Point2D.Double(relativeViewPointOrigin.getX() * getContentSize().width,
-					relativeViewPointOrigin.getY() * getContentSize().height);
-			contentPanel.scrollRectToVisible(new Rectangle( (int) (relativeMiddleViewPoint.getX() - 0.5 * viewRect.width),
-					(int) Math.ceil(relativeMiddleViewPoint.getY() - 1.0 * viewRect.height),
-					viewRect.width,
-					viewRect.height));
+				Rectangle viewRect = getViewport().getViewRect();
+				Point2D relativeMiddleViewPoint = new Point2D.Double(relativeViewPointOrigin.getX() * getContentSize().width,
+						relativeViewPointOrigin.getY() * getContentSize().height);
+				contentPanel.scrollRectToVisible(new Rectangle( (int) (relativeMiddleViewPoint.getX() - 0.5 * viewRect.width),
+						(int) Math.ceil(relativeMiddleViewPoint.getY() - 1.0 * viewRect.height),
+						viewRect.width,
+						viewRect.height));
+				repaintCurrentTimeBeam(); // The height of the time beam needs to be adjusted
 	        }
 		});
 	}
 
 	@Override
 	public Dimension getContentSize() {
-		return new Dimension((int) (audiospectrumImage.getWidth() * pixelWidth), (int) (audiospectrumImage.getHeight() * pixelHeight));
+		int width = (int) (audiospectrumImage.getWidth() * pixelWidth);
+		int height = (int) (audiospectrumImage.getHeight() * pixelHeight);
+		contentPanel.setBounds(0,0,width, height);
+		return new Dimension(width, height);
 	}
 
 	public void setPixelWidth(double pPixelWidth){
@@ -172,6 +217,7 @@ public class AnnotationAudioSpectrumPanel extends AnnotationScrollPane {
 	}
 
 	public void setAudioSpectrumImage(BufferedImage audiospectrumImage) {
+		currentTimeBeamPanel.setVisible(AmusePreferences.getBoolean(KeysBooleanValue.MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM));
 		this.audiospectrumImage = audiospectrumImage;
 	}
 

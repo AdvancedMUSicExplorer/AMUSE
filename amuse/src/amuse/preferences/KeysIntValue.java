@@ -39,7 +39,11 @@ public enum KeysIntValue {
 
     MAX_NUMBER_OF_TASK_THREADS,
     NUMBER_OF_JOBS_PER_GRID_MACHINE,
-    GUI_LOG_LEVEL, SPLIT_SIZE_IN_KB, DOWNSAMPLING_TARGET_SIZE_IN_HZ;
+    GUI_LOG_LEVEL,
+    SPLIT_SIZE_IN_KB,
+    DOWNSAMPLING_TARGET_SIZE_IN_HZ,
+    AUDIOSPECTRUM_WINDOWSIZE,
+    AUDIOSPECTRUM_HOPSIZE;
 
     /**
      * This method is used to determin and get default values for any key.
@@ -47,19 +51,23 @@ public enum KeysIntValue {
      */
     protected int getDefaultValue() {
         switch (this) {
-            case MAX_NUMBER_OF_TASK_THREADS:
-                return 1;
-            case NUMBER_OF_JOBS_PER_GRID_MACHINE:
-            	return 1;
-            case GUI_LOG_LEVEL:
-                return 0;
-            case SPLIT_SIZE_IN_KB:
-                return 1024 * 20;
-            case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
-                return 1;
-            default:
-                AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
-                return 0;
+        case AUDIOSPECTRUM_WINDOWSIZE:
+        	return 1;
+        case AUDIOSPECTRUM_HOPSIZE:
+        	return 1;
+        case MAX_NUMBER_OF_TASK_THREADS:
+            return 1;
+        case NUMBER_OF_JOBS_PER_GRID_MACHINE:
+        	return 1;
+        case GUI_LOG_LEVEL:
+            return 0;
+        case SPLIT_SIZE_IN_KB:
+            return 1024 * 20;
+        case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
+            return 1;
+        default:
+            AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
+            return 0;
         }
     }
 
@@ -70,19 +78,23 @@ public enum KeysIntValue {
      */
     public boolean isValid(int value) {
         switch (this) {
-            case MAX_NUMBER_OF_TASK_THREADS:
-                return value >= 1;
-            case NUMBER_OF_JOBS_PER_GRID_MACHINE:
-            	return value >= 1;
-            case GUI_LOG_LEVEL:
-                return value >= 0 && value < 3;
-            case SPLIT_SIZE_IN_KB:
-                return value >= 1;
-            case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
-                return (value == 0 || value == 1 || value == 2);
-            default:
-                AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
-                return true;
+        case AUDIOSPECTRUM_WINDOWSIZE:
+        	return value >= 0 && value < 3;
+        case AUDIOSPECTRUM_HOPSIZE:
+        	return value >= 0 && value < 3;
+        case MAX_NUMBER_OF_TASK_THREADS:
+            return value >= 1;
+        case NUMBER_OF_JOBS_PER_GRID_MACHINE:
+        	return value >= 1;
+        case GUI_LOG_LEVEL:
+            return value >= 0 && value < 3;
+        case SPLIT_SIZE_IN_KB:
+            return value >= 1;
+        case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
+            return (value == 0 || value == 1 || value == 2);
+        default:
+            AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
+            return true;
         }
     }
 
@@ -111,7 +123,9 @@ public enum KeysIntValue {
 		map.put(NUMBER_OF_JOBS_PER_GRID_MACHINE.toString(), "Number of Amuse jobs to proceed on one grid machine (one grid job):");
 		map.put(GUI_LOG_LEVEL.toString(), "Log level of GUI (0 == Debug, 1 == Info, 2 == Quiet)");
 		map.put(SPLIT_SIZE_IN_KB.toString(), "Size in KB to split music files at.");
-                map.put(DOWNSAMPLING_TARGET_SIZE_IN_HZ.toString(), "Target sampling rate of wave file. (0 = 44000Hz, 1 = 22050Hz, 2 = 11025HZ");
+        map.put(DOWNSAMPLING_TARGET_SIZE_IN_HZ.toString(), "Target sampling rate of wave file. (0 = 44000Hz, 1 = 22050Hz, 2 = 11025HZ)");
+		map.put(AUDIOSPECTRUM_WINDOWSIZE.toString(), "Window size used for the calculation of the audiospectrum in the annotation editor. (0 = 256, 1 = 512, 2 = 1024)");
+		map.put(AUDIOSPECTRUM_HOPSIZE.toString(), "Hop size used for the calculation of the audiospectrum in the annotation editor. (0 = 256, 1 = 512, 2 = 1024)");
 		return map;
 	}
 

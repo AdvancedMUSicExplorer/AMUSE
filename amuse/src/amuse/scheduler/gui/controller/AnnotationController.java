@@ -6,13 +6,17 @@ import java.util.LinkedHashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import javax.swing.JList;
+
 import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.annotation.AnnotationAttribute;
-import amuse.nodes.annotation.AnnotationAttributeValue;
-import amuse.nodes.annotation.AnnotationModel;
 import amuse.nodes.annotation.AudioSpectrumModel;
 import amuse.nodes.annotation.MusicPlayerModel;
+import amuse.nodes.annotation.UndoRedoManager;
+import amuse.nodes.annotation.action.AnnotationAction;
+import amuse.nodes.annotation.attribute.AnnotationAttribute;
+import amuse.nodes.annotation.attribute.AnnotationAttributeEntry;
+import amuse.nodes.annotation.attribute.AnnotationModel;
 import amuse.scheduler.gui.annotation.AnnotationView;
 
 /**
@@ -27,13 +31,20 @@ public class AnnotationController extends AbstractController{
 	private AudioSpectrumModel audioSpectrumModel;
 	private AnnotationModel annotationModel;
 	private MusicPlayerModel musicPlayerModel;
+	private UndoRedoManager undoRedoManager;
 	
 	public AnnotationController(WizardController wc){
 		wizardController = wc;
 		annotationModel = new AnnotationModel(this);
-		musicPlayerModel = new MusicPlayerModel((value, oldDuration, newDuration) -> annotationView.setCurrentTime(newDuration.toMillis()),
+		musicPlayerModel = new MusicPlayerModel(
+				(value, oldDuration, newDuration) -> {
+					annotationView.setCurrentTime(newDuration.toMillis());
+					annotationView.getAnnotationAudioSpectrumPanel().repaintCurrentTimeBeam();
+				},
 				(observable, oldValue, newValue) -> annotationView.getAnnotationUserInterfacePanel().refreshButtonPlayPauseIcon());
 		annotationView = new AnnotationView(this);
+		undoRedoManager = new UndoRedoManager();
+		
 	}
 	
 	public void loadMusic(String pPath){
@@ -49,6 +60,10 @@ public class AnnotationController extends AbstractController{
 		
 	}
 	
+	public void addUndoableAction(AnnotationAction action){
+		undoRedoManager.addAction(action);
+	}
+	
 	public boolean isAttributeNameAvailable(String name){
 		return annotationModel.isAttributeNameAvailable(name);
 	}
@@ -58,7 +73,34 @@ public class AnnotationController extends AbstractController{
 	}
 	
 	public void removeAttribute(AnnotationAttribute<?> att){
-		annotationModel.deleteAttribute(att);
+		//undoRedoManager.addAction(new AnnotationRemoveAttributeAction(this, att, annotationModel.getListModel().indexOf(att)));
+		annotationModel.removeAttribute(att);
+		annotationView.resizePanels();
+	}
+	
+	public AnnotationAttribute<?> addAttribute(int id) {
+		//undoRedoManager.addAction(new AnnotationAddAttributeAction(this, annotationModel.getAnnotationAttributeTable().get(id)));
+		return annotationModel.addAttribute(id);
+	}
+	
+	public void addEntryToItsAttribute(AnnotationAttributeEntry<?> entry){
+		annotationModel.addEntryToItsAttribute(entry);
+		annotationView.getAnnotationVisualizationPanel().addEntryPanel(entry);
+	}
+	
+	public AnnotationAttributeEntry<?> addNewEntryToAttribute(AnnotationAttribute<?> annotationAttribute){
+		AnnotationAttributeEntry<?> entry = annotationModel.addNewValueToAttribute(annotationAttribute);
+		annotationView.getAnnotationVisualizationPanel().addEntryPanel(entry);
+		return entry;
+	}
+	
+	public void removeEntry(AnnotationAttributeEntry<?> entry){
+		annotationView.getAnnotationVisualizationPanel().removeEntryPanel(entry);
+		entry.getAnnotationAttribute().getEntryList().removeElement(entry);
+	}
+	
+	public UndoRedoManager getUndoRedoManager(){
+		return undoRedoManager;
 	}
 
 	@Override
@@ -84,6 +126,10 @@ public class AnnotationController extends AbstractController{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public void addNewAttribute(AnnotationAttribute<?> att) {
+		annotationModel.addNewAttribute(att);
+	}
 
 	@Override
 	public JComponent getView() {
@@ -106,24 +152,13 @@ public class AnnotationController extends AbstractController{
 	public double getDurationInMs(){
 		return musicPlayerModel.getDurationInMs();
 	}
-
-	public void addAttribute(int id) {
-		annotationModel.addAttribute(id);
+	
+	public double getDurationInSecs(){
+		return musicPlayerModel.getDurationInMs() / 1000.;
 	}
 	
 	public LinkedHashMap<Integer, AnnotationAttribute<?>> getAnnotationAttributeTable(){
 		return annotationModel.getAnnotationAttributeTable();
-	}
-	
-	public AnnotationAttributeValue<?> addNewValueToAttribute(AnnotationAttribute<?> annotationAttribute){
-		AnnotationAttributeValue<?> value = annotationModel.addNewValueToAttribute(annotationAttribute);
-		annotationView.getAnnotationVisualizationPanel().addValuePanel(value);
-		return value;
-	}
-	
-	public void removeValue(AnnotationAttributeValue<?> value){
-		annotationView.getAnnotationVisualizationPanel().removeValuePanel(value);
-		value.getAnnotationAttribute().getValueList().removeElement(value);
 	}
 	
 	public String getMusicFilePath(){
@@ -146,16 +181,16 @@ public class AnnotationController extends AbstractController{
 		musicPlayerModel.seek(timeInMs);
 	}
 	
-	public void selectAttributeValue(AnnotationAttributeValue<?> value){
-		annotationView.getAnnotationSelectionPanel().selectAttributeValue(value);
+	public void selectAttributeEntry(AnnotationAttributeEntry<?> entry){
+		annotationView.getAnnotationSelectionPanel().selectAttributeEntry(entry);
 	}
 	
 	public void scrollToTime(int millis){
 		annotationView.getAnnotationAudioSpectrumPanel().scrollToTime(millis);
 	}
 	
-	public void selectAttributeWithValue(int attributeNumber, double millis) {
-		annotationView.getAnnotationSelectionPanel().selectAttributeWithValue(attributeNumber, millis);
+	public void selectAttributeWithEntry(int attributeNumber, double secs) {
+		annotationView.getAnnotationSelectionPanel().selectAttributeWithEntry(attributeNumber, secs);
 	}
 	
 	public void clearAnnotation(){
@@ -168,12 +203,12 @@ public class AnnotationController extends AbstractController{
 		annotationModel.saveAnnotation();
 	}
 
-	public void addNewAttribute(AnnotationAttribute<?> att) {
-		annotationModel.addNewAttribute(att);
-	}
-
 	public int getNextAvailableId() {
 		return annotationModel.getNextAvailableId();
+	}
+
+	public JList<AnnotationAttributeEntry<?>> getAttributeEntryList(){
+		return annotationView.getAnnotationSelectionPanel().getAttributeEntryList();
 	}
 	
 }

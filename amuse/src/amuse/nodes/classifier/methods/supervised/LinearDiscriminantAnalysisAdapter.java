@@ -176,10 +176,10 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Clas
 			        	        errorOccurred = errorOccurred | line.contains("Error");
 			        	        if(errorOccurred) { 
 			        	            errortext += line + "\n";
-			        	        }
-			        	        if(line.contains("}")){ // The error message ends with "}"
-			        	        	errorComplete = true;
-			        	        	break;
+			        	            if(line.contains("}")){ // The error message ends with "}"
+			        	            	errorComplete = true;
+			        	            	break;
+			        	            }
 			        	        }
 			        	    }
 			        	    

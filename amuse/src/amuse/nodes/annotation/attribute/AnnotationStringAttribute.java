@@ -1,4 +1,4 @@
-package amuse.nodes.annotation;
+package amuse.nodes.annotation.attribute;
 
 /**
  * Annotation Attribute of type STRING
@@ -10,6 +10,11 @@ public class AnnotationStringAttribute extends AnnotationAttribute<String>{
 	public AnnotationStringAttribute(String pName, int id) {
 		super(pName, id);
 		type = AnnotationAttributeType.STRING;
+	}
+
+	@Override
+	public AnnotationAttribute<String> newInstance() {
+		return new AnnotationStringAttribute(getName(), getId());
 	}
 
 }

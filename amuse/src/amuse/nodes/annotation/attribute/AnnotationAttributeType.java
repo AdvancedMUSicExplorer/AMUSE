@@ -1,4 +1,4 @@
-package amuse.nodes.annotation;
+package amuse.nodes.annotation.attribute;
 
 /**
  * Describes the type of AnnotationAttribute

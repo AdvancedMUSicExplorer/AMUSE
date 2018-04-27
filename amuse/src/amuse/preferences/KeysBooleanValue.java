@@ -38,7 +38,16 @@ import amuse.util.AmuseLogger;
  */
 public enum KeysBooleanValue {
 
-    REDUCE_TO_MONO, USE_DOWNSAMPLING, SPLIT_WAVE, USE_GRID_CLASSIFIER, USE_GRID_EXTRACTOR, USE_GRID_TRAINER, USE_GRID_PROCESSOR, USE_GRID_VALIDATOR, USE_GRID_OPTIMIZER;
+    REDUCE_TO_MONO,
+    USE_DOWNSAMPLING,
+    SPLIT_WAVE,
+    USE_GRID_CLASSIFIER,
+    USE_GRID_EXTRACTOR,
+    USE_GRID_TRAINER,
+    USE_GRID_PROCESSOR,
+    USE_GRID_VALIDATOR,
+    USE_GRID_OPTIMIZER,
+    MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -52,6 +61,7 @@ public enum KeysBooleanValue {
             case USE_GRID_PROCESSOR:
             case USE_GRID_VALIDATOR:
             case USE_GRID_OPTIMIZER:
+            case MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM:
                 return false;
             case REDUCE_TO_MONO:
                 return true;
@@ -96,6 +106,7 @@ public enum KeysBooleanValue {
 		map.put(USE_GRID_CLASSIFIER.toString(), "TRUE to use grid for classification:");
 		map.put(USE_GRID_VALIDATOR.toString(), "TRUE to use grid for validation:");
 		map.put(USE_GRID_OPTIMIZER.toString(), "TRUE to use grid for optimization:");
+		map.put(MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM.toString(), "TRUE to display a beam on the audio spectrum in the annotation editor that tracks the time:");
 		return map;
 	}
 }
