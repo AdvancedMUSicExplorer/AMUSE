@@ -264,11 +264,11 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 				File.separator + musicFileName + "_" + id + ".arff";
 			FileReader featuresInput = null;
 			BufferedReader featuresReader = null;
-			int columns;
+			int rows;
 			String[] attributeTypes;
 			try {
 				// Retrieve the number of columns (representing points of time) and the attribute types of the *.csv feature output file
-				columns = count(outputPath);
+				rows = count(outputPath);
 				attributeTypes = getAttributeTypes(outputPath);
 				
 				featuresInput = new FileReader(new File(outputPath));
@@ -281,7 +281,7 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			
 			// Check if the current feature has a correct window size (not -1) and thus needs an additional attribute
 			boolean hasWindows = (currentFeature.getSourceFrameSize() > 0);
-			int rows = currentFeature.getDimension();
+			int columns = currentFeature.getDimension();
 			
 			// Start writing the arff file
 			FileOutputStream values_to = null;
@@ -292,11 +292,11 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 				String sep = System.getProperty("line.separator");
 								
 				// Start off by describing the feature (name, rows, columns, sample_rate, window_size)
-				writer.writeBytes("@RELATION 'Music feature'" + sep + sep +
-						"%rows=" + rows + sep +
-						"%columns=" + columns + sep +
-						"%sample_rate=" + "22050" + /*Currently hardcoded to 22050Hz, variable implementation: currentFeature.getSampleRate()*/ sep +  
-						"%window_size=" + currentFeature.getSourceFrameSize() + sep + sep);
+				writer.writeBytes("@RELATION 'Music feature'" + sep + sep
+						+ "%rows=" + rows + sep
+						+ "%columns=" + columns + sep 
+						+ "%sample_rate=" + "22050" + sep /*Currently hardcoded to 22050Hz, variable implementation: currentFeature.getSampleRate()*/ 
+						+ "%window_size=" + currentFeature.getSourceFrameSize() + sep + sep);
 				
 				// Write attribute declarations
 				// Time attribute needed if there are no windows 

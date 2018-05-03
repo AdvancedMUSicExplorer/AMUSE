@@ -136,9 +136,9 @@ public class IntervalStrengthsFromHighestSemitonePeaks implements NNLSDerivedFea
 			// Write to the ARFF feature file (header)
 			values_writer.writeBytes("@RELATION 'Music feature'");
 			values_writer.writeBytes(sep);
-			values_writer.writeBytes("%rows=2");
+			values_writer.writeBytes("%rows=" + intervalStrengthsFrom10HighestPeaks.size());
 			values_writer.writeBytes(sep);
-			values_writer.writeBytes("%columns=" + intervalStrengthsFrom10HighestPeaks.size());
+			values_writer.writeBytes("%columns=2");
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes("%sample_rate=" + "22050"); // TODO set this value correctly
 			values_writer.writeBytes(sep);

@@ -307,9 +307,9 @@ public class FrequentChordSharesBasedOnChordDuration implements NNLSDerivedFeatu
 			// Write to the ARFF feature file (header)
 			values_writer.writeBytes("@RELATION 'Music feature'");
 			values_writer.writeBytes(sep);
-			values_writer.writeBytes("%rows=4");
+			values_writer.writeBytes("%rows=" + shareOf20PercentFrequentChords.size());
 			values_writer.writeBytes(sep);
-			values_writer.writeBytes("%columns=" + shareOf20PercentFrequentChords.size());
+			values_writer.writeBytes("%columns=4");
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes("%sample_rate=" + "22050"); // TODO set this value correctly
 			values_writer.writeBytes(sep);
