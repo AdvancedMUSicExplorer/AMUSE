@@ -637,7 +637,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 				File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff");
 	            List<Feature> features = new FeatureTable(featureTableFile).getFeatures();
 	            for(int i = 0; i < features.size();){
-	            	if(features.get(i).getSourceFrameSize() >= 0){
+	            	if(!features.get(i).getFeatureType().equals(Feature.FeatureType.Event.toString())){
 	            		features.remove(i);
 	            	}
 	            	else{

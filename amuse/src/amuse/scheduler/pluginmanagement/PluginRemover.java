@@ -372,8 +372,11 @@ public class PluginRemover {
 			values_writer.writeBytes("@ATTRIBUTE WindowSize NUMERIC" + sep);
 			values_writer.writeBytes("% Number of feature dimensions" + sep);
 			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep);
-			values_writer.writeBytes("% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)" + sep);
-			values_writer.writeBytes("@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC" + sep + sep);
+			values_writer.writeBytes("% Type of feature:" + sep);
+			values_writer.writeBytes("%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length" + sep);
+			values_writer.writeBytes("%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time" + sep);
+			values_writer.writeBytes("%   Event: feature marks events as points in time, but has no duration or value" + sep);
+			values_writer.writeBytes("@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}" + sep + sep);
 			values_writer.writeBytes("@DATA" + sep + sep);
 			values_writer.writeBytes("% Timbre features" + sep + sep);
 			
@@ -409,11 +412,11 @@ public class PluginRemover {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(installedFeatureSet.getAttribute("Dimensions").getValueAt(i).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-					Double isSuitableForFeatureMatrixProcessing = new Double(installedFeatureSet.getAttribute("IsSuitableForFeatureMatrixProcessing").getValueAt(i).toString());
-					String isSuitableForFeatureMatrixProcessingString = isSuitableForFeatureMatrixProcessing.isNaN() ? "?" : new Integer(isSuitableForFeatureMatrixProcessing.intValue()).toString();
+					String featureTypeString = installedFeatureSet.getAttribute("FeatureType").getValueAt(i).toString();
+					
 					values_writer.writeBytes(idOfInstalledFeature + ", \"" + 
 							installedFeatureSet.getAttribute("Description").getValueAt(i).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForFeatureMatrixProcessingString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
 				}
 			}
 			

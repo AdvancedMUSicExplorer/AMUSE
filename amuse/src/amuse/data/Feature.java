@@ -54,8 +54,10 @@ public class Feature implements Serializable {
 	/** The number of samples per second */
 	private int sampleRate;
 
-	/** Suitability of the Feature for Processing.*/
-	private int suitableForProcessing;
+	/** Type of feature: WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString.*/
+	public enum FeatureType{WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString};
+	
+	private FeatureType featureType;
 	
 	/** For processed features, here the performed steps are saved.
 	 *  First step = original name of the feature */
@@ -79,7 +81,7 @@ public class Feature implements Serializable {
 		this.history = new ArrayList<String>();
 		this.description = description;
 		this.history.add(new String(description));
-		this.suitableForProcessing = 1;
+		this.featureType = FeatureType.WindowedNumeric;
 	}
 	
 	public Feature(ArrayList<Integer> ids, String description, int dimension) {
@@ -90,16 +92,22 @@ public class Feature implements Serializable {
 		this.history.add(new String(description));
 		this.values = new ArrayList<Double[]>();
 		this.windows = new ArrayList<Double>();
-		this.suitableForProcessing = 1;
+		this.featureType = FeatureType.WindowedNumeric;
 	}
 	
-	public Feature(int id, String description, int dimension, int extractorID, int suitableForProcessing) {
+	public Feature(int id, String description, int dimension, int extractorID, String featureType) {
 		this.ids = new ArrayList<Integer>(1);
 		ids.add(id);
 		this.description = description;
 		this.dimension = dimension;
 		this.extractorId = extractorID;
-		this.suitableForProcessing = suitableForProcessing;
+		this.featureType = FeatureType.WindowedNumeric;
+		for(FeatureType f: FeatureType.values()){
+			if(f.toString().equals(featureType)){
+				this.featureType = f;
+				break;
+			}
+		}
 	}
 	
 	public Feature(int id) {
@@ -108,7 +116,7 @@ public class Feature implements Serializable {
 		this.values = new ArrayList<Double[]>();
 		this.windows = new ArrayList<Double>();
 		this.history = new ArrayList<String>();
-		this.suitableForProcessing = 1;
+		this.featureType = FeatureType.WindowedNumeric;
 	}
 	
 	public String getDescription() {
@@ -226,7 +234,11 @@ public class Feature implements Serializable {
 		return sampleRate;
 	}
 
-	public int getSuitableForProcessing() {
-		return suitableForProcessing;
+	public boolean isSuitableForProcessing() {
+		return featureType == FeatureType.WindowedNumeric;
+	}
+	
+	public String getFeatureType(){
+		return featureType.toString();
 	}
 }

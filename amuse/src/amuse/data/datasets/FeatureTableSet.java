@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.List;
 
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 
@@ -43,14 +44,14 @@ public class FeatureTableSet extends ArffDataSet {
     private final NumericAttribute extractorIDAttribute;
     private final NumericAttribute windowSizeAttribute;
     private final NumericAttribute dimensionsAttribute;
-    private final NumericAttribute suitableForProcessingAttribute;
+    private final NominalAttribute featureTypeAttribute;
 
     private static final String strID = "Id";
     private static final String strDescription = "Description";
     private static final String strExtractiorID = "ExtractorId";
     private static final String strWindowSize = "WindowSize";
     private static final String strDimensions = "Dimensions";
-    private static final String strSuitableForProcessing = "IsSuitableForFeatureMatrixProcessing";
+    private static final String strFeatureType = "FeatureType";
 
     /**
      * Creates a new FeatureTableSet from a file. Validates if the given file contains a FeatureTableSet.
@@ -75,31 +76,31 @@ public class FeatureTableSet extends ArffDataSet {
         if (!this.getAttributeNames().contains(strDimensions) || !(this.getAttribute(strDimensions) instanceof NumericAttribute)) {
             throw new IOException("No " + strDimensions + " Attribute!");
         }
-        if (!this.getAttributeNames().contains(strSuitableForProcessing) || !(this.getAttribute(strSuitableForProcessing) instanceof NumericAttribute)) {
-            throw new IOException("No " + strSuitableForProcessing + " Attribute!");
+        if (!this.getAttributeNames().contains(strFeatureType) || !(this.getAttribute(strFeatureType) instanceof NominalAttribute)) {
+            throw new IOException("No " + strFeatureType + " Attribute!");
         }
         idAttribute = (NumericAttribute) this.getAttribute(strID);
         descriptionAttribute = (StringAttribute) this.getAttribute(strDescription);
         extractorIDAttribute = (NumericAttribute) this.getAttribute(strExtractiorID);
         windowSizeAttribute = (NumericAttribute) this.getAttribute(strWindowSize);
         dimensionsAttribute = (NumericAttribute) this.getAttribute(strDimensions);
-        suitableForProcessingAttribute = (NumericAttribute) this.getAttribute(strSuitableForProcessing);
+        featureTypeAttribute = (NominalAttribute) this.getAttribute(strFeatureType);
     }
     
-    public FeatureTableSet(List<String> description, List<Integer> featureIds, List<Integer> extractorId, List<Integer> windowsize, List<Integer> dimensions, List<Integer> suitableForProcessing) {
+    public FeatureTableSet(List<String> description, List<Integer> featureIds, List<Integer> extractorId, List<Integer> windowsize, List<Integer> dimensions, List<String> featureTypes) {
     	super("FeatureTable");
     	idAttribute = NumericAttribute.createFromIntList(strID, featureIds);
     	descriptionAttribute = new StringAttribute(strDescription, description);
     	extractorIDAttribute = NumericAttribute.createFromIntList(strExtractiorID, extractorId);
     	windowSizeAttribute = NumericAttribute.createFromIntList(strWindowSize, windowsize);
     	dimensionsAttribute = NumericAttribute.createFromIntList(strDimensions, dimensions);
-        suitableForProcessingAttribute = NumericAttribute.createFromIntList(strSuitableForProcessing, suitableForProcessing);
+    	featureTypeAttribute = new NominalAttribute(strFeatureType, featureTypes);
     	this.addAttribute(idAttribute);
     	this.addAttribute(descriptionAttribute);
     	this.addAttribute(extractorIDAttribute);
     	this.addAttribute(windowSizeAttribute);
     	this.addAttribute(dimensionsAttribute);
-    	this.addAttribute(suitableForProcessingAttribute);
+    	this.addAttribute(featureTypeAttribute);
     }
 
 	public NumericAttribute getIDAttribute() {
@@ -122,7 +123,7 @@ public class FeatureTableSet extends ArffDataSet {
         return dimensionsAttribute;
     }
     
-    public NumericAttribute getSuitableForProcessingAttribute() {
-        return suitableForProcessingAttribute;
+    public NominalAttribute getFeatureTypeAttribute() {
+        return featureTypeAttribute;
     }
 }
