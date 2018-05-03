@@ -33,6 +33,7 @@ import java.util.Vector;
 import org.apache.log4j.Level;
 
 import amuse.data.datasets.FeatureTableSet;
+import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.util.AmuseLogger;
@@ -64,12 +65,12 @@ public class FeatureTable implements Serializable {
             NumericAttribute extractorID = featureTableSet.getExtractorIDAttribute();
             NumericAttribute dimension = featureTableSet.getDimensionsAttribute();
             NumericAttribute windowSize = featureTableSet.getWindowSizeAttribute();
-            NumericAttribute suitableForProcessing = featureTableSet.getSuitableForProcessingAttribute();
+            NominalAttribute featureType = featureTableSet.getFeatureTypeAttribute();
             for (int i = 0; i < featureTableSet.getValueCount(); i++) {
             	if (extractorID.getValueAt(i).isNaN()) {
             		// Skip this
             	} else {
-            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), suitableForProcessing.getValueAt(i).intValue());
+            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
             		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
             		features.add(f);
             		
@@ -82,11 +83,11 @@ public class FeatureTable implements Serializable {
     }
     
     /**
-     * This methods removes every feature, that has the attribute "IsSuitableForFeatureMatrixProcessing" set to zero.
+     * This methods removes every feature, that has the attribute is not suitable for feature matrix processing.
      */
     public void removeUnsuitableForFeatureMatrixProcessing(){
     	for(int i = 0; i < features.size();){
-    		if(features.get(i).getSuitableForProcessing() == 0){
+    		if(!features.get(i).isSuitableForProcessing()){
     			features.remove(i);
     		}
     		else{
@@ -105,7 +106,7 @@ public class FeatureTable implements Serializable {
         List<Integer> extractorIDList = new ArrayList<Integer>();
         List<Integer> windowSizeList = new ArrayList<Integer>();
         List<Integer> dimensionList = new ArrayList<Integer>();
-        List<Integer> suitableForProcessingList = new ArrayList<Integer>();
+        List<String> featureTypeList = new ArrayList<String>();
         for (Feature f : features) {
             if (f.isSelectedForExtraction()) {
                 featureIDList.add(f.getId());
@@ -113,10 +114,10 @@ public class FeatureTable implements Serializable {
                 extractorIDList.add(f.getExtractorId());
                 windowSizeList.add(f.getSourceFrameSize());
                 dimensionList.add(f.getDimension());
-                suitableForProcessingList.add(f.getSuitableForProcessing());
+                featureTypeList.add(f.getFeatureType());
             }
         }
-    	FeatureTableSet featureSet = new FeatureTableSet(featureDescriptionList, featureIDList, extractorIDList, windowSizeList, dimensionList, suitableForProcessingList);
+    	FeatureTableSet featureSet = new FeatureTableSet(featureDescriptionList, featureIDList, extractorIDList, windowSizeList, dimensionList, featureTypeList);
         return featureSet;
     }
 

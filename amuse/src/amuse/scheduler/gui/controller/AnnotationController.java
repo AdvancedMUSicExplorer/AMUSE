@@ -73,13 +73,11 @@ public class AnnotationController extends AbstractController{
 	}
 	
 	public void removeAttribute(AnnotationAttribute<?> att){
-		//undoRedoManager.addAction(new AnnotationRemoveAttributeAction(this, att, annotationModel.getListModel().indexOf(att)));
 		annotationModel.removeAttribute(att);
 		annotationView.resizePanels();
 	}
 	
 	public AnnotationAttribute<?> addAttribute(int id) {
-		//undoRedoManager.addAction(new AnnotationAddAttributeAction(this, annotationModel.getAnnotationAttributeTable().get(id)));
 		return annotationModel.addAttribute(id);
 	}
 	

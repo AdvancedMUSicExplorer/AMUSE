@@ -547,8 +547,11 @@ public class PluginInstaller {
 			values_writer.writeBytes("@ATTRIBUTE WindowSize NUMERIC" + sep);
 			values_writer.writeBytes("% Number of feature dimensions" + sep);
 			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep);
-			values_writer.writeBytes("% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)" + sep);
-			values_writer.writeBytes("@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC" + sep + sep);
+			values_writer.writeBytes("% Type of feature:" + sep);
+			values_writer.writeBytes("%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length" + sep);
+			values_writer.writeBytes("%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time" + sep);
+			values_writer.writeBytes("%   Event: feature marks events as points in time, but has no duration or value" + sep);
+			values_writer.writeBytes("@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}" + sep + sep);
 			values_writer.writeBytes("@DATA" + sep + sep);
 			values_writer.writeBytes("% Timbre features" + sep + sep);
 						
@@ -597,12 +600,11 @@ public class PluginInstaller {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(installedFeatureList.getAttribute("Dimensions").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-					Double isSuitableForFeatureMatrixProcessing = new Double(installedFeatureList.getAttribute("IsSuitableForFeatureMatrixProcessing").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString());
-					String isSuitableForFeatureMatrixProcessingString = isSuitableForFeatureMatrixProcessing.isNaN() ? "?" : new Integer(isSuitableForFeatureMatrixProcessing.intValue()).toString();
+					String featureTypeString = installedFeatureList.getAttribute("FeatureType").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString();
 					
 					values_writer.writeBytes(idOfInstalledFeature + ", \"" + 
 						installedFeatureList.getAttribute("Description").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForFeatureMatrixProcessingString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
 				}
 				
 				// Write the data for the new feature
@@ -613,12 +615,11 @@ public class PluginInstaller {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-					Double isSuitableForFeatureMatrixProcessing = new Double(newFeatureList.getAttribute("IsSuitableForFeatureMatrixProcessing").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
-					String isSuitableForFeatureMatrixProcessingString = isSuitableForFeatureMatrixProcessing.isNaN() ? "?" : new Integer(isSuitableForFeatureMatrixProcessing.intValue()).toString();
+					String featureTypeString = installedFeatureList.getAttribute("FeatureType").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString();
 					
 					values_writer.writeBytes(idOfNewFeature + ", \"" + 
 						newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForFeatureMatrixProcessingString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
 					posRequired++;
 					posInstalled--; // This position remains
 				}
@@ -633,11 +634,10 @@ public class PluginInstaller {
 				String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 				Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 				String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-				Double isSuitableForFeatureMatrixProcessing = new Double(newFeatureList.getAttribute("IsSuitableForFeatureMatrixProcessing").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
-				String isSuitableForFeatureMatrixProcessingString = isSuitableForFeatureMatrixProcessing.isNaN() ? "?" : new Integer(isSuitableForFeatureMatrixProcessing.intValue()).toString();
+				String featureTypeString = installedFeatureList.getAttribute("FeatureType").getValueAt(newFeatureMap.get(idOfNewFeature)).toString();
 				values_writer.writeBytes(idOfNewFeature + ", \"" + 
 					newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
-					extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + isSuitableForFeatureMatrixProcessingString + sep);
+					extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
 			}
 			
 			values_writer.close();

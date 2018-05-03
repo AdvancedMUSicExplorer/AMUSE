@@ -16,57 +16,60 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
-% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)
-@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC
+% Type of feature:
+%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length
+%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time
+%   Event: feature marks events as points in time, but has no duration or value
+@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
 
 % Timbre features
 
-0, "Zero-crossing rate", 0, 512, 1, 1
-1, "Linear prediction coefficients", 0, 512, 10, 1
-2, "Average distance between extremal spectral values and its variance", 1, 512, 2, 1
-3, "Average distance between zero-crossings of the time-domain signal and its variance", 1, 512, 2, 1
-4, "Root mean square", 0, 512, 1, 1
-6, "Low energy", 0, 512, 1, 1
-7, "Normalized energy of harmonic components", 2, 512, 1, 1
-10, "Tristimulus", 2, 512, 2, 1
-14, "Spectral centroid", 1, 512, 1, 1
-16, "Spectral bandwidth", 1, 512, 1, 1
-17, "Spectral skewness", 1, 512, 1, 1
-18, "Spectral kurtosis", 1, 512, 1, 1
-19, "Spectral crest factor", 1, 512, 4, 1
-20, "Spectral flatness measure", 1, 512, 4, 1
-21, "Spectral extent", 1, 512, 1, 1
-22, "Spectral flux", 0, 512, 1, 1
-25, "Sub-band energy ratio", 1, 512, 4, 1
-28, "Mel frequency cepstral coefficients", 0, 512, 13, 1
-29, "Spectral slope", 1, 512, 1, 1
-30, "y-axis intercept", 1, 512, 1, 1
-31, "Discrepancy", 1, 512, 1, 1
-32, "Angles in phase domain", 1, 512, 1, 1
-33, "Distances in phase domain", 1, 512, 1, 1
-45, "CMRARE cepstral modulation features with polynomial order 3", 2, 110250, 8, 1
-46, "CMRARE cepstral modulation features with polynomial order 5", 2, 110250, 12, 1
-47, "CMRARE cepstral modulation features with polynomial order 10", 2, 110250, 22, 1
+0, "Zero-crossing rate", 0, 512, 1, WindowedNumeric
+1, "Linear prediction coefficients", 0, 512, 10, WindowedNumeric
+2, "Average distance between extremal spectral values and its variance", 1, 512, 2, WindowedNumeric
+3, "Average distance between zero-crossings of the time-domain signal and its variance", 1, 512, 2, WindowedNumeric
+4, "Root mean square", 0, 512, 1, WindowedNumeric
+6, "Low energy", 0, 512, 1, WindowedNumeric
+7, "Normalized energy of harmonic components", 2, 512, 1, WindowedNumeric
+10, "Tristimulus", 2, 512, 2, WindowedNumeric
+14, "Spectral centroid", 1, 512, 1, WindowedNumeric
+16, "Spectral bandwidth", 1, 512, 1, WindowedNumeric
+17, "Spectral skewness", 1, 512, 1, WindowedNumeric
+18, "Spectral kurtosis", 1, 512, 1, WindowedNumeric
+19, "Spectral crest factor", 1, 512, 4, WindowedNumeric
+20, "Spectral flatness measure", 1, 512, 4, WindowedNumeric
+21, "Spectral extent", 1, 512, 1, WindowedNumeric
+22, "Spectral flux", 0, 512, 1, WindowedNumeric
+25, "Sub-band energy ratio", 1, 512, 4, WindowedNumeric
+28, "Mel frequency cepstral coefficients", 0, 512, 13, WindowedNumeric
+29, "Spectral slope", 1, 512, 1, WindowedNumeric
+30, "y-axis intercept", 1, 512, 1, WindowedNumeric
+31, "Discrepancy", 1, 512, 1, WindowedNumeric
+32, "Angles in phase domain", 1, 512, 1, WindowedNumeric
+33, "Distances in phase domain", 1, 512, 1, WindowedNumeric
+45, "CMRARE cepstral modulation features with polynomial order 3", 2, 110250, 8, WindowedNumeric
+46, "CMRARE cepstral modulation features with polynomial order 5", 2, 110250, 12, WindowedNumeric
+47, "CMRARE cepstral modulation features with polynomial order 10", 2, 110250, 22, WindowedNumeric
 
 % Harmony and melody features
 
-200, "Fundamental frequency", 2, 512, 1, 1
-204, "Chroma vector", 1, 512, 24, 1
-205, "Amplitude of maximum in the chromagram", 1, 512, 1, 1
-207, "Tone with maximum strength in the chromagram", 1, 512, 1, 1
-211, "Amplitude, position and width of 1st spectral peak", 1, 512, 3, 1
-212, "Amplitude, position and width of 2nd spectral peak", 1, 512, 3, 1
-213, "Amplitude, position and width of 3rd spectral peak", 1, 512, 3, 1
-214, "Amplitude, position and width of 4th spectral peak", 1, 512, 3, 1
-215, "Amplitude, position and width of 5th spectral peak", 1, 512, 3, 1
+200, "Fundamental frequency", 2, 512, 1, WindowedNumeric
+204, "Chroma vector", 1, 512, 24, WindowedNumeric
+205, "Amplitude of maximum in the chromagram", 1, 512, 1, WindowedNumeric
+207, "Tone with maximum strength in the chromagram", 1, 512, 1, WindowedNumeric
+211, "Amplitude, position and width of 1st spectral peak", 1, 512, 3, WindowedNumeric
+212, "Amplitude, position and width of 2nd spectral peak", 1, 512, 3, WindowedNumeric
+213, "Amplitude, position and width of 3rd spectral peak", 1, 512, 3, WindowedNumeric
+214, "Amplitude, position and width of 4th spectral peak", 1, 512, 3, WindowedNumeric
+215, "Amplitude, position and width of 5th spectral peak", 1, 512, 3, WindowedNumeric
 
 % Tempo features
 
-400, "Duration of music piece", 2, -1, 1, 1
-401, "Tempo", 1, 512, 1, 1
-402, "First relative periodicity amplitude peak", 0, 512, 1, 1
-405, "First periodicity peak in bpm", 1, 512, 1, 1
-406, "Second periodicity peak in bpm", 1, 512, 1, 1
-407, "Sum of correlated components", 0, 512, 1, 1
+400, "Duration of music piece", 2, -1, 1, WindowedNumeric
+401, "Tempo", 1, 512, 1, WindowedNumeric
+402, "First relative periodicity amplitude peak", 0, 512, 1, WindowedNumeric
+405, "First periodicity peak in bpm", 1, 512, 1, WindowedNumeric
+406, "Second periodicity peak in bpm", 1, 512, 1, WindowedNumeric
+407, "Sum of correlated components", 0, 512, 1, WindowedNumeric
