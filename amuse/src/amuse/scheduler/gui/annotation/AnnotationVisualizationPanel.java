@@ -209,7 +209,11 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 			this.addMouseListener(new MouseListener() {
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					annotationController.addUndoableAction(new AnnotationEditAttributeEntryAction(annotationController, entry, oldStart, oldEnd, oldValue));
+					if(oldStart != entry.getStart()
+							|| oldEnd != entry.getEnd()
+							|| oldValue != entry.getValue()){
+						annotationController.addUndoableAction(new AnnotationEditAttributeEntryAction(annotationController, entry, oldStart, oldEnd, oldValue));
+					}
 				}
 
 				@Override
@@ -237,9 +241,6 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 
 				@Override
 				public void mouseMoved(MouseEvent e) {
-					//int totalWidth = getContentSize().width;
-					//double totalSecs = annotationController.getDurationInSecs();
-					//double secsPerPixel = totalSecs / totalWidth;
 					((AnnotationView) annotationController.getView())
 							.setMouseTime((getX() + e.getX()) * secsPerPixel);
 				}

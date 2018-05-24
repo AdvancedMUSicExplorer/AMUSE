@@ -73,13 +73,10 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 		};
 		horizontalScrollBar.setModel(audioSpectrumPanel.getHorizontalScrollBar().getModel());
 		horizontalScrollBar.addAdjustmentListener(e -> {
-			audioSpectrumPanel.getHorizontalScrollBar().setValue(horizontalScrollBar.getValue());
 			visualizationPanel.getHorizontalScrollBar().setValue(horizontalScrollBar.getValue());
 			currentTimePanel.getHorizontalScrollBar().setValue(horizontalScrollBar.getValue());
-			audioSpectrumPanel.repaint();
+			visualizationPanel.repaint();
 		});
-		horizontalScrollBar.addAdjustmentListener(e -> visualizationPanel.repaint());
-
 		
 		// The visualizationPanel and selectionPanel are in competition regarding the height.
 		// Therefore, encapsulate both in one JPanel
@@ -107,7 +104,6 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 
 		this.revalidate();
 		this.getLayout().layoutContainer(this);
-		audioSpectrumPanel.revalidate();
 		currentTimePanel.revalidate();
 		visualizationPanel.revalidate();
 	}
@@ -280,13 +276,8 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			JButton redoButton = new JButton();
+			JButton redoButton = annotationController.getUndoRedoManager().getRedoButton();
 			redoButton.setIcon(iconRedo);
-			redoButton.addActionListener(e -> {
-				annotationController.getUndoRedoManager().redo();
-				redoButton.setEnabled(annotationController.getUndoRedoManager().isRedoable());
-			});
-			redoButton.setEnabled(false);
 			
 			ImageIcon iconUndo = null;
 			try {
@@ -296,13 +287,12 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-			JButton undoButton = new JButton();
+			JButton undoButton = annotationController.getUndoRedoManager().getUndoButton();
 			undoButton.setIcon(iconUndo);
-			undoButton.addActionListener(e -> {
-				annotationController.getUndoRedoManager().undo();
-				redoButton.setEnabled(true);
-			});
 			
+			JCheckBox checkBoxRepeatWindow = new JCheckBox("");
+			checkBoxRepeatWindow.setToolTipText("Enable the repitition of a time window");
+			checkBoxRepeatWindow.addActionListener(e -> audioSpectrumPanel.enableRepeating(checkBoxRepeatWindow.isSelected()));
 			
 			
 			this.add(buttonPlayPause, "");
@@ -319,8 +309,10 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			this.add(normalizeCurrentViewButton, "");
 			this.add(new JLabel("Keep Scrolling:"), "split 2");
 			this.add(checkBoxAutoScroll, "");
-			//this.add(undoButton, "");
-			//this.add(redoButton, "");
+			this.add(new JLabel("Repeat Window:"), "split 2");
+			this.add(checkBoxRepeatWindow);
+			this.add(undoButton, "");
+			this.add(redoButton, "");
 		}
 		
 		public void refreshButtonPlayPauseIcon(){
