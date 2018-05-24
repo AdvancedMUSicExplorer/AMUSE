@@ -23,6 +23,7 @@ import java.util.Locale;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
@@ -158,7 +159,12 @@ public class AnnotationSelectionPanel extends JSplitPane {
 					boolean cellHasFocus) {
 				Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 				this.setForeground(new Color(Color.HSBtoRGB(index * 0.16667f, 0.8f, 0.7f)));
-				return component;
+				JCheckBox checkBox = new JCheckBox();
+				checkBox.addActionListener(e -> System.out.println("YES"));
+				JPanel panel = new JPanel();
+				panel.add(checkBox);
+				this.add(panel);
+				return this;
 			}
 		});
 		

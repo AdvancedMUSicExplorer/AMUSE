@@ -2,11 +2,14 @@ package amuse.nodes.annotation;
 
 import java.util.LinkedList;
 
+import javax.swing.JButton;
+
 import amuse.nodes.annotation.action.AnnotationAction;
 
 public class UndoRedoManager {
 	private LinkedList<AnnotationAction> undoList;
 	private LinkedList<AnnotationAction> redoList;
+	private JButton undoButton, redoButton;
 	
 	private static final int capacity = 10;
 	
@@ -14,14 +17,34 @@ public class UndoRedoManager {
 	public UndoRedoManager(){
 		undoList = new LinkedList<AnnotationAction>();
 		redoList = new LinkedList<AnnotationAction>();
+		
+		undoButton = new JButton();
+		redoButton = new JButton();
+		
+		undoButton.setEnabled(false);
+		redoButton.setEnabled(false);
+		
+		undoButton.addActionListener(e -> undo());
+		redoButton.addActionListener(e -> redo());
+		
+	}
+	
+	public JButton getUndoButton(){
+		return undoButton;
+	}
+	
+	public JButton getRedoButton(){
+		return redoButton;
 	}
 	
 	public void undo(){
 		if(!undoList.isEmpty()){
 			AnnotationAction action = undoList.removeFirst();
 			redoList.addFirst(action.getRedoAction());
-			//System.out.println("undo " + action);
 			action.undo();
+			
+			undoButton.setEnabled(!undoList.isEmpty());
+			redoButton.setEnabled(true);
 		}
 	}
 	
@@ -29,8 +52,10 @@ public class UndoRedoManager {
 		if(!redoList.isEmpty()){
 			AnnotationAction action = redoList.removeFirst();
 			undoList.addFirst(action.getRedoAction());
-			//System.out.println("redo " + action);
 			action.undo();
+			
+			undoButton.setEnabled(!undoList.isEmpty());
+			redoButton.setEnabled(!redoList.isEmpty());
 		}
 	}
 	
@@ -40,7 +65,9 @@ public class UndoRedoManager {
 			undoList.removeLast();
 		}
 		undoList.addFirst(action);
-		//System.out.println(action);
+		
+		undoButton.setEnabled(true);
+		redoButton.setEnabled(false);
 	}
 
 	public boolean isRedoable() {
@@ -50,6 +77,9 @@ public class UndoRedoManager {
 	public void clearHistory() {
 		undoList = new LinkedList<AnnotationAction>();
 		redoList = new LinkedList<AnnotationAction>();
+		
+		undoButton.setEnabled(false);
+		redoButton.setEnabled(false);
 	}
 	
 	@Override

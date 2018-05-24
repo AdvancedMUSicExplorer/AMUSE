@@ -28,6 +28,7 @@ public class AnnotationModel {
 	private AnnotationController annotationController;
 	private LinkedHashMap<Integer, AnnotationAttribute<?>> idToAttributeMap;
 	private int maxAssignedId;
+	private static final String ARFF_VALUE_UNDEFINED = "?"; 
 
 	public AnnotationModel(AnnotationController annotationController){
 		this.annotationController = annotationController;
@@ -365,64 +366,124 @@ public class AnnotationModel {
 							break;
 						}
 					}
-					// If the appropriate number of attributes were not read, something went wrong.
-					int expectedAttributeNumber = att.getType() == AnnotationAttributeType.EVENT? 1:3;
-					if(attributeOrder.size() != expectedAttributeNumber){
-						AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-								"Could not load the annotation file '" + file.getAbsolutePath() 
-								+ "' because of the wrong number of attributes. Read: " + attributeOrder.size() +  " Expected: " + expectedAttributeNumber);
-						continue;
-					}
 					/*
 					 * Extract the data after @DATA
 					 */
-					while((line = reader.readLine()) != null){
-						// If the line is empty or a comment, do nothing
-						if(line.isEmpty() || line.equals("\n") || line.startsWith("%")){
-							continue;
-						}
-						else{
-							AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
-							line = line + ","; // Add a comma to the end of the line to ensure that line.indexOf(',') always returns something positive
-							for(String currentAttribute: attributeOrder){
-								int indexOfComma = line.indexOf(',');
-								
-								if(currentAttribute.equals("start")){
-									String start = line.substring(0,indexOfComma);
-									entry.setStart(Double.parseDouble(start));
-									if (!start.contains(".")){ // start is in ms and must be converted to seconds 
-										entry.setStart(entry.getStart() / 1000);
+					if(attributeOrder.size() == 1 && att.getType() == AnnotationAttributeType.EVENT // Old format
+							|| attributeOrder.size() == 3){
+						while((line = reader.readLine()) != null){
+							// If the line is empty or a comment, do nothing
+							if(line.isEmpty() || line.equals("\n") || line.startsWith("%")){
+								continue;
+							}
+							else{
+								AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
+								line = line + ","; // Add a comma to the end of the line to ensure that line.indexOf(',') always returns something positive
+								for(String currentAttribute: attributeOrder){
+									int indexOfComma = line.indexOf(',');
+									
+									if(currentAttribute.equals("start")){
+										String start = line.substring(0,indexOfComma);
+										entry.setStart(Double.parseDouble(start));
+										if (!start.contains(".")){ // start is in ms and must be converted to seconds 
+											entry.setStart(entry.getStart() / 1000);
+										}
 									}
-								}
-								else if(currentAttribute.equals("end")){
-									String end = line.substring(0,indexOfComma);
-									entry.setEnd(Double.parseDouble(end));
-									if (!end.contains(".")){ // end is in ms and must be converted to seconds 
-										entry.setEnd(entry.getEnd() / 1000);
+									else if(currentAttribute.equals("end")){
+										String end = line.substring(0,indexOfComma);
+										entry.setEnd(Double.parseDouble(end));
+										if (!end.contains(".")){ // end is in ms and must be converted to seconds 
+											entry.setEnd(entry.getEnd() / 1000);
+										}
 									}
-								}
-								else if(currentAttribute.equals("value")){
-									switch(att.getType()){
-									case STRING: 
-									case NOMINAL: 
-										((AnnotationAttributeEntry<String>) entry).setValue(line.substring(1, line.lastIndexOf('\'')));
-										break;
-									case NUMERIC:
-										((AnnotationAttributeEntry<Double>) entry).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
-										break;
-									case EVENT: // This case is impossible because EventAttributes do not have a value
+									else if(currentAttribute.equals("value")){
+										switch(att.getType()){
+										case STRING: 
+										case NOMINAL: 
+											((AnnotationAttributeEntry<String>) entry).setValue(line.substring(1, line.lastIndexOf('\'')));
+											break;
+										case NUMERIC:
+											((AnnotationAttributeEntry<Double>) entry).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
+											break;
+										case EVENT: // This case is impossible because EventAttributes do not have a value
+										}
 									}
-								}
-								
-								// Delete the previously read part of the line
-								line = line.substring(indexOfComma + 1);
-								
-								// Delete leading spaces
-								while(line.startsWith(" ")){
-									line = line.substring(1);
+									
+									// Delete the previously read part of the line
+									line = line.substring(indexOfComma + 1);
+									
+									// Delete leading spaces
+									while(line.startsWith(" ")){
+										line = line.substring(1);
+									}
 								}
 							}
 						}
+						
+					}
+					/*
+					 * New Format: Only the start time is saved per time window. Also, the time is saved as second
+					 */
+					else if(att.getType() != AnnotationAttributeType.EVENT
+							&& attributeOrder.size() == 2){
+						LinkedList<AnnotationAttributeEntry<?>> emptyEntryList = new LinkedList<AnnotationAttributeEntry<?>>(); //Saves the entries that define empty spaces and need to be deleted afterwards
+						while((line = reader.readLine()) != null){
+							// If the line is empty or a comment, do nothing
+							if(line.isEmpty() || line.equals("\n") || line.startsWith("%")){
+								continue;
+							}
+							else{
+								AnnotationAttributeEntry<?> entry = annotationController.addNewEntryToAttribute(att);
+								line = line + ","; // Add a comma to the end of the line to ensure that line.indexOf(',') always returns something positive
+								for(String currentAttribute: attributeOrder){
+									int indexOfComma = line.indexOf(',');
+									
+									if(currentAttribute.equals("start")){
+										String start = line.substring(0,indexOfComma);
+										entry.setStart(Double.parseDouble(start));
+										AnnotationAttributeEntry<?> previousEntry = entry.getPreviousEntry();
+										if(previousEntry != null){
+											previousEntry.setEnd(entry.getStart());
+										}
+									}
+									else if(currentAttribute.equals("value")){
+										if(line.contains(ARFF_VALUE_UNDEFINED) && line.indexOf('\'') == -1){ // Line defines an empty space
+											emptyEntryList.add(entry);
+										}
+										else{
+											switch(att.getType()){
+											case STRING: 
+											case NOMINAL: 
+												((AnnotationAttributeEntry<String>) entry).setValue(line.substring(1, line.lastIndexOf('\'')));
+												break;
+											case NUMERIC:
+												((AnnotationAttributeEntry<Double>) entry).setValue(Double.parseDouble(line.substring(0,indexOfComma)));
+												break;
+											case EVENT: // This case is impossible because EventAttributes do not have a value
+											}
+										}
+									}
+									
+									// Delete the previously read part of the line
+									line = line.substring(indexOfComma + 1);
+									
+									// Delete leading spaces
+									while(line.startsWith(" ")){
+										line = line.substring(1);
+									}
+								}
+							}
+						}
+						// Delete the empty spaces
+						for(AnnotationAttributeEntry<?> entry: emptyEntryList){
+							annotationController.removeEntry(entry);
+						}
+					}
+					else{// If the appropriate number of attributes were not read, something went wrong.
+						AmuseLogger.write(this.getClass().getName(), Level.ERROR,
+								"Could not load the annotation file '" + file.getAbsolutePath() 
+								+ "' because of the wrong number of attributes. Read: " + attributeOrder.size() +  " Expected: " + (att.getType() == AnnotationAttributeType.EVENT? "1": "2"));
+						continue;
 					}
 					attributeListModel.addElement(att);
 				} catch (FileNotFoundException e) {
@@ -484,12 +545,10 @@ public class AnnotationModel {
 			// Write the header according to the type of the attribute
 			String quotMarks = att.getType() == AnnotationAttributeType.NUMERIC ? "" : "'";
 			if(att.getType() == AnnotationAttributeType.EVENT){
-				writer.write("@ATTRIBUTE '" + att.getName() + ": time in ms' NUMERIC\n\n");
+				writer.write("@ATTRIBUTE '" + att.getName() + ": time in s' NUMERIC\n\n");
 			}
 			else{
-				writer.write("@ATTRIBUTE '" + att.getName() + ": start time in ms' NUMERIC\n");
-				writer.write("@ATTRIBUTE '" + att.getName() + ": end time in ms' NUMERIC\n");
-				
+				writer.write("@ATTRIBUTE '" + att.getName() + ": start time in s' NUMERIC\n");
 				writer.write("@ATTRIBUTE '" + att.getName() + ": value' ");
 				switch(att.getType()){
 				case STRING: 
@@ -523,17 +582,36 @@ public class AnnotationModel {
 					writer.write(att.getEntryList().getElementAt(i).getStart() + "\n");
 				}
 			}
-			else{
+			else if(att.getEntryList().size() > 0){
+				if(att.getEntryList().getElementAt(0).getStart() > 0.){
+					writer.write("0.0"
+							+ ", " 
+							+ ARFF_VALUE_UNDEFINED
+							+ "\n");
+				}
+				double lastEnd = Double.POSITIVE_INFINITY;
 				for(int i = 0; i < att.getEntryList().size(); i++) {
-					writer.write(att.getEntryList().getElementAt(i).getStart()
+					AnnotationAttributeEntry<?> entry = att.getEntryList().getElementAt(i); 
+					double currentEnd = entry.getEnd();
+					double currentStart = entry.getStart();
+					if(currentStart > lastEnd){
+						writer.write(lastEnd
 								+ ", " 
-								+ att.getEntryList().getElementAt(i).getEnd()
-								+ ", "
+								+ ARFF_VALUE_UNDEFINED
+								+ "\n");
+					}
+					writer.write(currentStart
+								+ ", " 
 								+ quotMarks
-								+ att.getEntryList().getElementAt(i).getValue()
+								+ entry.getValue()
 								+ quotMarks
 								+ "\n");
+					lastEnd = currentEnd;
 				}
+				writer.write(lastEnd
+						+ ", " 
+						+ ARFF_VALUE_UNDEFINED
+						+ "\n");
 			}
 		}
 		catch (FileNotFoundException e) {

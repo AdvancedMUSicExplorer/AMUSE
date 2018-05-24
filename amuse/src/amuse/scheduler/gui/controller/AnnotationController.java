@@ -42,8 +42,8 @@ public class AnnotationController extends AbstractController{
 					annotationView.getAnnotationAudioSpectrumPanel().repaintCurrentTimeBeam();
 				},
 				(observable, oldValue, newValue) -> annotationView.getAnnotationUserInterfacePanel().refreshButtonPlayPauseIcon());
-		annotationView = new AnnotationView(this);
 		undoRedoManager = new UndoRedoManager();
+		annotationView = new AnnotationView(this);
 		
 	}
 	
