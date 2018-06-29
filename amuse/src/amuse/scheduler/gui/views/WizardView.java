@@ -46,7 +46,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-import javax.swing.plaf.synth.SynthSplitPaneUI;
 
 
 /**
@@ -126,10 +125,10 @@ public class WizardView {
 		annotationPanel.setBorder(new TitledBorder("Annotation"));
 		
 	    JButton buttonSingleAnnotation = new JButton("Create Annotation"); 
-	    buttonSingleAnnotation.addActionListener(e -> wizardController.goToAnnotationEditor());
+	    buttonSingleAnnotation.addActionListener(e -> wizardController.goToSingleFileAnnotationEditor());
 	    
 	    JButton buttonMultipleAnnotation = new JButton("Multiple Annotations");
-	    buttonMultipleAnnotation.setEnabled(false);
+	    buttonMultipleAnnotation.addActionListener(e -> wizardController.goToMultipleFilesAnnotationEditor());
 
 	    // Adding all together
 	    final int panelWidth = 250;
@@ -149,8 +148,6 @@ public class WizardView {
 	    annotationPanel.add(Box.createRigidArea(new Dimension(5, 5)));
 	    annotationPanel.add(buttonMultipleAnnotation);
 	    annotationPanel.add(Box.createRigidArea(new Dimension(panelWidth, 5)));
-	    buttonMultipleAnnotation.addActionListener(e -> System.out.println(annotationPanel.getWidth()));
-	    
 	    
 	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    startButtonsPanel.add(experimentsPanel);
