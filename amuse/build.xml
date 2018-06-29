@@ -83,7 +83,7 @@
 
 	<target name="CreateAmuseGuiJar" depends="compile" description="Create the Jar for the AmuseGui">
 		<echo message="Creating the Jar for the AmuseGui" />
-		<jar destfile="${amuseHome}/lib/amuse-gui.jar" basedir="${amuseHome}/bin" includes="amuse/scheduler/gui/**,amuse/nodes/annotation/**">
+		<jar destfile="${amuseHome}/lib/amuse-gui.jar" basedir="${amuseHome}/bin" includes="amuse/scheduler/gui/**">
 			<manifest>
 				<attribute name="Main-Class" value="amuse.scheduler.gui.controller.WizardController" />
 			</manifest>

@@ -72,9 +72,14 @@ public interface WizardControllerInterface {
     void goToSettings();
 
     /**
-     * Go to the annotation editor page for the amuse wizard.
+     * Go to the annotation editor (single file) page for the amuse wizard.
      */
-    void goToAnnotationEditor();
+    void goToSingleFileAnnotationEditor();
+    
+    /**
+     * Go to the annotation editor (multiple files) page for the amuse wizard.
+     */
+    void goToMultipleFilesAnnotationEditor();
     
     /**
      * Got to the Experiment Manager.

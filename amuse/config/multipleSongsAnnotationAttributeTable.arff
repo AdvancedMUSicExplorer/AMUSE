@@ -1,0 +1,15 @@
+@RELATION 'Annotation Attribute Table'
+%rows=5
+%columns=3
+%max id=5
+
+@ATTRIBUTE 'ID' NUMERIC
+@ATTRIBUTE 'Attribute Type' STRING
+@ATTRIBUTE 'Name' STRING
+
+@DATA
+1, String, 'Genre'
+2, String, 'Style'
+3, String, 'Emotion'
+4, Numeric, 'Number of Instruments'
+5, Numeric, 'Relationship'

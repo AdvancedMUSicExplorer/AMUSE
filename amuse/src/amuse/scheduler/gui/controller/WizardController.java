@@ -32,7 +32,7 @@ import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.scheduler.Scheduler;
-import amuse.scheduler.gui.annotation.AnnotationView;
+import amuse.scheduler.gui.annotation.singlefile.AnnotationView;
 import amuse.scheduler.gui.navigation.TitleUpdater;
 import amuse.scheduler.gui.settings.JPanelSettings;
 import amuse.scheduler.gui.views.TaskManagerView;
@@ -61,7 +61,8 @@ public final class WizardController implements WizardControllerInterface {
 	private ValidationController validationController;
 	private Scheduler scheduler;
 	private OptimizationController optimizationController;
-	private AnnotationController annotationController;
+	private SingleFileAnnotationController singleFileAnnotationController;
+	private MultipleFilesAnnotationController multipleFilesAnnotationController;
 
 	private WizardController() {
 		instance = this;
@@ -318,14 +319,22 @@ public final class WizardController implements WizardControllerInterface {
 	}
 
 	@Override
-	public void goToAnnotationEditor(){
-		if(annotationController == null){
-			annotationController = new AnnotationController(instance);
+	public void goToSingleFileAnnotationEditor(){
+		if(singleFileAnnotationController == null){
+			singleFileAnnotationController = new SingleFileAnnotationController(instance);
 		}
-		wizard.showInWizardPane(annotationController.getView());
-		if(annotationController.getMusicFilePath().equals("")){
-			((AnnotationView) annotationController.getView()).loadButtonClicked();
+		wizard.showInWizardPane(singleFileAnnotationController.getView());
+		if(singleFileAnnotationController.getMusicFilePath().equals("")){
+			((AnnotationView) singleFileAnnotationController.getView()).loadButtonClicked();
 		}
 
+	}
+	
+	@Override
+	public void goToMultipleFilesAnnotationEditor(){
+		if(multipleFilesAnnotationController == null){
+			multipleFilesAnnotationController = new MultipleFilesAnnotationController(instance);
+		}
+		wizard.showInWizardPane(multipleFilesAnnotationController.getView());
 	}
 }
