@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/jama.jar"/>
+	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
+	<classpathentry kind="lib" path="lib/launcher.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="lib/miglayout-3.7-swing.jar"/>
+	<classpathentry kind="lib" path="lib/rapidminer.jar"/>
+	<classpathentry kind="lib" path="lib/tritonus_share-0.3.6.jar"/>
+	<classpathentry kind="lib" path="lib/vldocking.jar"/>
+	<classpathentry kind="lib" path="lib/xerces.jar"/>
+	<classpathentry kind="lib" path="lib/xpp3.jar"/>
+	<classpathentry kind="lib" path="lib/xstream.jar"/>
+	<classpathentry kind="lib" path="lib/mp3plugin.jar"/>
+	<classpathentry kind="lib" path="lib/tritonus_remaining-0.3.6.jar"/>
+	<classpathentry kind="lib" path="lib/jAudio.jar"/>
+	<classpathentry kind="lib" path="lib/jhall.jar"/>
+	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/weka.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
