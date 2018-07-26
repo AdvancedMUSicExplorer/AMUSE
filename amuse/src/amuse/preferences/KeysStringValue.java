@@ -38,8 +38,24 @@ import amuse.util.AmuseLogger;
  */
 public enum KeysStringValue {
 
-    AMUSE_PATH, AMUSE_VERSION, MUSIC_DATABASE, ANNOTATION_DATABASE, FEATURE_DATABASE, PROCESSED_FEATURE_DATABASE, CATEGORY_DATABASE, MODEL_DATABASE, METRIC_DATABASE, OPTIMIZATION_DATABASE,
-    GRID_SCRIPT_EXTRACTOR, GRID_SCRIPT_PROCESSOR, GRID_SCRIPT_TRAINER, GRID_SCRIPT_CLASSIFIER, GRID_SCRIPT_VALIDATOR, GRID_SCRIPT_OPTIMIZER, JAVA_PATH, MATLAB_PATH;
+    AMUSE_PATH,
+    AMUSE_VERSION,
+    MUSIC_DATABASE,
+    ANNOTATION_DATABASE,
+    FEATURE_DATABASE,
+    PROCESSED_FEATURE_DATABASE,
+    CATEGORY_DATABASE, 
+    MODEL_DATABASE, 
+    MEASURE_DATABASE, 
+    OPTIMIZATION_DATABASE,
+    GRID_SCRIPT_EXTRACTOR, 
+    GRID_SCRIPT_PROCESSOR, 
+    GRID_SCRIPT_TRAINER, 
+    GRID_SCRIPT_CLASSIFIER, 
+    GRID_SCRIPT_VALIDATOR, 
+    GRID_SCRIPT_OPTIMIZER, 
+    JAVA_PATH, 
+    MATLAB_PATH;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -53,11 +69,9 @@ public enum KeysStringValue {
 	    	return "java";
 	    case MATLAB_PATH:
 	    	return "matlab";
-        case AMUSE_PATH:
-                return System.getenv("AMUSEHOME");
-            default:
-                //AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
-            return getNoValue();
+        default:
+            //AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
+        return getNoValue();
         }
     }
 
@@ -75,7 +89,7 @@ public enum KeysStringValue {
             case GRID_SCRIPT_TRAINER:
             case GRID_SCRIPT_VALIDATOR:
                 return !value.equalsIgnoreCase("NO_VALUE");
-            case METRIC_DATABASE:
+            case MEASURE_DATABASE:
             case MUSIC_DATABASE:
             case ANNOTATION_DATABASE:
             case FEATURE_DATABASE:
@@ -147,7 +161,7 @@ public enum KeysStringValue {
 		map.put(OPTIMIZATION_DATABASE.toString(), "Absolute path to database folder with optimization results:");
 		map.put(PROCESSED_FEATURE_DATABASE.toString(), "Absolute path to database folder with processed features:");
 		map.put(CATEGORY_DATABASE.toString(), "Absolute path to database folder with music categories:");
-		map.put(METRIC_DATABASE.toString(), "Absolute path to database folder with validation results:");
+		map.put(MEASURE_DATABASE.toString(), "Absolute path to database folder with validation results:");
 		map.put(MODEL_DATABASE.toString(), "Absolute path to database folder with classification models:");
 		map.put(GRID_SCRIPT_CLASSIFIER.toString(), "Batch command to proceed classifier task in grid:");
 		map.put(GRID_SCRIPT_EXTRACTOR.toString(), "Batch command to proceed feature extractor task in grid:");

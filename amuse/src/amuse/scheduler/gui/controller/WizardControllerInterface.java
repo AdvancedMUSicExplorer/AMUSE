@@ -31,6 +31,8 @@ import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.scheduler.gui.navigation.TitleUpdater;
+
+import java.io.File;
 import java.util.List;
 import javax.swing.JPanel;
 
@@ -50,6 +52,7 @@ public interface WizardControllerInterface {
      * Go to the Freature Processing View.
      */
     void goToFeatureProcessing();
+    
     /**
      * Go to the Freature Processing View and restore configuration.
      * @param processorConfigSet The ProcessingConfiguration to restore from.
@@ -107,6 +110,7 @@ public interface WizardControllerInterface {
      * Go to the Training Experiment View.
      */
     void goToTrainingExperiment();
+    
     /**
      * Go to the Training Experiment View and restore configuration.
      * @param set The TrainingConfiguration to restore from.
@@ -138,15 +142,26 @@ public interface WizardControllerInterface {
      * @param experiments
      */
     public void startTasks(List<TaskConfiguration> experiments);
-
+    
+    /**
+     * Saves a List of preconfigured amuse Tasks.
+     */
+    public void saveTasks(List<TaskConfiguration> experiments, File selectedFile);
+    
     /**
      * Go to the Optimization View.
      */
     public void goToOptimization();
+    
     /**
      * Go to the Optimization View and restore configuration.
      * @param set The OptimizationConfiguration to restore from.
      */
     public void goToOptimization(OptimizationConfiguration set);
+    
+    /**
+     * Loads the experiments from a file.
+     */
+	public void loadTasks(File selectedFile);
 
 }

@@ -77,7 +77,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	
 	private HashMap<Integer,Integer> featureIdToSourceFrameSize;
 	
-	/** Number of time windows before processing, used for the calculation of used raw time windows ratio metric.
+	/** Number of time windows before processing, used for the calculation of used raw time windows ratio measure.
 	 * Here the number of MINIMAL time windows is calculated. E.g. if the feature with the smallest source frame
 	 * size equal to 512 exists, and there is the second feature which is calculated from frames of 1024 samples,
 	 * the number of values from the second feature is multiplied by (1024/512) */
@@ -134,7 +134,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// (I): Configure processor node scheduler
 		// ---------------------------------------
 		this.nodeHome = nodeHome;
-		if(this.nodeHome.startsWith(System.getenv("AMUSEHOME"))) {
+		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
@@ -432,7 +432,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			ArffLoader processingToolsLoader = new ArffLoader();
 		    try {
 		    	if(this.directStart) {
-		    		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "processorAlgorithmTable.arff"));
+		    		processingToolsLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorAlgorithmTable.arff"));
 		    	} else {
 		    		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorAlgorithmTable.arff"));
 		    	}
@@ -534,7 +534,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		ArffLoader processingToolsLoader = new ArffLoader();
 		try {
 		   	if(this.directStart) {
-		   		processingToolsLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "processorConversionAlgorithmTable.arff"));
+		   		processingToolsLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	} else {
 		   		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	}
@@ -815,7 +815,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		finalNumberOfFeatureMatrixEntries = numberOfAllFeatureDimensions * features.get(0).getWindows().size();
 	}
 	
-	// TODO Used only for metrics for StructurePruner
+	// TODO Used only for measures for StructurePruner
 	@Deprecated
 	public void setFinalWindows(ArrayList<Double> usedTimeWindows, ArrayList<Feature> features) {
 		// Calculate the pruning rates for raw features and for matrix processing

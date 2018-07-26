@@ -15,7 +15,7 @@ public class AnnotationRemoveAttributeAction extends AnnotationAction{
 	}
 	@Override
 	public void undo() {
-		annotationController.getAttributeListModel().add(index, att);
+		annotationController.insertAttribute(index, att);
 		
 	}
 	

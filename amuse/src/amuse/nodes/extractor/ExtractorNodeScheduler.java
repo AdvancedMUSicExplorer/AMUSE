@@ -132,7 +132,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (I) Configure extractor node scheduler
 		// --------------------------------------
 		this.nodeHome = nodeHome;
-		if(this.nodeHome.startsWith(System.getenv("AMUSEHOME"))) {
+		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
@@ -298,7 +298,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		DataSetAbstract extractorTableSet;
 	    try {
 	    	if(this.directStart) {
-	    		extractorTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+	    		extractorTableSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 	    	} else {
 	    		extractorTableSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "featureExtractorToolTable.arff"));
 	    	}
@@ -322,7 +322,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 						extractorProperties.setProperty("extractorName",extractorNameAttribute.getValueAt(i).toString());
 						extractorProperties.setProperty("extractorFolderName",homeFolderAttribute.getValueAt(i).toString());
 						if(directStart) {
-							extractorProperties.setProperty("extractorFolder",System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
+							extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
 						} else {
 							extractorProperties.setProperty("extractorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
 						}

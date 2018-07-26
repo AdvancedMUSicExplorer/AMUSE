@@ -28,8 +28,6 @@ import java.lang.reflect.Constructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -39,7 +37,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.optimizer.methods.es.representation.interfaces.AbstractRepresentation;
 import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
 /**
  * ES individual
@@ -170,15 +168,15 @@ public class ESIndividual {
 	/**
 	 * @return Fitness value of this individual increasing the overall evaluation number of the corresponding ES
 	 */
-	public ValidationMetricDouble[] getFitness() throws NodeException {
+	public ValidationMeasureDouble[] getFitness() throws NodeException {
 		correspondingES.currentEvaluation++;
 		
-		/*ValidationMetricDouble[] test = new ValidationMetricDouble[2];
+		/*ValidationMeasureDouble[] test = new ValidationMeasureDouble[2];
 		 TODO for sms-emoa test
 		Random r = new Random();
-		test[0] = new ValidationMetricDouble();
+		test[0] = new ValidationMeasureDouble();
 		test[0].setValue(r.nextDouble());
-		test[1] = new ValidationMetricDouble();
+		test[1] = new ValidationMeasureDouble();
 		test[1].setValue(r.nextDouble());
 		return test;*/ 
 		return correspondingES.getFitnessEvalualor().getFitness(this,false);
@@ -188,7 +186,7 @@ public class ESIndividual {
 	 * @return Fitness value of this individual on the independent test set. Here the evaluation number of the corresponding
 	 * ES does not change since this function is not a part of optimization process
 	 */
-	public ValidationMetricDouble[] getFitnessOnIndependentTestSet() throws NodeException {
+	public ValidationMeasureDouble[] getFitnessOnIndependentTestSet() throws NodeException {
 		return correspondingES.getFitnessEvalualor().getFitness(this,true);
 	}
 	

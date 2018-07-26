@@ -33,12 +33,8 @@ import amuse.util.LibraryInitializer;
 
 import com.rapidminer.Process;
 import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.IOObject;
-import com.rapidminer.operator.Model;
 import com.rapidminer.operator.Operator;
 import com.rapidminer.operator.io.ModelWriter;
-import com.rapidminer.operator.learner.Learner;
-import com.rapidminer.operator.learner.lazy.KNNLearner;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;

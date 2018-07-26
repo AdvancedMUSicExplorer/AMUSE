@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
@@ -44,7 +44,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
 	// Strings which describe ARFF attributes
     private static final String strValidationMethodId = "ValidationMethodId";
-    private static final String strMetricList = "MetricList";
+    private static final String strMeasureList = "MeasureList";
     private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
     private static final String strInputToValidate = "InputToValidate";
     private static final String strGroundTruthSourceType = "GroundTruthSourceType";
@@ -52,7 +52,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
     
 	// ARFF attributes
 	private final StringAttribute validationMethodIdAttribute;
-    private final StringAttribute metricListAttribute;
+    private final StringAttribute measureListAttribute;
     private final StringAttribute processedFeatureDescriptionAttribute;
     private final StringAttribute inputToValidateAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
@@ -69,13 +69,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         super(file);
         // Check preconditions:
         checkStringAttribute(strValidationMethodId);
-        checkStringAttribute(strMetricList);
+        checkStringAttribute(strMeasureList);
         checkStringAttribute(strProcessedFeatureDescription);
         checkStringAttribute(strInputToValidate);
         checkNominalAttribute(strGroundTruthSourceType);
         checkStringAttribute(strClassificationAlgorithmId);
         validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
-        metricListAttribute = (StringAttribute) getAttribute(strMetricList);
+        measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
         processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
         inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
         groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
@@ -83,14 +83,14 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
     }
 
     public ValidatorConfigSet(  String validationMethodId,
-                                File metricListFile,
+                                File measureListFile,
                                 String processedFeatureDescription,
                                 String inputToValidate,
                                 String groundTruthSourceType,
                                 String classificationAlgorithmId) {
         super("ValidatorConfig");
         validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
-        metricListAttribute = StringAttribute.createFromString(strMetricList, metricListFile.getAbsolutePath());
+        measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
         processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
         inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
         List <String> values = new ArrayList<String>();
@@ -98,7 +98,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
         classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
         addAttribute(validationMethodIdAttribute);
-        addAttribute(metricListAttribute);
+        addAttribute(measureListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(inputToValidateAttribute); 
         addAttribute(groundTruthSourceTypeAttribute);
@@ -109,19 +109,19 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         super(dataSet.getName());
         // Check preconditions:
         dataSet.checkStringAttribute(strValidationMethodId);
-        dataSet.checkStringAttribute(strMetricList);
+        dataSet.checkStringAttribute(strMeasureList);
         dataSet.checkStringAttribute(strProcessedFeatureDescription);
         dataSet.checkStringAttribute(strInputToValidate);
         dataSet.checkNominalAttribute(strGroundTruthSourceType);
         dataSet.checkStringAttribute(strClassificationAlgorithmId);
         validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
-        metricListAttribute = (StringAttribute) dataSet.getAttribute(strMetricList);
+        measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
         processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
         inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
         classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
         addAttribute(validationMethodIdAttribute);
-        addAttribute(metricListAttribute);
+        addAttribute(measureListAttribute);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(inputToValidateAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
@@ -134,15 +134,15 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
     public String getDescription() {
         if (description.equals("")) {
-            int metrics;
+            int measures;
             try {
-                metrics = new MetricTable(new File(metricListAttribute.getValueAt(0))).size();
+                measures = new MeasureTable(new File(measureListAttribute.getValueAt(0))).size();
             } catch (IOException ex) {
-                description = "WARNING: Metric selection seems to be broken";
+                description = "WARNING: Measure selection seems to be broken";
                 return description;
             }
             String input = groundTruthSourceTypeAttribute.getValueAt(0).toString();
-            description = "Input: " + input + " Generating " + metrics + " metric(s)";
+            description = "Input: " + input + " Generating " + measures + " measure(s)";
         }
         return description;
     }
@@ -159,8 +159,8 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         return classificationAlgorithmIdAttribute;
     }
 
-    public StringAttribute getMetricListAttribute() {
-        return metricListAttribute;
+    public StringAttribute getMeasureListAttribute() {
+        return measureListAttribute;
     }
 
     @Override

@@ -86,7 +86,7 @@ public class ClassificationStarter extends AmuseTaskStarter {
 				FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
+	   	   			fos = new FileOutputStream(new String(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(classifierConfig);
@@ -129,14 +129,14 @@ public class ClassificationStarter extends AmuseTaskStarter {
 				ClassificationConfiguration classifierConfig = (ClassificationConfiguration)taskConfiguration[i];
 				ClassifierNodeScheduler classifierThread = null;
 				try {
-					classifierThread = new ClassifierNodeScheduler(System.getenv("AMUSEHOME") + 
+					classifierThread = new ClassifierNodeScheduler(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 							File.separator + "config" + File.separator + "node" + File.separator + "classifier" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Classifier node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare classifier node scheduler arguments and start it as thread
-	   	    	classifierThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "classifier", this.jobCounter, classifierConfig);
+	   	    	classifierThread.setThreadParameters(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "node" + File.separator + "classifier", this.jobCounter, classifierConfig);
 			    Thread newClassifierThread = new Thread(classifierThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

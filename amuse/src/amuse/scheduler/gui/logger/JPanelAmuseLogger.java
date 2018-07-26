@@ -70,7 +70,26 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
     public void startListening() {
 	// Start listening on AmuseLogger
 	AmuseLogger.addListener(this);
-	txtArea.addComponentListener(new ComponentListenerImpl(this.getViewport()));
+	txtArea.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				JViewport vp = getViewport();
+			    Rectangle visRect = vp.getViewRect();
+			    Dimension viewDim = vp.getViewSize();
+			    Rectangle rect = new Rectangle(0, (int) (viewDim.getHeight() - visRect.getHeight()),
+				    (int) visRect.getWidth(), (int) visRect.getHeight());
+			    vp.scrollRectToVisible(rect);
+			}
+
+			@Override
+			public void componentMoved(ComponentEvent e) {}
+
+			@Override
+			public void componentShown(ComponentEvent e) {}
+
+			@Override
+			public void componentHidden(ComponentEvent e) {}
+	});
     }
 
     /**
@@ -147,32 +166,5 @@ public class JPanelAmuseLogger extends JScrollPane implements LoggerListener {
 	return false;
     }
 
-    private static class ComponentListenerImpl implements ComponentListener {
-	private final JViewport vp;
-
-	private ComponentListenerImpl(JViewport viewport) {
-	    this.vp = viewport;
-	}
-
-	@Override
-	public void componentResized(ComponentEvent e) {
-	    Rectangle visRect = vp.getViewRect();
-	    Dimension viewDim = vp.getViewSize();
-	    Rectangle rect = new Rectangle(0, (int) (viewDim.getHeight() - visRect.getHeight()),
-		    (int) visRect.getWidth(), (int) visRect.getHeight());
-	    vp.scrollRectToVisible(rect);
-	}
-
-	@Override
-	public void componentMoved(ComponentEvent e) {
-	}
-
-	@Override
-	public void componentShown(ComponentEvent e) {
-	}
-
-	@Override
-	public void componentHidden(ComponentEvent e) {
-	}
-    }
+    
 }

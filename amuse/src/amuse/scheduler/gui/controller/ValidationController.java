@@ -23,7 +23,7 @@
  */
 package amuse.scheduler.gui.controller;
 
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
@@ -47,7 +47,7 @@ import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
-import amuse.scheduler.gui.validation.MetricsView;
+import amuse.scheduler.gui.validation.MeasuresView;
 import amuse.scheduler.gui.validation.ValidationView;
 import java.util.Arrays;
 import javax.swing.JFileChooser;
@@ -64,7 +64,7 @@ public class ValidationController extends AbstractController {
     private String amusePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH);
     private File validationAlgorithmTableFile = new File(amusePath
             + File.separator + "config" + File.separator + "validationAlgorithmTable.arff");
-    private MetricsView metricsView;
+    private MeasuresView measuresView;
     private static final File vtFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
             + File.separator + "experiments" + File.separator + "VT");
 
@@ -78,14 +78,14 @@ public class ValidationController extends AbstractController {
             validationAlgorithmFacade = new AlgorithmConfigurationFacade(
                     "Validation", validationAlgorithmTableFile);
             validationView = new ValidationView(validationAlgorithmFacade);
-            metricsView = new MetricsView();
+            measuresView = new MeasuresView();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void goToMetricView() {
-        wizardController.setWizardPanel(new MetricPanel(metricsView));
+    private void goToMeasureView() {
+        wizardController.setWizardPanel(new MeasurePanel(measuresView));
     }
 
     /**
@@ -102,7 +102,7 @@ public class ValidationController extends AbstractController {
             return;
         }
         /* Gather all necessary information and create variables */
-        File metricTableFile = new File(file.getParent() + File.separator + "metricTables" + File.separator
+        File measureTableFile = new File(file.getParent() + File.separator + "measureTables" + File.separator
                 + file.getName());
         String parameterStr = "";
         if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {
@@ -117,24 +117,24 @@ public class ValidationController extends AbstractController {
             parameterStr = Arrays.toString(validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues());
         }
         String validationMethodId = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
-        MetricTable metricTable = metricsView.getMetricTable();
+        MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
         		validationMethodId,
-                metricTableFile, 
+                measureTableFile, 
                 processedFeatureDescription, 
                 groundTruthSource, 
                 groundTruthSourceType,
                 classificationAlgorithmId);
         // Create folders...
-        metricTableFile.getParentFile().mkdirs();
+        measureTableFile.getParentFile().mkdirs();
         // Save Files and Features:
         try {
             dataSet.saveToArffFile(file);
-            metricTable.saveToArffFile(metricTableFile);
+            measureTable.saveToArffFile(measureTableFile);
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -171,7 +171,7 @@ public class ValidationController extends AbstractController {
         	validationView.setGroundTruthSourceType(GroundTruthSourceType.valueOf(groundTruthSourceType));
         	validationView.setGroundTruthSource(set.getInputToValidateAttribute().getValueAt(0));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
-            metricsView.loadSelection(new File(set.getMetricListAttribute().getValueAt(0)));
+            measuresView.loadSelection(new File(set.getMeasureListAttribute().getValueAt(0)));
             validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
@@ -183,14 +183,14 @@ public class ValidationController extends AbstractController {
         /* Gather all neccessary information and create variables */
         ValidationConfiguration conf = null;
         String validationMethodStr = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
-        MetricTable metricTable = metricsView.getMetricTable();
+        MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
         conf = new ValidationConfiguration(
         		validationMethodStr, 
-        		metricTable,
+        		measureTable,
                 processedFeatureDescription, 
                 classificationAlgorithmStr, 
                 groundTruthSource,
@@ -214,7 +214,7 @@ public class ValidationController extends AbstractController {
          */
         @Override
         public String getCaption() {
-            return "Setup Validation Algorithm";
+            return "Validation Configurator";
         }
 
         /*
@@ -225,7 +225,7 @@ public class ValidationController extends AbstractController {
          */
         @Override
         public String getNextButtonText() {
-            return "Setup Metrics";
+            return "Setup Measures";
         }
 
         /*
@@ -236,7 +236,7 @@ public class ValidationController extends AbstractController {
          */
         @Override
         public boolean nextButtonClicked() {
-            goToMetricView();
+            goToMeasureView();
             return false;
         }
 
@@ -262,17 +262,17 @@ public class ValidationController extends AbstractController {
         }
     }
 
-    private class MetricPanel extends JPanel implements HasCaption,
+    private class MeasurePanel extends JPanel implements HasCaption,
             NextButtonUsable, HasSaveButton {
 
-        public MetricPanel(JComponent comp) {
+        public MeasurePanel(JComponent comp) {
             super(new BorderLayout());
             this.add(comp, BorderLayout.CENTER);
         }
 
         @Override
         public String getCaption() {
-            return "Select Metrics";
+            return "Select Measures";
         }
 
         @Override
@@ -326,7 +326,7 @@ public class ValidationController extends AbstractController {
             validationView.setGroundTruthSourceType(valConf.getGroundTruthSourceType());
             validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());
             validationView.setClassifierAlgorithm(valConf.getClassificationAlgorithmDescription());
-            metricsView.loadSelection(valConf.getMetrics());
+            measuresView.loadSelection(valConf.getMeasures());
         }
     }
 }

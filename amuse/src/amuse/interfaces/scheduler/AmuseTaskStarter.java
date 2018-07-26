@@ -34,6 +34,8 @@ import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeEventListener;
 import amuse.interfaces.nodes.NodeEventSource;
 import amuse.interfaces.nodes.NodeScheduler;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.taskstarters.ClassificationStarter;
 import amuse.scheduler.taskstarters.ClassificationTrainingStarter;
 import amuse.scheduler.taskstarters.ClassificationValidationStarter;
@@ -52,7 +54,7 @@ import amuse.util.FileOperations;
 public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, NodeEventListener {
 
     /** The corresponding node location is:
-     *  System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder */
+     *  AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder */
     private String nodeFolder = null;
     
     /** Each Amuse job has its own Id (unique during the lifecycle of Amuse scheduler);
@@ -154,7 +156,7 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * @throws Exception
      */
     protected void removeInputFolder() throws Exception {
-        File f = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder + File.separator + "input");
+        File f = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder + File.separator + "input");
         boolean delete = FileOperations.delete(f, true);
         if (!delete) {
             throw new SchedulerException("Can't remove node input folder: " + f);

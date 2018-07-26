@@ -218,7 +218,7 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		globalSettingsPanel.add(partitionOverlap,
 				"gap rel, w 1.5cm:max, growx, wrap");
 		globalSettingsPanel.add(new JLabel("Unit:"), "");
-                boxUnit =new JComboBox(unitOptions);
+                boxUnit = new JComboBox(unitOptions);
 		globalSettingsPanel.add(boxUnit, "gap rel, spanx 3, wrap");
 		globalSettingsPanel.add(new JLabel("Optional Model Description:"), "");
 		globalSettingsPanel.add(modelDescriptionTextField, "gap rel, spanx 3, wrap");

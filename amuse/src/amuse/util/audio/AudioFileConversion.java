@@ -312,13 +312,17 @@ public class AudioFileConversion {
     }
 
     private static void fileCopy(File srcFile, File destFile) {
+    	FileInputStream srcChannelFIS = null;
+    	FileOutputStream dstChannelFOS = null;
         try {
-//            System.out.println("Trying to copy " + srcFile.getName());
+        	// System.out.println("Trying to copy " + srcFile.getName());
             // Create channel on the source
-            FileChannel srcChannel = new FileInputStream(srcFile).getChannel();
+        	srcChannelFIS = new FileInputStream(srcFile);
+            FileChannel srcChannel = srcChannelFIS.getChannel();
 
             // Create channel on the destination
-            FileChannel dstChannel = new FileOutputStream(destFile).getChannel();
+            dstChannelFOS = new FileOutputStream(destFile);
+            FileChannel dstChannel = dstChannelFOS.getChannel();
 
             // Copy file contents from source to destination
             dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
@@ -328,6 +332,18 @@ public class AudioFileConversion {
             dstChannel.close();
         } catch (IOException e) {
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to copy " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath() + ".");
+        }
+        finally{
+        	if(srcChannelFIS != null){
+        		try {
+					srcChannelFIS.close();
+				} catch (IOException e) {}
+        	}
+        	if(dstChannelFOS != null){
+        		try {
+        			dstChannelFOS.close();
+				} catch (IOException e) {}
+        	}
         }
     }
 

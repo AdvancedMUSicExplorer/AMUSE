@@ -15,13 +15,21 @@ import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -48,11 +56,13 @@ public class TableView extends JPanel{
 	MultipleFilesAnnotationController annotationController;
 	final String COLUMN_PLAYPAUSE = " ";
 	final String COLUMN_PATH = "Path";
+	private String commonPathPrefix;
 	
 	public TableView(MultipleFilesAnnotationController annotationController){
 		super();
 		this.annotationController = annotationController;
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		commonPathPrefix = "";
 		
 		/*
 		 *  Setting up the icons and JLabels used for playing/ pausing the music
@@ -166,10 +176,10 @@ public class TableView extends JPanel{
 				}
 			}
 			
-			public void setValueForSelectedRowsInColumn(Object value, int column){
-				for(int row: table.getSelectedRows()){
-					table.setValueAt(value, row, column);
-				}
+			@Override
+			public void repaint(){
+				findCommonPathPrefix();
+				super.repaint();
 			}
 		};
 		table.setAutoCreateColumnsFromModel(false);
@@ -193,14 +203,58 @@ public class TableView extends JPanel{
 			
 		});
 		table.getColumn(COLUMN_PLAYPAUSE).setMaxWidth(iconPause.getIconWidth());
-
+		
+		
 		table.addMouseListener(new MouseListener() {
 			
 			@Override
-			public void mouseReleased(MouseEvent e) {}
+			public void mouseReleased(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					showPopupMenu(e);
+				}}
 			
 			@Override
-			public void mousePressed(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {
+				if(e.isPopupTrigger()){
+					showPopupMenu(e);
+				}
+			}
+			
+			public void showPopupMenu(MouseEvent e){
+				JPopupMenu popupMenu = new JPopupMenu();
+				
+				int row = table.rowAtPoint(e.getPoint());
+				int column = table.columnAtPoint(e.getPoint());
+				String columnName = "value";
+				if(column >= 2){
+					columnName = table.getColumnName(column);
+				}
+				JLabel title = new JLabel("Add " + columnName + " for all selected tracks");
+				
+				JTextField editorTextField = new JTextField("");
+				
+				JMenuItem applyItem = new JMenuItem("Apply");
+				applyItem.addActionListener(evt -> {
+					TableCellEditor editor = table.getCellEditor(row, column);
+					editor.getTableCellEditorComponent(table, editorTextField.getText(), true, row, column);
+					editor.stopCellEditing();
+				});
+				
+				JMenuItem cancelItem = new JMenuItem("Cancel");
+				
+				if(table.getSelectedRowCount() == 0 || column < 2){
+					title.setEnabled(false);
+					applyItem.setEnabled(false);
+					cancelItem.setEnabled(false);
+					editorTextField.setEnabled(false);
+				}
+				popupMenu.add(title);
+				popupMenu.add(editorTextField);
+				popupMenu.add(applyItem);
+				popupMenu.add(cancelItem);
+				
+				popupMenu.show(e.getComponent(), e.getX(), e.getY());
+			}
 			
 			@Override
 			public void mouseExited(MouseEvent e) {}
@@ -256,20 +310,9 @@ public class TableView extends JPanel{
 		/*
 		 *  Configure the column containing the path
 		 */
-		table.getColumn(COLUMN_PATH).setCellRenderer(new DefaultTableCellRenderer(){
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value,
-				      boolean isSelected, boolean hasFocus, int row, int column) {
-				JLabel comp = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				String text = comp.getText();
-				// Display only the name of the file, not the whole path
-				if(text.contains(File.separator)){
-					text = text.substring(text.lastIndexOf(File.separator) + 1);
-					comp.setText(text);
-				}
-				return comp;
-			}
-		});
+		showAbsolutePath(false);
+		
+		
 		
 		
 		
@@ -280,9 +323,65 @@ public class TableView extends JPanel{
 		this.add(scrollPane);
 	}
 	
-	public void addSong(String path){
+	public void showAbsolutePath(boolean bool){
+		if(bool){
+			table.getColumn(COLUMN_PATH).setCellRenderer(new DefaultTableCellRenderer());
+		}
+		else{
+			table.getColumn(COLUMN_PATH).setCellRenderer(new DefaultTableCellRenderer(){
+				@Override
+				public Component getTableCellRendererComponent(JTable table, Object value,
+					      boolean isSelected, boolean hasFocus, int row, int column) {
+					JLabel comp = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					String text = comp.getText();
+					// Display only the name of the file, not the whole path
+					text = text.substring(commonPathPrefix.length());
+					comp.setText(text);
+					return comp;
+				}
+			});
+		}
+		table.repaint();
+	}
+	
+	public void setValueForSelectedRowsInColumn(Object value, int column){
+		for(int row: table.getSelectedRows()){
+			table.setValueAt(value, row, column);
+		}
+	}
+	
+	public ListSelectionModel getSelectionModel(){
+		return table.getSelectionModel();
+	}
+	
+	public void findCommonPathPrefix(){
+		if(table == null || table.getRowCount() == 0){
+			commonPathPrefix = "";
+		}
+		else{
+			commonPathPrefix = (String) table.getValueAt(0, 1);
+			if(commonPathPrefix.contains(File.separator)){
+				commonPathPrefix = commonPathPrefix.substring(0, commonPathPrefix.lastIndexOf(File.separator) + 1);
+			}
+			for(int i = 1; i < table.getRowCount() && commonPathPrefix.length() > 0; i++){
+				String currentRow = ((String) table.getValueAt(i, 1));
+				while(!currentRow.startsWith(commonPathPrefix)){
+					commonPathPrefix = commonPathPrefix.substring(0, commonPathPrefix.length() - 1);
+				}
+			}
+		}
+	}
+	
+	public void addTrack(String path){
 		if(!containsInColumn(1, path)){
 			tableModel.addRow(new Object[]{null, path});
+		}
+	}
+	
+	public void removeSelectedRows(){
+		int[] selectedRows = table.getSelectedRows();
+		for(int i = selectedRows.length - 1; i >= 0; i--){
+			tableModel.removeRow(selectedRows[i]);
 		}
 	}
 	
@@ -316,7 +415,7 @@ public class TableView extends JPanel{
 	}
 	
 	public void addRow(Object[] rowData){
-		if(rowData.length < tableModel.getColumnCount()){
+		if(rowData[0] != null && rowData.length < table.getColumnModel().getColumnCount()){
 			Object[] newRowData = new Object[rowData.length + 1];
 			newRowData[0] = null;
 			for(int i = 0; i < rowData.length; i++){

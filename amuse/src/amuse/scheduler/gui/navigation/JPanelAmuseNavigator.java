@@ -60,8 +60,8 @@ public class JPanelAmuseNavigator extends JPanel implements NavigatorInterface {
         this.add(getBackButton());
         this.add(Box.createHorizontalGlue());
         this.add(getLoadButton());
-        this.add(Box.createHorizontalGlue());
         this.add(getSaveButton());
+        this.add(Box.createHorizontalGlue());
         this.add(getForwardButton());
         this.titleUpdater = titleUpdater;
     }

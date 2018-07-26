@@ -56,7 +56,6 @@ import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
-import amuse.interfaces.nodes.NodeException;
 import amuse.util.AmuseLogger;
 
 /**

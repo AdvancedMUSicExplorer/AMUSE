@@ -30,6 +30,9 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
+
 /**
  * AmuseLogger takes care of log messages
  * TODO add support for multiple listeners.
@@ -47,7 +50,18 @@ public class AmuseLogger {
 	 * Private constructor 
 	 */
 	private AmuseLogger() {
-		PropertyConfigurator.configure(System.getenv("AMUSEHOME") + File.separator + "log4j.properties");
+		boolean usingEnv = true;
+		if(System.getenv("AMUSEHOME") == null){
+			usingEnv = false;
+		}
+		PropertyConfigurator.configure(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "log4j.properties");
+		if(usingEnv){
+           	info(AmusePreferences.class.toString(), "Using the environment variable 'AMUSEHOME'");
+		}
+		else{
+			info(AmusePreferences.class.toString(), "Environment variable 'AMUSEHOME' was not found, setting the home to " + AmusePreferences.get(KeysStringValue.AMUSE_PATH));
+		}
+
 	}
 	
 	/**

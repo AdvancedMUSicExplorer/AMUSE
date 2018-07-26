@@ -346,8 +346,7 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 		@Override
 		public void refreshBounds() {
 			this.setBounds(new Rectangle((int) (entry.getStart() / secsPerPixel),
-					annotationController.getAttributeListModel().indexOf(entry.getAnnotationAttribute())
-							* DRAWHEIGHT_PER_ATTRIBUTE,
+					annotationController.getAttributeListModel().indexOf(entry.getAnnotationAttribute()) * DRAWHEIGHT_PER_ATTRIBUTE,
 					Math.max(2, (int) ((entry.getEnd() - entry.getStart()) / secsPerPixel)),
 					DRAWHEIGHT_PER_ATTRIBUTE));
 		}

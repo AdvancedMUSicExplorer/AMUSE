@@ -215,7 +215,7 @@ public class ExtractionController extends AbstractController {
 
         @Override
         public String getCaption() {
-            return "Feature Extraction";
+            return "Feature Extraction Configurator";
         }
     }
 }

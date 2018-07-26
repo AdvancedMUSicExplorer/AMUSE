@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 
 import javax.swing.RowFilter;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import amuse.data.io.DataSetAbstract;
@@ -142,8 +143,8 @@ public class MultipleFilesAnnotationController extends AbstractController{
 		annotationView.getTableView().setRowFilter(filter);
 	}
 
-	public void addSong(String absolutePath) {
-		annotationView.getTableView().addSong(absolutePath);
+	public void addTrack(String absolutePath) {
+		annotationView.getTableView().addTrack(absolutePath);
 	}
 	
 	public int getColumnCount(){
@@ -173,6 +174,15 @@ public class MultipleFilesAnnotationController extends AbstractController{
 	public void seekInMusic(double millis) {
 		musicPlayerModel.seek(millis);
 	}
+
+	public void removeSelectedTracks() {
+		annotationView.getTableView().removeSelectedRows();
+	}
+	
+	public void showAbsolutePath(boolean bool){
+		annotationView.getTableView().showAbsolutePath(bool);
+	}
+	
 
 	
 }

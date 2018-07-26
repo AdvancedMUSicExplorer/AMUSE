@@ -32,6 +32,9 @@ import java.util.logging.Logger;
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
 
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
+
 /**
  * This class loads on demand libraries which are integrated in AMUSE 
  * @author Igor Vatolkin
@@ -55,7 +58,7 @@ public class LibraryInitializer {
 	public static void initializeRapidMiner() throws Exception {
 		if(!rapidMinerInitialized) {
 			try {
-				String pathToRapidMinerHome = System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + "RapidMiner5";
+				String pathToRapidMinerHome = AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + "RapidMiner5";
 				pathToRapidMinerHome = pathToRapidMinerHome.replaceAll(File.separator + "+", File.separator); // Make sure there are no consecutive separators 
 				System.setProperty("rapidminer.home", pathToRapidMinerHome);
 				System.setProperty("rapidminer.init.weka", "true");

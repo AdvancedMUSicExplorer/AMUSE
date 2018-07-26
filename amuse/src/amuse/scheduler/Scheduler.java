@@ -27,15 +27,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.interfaces.scheduler.AmuseTaskStarter;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -45,6 +42,7 @@ import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysBooleanValue;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.pluginmanagement.PluginInstaller;
 import amuse.scheduler.pluginmanagement.PluginLoader;
 import amuse.scheduler.pluginmanagement.PluginRemover;
@@ -84,7 +82,7 @@ public class Scheduler implements Runnable {
 	private Scheduler() {
 		this.jobCounter = 0l;
 		try {
-			PluginLoader.loadPlugins(new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins"));
+			PluginLoader.loadPlugins(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins"));
 		} catch(SchedulerException e) {
 			AmuseLogger.write(schedulerInstance.getClass().getName(),Level.ERROR,"Could not load properly AMUSE plugins, further " +
 					"errors are possible (" + e.getMessage() + ")");
@@ -130,7 +128,7 @@ public class Scheduler implements Runnable {
 	 */
 	public void run() {
 		// Create input directory for logs of ready grid jobs
-		File inputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskinput");
+		File inputDir = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskinput");
 		if(!inputDir.exists()) {
 			if(!inputDir.mkdirs()) {
 				AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not create an input folder for task logs");
@@ -149,7 +147,7 @@ public class Scheduler implements Runnable {
 		} 
 		
 		// Create output directory for task configurations of ongoing grid jobs
-		File outputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskoutput");
+		File outputDir = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskoutput");
 		if(!outputDir.exists()) {
 			if(!outputDir.mkdirs()) {
 				AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not create an output folder for job configurations");
@@ -275,7 +273,7 @@ public class Scheduler implements Runnable {
 	 * Waits until all grid jobs belonging to one task are finished 
 	 */
 	private void waitForJobs(Long numberOfJobsToWaitFor) {
-		File inputDir = new File(System.getenv("AMUSEHOME") + File.separator + "taskinput");
+		File inputDir = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskinput");
 		
 		// Sleep and look up for finished jobs
 		boolean isReady = false;

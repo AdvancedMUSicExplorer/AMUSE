@@ -216,7 +216,7 @@ public class PluginInstaller {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the list with installed plugins: " + e.getMessage());
 		}
@@ -246,7 +246,7 @@ public class PluginInstaller {
 			DataSetAbstract requiredToolList;
 			try {
 				requiredToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 				// Go through all required tools and check if they are already installed
 				for(int i=0;i<requiredToolList.getValueCount();i++) {
@@ -283,8 +283,8 @@ public class PluginInstaller {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting copying of plugin jar...");
 		
 		File pathToPluginJar = new File(pathToPluginFolder + File.separator + installProperties.getProperty("PLUGIN_JAR"));
-		File pluginFolder = new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins" + File.separator + "");
-		File destination = new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins" + File.separator + installProperties.getProperty("PLUGIN_JAR"));
+		File pluginFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins" + File.separator + "");
+		File destination = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins" + File.separator + installProperties.getProperty("PLUGIN_JAR"));
 		
 		// Create folder for plugin jars if it does not exist
 		if(!pluginFolder.exists()) {
@@ -321,7 +321,7 @@ public class PluginInstaller {
 			HashMap<Integer,Integer> installedToolsMap = new HashMap<Integer,Integer>();
 			try {
 				newToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 				// Go through all installed tools
 				for(int j=0;j<installedToolList.getValueCount();j++) {
@@ -350,7 +350,7 @@ public class PluginInstaller {
 								newToolList.getAttribute("Name").getValueAt(currentId).toString() + "...");
 						
 						String toolFolder = newToolList.getAttribute("Folder").getValueAt(currentId).toString();
-						File destination = new File(System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + ""+ toolFolder);
+						File destination = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + ""+ toolFolder);
 						if(destination.exists()) {
 							throw new SchedulerException("Tool folder " + destination.getAbsolutePath() + 
 								" exists; please remove corresponding tool" + File.separator + "plugins at first!");
@@ -368,7 +368,7 @@ public class PluginInstaller {
 				// Overwrite the current AMUSE tool list with the new updated version
 				// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 				// e.g. comments for attributes etc. which will be written also!
-				DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+				DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 						File.separator + "config" + File.separator + "toolTableUpdated.arff")));
 				String sep = System.getProperty("line.separator");	
 				values_writer.writeBytes("% Table with installed tools" + sep);
@@ -444,8 +444,8 @@ public class PluginInstaller {
 				values_writer.close();
 				
 				// Replace toolTable with toolTableUpdated
-				FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
-						new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
+				FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
+						new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 			} catch(IOException e) {
 				throw new SchedulerException("Could not update the list with installed tools: " + e.getMessage());
@@ -470,8 +470,8 @@ public class PluginInstaller {
 				// TODO updateClassifierAlgorithmTable();
 			} else if(files[i].getName().equals("classifierPreprocessingAlgorithmTable.arff")) {
 				// TODO updateClassifierPreprocessingAlgorithmTable();
-			} else if(files[i].getName().equals("metricTable.arff")) {
-				// TODO updateMetricTable();
+			} else if(files[i].getName().equals("measureTable.arff")) {
+				// TODO updateMeasureTable();
 			} else if(files[i].getName().equals("processorAlgorithmTable.arff")) {
 				// TODO updateProcessorAlgorithmTable();
 			} else if(files[i].getName().equals("processorConversionAlgorithmTable.arff")) {
@@ -500,7 +500,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureList = new ArffDataSet(featureList);
-			installedFeatureList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
+			installedFeatureList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
 				
 			// Go through all installed features
 			for(int j=0;j<installedFeatureList.getValueCount();j++) {
@@ -528,7 +528,7 @@ public class PluginInstaller {
 			// Overwrite the current AMUSE feature list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "featureTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Table with all audio signal features available" + sep);
@@ -643,8 +643,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace featureTable with featureTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed features: " + e.getMessage());
@@ -669,7 +669,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureExtractorMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureExtractorList = new ArffDataSet(featureExtractorList);
-			installedFeatureExtractorList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			installedFeatureExtractorList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 				
 			// Go through all installed feature extractor tools
 			for(int j=0;j<installedFeatureExtractorList.getValueCount();j++) {
@@ -697,7 +697,7 @@ public class PluginInstaller {
 			// Overwrite the current AMUSE feature extractor list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureExtractorListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Feature extractors table" + sep);
@@ -776,8 +776,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace featureExtractorTable with featureExtractorTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with feature extractors: " + e.getMessage());
 		}
@@ -796,7 +796,7 @@ public class PluginInstaller {
 		// Key: plugin id; value: position in the DataSet
 		HashMap<Integer,Integer> installedPluginMap = new HashMap<Integer,Integer>();
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 			// Go through all installed plugins
 			for(int j=0;j<installedPluginList.getValueCount();j++) {
@@ -806,7 +806,7 @@ public class PluginInstaller {
 			// Overwrite the current AMUSE plugin list with the new updated version
 			// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "pluginTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");	
 			values_writer.writeBytes("% Table with installed plugins" + sep);
@@ -853,8 +853,8 @@ public class PluginInstaller {
 			values_writer.close();
 			
 			// Replace pluginTable with pluginTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed plugins: " + e.getMessage());
@@ -869,7 +869,7 @@ public class PluginInstaller {
 	private void saveDataForDeinstallation() throws SchedulerException {
 		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Saving data for deinstallation...");
 		
-		File destinationFolder = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + installProperties.getProperty("ID"));
+		File destinationFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + installProperties.getProperty("ID"));
 		if(!destinationFolder.exists()) {
 			destinationFolder.mkdirs();
 		}
@@ -898,9 +898,9 @@ public class PluginInstaller {
 			if(fileToCopy.exists()) {
 				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "classifierAlgorithmTable.arff"),Level.INFO);
 			}
-			fileToCopy = new File(pathToPluginFolder + File.separator + "metricTable.arff");
+			fileToCopy = new File(pathToPluginFolder + File.separator + "measureTable.arff");
 			if(fileToCopy.exists()) {
-				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "metricTable.arff"),Level.INFO);
+				FileOperations.copy(fileToCopy,new File(destinationFolder.getAbsolutePath() + File.separator + "measureTable.arff"),Level.INFO);
 			}
 			fileToCopy = new File(pathToPluginFolder + File.separator + "processorAlgorithmTable.arff");
 			if(fileToCopy.exists()) {

@@ -23,14 +23,14 @@
  */ 
 package amuse.nodes.validator;
 
-import amuse.data.Metric;
+import amuse.data.Measure;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.data.datasets.ValidatorConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
@@ -38,7 +38,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.GroundTruthSourceType;
-import amuse.nodes.validator.interfaces.ValidationMetric;
+import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -57,8 +57,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** ID of validation method (optionally with parameters listed in brackets) */
 	private final String validationAlgorithmDescription;
 	
-	/** Metric list, e.g. containing accuracy and precision */
-	private final MetricTable metrics;
+	/** Measure list, e.g. containing accuracy and precision */
+	private final MeasureTable measures;
 	
 	/** Description of methods used for feature processing for the search of 
 	 * according features in processed features DB */
@@ -80,16 +80,16 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Folder to load the classification model(s) from (default: Amuse model database) */
 	private String modelDatabase;
 	
-	/** Folder to store the classification validation results (default: Amuse metric database) */
-	private String metricDatabase;
+	/** Folder to store the classification validation results (default: Amuse measure database) */
+	private String measureDatabase;
 	
-	/** Calculated metrics are stored here after the corresponding validation task has been successfully applied */
-	private ArrayList<ValidationMetric> calculatedMetrics;
+	/** Calculated measures are stored here after the corresponding validation task has been successfully applied */
+	private ArrayList<ValidationMeasure> calculatedMeasures;
 	
 	/**
 	 * Standard constructor
 	 * @param validationAlgorithmDescription ID and parameters of validation method
-	 * @param metrics Metric list, e.g. containing accuracy and precision
+	 * @param measures Measure list, e.g. containing accuracy and precision
 	 * @param processedFeaturesModelName Description of methods used for feature processing
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
@@ -99,19 +99,19 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth 
 	 */
-	public ValidationConfiguration(String validationAlgorithmDescription, MetricTable metrics, 
+	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, 
 			String processedFeaturesModelName, String classificationAlgorithmDescription,
 			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
-		this.metrics = metrics;
+		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
-		this.metricDatabase = AmusePreferences.get(KeysStringValue.METRIC_DATABASE);
-		this.calculatedMetrics = new ArrayList<ValidationMetric>();
+		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
+		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
 	}
 	
 	/**
@@ -125,7 +125,7 @@ public class ValidationConfiguration extends TaskConfiguration {
    		// Proceed music file lists one by one
 	    for(int i=0;i<validatorConfig.getValueCount();i++) {
 			String currentValidationMethodId = validatorConfig.getValidationMethodIdAttribute().getValueAt(i).toString();
-			String currentMetricList = validatorConfig.getMetricListAttribute().getValueAt(i).toString();
+			String currentMeasureList = validatorConfig.getMeasureListAttribute().getValueAt(i).toString();
 			String currentProcessedFeaturesModelName = validatorConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
 			String currentClassificationAlgorithmDescription = validatorConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentInputToValidate = validatorConfig.getInputToValidateAttribute().getValueAt(i).toString();
@@ -148,11 +148,11 @@ public class ValidationConfiguration extends TaskConfiguration {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
 			
-			// Load the metric table
-			MetricTable currentMetricTable = new MetricTable(new File(currentMetricList));
+			// Load the measure table
+			MeasureTable currentMeasureTable = new MeasureTable(new File(currentMeasureList));
 			
 			// Create a classification task
-		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMetricTable, 
+		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
 		    		gtst));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
@@ -185,10 +185,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the metrics
+	 * @return the measures
 	 */
-	public MetricTable getMetrics() {
-		return metrics;
+	public MeasureTable getMeasures() {
+		return measures;
 	}
 
 	/**
@@ -236,18 +236,18 @@ public class ValidationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * Sets the path to folder to store the classification validation results (default: Amuse metric database)
-	 * @param metricDatabase Path to folder
+	 * Sets the path to folder to store the classification validation results (default: Amuse measure database)
+	 * @param measureDatabase Path to folder
 	 */
-	public void setMetricDatabase(String metricDatabase) {
-		this.metricDatabase = metricDatabase;
+	public void setMeasureDatabase(String measureDatabase) {
+		this.measureDatabase = measureDatabase;
 	}
 
 	/**
-	 * @return Folder to store the classification validation results (default: Amuse metric database)
+	 * @return Folder to store the classification validation results (default: Amuse measure database)
 	 */
-	public String getMetricDatabase() {
-		return metricDatabase;
+	public String getMeasureDatabase() {
+		return measureDatabase;
 	}
 	
 	/*
@@ -265,13 +265,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	public String getDescription() {
             int songLevel = 0;
             int partitionLevel = 0;
-            for (Metric m: metrics) {
+            for (Measure m: measures) {
                 if (m.isPartitionLevelSelected())
                     partitionLevel++;
                 if (m.isSongLevelSelected())
                     songLevel++;
             }
-        return new String("Input: " + inputToValidate.toString() + " Metric number: " + songLevel +"(Songlevel) " + partitionLevel+"(Partitionlevel)");
+        return new String("Input: " + inputToValidate.toString() + " Measure number: " + songLevel +"(Songlevel) " + partitionLevel+"(Partitionlevel)");
 	}
 
 	/**
@@ -296,17 +296,17 @@ public class ValidationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the calculatedMetrics
+	 * @return the calculatedMeasures
 	 */
-	public ArrayList<ValidationMetric> getCalculatedMetrics() {
-		return calculatedMetrics;
+	public ArrayList<ValidationMeasure> getCalculatedMeasures() {
+		return calculatedMeasures;
 	}
 
 	/**
-	 * @param calculatedMetrics the calculatedMetrics to set
+	 * @param calculatedMeasures the calculatedMeasures to set
 	 */
-	public void setCalculatedMetrics(ArrayList<ValidationMetric> calculatedMetrics) {
-		this.calculatedMetrics = calculatedMetrics;
+	public void setCalculatedMeasures(ArrayList<ValidationMeasure> calculatedMeasures) {
+		this.calculatedMeasures = calculatedMeasures;
 	}
 
 }

@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -88,13 +90,54 @@ public class AnnotationSelectionPanel extends JSplitPane {
 		 * Assembling
 		 */
 		JSplitPane entrySplitPane = new JSplitPane(HORIZONTAL_SPLIT, attributeEntryListPanel, attributeEntryPanel);
-		entrySplitPane.setDividerLocation(0.5);
-		entrySplitPane.setResizeWeight(0.5);
+		entrySplitPane.setResizeWeight(0.3);
+		
+		
+		// To set the initial divider location, the JSplitPane must be visible.
+		entrySplitPane.addComponentListener(new ComponentListener() {
+			
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e) {
+				setDividerLocation(0.3);
+				removeComponentListener(this); //The divider location must only set once
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e) {}
+			
+			@Override
+			public void componentHidden(ComponentEvent e) {}
+		});
 
 		this.setLeftComponent(attributeListPanel);
 		this.setRightComponent(entrySplitPane);
-		this.setDividerLocation(0.33);
-		this.setResizeWeight(0.33);
+		
+		this.setResizeWeight(0.3);
+		
+		
+		// To set the initial divider location, the JSplitPane must be visible.
+		this.addComponentListener(new ComponentListener() {
+			
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e) {
+				setDividerLocation(0.3);
+				removeComponentListener(this); //The divider location must only set once
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e) {}
+			
+			@Override
+			public void componentHidden(ComponentEvent e) {}
+		});
 	}
 
 
@@ -127,6 +170,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 					annotationController.removeAttribute(att);
 				}
 				attributeList.repaint();
+				attributeList.clearSelection();
 				((AnnotationView) annotationController.getView()).resizePanels();
 			}
 
@@ -145,6 +189,9 @@ public class AnnotationSelectionPanel extends JSplitPane {
 			if(selectedAttribute != null){
 				attributeEntryList.setModel((DefaultListModel) selectedAttribute.getEntryList());
 				selectAttributeEntryAtTime(annotationController.getCurrentMs());
+			}
+			else{
+				attributeEntryList.setModel(new DefaultListModel());
 			}
 
 		});

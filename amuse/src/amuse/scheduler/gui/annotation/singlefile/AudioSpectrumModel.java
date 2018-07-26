@@ -13,6 +13,7 @@ import org.apache.log4j.Level;
 
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysIntValue;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 import amuse.util.audio.AudioFileConversion;
@@ -52,7 +53,7 @@ public class AudioSpectrumModel {
 	
 	private File convertFileToWAV(File musicFile) throws IOException{
 		try {
-			String musicFilePath = System.getenv("AMUSEHOME") 
+			String musicFilePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH)
 					+ File.separator 
 					+ "config" 
 					+ File.separator 

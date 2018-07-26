@@ -31,18 +31,25 @@ import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.controller.WizardController;
 import amuse.scheduler.gui.controller.WizardControllerInterface;
+import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.navigation.HasCaption;
+import amuse.scheduler.gui.navigation.HasLoadButton;
+import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -51,6 +58,7 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableModel;
 import net.miginfocom.swing.MigLayout;
 
@@ -58,7 +66,7 @@ import net.miginfocom.swing.MigLayout;
  *
  * @author waeltken
  */
-public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable{
+public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton{
     private JTable tblTasks;
     private JScrollPane scpTaks;
     private JButton btnAddTask = new JButton("+");
@@ -90,35 +98,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         tblTasks.getColumnModel().getColumn(0).setMaxWidth(30);
         tblTasks.getColumnModel().getColumn(1).setMinWidth(200);
         tblTasks.getColumnModel().getColumn(1).setMaxWidth(200);
-        btnAddTask.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPopupMenu();
-            }
-        });
-        btnRemoveTask.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                removeSelected();
-            }
-        });
-        btnUp.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveUp();
-            }
-        });
-        btnDown.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moveDown();
-            }
-        });
+        
+        btnAddTask.addActionListener(e -> showPopupMenu());
+        btnRemoveTask.addActionListener(e -> removeSelected());
+        btnUp.addActionListener(e -> moveUp());
+        btnDown.addActionListener(e -> moveDown());
         tblTasks.addMouseListener(new TableClickListener());
+        
         add(scpTaks, "spany 4, spanx 2, push, grow");
         add(btnAddTask, "wrap, bottom, sg buttons");
         add(btnRemoveTask, "wrap, sg buttons");
@@ -224,7 +210,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
     @Override
     public String getCaption() {
-        return "Manage Experiments";
+        return "Experiment Configurator";
     }
 
     @Override
@@ -235,12 +221,12 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
     @Override
     public String getNextButtonText() {
-        return "Start Tasks";
+        return "Start Experiment";
     }
 
     private void startTasks() {
-	List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
-	wizard.startTasks(tasks);
+		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
+		wizard.startTasks(tasks);
     }
 
     public void addExperiment(TaskConfiguration ex) {
@@ -433,4 +419,40 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         public void mouseExited(MouseEvent e) {
         }
     }
+
+	@Override
+	public String getSaveButtonText() {
+		return "Save Experiment";
+	}
+
+	@Override
+	public void saveButtonClicked() {
+
+        JFileChooser fc = new SelectArffFileChooser("Classification Task", new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File selectedFile = fc.getSelectedFile();
+        if(!selectedFile.getAbsolutePath().endsWith(".arff")){
+        	selectedFile = new File(selectedFile.getAbsoluteFile() + ".arff");
+        }
+		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
+		wizard.saveTasks(tasks, selectedFile);
+		
+	}
+
+	@Override
+	public String getLoadButtonText() {
+		return "Load Experiment";
+	}
+
+	@Override
+	public void loadButtonClicked() {
+		JFileChooser fc = new SelectArffFileChooser("Classification Task", new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File selectedFile = fc.getSelectedFile();
+        wizard.loadTasks(selectedFile);
+	}
 }

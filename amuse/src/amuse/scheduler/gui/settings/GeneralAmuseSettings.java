@@ -63,7 +63,7 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		settings.add(new PathSelectionPanel("Processed Feature Database", KeysStringValue.PROCESSED_FEATURE_DATABASE));
 		settings.add(new PathSelectionPanel("Category Database", KeysStringValue.CATEGORY_DATABASE));
 		settings.add(new PathSelectionPanel("Model Database", KeysStringValue.MODEL_DATABASE));
-		settings.add(new PathSelectionPanel("Metric Database", KeysStringValue.METRIC_DATABASE));
+		settings.add(new PathSelectionPanel("Measure Database", KeysStringValue.MEASURE_DATABASE));
 		settings.add(new PathSelectionPanel("Optimization Database", KeysStringValue.OPTIMIZATION_DATABASE));
 		for (EditableAmuseSettingInterface singlePref : settings) {
 			internalPanel.add(singlePref.getPanel());

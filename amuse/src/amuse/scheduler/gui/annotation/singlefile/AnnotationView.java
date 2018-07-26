@@ -148,7 +148,7 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 
 	@Override
 	public String getCaption() {
-		return "Annotation Editor";
+		return "Single File Annotation Editor";
 	}
 
 	@Override

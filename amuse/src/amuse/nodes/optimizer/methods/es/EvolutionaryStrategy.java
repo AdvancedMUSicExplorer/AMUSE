@@ -36,7 +36,7 @@ import org.apache.log4j.Level;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.NodeException;
@@ -50,7 +50,7 @@ import amuse.nodes.optimizer.methods.es.operators.selection.HypervolumeSelection
 import amuse.nodes.optimizer.methods.es.operators.selection.PlusSelection;
 import amuse.nodes.optimizer.methods.es.operators.selection.interfaces.SelectionInterface;
 import amuse.nodes.optimizer.methods.es.representation.interfaces.RepresentationInterface;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -81,16 +81,16 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	boolean logOffspringPopulationRepresentations = false;
 	boolean logOffspringPopulationFitness = true;
 	boolean logOffspringPopulationFitnessOnTestSet = false;
-	// FIXME Incompatible for MOO! Must be removed since metric optimization direction is now saved in metric!
-	public boolean isMinimizingFitness = true; // As a default, metric values (fitness) are minimized by optimization
+	// FIXME Incompatible for MOO! Must be removed since measure optimization direction is now saved in measure!
+	public boolean isMinimizingFitness = true; // As a default, measure values (fitness) are minimized by optimization
 	
 	/** ES populations */
 	public ESIndividual[] population;
-	public ValidationMetricDouble[][] populationFitnessValues;
-	public ValidationMetricDouble[][] populationFitnessValuesOnTestSet;
+	public ValidationMeasureDouble[][] populationFitnessValues;
+	public ValidationMeasureDouble[][] populationFitnessValuesOnTestSet;
 	public ESIndividual[] offspringPopulation;
-	public ValidationMetricDouble[][] offspringPopulationFitnessValues;
-	public ValidationMetricDouble[][] offspringPopulationFitnessValuesOnTestSet;
+	public ValidationMeasureDouble[][] offspringPopulationFitnessValues;
+	public ValidationMeasureDouble[][] offspringPopulationFitnessValuesOnTestSet;
 	SelectionInterface selectionOperator;
 	public int numberOfFitnessValues;
 	
@@ -338,17 +338,17 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			List<MutationInterface> mutationsToProceed) throws NodeException {
 		
 		// Load the current fitness
-		ValidationMetricDouble[] currentFitness = new ValidationMetricDouble[numberOfFitnessValues];
+		ValidationMeasureDouble[] currentFitness = new ValidationMeasureDouble[numberOfFitnessValues];
 		for(int i=0;i<numberOfFitnessValues;i++) {
-			currentFitness[i] = new ValidationMetricDouble();
+			currentFitness[i] = new ValidationMeasureDouble();
 			currentFitness[i].setValue(new Double(offspringPopulationFitnessValues[offspringNumber][i].getValue()));
 			currentFitness[i].setName(offspringPopulationFitnessValues[offspringNumber][i].getName());
 		}
 		
 		// Load the current fitness for the test set
-		ValidationMetricDouble[] currentFitnessOnTestSet = new ValidationMetricDouble[numberOfFitnessValues];
+		ValidationMeasureDouble[] currentFitnessOnTestSet = new ValidationMeasureDouble[numberOfFitnessValues];
 		for(int i=0;i<numberOfFitnessValues;i++) {
-			currentFitnessOnTestSet[i] = new ValidationMetricDouble();
+			currentFitnessOnTestSet[i] = new ValidationMeasureDouble();
 			if(isIndependentTestSetUsed) {
 				currentFitnessOnTestSet[i].setValue(new Double(offspringPopulationFitnessValuesOnTestSet[offspringNumber][i].getValue()));
 				currentFitnessOnTestSet[i].setName(offspringPopulationFitnessValuesOnTestSet[offspringNumber][i].getName());
@@ -378,8 +378,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 				mutationsToProceed.get(1).mutate(candidate.getRepresentationList().get(representationToProceed));
 			}
 					
-			ValidationMetricDouble[] newFitness = candidate.getFitness();
-			ValidationMetricDouble[] newFitnessOnTestSet = new ValidationMetricDouble[newFitness.length]; 
+			ValidationMeasureDouble[] newFitness = candidate.getFitness();
+			ValidationMeasureDouble[] newFitnessOnTestSet = new ValidationMeasureDouble[newFitness.length]; 
 			if(isIndependentTestSetUsed) {
 				newFitnessOnTestSet = candidate.getFitnessOnIndependentTestSet();
 			}
@@ -435,15 +435,15 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		
 		// Should the fitness value be minimized or maximized?
 		try {
-			MetricTable metricTable = new MetricTable(new File(esConfiguration.getConstantParameterByName("Metric table").
+			MeasureTable measureTable = new MeasureTable(new File(esConfiguration.getConstantParameterByName("Measure table").
 				getAttributes().getNamedItem("fileValue").getNodeValue()));
-			if(metricTable.get(0).getOptimalValue() == 1d || metricTable.get(0).getOptimalValue() == Double.MAX_VALUE ||
-					metricTable.get(0).getOptimalValue() == Double.POSITIVE_INFINITY) {
+			if(measureTable.get(0).getOptimalValue() == 1d || measureTable.get(0).getOptimalValue() == Double.MAX_VALUE ||
+					measureTable.get(0).getOptimalValue() == Double.POSITIVE_INFINITY) {
 				isMinimizingFitness = false;
 			}
-			numberOfFitnessValues = metricTable.size(); 
+			numberOfFitnessValues = measureTable.size(); 
 		} catch(IOException e) {
-			throw new NodeException("Could not load the metric table: " + e.getMessage());
+			throw new NodeException("Could not load the measure table: " + e.getMessage());
 		}
 		
 		// Set the population sizes
@@ -467,12 +467,12 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			throw new NodeException("Could not parse the population strategy description");
 		}
 		population = new ESIndividual[popSize];
-		populationFitnessValues = new ValidationMetricDouble[popSize][numberOfFitnessValues];
+		populationFitnessValues = new ValidationMeasureDouble[popSize][numberOfFitnessValues];
 		offspringPopulation = new ESIndividual[offspringPopSize];
-		offspringPopulationFitnessValues = new ValidationMetricDouble[offspringPopSize][numberOfFitnessValues];
+		offspringPopulationFitnessValues = new ValidationMeasureDouble[offspringPopSize][numberOfFitnessValues];
 		if(isIndependentTestSetUsed) {
-			populationFitnessValuesOnTestSet = new ValidationMetricDouble[popSize][numberOfFitnessValues];
-			offspringPopulationFitnessValuesOnTestSet = new ValidationMetricDouble[offspringPopSize][numberOfFitnessValues];
+			populationFitnessValuesOnTestSet = new ValidationMeasureDouble[popSize][numberOfFitnessValues];
+			offspringPopulationFitnessValuesOnTestSet = new ValidationMeasureDouble[offspringPopSize][numberOfFitnessValues];
 		}
 		
 		// Set the crossover operators
@@ -683,16 +683,16 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		esLogger.logString("@RELATION 'Optimization results'" + esLogger.sep);
 		
 		// Load the names of fitness values
-		MetricTable metricTable;
+		MeasureTable measureTable;
 		try {
-			metricTable = new MetricTable(new File(esConfiguration.getConstantParameterByName("Metric table").
+			measureTable = new MeasureTable(new File(esConfiguration.getConstantParameterByName("Measure table").
 				getAttributes().getNamedItem("fileValue").getNodeValue()));
 		} catch(IOException e) {
-			throw new NodeException("Could not load the metric table: " + e.getMessage());
+			throw new NodeException("Could not load the measure table: " + e.getMessage());
 		}
 		String[] fitnessValueNames = new String[numberOfFitnessValues];
 		for(int i=0;i<numberOfFitnessValues;i++) {
-			fitnessValueNames[i] = new String(metricTable.get(i).getName());
+			fitnessValueNames[i] = new String(measureTable.get(i).getName());
 		}
 		
 		// Output the current generation number
@@ -876,12 +876,12 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		return esConfiguration;
 	}
 	
-	public ValidationMetricDouble[] fitnessOf(int individualNumber) {
+	public ValidationMeasureDouble[] fitnessOf(int individualNumber) {
 		return individualNumber < popSize ? populationFitnessValues[individualNumber] : 
 			offspringPopulationFitnessValues[individualNumber - popSize];
 	}
 	
-	public ValidationMetricDouble[] fitnessOfTestSet(int individualNumber) {
+	public ValidationMeasureDouble[] fitnessOfTestSet(int individualNumber) {
 		return individualNumber < popSize ? populationFitnessValuesOnTestSet[individualNumber] : 
 			offspringPopulationFitnessValuesOnTestSet[individualNumber - popSize];
 	}

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import amuse.nodes.optimizer.methods.es.ESIndividual;
 import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
 import amuse.nodes.optimizer.methods.es.operators.selection.interfaces.AbstractSelection;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
 /**
  * (+)-strategy: select candidates for new population from both parent and offspring population
@@ -92,17 +92,17 @@ public class PlusSelection extends AbstractSelection {
 		
 		// Replace parent population
 		ESIndividual[] newPopulation = new ESIndividual[correspondingES.popSize];
-		ValidationMetricDouble[][] newPopulationFitnessValues = new ValidationMetricDouble[correspondingES.popSize][correspondingES.numberOfFitnessValues];
-		ValidationMetricDouble[][] newPopulationFitnessValuesOnTestSet = new ValidationMetricDouble[correspondingES.popSize][correspondingES.numberOfFitnessValues];
+		ValidationMeasureDouble[][] newPopulationFitnessValues = new ValidationMeasureDouble[correspondingES.popSize][correspondingES.numberOfFitnessValues];
+		ValidationMeasureDouble[][] newPopulationFitnessValuesOnTestSet = new ValidationMeasureDouble[correspondingES.popSize][correspondingES.numberOfFitnessValues];
 		for(int i=0;i<correspondingES.popSize;i++) {
 			ESIndividual newParent = (sortedIndividuals.get(i) < correspondingES.popSize) ? 
 					correspondingES.population[sortedIndividuals.get(i)].clone() : 
 					correspondingES.offspringPopulation[sortedIndividuals.get(i) - correspondingES.popSize].clone();
-			ValidationMetricDouble[] newFitness = correspondingES.fitnessOf(sortedIndividuals.get(i));
+			ValidationMeasureDouble[] newFitness = correspondingES.fitnessOf(sortedIndividuals.get(i));
 			newPopulation[i] =  newParent;
 			newPopulationFitnessValues[i] = newFitness;
 			if(correspondingES.isIndependentTestSetUsed) {
-				ValidationMetricDouble[] newFitnessOnTestSet = correspondingES.fitnessOfTestSet(sortedIndividuals.get(i));
+				ValidationMeasureDouble[] newFitnessOnTestSet = correspondingES.fitnessOfTestSet(sortedIndividuals.get(i));
 				newPopulationFitnessValuesOnTestSet[i] = newFitnessOnTestSet;
 			}
 		}

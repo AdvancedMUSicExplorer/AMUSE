@@ -212,7 +212,7 @@ public class ClassifierController extends AbstractController {
          */
         @Override
         public String getCaption() {
-            return "Select Music Files to Classify";
+            return "Classification Configurator - Select Music Files to Classify";
         }
 
         /* (non-Javadoc)
