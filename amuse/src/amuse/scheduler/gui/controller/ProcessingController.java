@@ -227,7 +227,7 @@ public class ProcessingController extends AbstractController {
 
         @Override
         public String getCaption() {
-            return "Feature Processing";
+            return "Feature Processing Configurator";
         }
 
         @Override

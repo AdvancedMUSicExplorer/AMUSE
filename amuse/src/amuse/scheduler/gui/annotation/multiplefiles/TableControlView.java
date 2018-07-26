@@ -3,8 +3,6 @@ package amuse.scheduler.gui.annotation.multiplefiles;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -25,6 +24,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
@@ -32,6 +32,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.DefaultListSelectionModel;
 
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -46,14 +47,14 @@ import net.miginfocom.swing.MigLayout;
 public class TableControlView extends JPanel{
 	
 	MultipleFilesAnnotationController annotationController;
-	JButton addAttributeButton;
 	
-	public TableControlView(MultipleFilesAnnotationController annotationController){
+	public TableControlView(MultipleFilesAnnotationController annotationController, ListSelectionModel selectionModel){
 		super();
+		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 		this.annotationController = annotationController;
 		
-		JButton addSongButton = new JButton("Add Track(s)");
-		addSongButton.addActionListener(e -> {
+		JButton addTrackButton = new JButton("Add Track(s)");
+		addTrackButton.addActionListener(e -> {
 			JFileChooser fileChooser = new JFileChooser();
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 			fileChooser.setMultiSelectionEnabled(true);
@@ -73,17 +74,54 @@ public class TableControlView extends JPanel{
 						this.addFolder(file, recursiveCheckBox.isSelected());
 					}
 					else{
-						this.annotationController.addSong(file.getAbsolutePath());
+						this.annotationController.addTrack(file.getAbsolutePath());
 					}
 				}
 				
 			}
 		});
 		
-		addAttributeButton = new JButton("Add Annotation");
+		
+		
+		JButton removeTracksButton = new JButton ("Remove Selected Track(s)");
+		removeTracksButton.addActionListener(e -> {
+			if(JOptionPane.YES_OPTION == 
+					JOptionPane.showConfirmDialog(null,
+					"Do you really want to delete all selected rows and its content?",
+					"Remove Rows", 
+					JOptionPane.YES_NO_OPTION, 
+					JOptionPane.QUESTION_MESSAGE)){
+				this.annotationController.removeSelectedTracks();
+				
+			}
+		});
+		removeTracksButton.setEnabled(false);
+		
+		selectionModel.addListSelectionListener(e -> {
+			if(!e.getValueIsAdjusting()){
+				if(((DefaultListSelectionModel) e.getSource()).getMaxSelectionIndex() >= 0){
+					removeTracksButton.setEnabled(true);
+				}
+				else{
+					removeTracksButton.setEnabled(false);
+				}
+			}
+		});
+		
+		JButton addAttributeButton = new JButton("Add Annotation");
 		addAttributeButton.addActionListener(e -> showAddAttributeDialog("Adding a new Attribute"));
 		
-		this.add(addSongButton);
+		JCheckBox showAbsolutePathCheckBox = new JCheckBox("Show Absolute Path", false);
+		showAbsolutePathCheckBox.addActionListener(e -> {
+			annotationController.showAbsolutePath(showAbsolutePathCheckBox.isSelected());
+		});
+		
+		
+		this.add(showAbsolutePathCheckBox);
+		this.add(Box.createRigidArea(new Dimension(30, 10)));
+		this.add(addTrackButton);
+		this.add(removeTracksButton);
+		this.add(Box.createRigidArea(new Dimension(30, 10)));
 		this.add(addAttributeButton);
 	}
 	
@@ -95,13 +133,13 @@ public class TableControlView extends JPanel{
 						depth,
 						(filePath, fileAttr) -> fileAttr.isRegularFile() 
 											&& (filePath.toString().endsWith(".mp3") 
-											|| filePath.toString().endsWith(".wav"))).forEach((Path path) -> annotationController.addSong(path.toString()));
+											|| filePath.toString().endsWith(".wav"))).forEach((Path path) -> annotationController.addTrack(path.toString()));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		else{
-			annotationController.addSong(file.getAbsolutePath());
+			annotationController.addTrack(file.getAbsolutePath());
 		}
 	}
 

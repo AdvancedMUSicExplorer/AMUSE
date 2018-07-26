@@ -215,9 +215,9 @@ public class FilterView extends JPanel{
 				int columnIndice = columnIndiceList.get(i);
 				switch(conditionType){
 				case CONTAINS:	condition = ".*" + condition + ".*"; break;
-				case ENDS_WITH: condition = ".*" + condition; break;
-				case STARTS_WITH: condition = condition + ".*"; break;
-				case IS: break; // for the conditionType COND_IS, the condition does not need to be altered.
+				case ENDS_WITH: condition = ".*" + condition + "$"; break;
+				case STARTS_WITH: condition = "^" + condition + ".*"; break;
+				case IS: condition = "^" + condition + "$"; break; // for the conditionType COND_IS, the condition does not need to be altered.
 				}
 				
 				if(!caseSensitive){
@@ -269,10 +269,24 @@ public class FilterView extends JPanel{
 			annotationController.setRowFilter(filter);
 		});
 		
+		
+		JCheckBox enableFilteringCheckBox = new JCheckBox("Enable Filtering", true);
+		enableFilteringCheckBox.addActionListener(e -> {
+			if(enableFilteringCheckBox.isSelected()){
+				applyButton.setEnabled(true);
+				applyButton.doClick();
+			}
+			else{
+				applyButton.setEnabled(false);
+				annotationController.setRowFilter(null);
+			}
+		});
+		
 		JPanel controlPanel = new JPanel();
 		controlPanel.add(invertSelectionCheckBox);
 		controlPanel.add(addConditionButton);
 		controlPanel.add(applyButton);
+		controlPanel.add(enableFilteringCheckBox);
 		
 		this.add(new JScrollPane(conditionsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), "push, grow");
 		this.add(controlPanel, "pushx, growx");

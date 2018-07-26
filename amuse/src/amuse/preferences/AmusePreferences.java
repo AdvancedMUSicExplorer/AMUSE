@@ -26,6 +26,7 @@ package amuse.preferences;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Vector;
 
 import org.apache.log4j.Level;
@@ -47,7 +48,17 @@ public class AmusePreferences {
         if (prefs != null)
             return;
         try {
-            prefs = new PropertyFileAdapter();
+        	String path = System.getenv("AMUSEHOME");
+        	if(path == null){
+        		try {
+        			path = Level.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+        			path = new File(path).getParentFile().getParent();
+        		} catch (URISyntaxException e) {
+        			e.printStackTrace();
+        		}
+        	}
+            prefs = new PropertyFileAdapter(new File(path + File.separator + "config" + File.separator + "amuse.properties"));
+           	put(KeysStringValue.AMUSE_PATH, path);
         } catch (Exception e) {
             throw new RuntimeException("Could not load the preferences: " + e.getMessage());
         }

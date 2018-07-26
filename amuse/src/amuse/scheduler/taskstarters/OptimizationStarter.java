@@ -86,7 +86,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 	   	   		FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
+	   	   			fos = new FileOutputStream(new String(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(optimizerConfig);
@@ -129,7 +129,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 	   	    	OptimizationConfiguration optimizerConfig = (OptimizationConfiguration)taskConfiguration[i];
 				OptimizerNodeScheduler optimizerThread = null;
 				try {
-					optimizerThread = new OptimizerNodeScheduler(System.getenv("AMUSEHOME") + 
+					optimizerThread = new OptimizerNodeScheduler(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 							File.separator + "config" + File.separator + "node" + File.separator + 
 							"optimizer" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
@@ -137,7 +137,7 @@ public class OptimizationStarter extends AmuseTaskStarter {
 				}
 	
 			    // Prepare optimizer node scheduler arguments and start it as thread
-	   	    	optimizerThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + 
+	   	    	optimizerThread.setThreadParameters(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + 
 	   	    			File.separator + "node" + File.separator + "optimizer", this.jobCounter, optimizerConfig);
 			    Thread newOptimizerThread = new Thread(optimizerThread);
 			    // TODO Timeout einbauen

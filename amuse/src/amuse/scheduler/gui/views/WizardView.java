@@ -34,9 +34,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -46,6 +43,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
+
+import org.apache.log4j.Logger;
 
 
 /**
@@ -103,18 +102,14 @@ public class WizardView {
 		experimentsPanel.setBorder(new TitledBorder("Experiments"));
 		
 		// Adding buttons to the main screen
-		JButton buttonCreateExperiment = new JButton("Create Amuse Experiments");
+		JButton buttonCreateExperiment = new JButton("Create Amuse Experiment");
 		buttonCreateExperiment.addActionListener(e -> showCreateExperimentPane());
 
 	    JButton buttonLoadExperiment = new JButton("Load Amuse Experiment");
-	    buttonLoadExperiment.addActionListener(new ActionListener() {
-	    	@Override
-	    	public void actionPerformed(ActionEvent e) {
-	    		throw new UnsupportedOperationException("Not yet implemented1");
-	    	}
+	    buttonLoadExperiment.addActionListener(e -> {
+	    	TaskManagerView.getInstance().loadButtonClicked();
+	    	buttonCreateExperiment.doClick();
 	    });
-	    buttonLoadExperiment.setEnabled(false);
-	    
 	    
 	    JButton buttonAmuseSettings = new JButton("Edit Amuse Settings");
 	    buttonAmuseSettings.addActionListener(e -> wizardController.goToSettings());
@@ -124,10 +119,10 @@ public class WizardView {
 		annotationPanel.setLayout(new BoxLayout(annotationPanel, BoxLayout.PAGE_AXIS));
 		annotationPanel.setBorder(new TitledBorder("Annotation"));
 		
-	    JButton buttonSingleAnnotation = new JButton("Create Annotation"); 
+	    JButton buttonSingleAnnotation = new JButton("Create Single Track Annotation"); 
 	    buttonSingleAnnotation.addActionListener(e -> wizardController.goToSingleFileAnnotationEditor());
 	    
-	    JButton buttonMultipleAnnotation = new JButton("Multiple Annotations");
+	    JButton buttonMultipleAnnotation = new JButton("Create Multiple Tracks Annotation");
 	    buttonMultipleAnnotation.addActionListener(e -> wizardController.goToMultipleFilesAnnotationEditor());
 
 	    // Adding all together

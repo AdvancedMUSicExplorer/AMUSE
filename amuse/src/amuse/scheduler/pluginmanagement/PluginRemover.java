@@ -27,7 +27,8 @@ import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.plugins.PluginInstallerInterface;
 import amuse.interfaces.scheduler.SchedulerException;
-
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 import amuse.util.JarClassLoader;
@@ -81,7 +82,7 @@ public class PluginRemover {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Starting plugin removal..........");
 		
 		try {
-			FileInputStream propertiesInput = new FileInputStream(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator +
+			FileInputStream propertiesInput = new FileInputStream(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator +
 					pluginToRemoveId.toString() + File.separator + "plugin.properties");
 			this.removeProperties.load(propertiesInput);
 		} catch(IOException e) {
@@ -137,7 +138,7 @@ public class PluginRemover {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the list with installed plugins: " + e.getMessage());
 		}
@@ -164,12 +165,12 @@ public class PluginRemover {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 			// Overwrite the current AMUSE plugin list with the new updated version
 			// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					 File.separator + "config" + File.separator + "pluginTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");	
 			values_writer.writeBytes("% Table with installed plugins" + sep);
@@ -197,8 +198,8 @@ public class PluginRemover {
 			values_writer.close();
 			
 			// Replace pluginTable with pluginTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "pluginTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
 				
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed plugins: " + e.getMessage());
@@ -213,7 +214,7 @@ public class PluginRemover {
 	private void removePluginJar() throws SchedulerException {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Deleting the plugin jar...");
 		
-		File pathToPluginJar = new File(System.getenv("AMUSEHOME") + File.separator + "lib" + File.separator + "plugins" + File.separator + removeProperties.getProperty("PLUGIN_JAR"));
+		File pathToPluginJar = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins" + File.separator + removeProperties.getProperty("PLUGIN_JAR"));
 		
 		// Remove plugin jar
 		if(pathToPluginJar.exists()) {
@@ -234,12 +235,12 @@ public class PluginRemover {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Starting tool removal and tool list update...");
 		
 		try {
-			DataSetAbstract installedToolList = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
+			DataSetAbstract installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
 				
 			// Overwrite the current AMUSE tool list with the new updated version
 			// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "toolTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");	
 			values_writer.writeBytes("% Table with installed tools" + sep);
@@ -281,7 +282,7 @@ public class PluginRemover {
 				} else {
 					
 					// Remove the tool folder with all contents
-					FileOperations.delete(new File(System.getenv("AMUSEHOME") + File.separator + "tools" + File.separator + 
+					FileOperations.delete(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + 
 							installedToolList.getAttribute("Folder").getValueAt(i).toString()), true, Level.INFO);
 				}
 					
@@ -290,8 +291,8 @@ public class PluginRemover {
 			values_writer.close();
 			
 			// Replace toolTable with toolTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "toolTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not remove the tools: " + e.getMessage());
 		}
@@ -304,7 +305,7 @@ public class PluginRemover {
 	 * TODO Since currently available plugins are only for feature extraction, not all tables are updated!
 	 */
 	private void updateAlgorithmTables() throws SchedulerException {
-		File[] files = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID")).listFiles();
+		File[] files = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID")).listFiles();
 		for(int i=0;i<files.length;i++) {
 			if(files[i].getName().equals("featureTable.arff")) {
 				updateFeatureTable();
@@ -314,8 +315,8 @@ public class PluginRemover {
 				// TODO updateClassifierAlgorithmTable();
 			} else if(files[i].getName().equals("classifierPreprocessingAlgorithmTable.arff")) {
 				// TODO updateClassifierPreprocessingAlgorithmTable();
-			} else if(files[i].getName().equals("metricTable.arff")) {
-				// TODO updateMetricTable();
+			} else if(files[i].getName().equals("measureTable.arff")) {
+				// TODO updateMeasureTable();
 			} else if(files[i].getName().equals("processorAlgorithmTable.arff")) {
 				// TODO updateProcessorAlgorithmTable();
 			} else if(files[i].getName().equals("processorConversionAlgorithmTable.arff")) {
@@ -337,7 +338,7 @@ public class PluginRemover {
 		try {
 		
 			// Set with features to remove
-			DataSetAbstract featureSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + 
+			DataSetAbstract featureSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + 
 					File.separator + "featureTable.arff"));
 			
 			// List with ids of feature to remove
@@ -348,12 +349,12 @@ public class PluginRemover {
 			Collections.sort(sortedFeatureIds);
 			
 			// Set with all installed features
-			DataSetAbstract installedFeatureSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
+			DataSetAbstract installedFeatureSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
 			
 			// Overwrite the current AMUSE feature list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "featureTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Table with all audio signal features available" + sep);
@@ -423,8 +424,8 @@ public class PluginRemover {
 			values_writer.close();
 			
 			// Replace featureTable with featureTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed features: " + e.getMessage());
@@ -442,7 +443,7 @@ public class PluginRemover {
 		try {
 		
 			// Set with features to remove
-			DataSetAbstract featureExtractorSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + 
+			DataSetAbstract featureExtractorSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + 
 					removeProperties.getProperty("ID") + File.separator + "featureExtractorToolTable.arff"));
 			
 			// List with ids of feature extractors to remove
@@ -453,12 +454,12 @@ public class PluginRemover {
 			Collections.sort(sortedExtractorIds);
 			
 			// Set with all installed feature extractors
-			DataSetAbstract installedExtractorSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			DataSetAbstract installedExtractorSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 			
 			// Overwrite the current AMUSE feature list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
 			// e.g. comments for attributes etc. which will be written also!
-			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(System.getenv("AMUSEHOME") + 
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff")));
 			String sep = System.getProperty("line.separator");
 			values_writer.writeBytes("% Feature extractors table" + sep);
@@ -499,8 +500,8 @@ public class PluginRemover {
 			values_writer.close();
 			
 			// Replace featureExtractorTable with featureExtractorTableUpdated
-			FileOperations.move(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
-					new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
+					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed feature extractors: " + e.getMessage());
@@ -514,17 +515,17 @@ public class PluginRemover {
 	 * pathToPluginFolder/pluginManager.jar
 	 */
 	private void runFurtherRoutines() throws SchedulerException {
-		if(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + File.separator + "pluginManager.jar").exists()) {
+		if(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + File.separator + "pluginManager.jar").exists()) {
  			AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Starting plugin-specific deinstallation routines...");
 		
 			PluginInstallerInterface pluginInstaller = null;
 			try {
-				File remover = new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + File.separator + "pluginManager.jar");
+				File remover = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + File.separator + "pluginManager.jar");
 				URL path = remover.toURI().toURL();
 				JarClassLoader loader = new JarClassLoader(path);
 				Class<?> c = loader.loadClass(loader.getMainClassName());
 				pluginInstaller = (PluginInstallerInterface)c.newInstance(); 
-				pluginInstaller.runDeinstallationRoutines(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID"));
+				pluginInstaller.runDeinstallationRoutines(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID"));
 			} catch(Exception e) {
 				e.printStackTrace();
 				throw new SchedulerException("Could not initialize plugin deinstaller: " + e.getMessage());
@@ -540,7 +541,7 @@ public class PluginRemover {
 	private void removeDataForDeinstallation() throws SchedulerException {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Removing the plugin deinstallation data...");
 		
-		FileOperations.delete(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID")), true, Level.INFO);
+		FileOperations.delete(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID")), true, Level.INFO);
 		
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"..data removed");
 	}

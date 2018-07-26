@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import amuse.data.io.attributes.Attribute;
 import amuse.data.io.attributes.NominalAttribute;
@@ -391,7 +390,6 @@ public class ArffDataSet extends DataSetAbstract {
 
 	private void validateDataSection() throws IOException, DataSetException {
 		initTokenizer(dataTagLine);
-		int index = 0;
 		getFirstToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOF) {
 			double[] dataLine = parseDataLine(true);

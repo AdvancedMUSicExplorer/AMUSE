@@ -38,6 +38,7 @@ import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.optimizer.interfaces.OptimizerInterface;
 import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 
 import weka.core.Attribute;
@@ -106,7 +107,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		// (I) Configure optimization node scheduler
 		// -----------------------------------------
 		this.nodeHome = nodeHome;
-		if(this.nodeHome.startsWith(System.getenv("AMUSEHOME"))) {
+		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
@@ -227,7 +228,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader optimizerTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		optimizerTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff"));
+	    		optimizerTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff"));
 	    	} else {
 	    		optimizerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "optimizerAlgorithmTable.arff"));
 	    	}

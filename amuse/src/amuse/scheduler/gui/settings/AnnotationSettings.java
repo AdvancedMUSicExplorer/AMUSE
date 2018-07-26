@@ -1,20 +1,15 @@
 package amuse.scheduler.gui.settings;
 
 import amuse.preferences.KeysBooleanValue;
-import java.awt.Dimension;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import amuse.preferences.KeysIntValue;
-import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.settings.panels.BooleanSelectionPanel;
 import amuse.scheduler.gui.settings.panels.ListSelectionPanel;
-import amuse.scheduler.gui.settings.panels.PathSelectionPanel;
-import amuse.scheduler.gui.settings.panels.SliderIntSelectionPanel;
 
 /**
  * 

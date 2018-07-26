@@ -3,6 +3,7 @@ package amuse.scheduler.gui.annotation.singlefile;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JPanel;
@@ -10,6 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicSliderUI;
 import javax.swing.plaf.metal.MetalSliderUI;
 
 import amuse.scheduler.gui.controller.SingleFileAnnotationController;
@@ -22,14 +24,12 @@ import amuse.scheduler.gui.controller.SingleFileAnnotationController;
 public class AnnotationCurrentTimePanel extends JScrollPane{
 
 	JSlider slider;
-	boolean triggerEvent;
 	SingleFileAnnotationController annotationController;
 	ChangeListener scrollListener;
 	
 	public AnnotationCurrentTimePanel(SingleFileAnnotationController pAnnotationController) {
 		super(VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_ALWAYS);
 		annotationController = pAnnotationController;
-		triggerEvent = true;
 		slider = new JSlider(JSlider.HORIZONTAL, 0, 10000, 0){
 			
 			@Override
@@ -46,24 +46,27 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 				return getPreferredSize();
 			}
 		};
-		slider.addChangeListener(e -> {
-				if(triggerEvent){
+		slider.addMouseListener(new MouseListener() {
+					
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					int newValue = ((BasicSliderUI) slider.getUI()).valueForXPosition(e.getX());
 					double totalTime = annotationController.getDurationInMs();
-					double selectedTime = (totalTime * slider.getValue()) / slider.getMaximum();
+					double selectedTime = (totalTime * newValue) / slider.getMaximum();
 					annotationController.seekInMusic(selectedTime);
 				}
-				triggerEvent = true;
-		});
-		slider.setUI(new MetalSliderUI(){
-			@Override
-			protected void scrollDueToClickInTrack(int direction){
-				try{
-					slider.setValue(this.valueForXPosition(slider.getMousePosition().x));
-				}
-				catch(NullPointerException e){
-					
-				}
-			}
+				
+				@Override
+				public void mousePressed(MouseEvent e) { }
+				
+				@Override
+				public void mouseExited(MouseEvent e) { }
+				
+				@Override
+				public void mouseEntered(MouseEvent e) { }
+				
+				@Override
+				public void mouseClicked(MouseEvent e) { }
 		});
 
 		JPanel sliderPanel = new JPanel();
@@ -135,7 +138,6 @@ public class AnnotationCurrentTimePanel extends JScrollPane{
 	}
 	
 	public void setCurrentTime(double millis){
-		triggerEvent = false;
 		slider.setValue((int)(slider.getMaximum() * millis / annotationController.getDurationInMs()));
 	}
 }

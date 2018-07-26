@@ -129,7 +129,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// (I): Configure classification node scheduler
 		// --------------------------------------------
 		this.nodeHome = nodeHome;
-		if(this.nodeHome.startsWith(System.getenv("AMUSEHOME"))) {
+		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
@@ -464,7 +464,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader classifierTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		classifierTableLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+	    		classifierTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
 	    		classifierTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierAlgorithmTable.arff"));
 	    	}

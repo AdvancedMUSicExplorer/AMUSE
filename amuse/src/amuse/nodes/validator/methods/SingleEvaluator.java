@@ -32,7 +32,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
@@ -40,11 +40,11 @@ import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
-import amuse.nodes.validator.interfaces.ClassificationQualityMetricCalculatorInterface;
-import amuse.nodes.validator.interfaces.DataReductionMetricCalculatorInterface;
-import amuse.nodes.validator.interfaces.MetricCalculatorInterface;
-import amuse.nodes.validator.interfaces.ValidationMetric;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.calculateMulticlassMeasureOnSongLevel;
+import amuse.nodes.validator.interfaces.DataReductionMeasureCalculatorInterface;
+import amuse.nodes.validator.interfaces.MeasureCalculatorInterface;
+import amuse.nodes.validator.interfaces.ValidationMeasure;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -58,11 +58,11 @@ import amuse.util.AmuseLogger;
  */
 public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	
-	/** Metric calculator used by this validator */
-	private ArrayList<MetricCalculatorInterface> metricCalculators = new ArrayList<MetricCalculatorInterface>();
+	/** Measure calculator used by this validator */
+	private ArrayList<MeasureCalculatorInterface> measureCalculators = new ArrayList<MeasureCalculatorInterface>();
 	
-	/** Ids of metrics to calculate */
-	private ArrayList<Integer> metricIds = new ArrayList<Integer>();
+	/** Ids of measures to calculate */
+	private ArrayList<Integer> measureIds = new ArrayList<Integer>();
 	
 	/** Path to a single model file or folder with several models which should be evaluated */
 	private String pathToModelFile = null;
@@ -73,10 +73,10 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	public void validate() throws NodeException {
 		
 		// --------------------------------
-		// (I) Configure metric calculators
+		// (I) Configure measure calculators
 		// --------------------------------
 		try {
-			configureMetricCalculators();
+			configureMeasureCalculators();
 		} catch(NodeException e) {
 			throw e;
 		}
@@ -92,37 +92,37 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	}
 	
 	/**
-	 * Configures metric calculators
+	 * Configures measure calculators
 	 * @throws NodeException
 	 */
-	private void configureMetricCalculators() throws NodeException {
+	private void configureMeasureCalculators() throws NodeException {
 		
-		// TODO Support metric calculators which use some parameters (like F-Measure) -> similar to algorithms 
+		// TODO Support measure calculators which use some parameters (like F-Measure) -> similar to algorithms 
 		try {
-			MetricTable mt = ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getMetrics();
+			MeasureTable mt = ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getMeasures();
 			for(int i=0;i<mt.size();i++) {
 				
-				// Set metric method properties
-				Class<?> metricMethod = Class.forName(mt.get(i).getMetricClass());
-				MetricCalculatorInterface vmc = (MetricCalculatorInterface)metricMethod.newInstance();
-				this.metricCalculators.add(vmc);
-				this.metricIds.add(mt.get(i).getID());
-				if(vmc instanceof ClassificationQualityMetricCalculatorInterface) {
+				// Set measure method properties
+				Class<?> measureMethod = Class.forName(mt.get(i).getMeasureClass());
+				MeasureCalculatorInterface vmc = (MeasureCalculatorInterface)measureMethod.newInstance();
+				this.measureCalculators.add(vmc);
+				this.measureIds.add(mt.get(i).getID());
+				if(vmc instanceof calculateMulticlassMeasureOnSongLevel) {
 					if(mt.get(i).isPartitionLevelSelected()) {
-						((ClassificationQualityMetricCalculatorInterface)vmc).setPartitionLevel(true);
+						((calculateMulticlassMeasureOnSongLevel)vmc).setPartitionLevel(true);
 					} 
 					if(mt.get(i).isSongLevelSelected()) {
-						((ClassificationQualityMetricCalculatorInterface)vmc).setSongLevel(true);
+						((calculateMulticlassMeasureOnSongLevel)vmc).setSongLevel(true);
 					}
 				}
 			}
 		} catch(Exception e) {
-			throw new NodeException("Configuration of metric method for validation failed: " + e.getMessage());
+			throw new NodeException("Configuration of measure method for validation failed: " + e.getMessage());
 		}
 		
-		// Check if any metric calculators are loaded
-		if(this.metricCalculators.size() == 0) {
-			throw new NodeException("No metric method could be loaded for validation");
+		// Check if any measure calculators are loaded
+		if(this.measureCalculators.size() == 0) {
+			throw new NodeException("No measure method could be loaded for validation");
 		}
 	}
 	
@@ -153,8 +153,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, modelsToEvaluate.size() + " model(s) will be evaluated");
 		
-		// Validation metrics are saved in a list (for each run)
-		ArrayList<ArrayList<ValidationMetric>> metricsForEveryModel = new ArrayList<ArrayList<ValidationMetric>>();
+		// Validation measures are saved in a list (for each run)
+		ArrayList<ArrayList<ValidationMeasure>> measuresForEveryModel = new ArrayList<ArrayList<ValidationMeasure>>();
 		
 		// Go through all models which should be evaluated
 		for(int i=0;i<modelsToEvaluate.size();i++) { 
@@ -176,113 +176,113 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			cConf.setProcessedFeatureDatabase(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase());
 			predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 			
-			// Calculate the classifier evaluation metrics for result
+			// Calculate the classifier evaluation measures for result
 			try {
-				ArrayList<ValidationMetric> metricsOfThisRun = new ArrayList<ValidationMetric>();
-				for(int currentMetric = 0; currentMetric < this.metricCalculators.size(); currentMetric++) {
-					ValidationMetric[] currMetr = null; 
-					if(this.metricCalculators.get(currentMetric) instanceof ClassificationQualityMetricCalculatorInterface) {
+				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
+				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
+					ValidationMeasure[] currMeas = null; 
+					if(this.measureCalculators.get(currentMeasure) instanceof calculateMulticlassMeasureOnSongLevel) {
 						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
-							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateOneClassMetric(
+							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
 						} else {
-							currMetr = ((ClassificationQualityMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMultiClassMetric(
+							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
 						}
-					} else if(this.metricCalculators.get(currentMetric) instanceof DataReductionMetricCalculatorInterface) {
-						currMetr = ((DataReductionMetricCalculatorInterface)this.metricCalculators.get(currentMetric)).calculateMetric(
+					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {
+						currMeas = ((DataReductionMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMeasure(
 								((ValidatorNodeScheduler)this.correspondingScheduler).getListOfAllProcessedFiles());
 					} else {
-						throw new NodeException("Unknown metric: " + this.metricCalculators.get(currentMetric));
+						throw new NodeException("Unknown measure: " + this.measureCalculators.get(currentMeasure));
 					}
-					for(int k=0;k<currMetr.length;k++) {
-						metricsOfThisRun.add(currMetr[k]);
+					for(int k=0;k<currMeas.length;k++) {
+						measuresOfThisRun.add(currMeas[k]);
 					}
 				}
-				metricsForEveryModel.add(metricsOfThisRun);
+				measuresForEveryModel.add(measuresOfThisRun);
 			} catch (NodeException e) {
 				e.printStackTrace();
 				throw e;
 			}
 		}
 		
-		// Calculate the number of double metrics
-		int numberOfDoubleMetrics = 0;
-		for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
-			if(metricsForEveryModel.get(0).get(i) instanceof ValidationMetricDouble) {
-				numberOfDoubleMetrics++;
+		// Calculate the number of double measures
+		int numberOfDoubleMeasures = 0;
+		for(int i=0;i<measuresForEveryModel.get(0).size();i++) {
+			if(measuresForEveryModel.get(0).get(i) instanceof ValidationMeasureDouble) {
+				numberOfDoubleMeasures++;
 			}
 		}
 		
-		// Calculate the mean metric values only for double metrics
-		Double[] meanMetrics = new Double[numberOfDoubleMetrics];
-		for(int i=0;i<meanMetrics.length;i++) 
-			meanMetrics[i] = 0.0d;
-		int currentIndexOfMeanMetric = 0;
-		for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
-			if(metricsForEveryModel.get(0).get(i) instanceof ValidationMetricDouble) {
+		// Calculate the mean measure values only for double measures
+		Double[] meanMeasures = new Double[numberOfDoubleMeasures];
+		for(int i=0;i<meanMeasures.length;i++) 
+			meanMeasures[i] = 0.0d;
+		int currentIndexOfMeanMeasure = 0;
+		for(int i=0;i<measuresForEveryModel.get(0).size();i++) {
+			if(measuresForEveryModel.get(0).get(i) instanceof ValidationMeasureDouble) {
 			
 				// Go through all runs
-				for(int j=0;j<metricsForEveryModel.size();j++) {
-					meanMetrics[currentIndexOfMeanMetric] += ((ValidationMetricDouble)metricsForEveryModel.get(j).get(i)).getValue();
+				for(int j=0;j<measuresForEveryModel.size();j++) {
+					meanMeasures[currentIndexOfMeanMeasure] += ((ValidationMeasureDouble)measuresForEveryModel.get(j).get(i)).getValue();
 				}
-				meanMetrics[currentIndexOfMeanMetric] /= metricsForEveryModel.size();
-				currentIndexOfMeanMetric++;
+				meanMeasures[currentIndexOfMeanMeasure] /= measuresForEveryModel.size();
+				currentIndexOfMeanMeasure++;
 			}
 		}
 		
-		// Save the metric values to the list, going through all metrics
+		// Save the measure values to the list, going through all measures
 		try {
-			ArrayList<ValidationMetric> metricList = new ArrayList<ValidationMetric>();
-			currentIndexOfMeanMetric = 0;
-			for(int i=0;i<metricsForEveryModel.get(0).size();i++) {
+			ArrayList<ValidationMeasure> measureList = new ArrayList<ValidationMeasure>();
+			currentIndexOfMeanMeasure = 0;
+			for(int i=0;i<measuresForEveryModel.get(0).size();i++) {
 				
 				// If only one model was evaluated, write it; if more models were evaluated,
-				// save also the mean metric values across all models
+				// save also the mean measure values across all models
 				if(modelsToEvaluate.size() == 1) {
-					Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
-					ValidationMetric m = (ValidationMetric)metricClass.newInstance();
-					m.setValue(metricsForEveryModel.get(0).get(i).getValue());
-					m.setName(metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(0).toString());
-					m.setId(metricsForEveryModel.get(0).get(i).getId());
-					if(m instanceof ValidationMetricDouble) {
-						((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)metricsForEveryModel.get(0).get(i)).isForMinimizing());
+					Class<?> measureClass = Class.forName(measuresForEveryModel.get(0).get(i).getClass().getCanonicalName());
+					ValidationMeasure m = (ValidationMeasure)measureClass.newInstance();
+					m.setValue(measuresForEveryModel.get(0).get(i).getValue());
+					m.setName(measuresForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(0).toString());
+					m.setId(measuresForEveryModel.get(0).get(i).getId());
+					if(m instanceof ValidationMeasureDouble) {
+						((ValidationMeasureDouble)m).setForMinimizing(((ValidationMeasureDouble)measuresForEveryModel.get(0).get(i)).isForMinimizing());
 					}
-					metricList.add(m);
+					measureList.add(m);
 				} else {
-					for(int j=0;j<metricsForEveryModel.size();j++) {
-						Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
-						ValidationMetric m = (ValidationMetric)metricClass.newInstance();
-						m.setValue(metricsForEveryModel.get(j).get(i).getValue());
-						m.setName(metricsForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(j).toString());
-						m.setId(metricsForEveryModel.get(0).get(i).getId());
-						if(m instanceof ValidationMetricDouble) {
-							((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)
-									metricsForEveryModel.get(0).get(i)).isForMinimizing());
+					for(int j=0;j<measuresForEveryModel.size();j++) {
+						Class<?> measureClass = Class.forName(measuresForEveryModel.get(0).get(i).getClass().getCanonicalName());
+						ValidationMeasure m = (ValidationMeasure)measureClass.newInstance();
+						m.setValue(measuresForEveryModel.get(j).get(i).getValue());
+						m.setName(measuresForEveryModel.get(0).get(i).getName() + " for " + modelsToEvaluate.get(j).toString());
+						m.setId(measuresForEveryModel.get(0).get(i).getId());
+						if(m instanceof ValidationMeasureDouble) {
+							((ValidationMeasureDouble)m).setForMinimizing(((ValidationMeasureDouble)
+									measuresForEveryModel.get(0).get(i)).isForMinimizing());
 						}
-						metricList.add(m);
+						measureList.add(m);
 					}
 					
-					// Add the mean metric value over all models for double metrics
-					Class<?> metricClass = Class.forName(metricsForEveryModel.get(0).get(i).getClass().getCanonicalName());
-					ValidationMetric m = (ValidationMetric)metricClass.newInstance();
-					if(m instanceof ValidationMetricDouble) {
-						m.setValue(meanMetrics[currentIndexOfMeanMetric]);
-						m.setName("mean(" + metricsForEveryModel.get(0).get(i).getName() + ")");
-						m.setId(metricsForEveryModel.get(0).get(i).getId());
-						((ValidationMetricDouble)m).setForMinimizing(((ValidationMetricDouble)metricsForEveryModel.get(0).get(i)).isForMinimizing());
-						metricList.add(m);
-						currentIndexOfMeanMetric++;
+					// Add the mean measure value over all models for double measures
+					Class<?> measureClass = Class.forName(measuresForEveryModel.get(0).get(i).getClass().getCanonicalName());
+					ValidationMeasure m = (ValidationMeasure)measureClass.newInstance();
+					if(m instanceof ValidationMeasureDouble) {
+						m.setValue(meanMeasures[currentIndexOfMeanMeasure]);
+						m.setName("mean(" + measuresForEveryModel.get(0).get(i).getName() + ")");
+						m.setId(measuresForEveryModel.get(0).get(i).getId());
+						((ValidationMeasureDouble)m).setForMinimizing(((ValidationMeasureDouble)measuresForEveryModel.get(0).get(i)).isForMinimizing());
+						measureList.add(m);
+						currentIndexOfMeanMeasure++;
 					}
 				}
 			}
-			((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).setCalculatedMetrics(metricList);
+			((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).setCalculatedMeasures(measureList);
 		} catch(ClassNotFoundException e) {
-			throw new NodeException("Could not find the appropriate metric class: " + e.getMessage());
+			throw new NodeException("Could not find the appropriate measure class: " + e.getMessage());
 		} catch(IllegalAccessException e) {
-			throw new NodeException("Could not access the appropriate metric class: " + e.getMessage());
+			throw new NodeException("Could not access the appropriate measure class: " + e.getMessage());
 		} catch(InstantiationException e) {
-			throw new NodeException("Could not instantiate the appropriate metric class: " + e.getMessage());
+			throw new NodeException("Could not instantiate the appropriate measure class: " + e.getMessage());
 		}
 	}
 
@@ -395,9 +395,9 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	}
 	
 	/*private String listCorrectSongs(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
-		amuse.nodes.validator.metrics.confusionmatrix.base.ListOfCorrectlyPredictedInstances mc = new amuse.nodes.validator.metrics.confusionmatrix.base.ListOfCorrectlyPredictedInstances();
+		amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances mc = new amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances();
 		mc.setSongLevel(true);
-		ValidationMetricDouble[] list = mc.calculateMetric(groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] list = mc.calculateMeasure(groundTruthRelationships, predictedRelationships);
 		StringBuffer b = new StringBuffer();
 		for(int i=0;i<list.length;i++) {
 			b.append(list[i].getValue().intValue() + " ");

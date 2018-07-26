@@ -86,7 +86,7 @@ public class ClassificationValidationStarter extends AmuseTaskStarter {
 				FileOutputStream fos = null;
 	   	   		ObjectOutputStream out = null;
 	   	   		try {
-	   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
+	   	   			fos = new FileOutputStream(new String(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskoutput" + File.separator + "task_" + 
 	   	   					this.jobCounter + ".ser"));
 	   	   		    out = new ObjectOutputStream(fos);
 	   	   		    out.writeObject(validatorConfig);
@@ -129,14 +129,14 @@ public class ClassificationValidationStarter extends AmuseTaskStarter {
 				ValidationConfiguration validatorConfig = (ValidationConfiguration)taskConfiguration[i];
 				ValidatorNodeScheduler validatorThread = null;
 				try {
-					validatorThread = new ValidatorNodeScheduler(System.getenv("AMUSEHOME") + 
+					validatorThread = new ValidatorNodeScheduler(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 							File.separator + "config" + File.separator + "node" + File.separator + "validator" + File.separator + "input" + File.separator + "task_" + this.jobCounter);
 				} catch (NodeException e) {
 					throw new SchedulerException("Validator node thread could not be started: " + e.getMessage());
 				}
 	
 			    // Prepare validator node scheduler arguments and start it as thread
-	   	    	validatorThread.setThreadParameters(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "node" + File.separator + "validator", this.jobCounter, validatorConfig);
+	   	    	validatorThread.setThreadParameters(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "node" + File.separator + "validator", this.jobCounter, validatorConfig);
 			    Thread newValidatorThread = new Thread(validatorThread);
 			    // TODO Timeout einbauen
 			    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {

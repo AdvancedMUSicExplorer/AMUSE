@@ -31,10 +31,10 @@ import java.util.Iterator;
 import amuse.nodes.optimizer.methods.es.ESIndividual;
 import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
 import amuse.nodes.optimizer.methods.es.operators.selection.interfaces.AbstractSelection;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
 /**
- * Hypervolume-strategy: updates the population due to the individual hypervolume contribution (delta S-metric). 
+ * Hypervolume-strategy: updates the population due to the individual hypervolume contribution (delta S-measure). 
  * 
  * For details of SMS-EMOA see: Michael Emmerich, Nicola Beume, and Boris Naujoks. An EMO algorithm using the hypervolume 
  * measure as selection criterion. In: C. A. Coello Coello et al., Eds., Proc. Evolutionary Multi-Criterion Optimization, 
@@ -109,8 +109,8 @@ public class HypervolumeSelection extends AbstractSelection {
 		// Replace parent population only if the worst individual was not the child individual
 		if(worstIndividualIndex < correspondingES.popSize) {
 			ESIndividual newParent = correspondingES.offspringPopulation[0].clone();
-			ValidationMetricDouble[] newFitness = correspondingES.offspringPopulationFitnessValues[0];
-			ValidationMetricDouble[] newFitnessOnTestSet = null;
+			ValidationMeasureDouble[] newFitness = correspondingES.offspringPopulationFitnessValues[0];
+			ValidationMeasureDouble[] newFitnessOnTestSet = null;
 			if(correspondingES.isIndependentTestSetUsed) {
 				newFitnessOnTestSet = correspondingES.offspringPopulationFitnessValuesOnTestSet[0];
 			}
@@ -195,7 +195,7 @@ public class HypervolumeSelection extends AbstractSelection {
 		return fronts;
 	}
 	
-	private ValidationMetricDouble[] getIndividualFitness(int i) {
+	private ValidationMeasureDouble[] getIndividualFitness(int i) {
 		return (i<correspondingES.popSize) ? correspondingES.populationFitnessValues[i] : 
 			correspondingES.offspringPopulationFitnessValues[i-correspondingES.popSize];
 	}
@@ -208,8 +208,8 @@ public class HypervolumeSelection extends AbstractSelection {
     	// (2) i is better in at least one dimension
     	boolean condition2 = false;
     	
-    	ValidationMetricDouble[] firstFitnessValues = getIndividualFitness(i); 
-    	ValidationMetricDouble[] secondFitnessValues = getIndividualFitness(j);
+    	ValidationMeasureDouble[] firstFitnessValues = getIndividualFitness(i); 
+    	ValidationMeasureDouble[] secondFitnessValues = getIndividualFitness(j);
     	
     	for(int k=0;k<firstFitnessValues.length;k++) {
     		if(firstFitnessValues[k].isForMinimizing()) {

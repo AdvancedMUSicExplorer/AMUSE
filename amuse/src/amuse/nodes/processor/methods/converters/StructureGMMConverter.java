@@ -203,7 +203,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 						continue;
 					}
 					
-					// Update the list with all used time windows for a metric
+					// Update the list with all used time windows for a measure
 					// TODO Evtl. auslagern
 					if(i == 0) {
 						for(int k=0;k<windowsOfCurrentPartition.size();k++) {

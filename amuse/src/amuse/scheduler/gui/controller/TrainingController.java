@@ -170,7 +170,7 @@ public class TrainingController extends AbstractController {
          */
         @Override
         public String getCaption() {
-            return "Create Training Experiment";
+            return "Classification Training Configurator";
         }
 
         public void addTraining() {

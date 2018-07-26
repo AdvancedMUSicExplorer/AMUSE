@@ -23,6 +23,9 @@
  */
 package amuse.scheduler.gui.controller;
 
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.attributes.NominalAttribute;
+import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.classifier.ClassificationConfiguration;
@@ -37,11 +40,22 @@ import amuse.scheduler.gui.navigation.TitleUpdater;
 import amuse.scheduler.gui.settings.JPanelSettings;
 import amuse.scheduler.gui.views.TaskManagerView;
 import amuse.scheduler.gui.views.WizardView;
+import amuse.util.AmuseLogger;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import org.apache.log4j.Level;
 
 
 /**
@@ -63,6 +77,60 @@ public final class WizardController implements WizardControllerInterface {
 	private OptimizationController optimizationController;
 	private SingleFileAnnotationController singleFileAnnotationController;
 	private MultipleFilesAnnotationController multipleFilesAnnotationController;
+	
+	private enum ControllerType {
+		CLASSIFICATION, FEATURE_EXTRACTION, OPTIMIZATION, FEATURE_PROCESSING, CLASSIFICATION_TRAINING, VALIDATION;
+		
+		@Override
+		public String toString(){
+			switch(this){
+			case CLASSIFICATION: return "c";
+			case FEATURE_EXTRACTION: return "fe";
+			case OPTIMIZATION: return "o";
+			case FEATURE_PROCESSING: return "fp";
+			case CLASSIFICATION_TRAINING: return "ct";
+			case VALIDATION: return "v";
+			default: throw new IllegalArgumentException("Unsupported Controller Type");
+			}
+		}
+		
+		public AbstractController getController(){
+			switch(this){
+			case CLASSIFICATION: return new ClassifierController(instance);
+			case FEATURE_EXTRACTION: return new ExtractionController(instance);
+			case OPTIMIZATION: return new OptimizationController(instance);
+			case FEATURE_PROCESSING: return new ProcessingController(instance);
+			case CLASSIFICATION_TRAINING: return new TrainingController(instance);
+			case VALIDATION: return new ValidationController(instance);
+			default: throw new IllegalArgumentException("Unsupported Controller Type");
+			}
+		}
+		
+		public static ControllerType valueOf(TaskConfiguration config){
+			if(config instanceof ClassificationConfiguration){
+				return CLASSIFICATION;
+			}
+			else if(config instanceof ExtractionConfiguration){
+				return FEATURE_EXTRACTION;
+			}
+			else if(config instanceof OptimizationConfiguration){
+				return OPTIMIZATION;
+			}
+			else if(config instanceof ProcessingConfiguration){
+				return FEATURE_PROCESSING;
+			}
+			else if(config instanceof TrainingConfiguration){
+				return CLASSIFICATION_TRAINING;
+			}
+			else if(config instanceof ValidationConfiguration){
+				return VALIDATION;
+			}
+			else{
+				return null;
+			}
+		}
+
+	};
 
 	private WizardController() {
 		instance = this;
@@ -336,5 +404,86 @@ public final class WizardController implements WizardControllerInterface {
 			multipleFilesAnnotationController = new MultipleFilesAnnotationController(instance);
 		}
 		wizard.showInWizardPane(multipleFilesAnnotationController.getView());
+	}
+
+	@Override
+	public void saveTasks(List<TaskConfiguration> experiments, File selectedFile) {
+		selectedFile.getParentFile().mkdirs();
+		String tasksFolderPath = selectedFile.getParentFile().getAbsolutePath()
+				+ File.separator
+				+ "tasks"
+				+ File.separator
+				+ selectedFile.getName().substring(0, selectedFile.getName().lastIndexOf('.'))
+				+ File.separator;
+		
+		// Remove old files?
+		//TODO
+		
+		new File(tasksFolderPath).mkdirs();
+		PrintWriter writer = null;
+		try{
+			writer = new PrintWriter(selectedFile.getAbsolutePath());
+			
+			writer.write("@RELATION 'AMUSE Tasks'\n"
+						+ "%rows=" + experiments.size() + "\n"
+						+ "%columns=2\n"
+						+ "@ATTRIBUTE Type {" + Arrays.stream(ControllerType.values()).map(String::valueOf).collect(Collectors.joining(",")) + "}\n"
+						+ "@ATTRIBUTE Path STRING\n\n"
+						+ "@DATA\n");
+			
+			int taskNumber = 0;
+			for(TaskConfiguration exp: experiments){
+				
+				ControllerType type = ControllerType.valueOf(exp);
+				if(type == null){
+					AmuseLogger.write(this.getClass().toString(), Level.ERROR, "");
+					return;
+				}
+				String pathToConfigArff = tasksFolderPath
+						+ "task_"
+						+ taskNumber
+						+ "_"
+						+ type
+						+ ".arff";
+				AbstractController controller = type.getController();
+				controller.loadTask(exp); 
+				controller.saveTask(new File(pathToConfigArff)); // TODO Extraction Controller shows a dialog after saving.
+				writer.write(type + ",'" + pathToConfigArff + "'\n");
+				taskNumber++;
+			}
+			
+		}
+		catch(FileNotFoundException e){
+			AmuseLogger.write(this.getClass().getName(),
+					Level.ERROR,
+					"Failed to save the experiments.");
+		}
+		finally{
+			if(writer != null){
+				writer.close();
+			}
+		}
+		
+	}
+
+	@Override
+	public void loadTasks(File selectedFile) {
+		TaskManagerView taskManager = TaskManagerView.getInstance();
+		try {
+			ArffDataSet arffDataSet = new ArffDataSet(selectedFile);
+			NominalAttribute typeAtt = (NominalAttribute) arffDataSet.getAttribute("Type");
+			StringAttribute pathAtt = (StringAttribute) arffDataSet.getAttribute("Path");
+			for(int i = 0; i < pathAtt.getValueCount(); i++){
+				ControllerType type = ControllerType.valueOf(typeAtt.getValueAt(i));
+				AbstractController controller = type.getController();
+				controller.loadTask(new File(pathAtt.getValueAt(i)));
+				TaskConfiguration configuration = controller.getExperimentConfiguration();
+				taskManager.addExperiment(configuration);
+			}
+		} catch (IOException e) {
+			AmuseLogger.write(this.getClass().getName(),
+					Level.ERROR,
+					"Failed to load the experiments.");
+		}
 	}
 }

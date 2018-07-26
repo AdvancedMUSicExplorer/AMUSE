@@ -41,8 +41,6 @@ import com.rapidminer.example.table.DoubleArrayDataRow;
 import com.rapidminer.example.table.MemoryExampleTable;
 import com.rapidminer.example.table.NominalMapping;
 import com.rapidminer.tools.Ontology;
-import java.util.Arrays;
-import java.util.Date;
 
 /**
  * DataSet contains different attributes with values

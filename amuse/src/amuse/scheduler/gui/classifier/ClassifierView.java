@@ -115,7 +115,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
      */
     @Override
     public String getCaption() {
-        return "Setup Classifier";
+        return "Classification Configurator";
     }
 
     /* (non-Javadoc)

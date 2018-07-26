@@ -55,7 +55,7 @@ import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
-import amuse.nodes.validator.interfaces.ValidationMetric;
+import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -83,7 +83,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	
 	private boolean isMulticlass = false;
 	
-	/** Used for calculation of data reduction metrics */ 
+	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
 	File groundTruthFile = null;
 	
@@ -144,7 +144,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	
 	/**
 	 * Proceeds the validation task
-	 * @param saveToFile If true, the metric results are outputted to a file 
+	 * @param saveToFile If true, the measure results are outputted to a file 
 	 */
 	public void proceedTask(String nodeHome, long jobId, TaskConfiguration taskConfiguration, 
 			boolean saveToFile) throws NodeException {
@@ -153,7 +153,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// (I): Configure validation node scheduler
 		// ----------------------------------------
 		this.nodeHome = nodeHome;
-		if(this.nodeHome.startsWith(System.getenv("AMUSEHOME"))) {
+		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
 		this.jobId = new Long(jobId);
@@ -167,7 +167,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			AmusePreferences.restoreFromFile(preferencesFile);
 		}
 		
-		// Set the category description - used for the metric destination folder
+		// Set the category description - used for the measure destination folder
 		DataSetAbstract categoryList = null;
 		try {
 			categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
@@ -212,7 +212,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 		
 		// -------------------------------------------------------------------------
-		// (IV): Load the list of processed feature files for data reduction metrics
+		// (IV): Load the list of processed feature files for data reduction measures
 		// -------------------------------------------------------------------------
 		try {
 			listOfAllProcessedFiles = this.vmi.calculateListOfUsedProcessedFeatureFiles();
@@ -227,9 +227,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// -------------------------------
 		try {
 			this.vmi.validate();
-			// TODO v0.2: if the file input is validated, the place for metric file must be also given!
+			// TODO v0.2: if the file input is validated, the place for measure file must be also given!
 			if(saveToFile) {
-				saveMetricsToFile();
+				saveMeasuresToFile();
 			}
 		} catch(NodeException e) {
 			throw new NodeException("Validation failed: " + e.getMessage());
@@ -315,7 +315,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		Instance currentInstance;
 		try {
 			if(this.directStart) {
-				validationMethodLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "validationAlgorithmTable.arff"));
+				validationMethodLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "validationAlgorithmTable.arff"));
 	    	} else {
 	    		validationMethodLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "validationAlgorithmTable.arff"));
 	    	}
@@ -706,37 +706,37 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	}
 
 	/**
-	 * Saves the calculated metrics to the output file
+	 * Saves the calculated measures to the output file
 	 */
-	private void saveMetricsToFile() throws NodeException {
+	private void saveMeasuresToFile() throws NodeException {
 		try {
 			
-			// Check if the folder for metric file exists; if not create it
-			File folderForMetrics = createMetricFolder();
+			// Check if the folder for measure file exists; if not create it
+			File folderForMeasures = createMeasureFolder();
 			
-			// If no metric file is there, save header
+			// If no measure file is there, save header
 			boolean saveHeader = false;
 			// FIXME Currently the file is overwritten each time for Windows compatibility during optimization task
-			//if(!new File(this.folderForMetrics + File.separator + "metrics.arff").exists()) {
+			//if(!new File(this.folderForMeasures + File.separator + "measures.arff").exists()) {
 				saveHeader = true;
 			//}
-			//FileOutputStream values_to = new FileOutputStream(this.folderForMetrics + File.separator + "metrics.arff",true);
-			FileOutputStream values_to = new FileOutputStream(folderForMetrics + File.separator + "metrics.arff");
+			//FileOutputStream values_to = new FileOutputStream(this.folderForMeasures + File.separator + "measures.arff",true);
+			FileOutputStream values_to = new FileOutputStream(folderForMeasures + File.separator + "measures.arff");
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
 			
 			// Saves the header
 			if(saveHeader) {
-				values_writer.writeBytes("@RELATION 'Classifier metrics'");
+				values_writer.writeBytes("@RELATION 'Classifier measures'");
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("@ATTRIBUTE Time STRING");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricId NUMERIC");
+				values_writer.writeBytes("@ATTRIBUTE MeasureId NUMERIC");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricName STRING");
+				values_writer.writeBytes("@ATTRIBUTE MeasureName STRING");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("@ATTRIBUTE MetricValue STRING");
+				values_writer.writeBytes("@ATTRIBUTE MeasureValue STRING");
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("@DATA");
@@ -744,8 +744,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			values_writer.writeBytes(sep);
 			SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 			
-			// Save the metric values, going through all metrics
-			for(ValidationMetric m : ((ValidationConfiguration)taskConfiguration).getCalculatedMetrics()) {
+			// Save the measure values, going through all measures
+			for(ValidationMeasure m : ((ValidationConfiguration)taskConfiguration).getCalculatedMeasures()) {
 				values_writer.writeBytes("\"" + sdf.format(new Date()) + "\", " + 
 							m.getId() + ", " + "\"" + m.getName() + "\", " + 
 							m.getValue());
@@ -753,16 +753,16 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			}
 			values_writer.close();
 		} catch(IOException e) {
-			throw new NodeException("Could not save metrics: " + e.getMessage());
+			throw new NodeException("Could not save measures: " + e.getMessage());
 		}
 	}
 	
 	/**
-	 * Sets the name of the folder for metrics and creates this folder
+	 * Sets the name of the folder for measures and creates this folder
 	 * @throws NodeException
 	 */
-	private File createMetricFolder() throws NodeException {
-		File folderForMetrics = null;
+	private File createMeasureFolder() throws NodeException {
+		File folderForMeasures = null;
 		String classifierDescription = new String("");
 		ArffLoader classificationAlgorithmLoader = new ArffLoader();
 		Instance classificationAlgorithmInstance;
@@ -776,7 +776,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 		try {
 			if(this.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+				classificationAlgorithmLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 	    	} else {
 	    		classificationAlgorithmLoader.setFile(new File(this.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.getTaskId() + File.separator + "classifierAlgorithmTable.arff"));
 	    	}
@@ -789,7 +789,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				if(classificationAlgorithmInstance.value(idAttribute) == algorithmToSearch) {
 					classificationMethodFound = true;
 					
-					// Set the name of folder for models and metrics (combined from
+					// Set the name of folder for models and measures (combined from
 					// classifier ID, parameters and name)
 					classifierDescription = ((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription() + "-" + classificationAlgorithmInstance.stringValue(nameAttribute);
 
@@ -798,17 +798,17 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						validatorMethodId = validatorMethodId.substring(0,validatorMethodId.indexOf("["));
 					}
 					
-					// Check if the folder for metric file exists; if not create it
-					folderForMetrics = new File(
-							((ValidationConfiguration)taskConfiguration).getMetricDatabase() + File.separator + 
+					// Check if the folder for measure file exists; if not create it
+					folderForMeasures = new File(
+							((ValidationConfiguration)taskConfiguration).getMeasureDatabase() + File.separator + 
 							categoryDescription + 
 							File.separator + classifierDescription + File.separator +
 							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +
 							validatorMethodId + 
 							"-" + ((AmuseTask)vmi).getProperties().getProperty("name"));
-					if(!folderForMetrics.exists()) {
-						if(!folderForMetrics.mkdirs()) {
-							throw new NodeException("Could not create the folder for classifier evaluation metrics: " + folderForMetrics);
+					if(!folderForMeasures.exists()) {
+						if(!folderForMeasures.mkdirs()) {
+							throw new NodeException("Could not create the folder for classifier evaluation measures: " + folderForMeasures);
 						}
 					}
 					break;
@@ -824,7 +824,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		} catch(Exception e) {
 			throw new NodeException("Configuration of classifier for validation failed: " + e.getMessage());
 		}
-		return folderForMetrics;
+		return folderForMeasures;
 	}
 	
 	/**

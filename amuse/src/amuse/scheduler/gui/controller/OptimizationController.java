@@ -111,7 +111,7 @@ public class OptimizationController extends AbstractController {
         }
         
         public String getCaption() {
-            return "Setup Optimization";
+            return "Optimization Configurator";
         }
 
         public boolean nextButtonClicked() {

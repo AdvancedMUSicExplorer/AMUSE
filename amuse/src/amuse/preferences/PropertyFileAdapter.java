@@ -52,7 +52,7 @@ public class PropertyFileAdapter {
     private static final String comment = "This file contains settings for Amuse.";
 
     public PropertyFileAdapter() throws FileNotFoundException, IOException {
-        this(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "amuse.properties"));
+        this(new File(KeysStringValue.AMUSE_PATH.getDefaultValue() + File.separator + "config" + File.separator + "amuse.properties"));
     }
 
     public PropertyFileAdapter(File f) throws FileNotFoundException,

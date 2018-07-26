@@ -36,7 +36,7 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
-import amuse.data.MetricTable;
+import amuse.data.MeasureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -53,8 +53,8 @@ import amuse.nodes.trainer.TrainerNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
-import amuse.nodes.validator.interfaces.ValidationMetric;
-import amuse.nodes.validator.interfaces.ValidationMetricDouble;
+import amuse.nodes.validator.interfaces.ValidationMeasure;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -231,17 +231,17 @@ public class FitnessEvaluator {
 	 * evaluation on the optimization set
 	 * @return Array with fitness value(s): the 1st one is used for single-objective optimization
 	 */
-	public ValidationMetricDouble[] getFitness(ESIndividual individual, boolean isEvaluatedOnIndependentTestSet) throws NodeException {
+	public ValidationMeasureDouble[] getFitness(ESIndividual individual, boolean isEvaluatedOnIndependentTestSet) throws NodeException {
 		
 		// Load the feature table
 		Node featureTableNode = individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Feature table");
 		FeatureTable featureTable = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
 		
-		// Load the metric table
-		Node metricTableNode = individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Metric table");
-		MetricTable metricTable;
+		// Load the measure table
+		Node measureTableNode = individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Measure table");
+		MeasureTable measureTable;
 		try {
-			metricTable = new MetricTable(new File(metricTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
+			measureTable = new MeasureTable(new File(measureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
 		} catch (Exception e) {
 			throw new NodeException(e.getMessage());
 		}
@@ -259,7 +259,7 @@ public class FitnessEvaluator {
 			} else {
 				idOfSearchedAlgorithm = new Integer(classifierConfig);
 			}
-			classifierDescriptionLoader.setFile(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+			classifierDescriptionLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
 			classifierDescriptionInstance = classifierDescriptionLoader.getNextInstance(classifierDescriptionLoader.getStructure());
 			Attribute idAttribute = classifierDescriptionLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = classifierDescriptionLoader.getStructure().attribute("Name");
@@ -424,7 +424,7 @@ public class FitnessEvaluator {
 		if(categoryForOptimizationDescription.startsWith("-")) {
 			
 			// Create n models from the training set using a n-fold cross-validation procedure
-			// and deliver mean metrics as fitness value(s)
+			// and deliver mean measures as fitness value(s)
 			if(!isEvaluatedOnIndependentTestSet) {
 
 				// Validate the model only with the features selected by EA
@@ -449,7 +449,7 @@ public class FitnessEvaluator {
 				optimizationDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 				
 				// Start n-fold validation (the optimization category must be set to "-n")
-				vConf = new ValidationConfiguration("1[" + categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]",metricTable, 
+				vConf = new ValidationConfiguration("1[" + categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]",measureTable, 
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
@@ -532,7 +532,7 @@ public class FitnessEvaluator {
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-2));
 				testDataWithOnlySelectedFeatures.addAttribute(testData.getAttribute(testData.getAttributeCount()-1));
 				
-				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
+				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
@@ -628,13 +628,13 @@ public class FitnessEvaluator {
 			}
 			
 			if(!isEvaluatedOnIndependentTestSet) {
-				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
+				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						new DataSetInput(optimizationDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 			} else {
-				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",metricTable,
+				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
@@ -652,27 +652,27 @@ public class FitnessEvaluator {
 		}
 			
 		// ---------------------------------------
-		// (VI) Load the metric (ES fitness value)
+		// (VI) Load the measure (ES fitness value)
 		// ---------------------------------------
-		ArrayList<ValidationMetric> metricsAll = vConf.getCalculatedMetrics();
-		ArrayList<ValidationMetricDouble> metrics = new ArrayList<ValidationMetricDouble>();
+		ArrayList<ValidationMeasure> measuresAll = vConf.getCalculatedMeasures();
+		ArrayList<ValidationMeasureDouble> measures = new ArrayList<ValidationMeasureDouble>();
 				
-		// (a) ..metrics using n-fold cross-validation process on training set
+		// (a) ..measures using n-fold cross-validation process on training set
 		if(categoryForOptimizationDescription.startsWith("-")) {
-			for(int i=0;i<metricsAll.size();i++) {
+			for(int i=0;i<measuresAll.size();i++) {
 				if(!isEvaluatedOnIndependentTestSet) {
 				
-					// Only double value metrics are proceeded; only mean metrics over n models are saved
-					if(metricsAll.get(i) instanceof ValidationMetricDouble && 
-							metricsAll.get(i).getName().startsWith("mean(")) {
-						ValidationMetricDouble currentMetric = new ValidationMetricDouble();
-						currentMetric.setName(metricsAll.get(i).getName());
-						currentMetric.setId(metricsAll.get(i).getId());
-						currentMetric.setValue(metricsAll.get(i).getValue());
-						currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
+					// Only double value measures are proceeded; only mean measures over n models are saved
+					if(measuresAll.get(i) instanceof ValidationMeasureDouble && 
+							measuresAll.get(i).getName().startsWith("mean(")) {
+						ValidationMeasureDouble currentMeasure = new ValidationMeasureDouble();
+						currentMeasure.setName(measuresAll.get(i).getName());
+						currentMeasure.setId(measuresAll.get(i).getId());
+						currentMeasure.setValue(measuresAll.get(i).getValue());
+						currentMeasure.setForMinimizing(((ValidationMeasureDouble)measuresAll.get(i)).isForMinimizing());
 														
 						// TODO Calculate the feature selection rate
-						if(currentMetric.getId() == 203) {
+						if(currentMeasure.getId() == 203) {
 							int indexOfSelectedFeaturesRepresentation = 0;
 							int number = 0;
 							for(int j=0;j<individual.getRepresentationList().size();j++) {
@@ -688,21 +688,21 @@ public class FitnessEvaluator {
 									number++;
 								}
 							}
-							currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+							currentMeasure.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
 									getValue().length);
 						}
-						metrics.add(currentMetric);
+						measures.add(currentMeasure);
 					}
 				} else {
-					if(metricsAll.get(i) instanceof ValidationMetricDouble) {
-						ValidationMetricDouble currentMetric = new ValidationMetricDouble();
-						currentMetric.setName(metricsAll.get(i).getName());
-						currentMetric.setId(metricsAll.get(i).getId());
-						currentMetric.setValue(metricsAll.get(i).getValue());
-						currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
+					if(measuresAll.get(i) instanceof ValidationMeasureDouble) {
+						ValidationMeasureDouble currentMeasure = new ValidationMeasureDouble();
+						currentMeasure.setName(measuresAll.get(i).getName());
+						currentMeasure.setId(measuresAll.get(i).getId());
+						currentMeasure.setValue(measuresAll.get(i).getValue());
+						currentMeasure.setForMinimizing(((ValidationMeasureDouble)measuresAll.get(i)).isForMinimizing());
 						
 						// TODO Calculate the feature selection rate
-						if(currentMetric.getId() == 203) {
+						if(currentMeasure.getId() == 203) {
 							int indexOfSelectedFeaturesRepresentation = 0;
 							int number = 0;
 							for(int j=0;j<individual.getRepresentationList().size();j++) {
@@ -718,30 +718,30 @@ public class FitnessEvaluator {
 									number++;
 								}
 							}
-							currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+							currentMeasure.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
 									getValue().length);
 						}
 						
-						metrics.add(currentMetric);
+						measures.add(currentMeasure);
 					}
 				}
 			}
 		} 
 			
-		// (b) ..metrics from 1 model
+		// (b) ..measures from 1 model
 		else {
-			for(int i=0;i<metricsAll.size();i++) {
+			for(int i=0;i<measuresAll.size();i++) {
 				
-				// Only double value metrics are proceeded
-				if(metricsAll.get(i) instanceof ValidationMetricDouble) {
-					ValidationMetricDouble currentMetric = new ValidationMetricDouble();
-					currentMetric.setName(metricsAll.get(i).getName());
-					currentMetric.setId(metricsAll.get(i).getId());
-					currentMetric.setValue(metricsAll.get(i).getValue());
-					currentMetric.setForMinimizing(((ValidationMetricDouble)metricsAll.get(i)).isForMinimizing());
+				// Only double value measures are proceeded
+				if(measuresAll.get(i) instanceof ValidationMeasureDouble) {
+					ValidationMeasureDouble currentMeasure = new ValidationMeasureDouble();
+					currentMeasure.setName(measuresAll.get(i).getName());
+					currentMeasure.setId(measuresAll.get(i).getId());
+					currentMeasure.setValue(measuresAll.get(i).getValue());
+					currentMeasure.setForMinimizing(((ValidationMeasureDouble)measuresAll.get(i)).isForMinimizing());
 						
 					// TODO Calculate the feature selection rate
-					if(currentMetric.getId() == 203) {
+					if(currentMeasure.getId() == 203) {
 						int indexOfSelectedFeaturesRepresentation = 0;
 						int number = 0;
 						for(int j=0;j<individual.getRepresentationList().size();j++) {
@@ -757,11 +757,11 @@ public class FitnessEvaluator {
 								number++;
 							}
 						}
-						currentMetric.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
+						currentMeasure.setValue((double)number / (double)((SelectedFeatures)individual.getRepresentationList().get(indexOfSelectedFeaturesRepresentation)).
 								getValue().length);
 					}
 					
-					metrics.add(currentMetric);
+					measures.add(currentMeasure);
 				}
 			}
 		}
@@ -771,17 +771,17 @@ public class FitnessEvaluator {
 		FileOperations.delete(new File(individual.getCorrespondingES().getCorrespondingScheduler().getHomeFolder() + 
 			File.separator + "input" + File.separator + "task_" + individual.getCorrespondingES().getCorrespondingScheduler().getTaskId() +  File.separator +"Processed_Features"),true);
 			
-		ValidationMetricDouble[] metricsAsArray = new ValidationMetricDouble[metrics.size()];
-		for(int i=0;i<metricsAsArray.length;i++) {
-			if(metrics.get(i) instanceof ValidationMetricDouble) {
-				metricsAsArray[i] = (ValidationMetricDouble)metrics.get(i);
+		ValidationMeasureDouble[] measuresAsArray = new ValidationMeasureDouble[measures.size()];
+		for(int i=0;i<measuresAsArray.length;i++) {
+			if(measures.get(i) instanceof ValidationMeasureDouble) {
+				measuresAsArray[i] = (ValidationMeasureDouble)measures.get(i);
 			} else {
-				throw new NodeException("Only double metrics can be used for optimization; please remove the metric '" + 
-					metrics.get(i).getName() + "'");
+				throw new NodeException("Only double measures can be used for optimization; please remove the measure '" + 
+					measures.get(i).getName() + "'");
 			}
 		}
 		
-		return metricsAsArray;
+		return measuresAsArray;
 	}
 	
 	private DataSet loadData(ESIndividual individual, String string) throws NodeException {

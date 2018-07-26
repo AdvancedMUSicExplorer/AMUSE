@@ -35,7 +35,7 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 		musicPlayerView = new MusicPlayerView(annotationController);
 		tableView = new TableView(annotationController);
 		filterView = new FilterView(annotationController, tableView.getTableModel(), tableView.getColumnModel());
-		tableControlView = new TableControlView(annotationController);
+		tableControlView = new TableControlView(annotationController, tableView.getSelectionModel());
 		
 		JPanel panel = new JPanel(new MigLayout("wrap 2, fillx"));
 		panel.add(filterView, "pushy, growy, w 50%, span 1 2");
@@ -58,7 +58,7 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 			@Override
 			public void componentResized(ComponentEvent e) {
 				setDividerLocation(0.3);
-				removeComponentListener(this); //The divider location must only set once
+				removeComponentListener(this); //The divider location must only be set once
 			}
 			
 			@Override
@@ -79,16 +79,15 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public String getSaveButtonText() {
-		return "Save";
+		return "Save Annotation";
 	}
 
 	@Override
 	public void saveButtonClicked() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-		//fileChooser.setCurrentDirectory(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)));
 		fileChooser.setFileFilter(new FileNameExtensionFilter("", "arff"));
-		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+		if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION){
 			String path = fileChooser.getSelectedFile().toString();
 			if(!path.endsWith(".arff")){
 				path += ".arff";
@@ -99,13 +98,12 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public String getLoadButtonText() {
-		return "Load";
+		return "Load Annotation";
 	}
 
 	@Override
 	public void loadButtonClicked() {
 		JFileChooser fileChooser = new JFileChooser();
-		//fileChooser.setCurrentDirectory(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)));
 		fileChooser.setFileFilter(new FileNameExtensionFilter("", "arff"));
 		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 			annotationController.clearAnnotation();

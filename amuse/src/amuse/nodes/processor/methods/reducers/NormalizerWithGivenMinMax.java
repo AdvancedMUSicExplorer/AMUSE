@@ -38,6 +38,8 @@ import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 
 /**
@@ -106,7 +108,7 @@ public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionPro
 		DataSetAbstract featuresMinMaxSet;
 		try {
 			if(this.correspondingScheduler.getDirectStart()) {
-				featuresMinMaxSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + 
+				featuresMinMaxSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 					File.separator + "tools" + File.separator + "Normalizer" + File.separator + "featureTableMaxMin.arff"));
 			} else {
 				featuresMinMaxSet = new ArffDataSet(new File(this.correspondingScheduler.getHomeFolder() + 

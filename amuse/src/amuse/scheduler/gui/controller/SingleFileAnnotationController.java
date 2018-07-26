@@ -73,12 +73,27 @@ public class SingleFileAnnotationController extends AbstractController{
 	}
 	
 	public void removeAttribute(AnnotationAttribute<?> att){
+		for(int i = 0; i < att.getEntryList().size(); i++){
+			annotationView.getAnnotationVisualizationPanel().removeEntryPanel(att.getEntryList().getElementAt(i));
+		}
 		annotationModel.removeAttribute(att);
 		annotationView.resizePanels();
 	}
 	
 	public AnnotationAttribute<?> addAttribute(int id) {
-		return annotationModel.addAttribute(id);
+		AnnotationAttribute<?> att = annotationModel.addAttribute(id);
+		for(int i = 0; i < att.getEntryList().size(); i++){
+			annotationView.getAnnotationVisualizationPanel().addEntryPanel(att.getEntryList().getElementAt(i));
+		}
+		return att;
+	}
+	
+	public AnnotationAttribute<?> insertAttribute(int index, AnnotationAttribute<?> att){
+		annotationModel.getListModel().add(index, att);
+		for(int i = 0; i < att.getEntryList().size(); i++){
+			annotationView.getAnnotationVisualizationPanel().addEntryPanel(att.getEntryList().getElementAt(i));
+		}
+		return att;
 	}
 	
 	public void addEntryToItsAttribute(AnnotationAttributeEntry<?> entry){

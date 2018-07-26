@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
@@ -29,7 +28,6 @@ import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationNumericA
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationStringAttribute;
 import amuse.scheduler.gui.controller.MultipleFilesAnnotationController;
 import amuse.util.AmuseLogger;
-import sun.reflect.annotation.AnnotationType;
 
 /**
  * Manages the annotation process related to the annotation attributes

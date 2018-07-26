@@ -69,10 +69,14 @@ public class FileOperations {
                 copy(f, new File(to, f.getName()), l);
             }
         } else {
+        	FileInputStream inChannelFIS = null;
+        	FileOutputStream outChannelFOS = null;
             try {
             	log(l, "Copying: " + from.getAbsolutePath());
-            	FileChannel inChannel = new FileInputStream(from).getChannel();
-                FileChannel outChannel = new FileOutputStream(to).getChannel();
+            	inChannelFIS = new FileInputStream(from);
+            	FileChannel inChannel = inChannelFIS.getChannel();
+            	outChannelFOS = new FileOutputStream(to);
+                FileChannel outChannel = outChannelFOS.getChannel();
                 try {
                     inChannel.transferTo(0, inChannel.size(), outChannel);
                 } catch (IOException ex) {
@@ -92,6 +96,20 @@ public class FileOperations {
             } catch (IOException ex) {
                 log(l, ex.getLocalizedMessage());
                 throw ex;
+            }
+            finally{
+            	if(inChannelFIS != null){
+            		try {
+						inChannelFIS.close();
+					} 
+            		catch (IOException e) {}
+            	}
+            	if(outChannelFOS != null){
+            		try {
+            			outChannelFOS.close();
+					} 
+            		catch (IOException e) {}
+            	}
             }
         }
     }

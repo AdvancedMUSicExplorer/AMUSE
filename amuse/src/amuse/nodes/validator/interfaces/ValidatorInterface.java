@@ -39,7 +39,7 @@ public interface ValidatorInterface {
 	public void validate() throws NodeException;
 	
 	/** Calculates list of all files with processed features which are used for training and validation.
-	 * This list is required for data reduction metrics */
+	 * This list is required for data reduction measures */
 	public ArrayList<String> calculateListOfUsedProcessedFeatureFiles() throws NodeException;
 
 }

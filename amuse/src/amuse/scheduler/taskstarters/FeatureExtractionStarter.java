@@ -121,7 +121,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					FileOutputStream fos = null;
 		   	   		ObjectOutputStream out = null;
 		   	   		try {
-		   	   			fos = new FileOutputStream(new String(System.getenv("AMUSEHOME") + File.separator + "taskoutput" + File.separator + "task_" + 
+		   	   			fos = new FileOutputStream(new String(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "taskoutput" + File.separator + "task_" + 
 		   	   					this.jobCounter + ".ser"));
 		   	   		    out = new ObjectOutputStream(fos);
 		   	   		    out.writeObject(extractorConfigWithOneFile);
@@ -182,14 +182,14 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					
 					ExtractorNodeScheduler extractorThread = null;
 					try {
-						extractorThread = new ExtractorNodeScheduler(System.getenv("AMUSEHOME") + 
+						extractorThread = new ExtractorNodeScheduler(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
 								sep + "config" + sep + "node" + sep +"extractor"+ sep + "input" + sep + "task_" + this.jobCounter);
 					} catch (NodeException e) {
 						throw new SchedulerException("Extractor node thread could not be started: " + e.getMessage());
 					}
 		
 				    // Prepare extractor node scheduler arguments and start it as thread
-				    extractorThread.setThreadParameters(System.getenv("AMUSEHOME") + sep + "config" + sep + "node" + sep + "extractor", this.jobCounter, extractorConfigWithOneFile);
+				    extractorThread.setThreadParameters(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + sep + "config" + sep + "node" + sep + "extractor", this.jobCounter, extractorConfigWithOneFile);
 				    Thread newExtractorThread = new Thread(extractorThread);
 				    // TODO Timeout einbauen
 				    while (this.nodeSchedulers.size() >= AmusePreferences.getInt(KeysIntValue.MAX_NUMBER_OF_TASK_THREADS)) {
@@ -247,7 +247,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 		// --------------------------------------
     	// Load ARFF extractor table
 		try {
-			DataSetAbstract toolTableSet = new ArffDataSet(new File(System.getenv("AMUSEHOME") + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			DataSetAbstract toolTableSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
 			Attribute idAttribute = toolTableSet.getAttribute("Id");
 			Attribute extractorNameAttribute = toolTableSet.getAttribute("Name");
 			Attribute adapterClassAttribute = toolTableSet.getAttribute("AdapterClass");
@@ -266,7 +266,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 						Properties extractorProperties = new Properties();
 						extractorProperties.setProperty("id", new Integer(new Double(idAttribute.getValueAt(i).toString()).intValue()).toString());
 						extractorProperties.setProperty("extractorName", extractorNameAttribute.getValueAt(i).toString());
-						extractorProperties.setProperty("extractorFolder",System.getenv("AMUSEHOME") + File.separator +"tools" + File.separator + homeFolderAttribute.getValueAt(i));
+						extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + homeFolderAttribute.getValueAt(i));
 						extractorProperties.setProperty("inputExtractorBaseBatch", inputExtractorBaseBatchAttribute.getValueAt(i).toString());
 						extractorProperties.setProperty("inputExtractorBatch", inputExtractorBatchAttribute.getValueAt(i).toString());
 						((AmuseTask) ead).configure(extractorProperties, null, null);

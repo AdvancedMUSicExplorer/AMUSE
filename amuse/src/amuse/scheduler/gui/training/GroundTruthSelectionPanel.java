@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
-import amuse.data.io.FileInput;
 import amuse.nodes.GroundTruthSourceType;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import net.miginfocom.swing.MigLayout;
