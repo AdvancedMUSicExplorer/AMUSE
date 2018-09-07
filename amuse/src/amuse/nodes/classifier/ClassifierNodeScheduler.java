@@ -206,7 +206,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		} catch (NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 					"Could not proceed classification task: " + e.getMessage());
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.CLASSIFICATION_FAILED, this));
 		}
 	}
@@ -273,7 +273,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					// Set the category description only if FILE_LIST as source is used!!!
 					DataSetAbstract categoryList = null;
 					try {
-						categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+						categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 					} catch (IOException e) {
 						throw new NodeException("Could not load the category table: " + e.getMessage()); 
 					}

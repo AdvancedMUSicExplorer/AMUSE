@@ -61,10 +61,13 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * task starter receives the Id of the last job and increments it for the jobs of a new task */
     protected long jobCounter;
     
-    protected List<StringBuilder> returnStringBuilderList;
+    /** A list used to capture descriptions from NodeSchedulers that failed to complete their computation.
+     * To monitor a NodeScheduler, its asasd must be added to this list before execution. 
+     */
+    protected List<StringBuilder> errorDescriptionsList;
     
     /** If the tasks should be started locally as threads, currently working node schedulers are
-     * keeped in this list */
+     * kept in this list */
     protected ArrayList<NodeEventSource> nodeSchedulers = null;
     
     /** If true, node scheduler will be started directly as thread; if false, it will be started
@@ -75,7 +78,7 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      * Constructor
      */
     public AmuseTaskStarter(String nodeFolder, long jobCounter, boolean startNodeDirectly) throws SchedulerException {
-    	this.returnStringBuilderList = Collections.synchronizedList(new ArrayList<StringBuilder>());
+    	this.errorDescriptionsList = Collections.synchronizedList(new ArrayList<StringBuilder>());
         this.nodeSchedulers = new ArrayList<NodeEventSource>();
         this.nodeFolder = new String(nodeFolder);
         this.jobCounter = jobCounter;
@@ -91,18 +94,18 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
         }
     }
     
-    public List<StringBuilder> getReturnStringBuilderList(){
-    	return returnStringBuilderList;
-    }
-    
-    public void addReturnStringBuilderToNodeScheduler(NodeScheduler scheduler){
-	    returnStringBuilderList.add(scheduler.getReturnStringBuilder());
+    /**
+     * Connects a NodeScheduler to the errorDescriptionsList to enable it to return a description if it fails.
+     * @param scheduler
+     */
+    public void connectSchedulerToErrorDescriptionList(NodeScheduler scheduler){
+	    errorDescriptionsList.add(scheduler.getErrorDescriptionBuilder());
     }
     
     public void logResults(){
 		String errorText = "";
 		int numErrors = 0;
-		for(StringBuilder s:returnStringBuilderList){
+		for(StringBuilder s:errorDescriptionsList){
 			if(!s.toString().equals("")){
 				errorText += "\n" + s;
 				numErrors++;
@@ -129,10 +132,10 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
 			jobType = "optimization";
 		}
 		if(numErrors == 0){
-			AmuseLogger.write(this.getClass().getName(),Level.INFO, returnStringBuilderList.size() + "/" + returnStringBuilderList.size() + " " + jobType + " jobs finished sucessfully!");
+			AmuseLogger.write(this.getClass().getName(),Level.INFO, errorDescriptionsList.size() + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished sucessfully!");
 		}
 		else{
-			AmuseLogger.write(this.getClass().getName(),Level.ERROR, (returnStringBuilderList.size() - numErrors) + "/" + returnStringBuilderList.size() + " " + jobType + " jobs finished sucessfully!");
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR, (errorDescriptionsList.size() - numErrors) + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished sucessfully!");
 			AmuseLogger.write(this.getClass().getName(),Level.ERROR, "Error occured while processing the following files:" + errorText);
 
 		}

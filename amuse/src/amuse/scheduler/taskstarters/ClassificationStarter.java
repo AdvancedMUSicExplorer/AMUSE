@@ -147,7 +147,7 @@ public class ClassificationStarter extends AmuseTaskStarter {
 					}
 			    }
 			    
-			    this.addReturnStringBuilderToNodeScheduler(classifierThread);
+			    this.connectSchedulerToErrorDescriptionList(classifierThread);
 			    nodeSchedulers.add(classifierThread);
 			    classifierThread.addListener(this);
 			    newClassifierThread.start();

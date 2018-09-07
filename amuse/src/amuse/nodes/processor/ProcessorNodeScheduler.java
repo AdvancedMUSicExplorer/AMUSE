@@ -162,7 +162,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during feature list generation: " + e.getMessage());
-			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			errorDescriptionBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
 			return;
 		}
@@ -175,7 +175,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during feature processing steps: " + e.getMessage());
-			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			errorDescriptionBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
 			return;
 		}
@@ -188,7 +188,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Problem(s) occured during conversion from matrix to vector: " + e.getMessage());
-			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			errorDescriptionBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
 			return;
 		}
@@ -201,7 +201,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Problem(s) occured during saving of processed features to database: " + e.getMessage());
-			returnStringBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+			errorDescriptionBuilder.append(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
 			this.fireEvent(new NodeEvent(NodeEvent.PROCESSING_FAILED, this));
 			return;
 		}

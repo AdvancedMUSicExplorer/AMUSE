@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.trainer.TrainingConfiguration;
 
 /**

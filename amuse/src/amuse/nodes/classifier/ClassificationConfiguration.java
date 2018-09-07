@@ -30,13 +30,13 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;

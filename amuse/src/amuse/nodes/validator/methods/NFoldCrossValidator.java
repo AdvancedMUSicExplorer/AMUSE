@@ -33,6 +33,7 @@ import java.util.Random;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
@@ -41,7 +42,6 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
@@ -49,7 +49,7 @@ import amuse.nodes.trainer.TrainerNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
-import amuse.nodes.validator.interfaces.calculateMulticlassMeasureOnSongLevel;
+import amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.DataReductionMeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.MeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
@@ -196,12 +196,12 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				MeasureCalculatorInterface vmc = (MeasureCalculatorInterface)measureMethod.newInstance();
 				this.measureCalculators.add(vmc);
 				this.measureIds.add(mt.get(i).getID());
-				if(vmc instanceof calculateMulticlassMeasureOnSongLevel) {
+				if(vmc instanceof ClassificationQualityMeasureCalculatorInterface) {
 					if(mt.get(i).isPartitionLevelSelected()) {
-						((calculateMulticlassMeasureOnSongLevel)vmc).setPartitionLevel(true);
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setPartitionLevel(true);
 					} 
 					if(mt.get(i).isSongLevelSelected()) {
-						((calculateMulticlassMeasureOnSongLevel)vmc).setSongLevel(true);
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setSongLevel(true);
 					}
 				}
 			}
@@ -348,12 +348,12 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null;
-					if(this.measureCalculators.get(currentMeasure) instanceof calculateMulticlassMeasureOnSongLevel) {
+					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
 						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
-							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								songRelationshipsValidationSet, predictedSongs);
 						} else {
-							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 								songRelationshipsMValidationSet, predictedSongs);
 						}
 					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {

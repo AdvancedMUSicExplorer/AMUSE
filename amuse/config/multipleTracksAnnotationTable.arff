@@ -1,0 +1,7 @@
+@RELATION "Annotations Multiple Tracks"
+
+@ATTRIBUTE 'Id' NUMERIC
+@ATTRIBUTE 'Path' STRING
+@ATTRIBUTE 'CategoryName' STRING
+
+@DATA

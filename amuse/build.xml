@@ -23,7 +23,7 @@
 
 	<target name="CreateClassifierNodeSchedulerJar" depends="compile" description="Create the Jar for the ClassifierNodeScheduler">
 		<echo message="Creating the Jar for the ClassifierNodeScheduler" />
-		<jar destfile="${amuseHome}/config/node/classifier/classifierNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/classifier/** amuse/nodes/GroundTruthSourceType.class">
+		<jar destfile="${amuseHome}/config/node/classifier/classifierNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/classifier/** amuse/data/GroundTruthSourceType.class">
 			<manifest>
 				<attribute name="Main-Class" value="amuse.nodes.classifier.ClassifierNodeScheduler" />
 			</manifest>
@@ -41,7 +41,7 @@
 
 	<target name="CreateOptimizerNodeSchedulerJar" depends="compile" description="Create the Jar for the OptimizerNodeScheduler">
 		<echo message="Creating the Jar for the OptimizerNodeScheduler" />
-		<jar destfile="${amuseHome}/config/node/optimizer/optimizerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/optimizer/**, amuse/nodes/GroundTruthSourceType.class">
+		<jar destfile="${amuseHome}/config/node/optimizer/optimizerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/optimizer/**, amuse/data/GroundTruthSourceType.class">
 			<manifest>
 				<attribute name="Main-Class" value="amuse.nodes.optimizer.OptimizerNodeScheduler" />
 			</manifest>
@@ -59,7 +59,7 @@
 
 	<target name="CreateTrainerNodeSchedulerJar" depends="compile" description="Create the Jar for the TrainerNodeScheduler">
 		<echo message="Creating the Jar for the TrainerNodeScheduler" />
-		<jar destfile="${amuseHome}/config/node/trainer/trainerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/trainer/**, amuse/nodes/GroundTruthSourceType.class">
+		<jar destfile="${amuseHome}/config/node/trainer/trainerNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/trainer/**, amuse/data/GroundTruthSourceType.class">
 			<manifest>
 				<attribute name="Main-Class" value="amuse.nodes.trainer.TrainerNodeScheduler" />
 			</manifest>
@@ -68,7 +68,7 @@
 
 	<target name="CreateValidatorNodeSchedulerJar" depends="compile" description="Create the Jar for the ValidatorNodeScheduler">
 		<echo message="Creating the Jar for the ValidatorNodeScheduler" />
-		<jar destfile="${amuseHome}/config/node/validator/validatorNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/validator/**, amuse/nodes/GroundTruthSourceType.class">
+		<jar destfile="${amuseHome}/config/node/validator/validatorNode.jar" basedir="${amuseHome}/bin" includes="amuse/nodes/validator/**, amuse/data/GroundTruthSourceType.class">
 			<manifest>
 				<attribute name="Main-Class" value="amuse.nodes.validator.ValidatorNodeScheduler" />
 			</manifest>

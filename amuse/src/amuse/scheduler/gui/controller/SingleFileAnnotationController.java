@@ -80,6 +80,11 @@ public class SingleFileAnnotationController extends AbstractController{
 		annotationView.resizePanels();
 	}
 	
+	public void deleteAttributeFile(AnnotationAttribute<?> att){
+		this.removeAttribute(att);
+		annotationModel.deleteAttributeFile(att);
+	}
+	
 	public AnnotationAttribute<?> addAttribute(int id) {
 		AnnotationAttribute<?> att = annotationModel.addAttribute(id);
 		for(int i = 0; i < att.getEntryList().size(); i++){

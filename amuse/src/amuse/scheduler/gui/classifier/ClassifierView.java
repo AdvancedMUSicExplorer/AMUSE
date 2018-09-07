@@ -36,7 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
-import amuse.nodes.GroundTruthSourceType;
+import amuse.data.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.controller.ClassifierController;

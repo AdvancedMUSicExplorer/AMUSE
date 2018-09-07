@@ -40,7 +40,7 @@ import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
-import amuse.nodes.validator.interfaces.calculateMulticlassMeasureOnSongLevel;
+import amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.DataReductionMeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.MeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
@@ -107,12 +107,12 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				MeasureCalculatorInterface vmc = (MeasureCalculatorInterface)measureMethod.newInstance();
 				this.measureCalculators.add(vmc);
 				this.measureIds.add(mt.get(i).getID());
-				if(vmc instanceof calculateMulticlassMeasureOnSongLevel) {
+				if(vmc instanceof ClassificationQualityMeasureCalculatorInterface) {
 					if(mt.get(i).isPartitionLevelSelected()) {
-						((calculateMulticlassMeasureOnSongLevel)vmc).setPartitionLevel(true);
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setPartitionLevel(true);
 					} 
 					if(mt.get(i).isSongLevelSelected()) {
-						((calculateMulticlassMeasureOnSongLevel)vmc).setSongLevel(true);
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setSongLevel(true);
 					}
 				}
 			}
@@ -181,12 +181,12 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null; 
-					if(this.measureCalculators.get(currentMeasure) instanceof calculateMulticlassMeasureOnSongLevel) {
+					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
 						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
-							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
 						} else {
-							currMeas = ((calculateMulticlassMeasureOnSongLevel)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
 						}
 					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {
@@ -334,7 +334,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			String categoryForTraining = new String();
 			ArffLoader categoryDescriptionLoader = new ArffLoader();
 			Instance currentInstance;
-			categoryDescriptionLoader.setFile(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+			categoryDescriptionLoader.setFile(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 			Attribute idAttribute = categoryDescriptionLoader.getStructure().attribute("Id");
 			Attribute fileNameAttribute = categoryDescriptionLoader.getStructure().attribute("Path");
 			currentInstance = categoryDescriptionLoader.getNextInstance(categoryDescriptionLoader.getStructure());

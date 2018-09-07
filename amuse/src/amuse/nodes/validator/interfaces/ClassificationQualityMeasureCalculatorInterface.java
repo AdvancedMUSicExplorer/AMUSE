@@ -35,7 +35,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * @author Igor Vatolkin
  * @version $Id$
  */
-public interface calculateMulticlassMeasureOnSongLevel extends MeasureCalculatorInterface {
+public interface ClassificationQualityMeasureCalculatorInterface extends MeasureCalculatorInterface {
 	
 	/** Switchs the measure calculation on song level on/off */
 	public void setSongLevel(boolean level);

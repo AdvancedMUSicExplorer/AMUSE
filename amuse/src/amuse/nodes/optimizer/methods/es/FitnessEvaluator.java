@@ -36,6 +36,7 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
+import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
@@ -44,7 +45,6 @@ import amuse.data.io.DataSetInput;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.methods.es.parameters.processing.SelectedFeatures;
 import amuse.nodes.processor.ProcessingConfiguration;
@@ -141,7 +141,7 @@ public class FitnessEvaluator {
 		ArffLoader categoryDescriptionLoader = new ArffLoader();
 		Instance categoryDescriptionInstance;
 		try {	
-			categoryDescriptionLoader.setFile(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+			categoryDescriptionLoader.setFile(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 			categoryDescriptionInstance = categoryDescriptionLoader.getNextInstance(categoryDescriptionLoader.getStructure());
 			Attribute idAttribute = categoryDescriptionLoader.getStructure().attribute("Id");
 			Attribute fileNameAttribute = categoryDescriptionLoader.getStructure().attribute("Path");

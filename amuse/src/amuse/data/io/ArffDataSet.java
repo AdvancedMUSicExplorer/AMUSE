@@ -311,7 +311,10 @@ public class ArffDataSet extends DataSetAbstract {
 	 * amuse.data.io.Attribute, java.lang.Object)
 	 */
 	public void setValueAt(int index, Attribute attribute, Object value) {
-		throw new NotImplementedException();
+		/*assertInBuffer(index);
+		bufferedLines[calculateBufferIndex(index)][this
+				.getAttributeNames().indexOf(attribute.getName())] = 0.;
+		throw new NotImplementedException();*/
 	}
 
 	/*
@@ -392,7 +395,7 @@ public class ArffDataSet extends DataSetAbstract {
 		initTokenizer(dataTagLine);
 		getFirstToken();
 		while (tokenizer.ttype != StreamTokenizer.TT_EOF) {
-			double[] dataLine = parseDataLine(true);
+			parseDataLine(true);
 			getFirstToken();
 		}
 		// System.out.println(Arrays.toString(emptyLines.toArray()));
@@ -505,7 +508,9 @@ public class ArffDataSet extends DataSetAbstract {
 	 *             containing the error message
 	 */
 	private void errorMessage(String msg) throws IOException {
-		String str = msg + ", read " + tokenizer.toString();
+		String str = msg + ", read '" + tokenizer.sval + "' in line " + reader.getLineNumber() + ": " + tokenizer.lineno();
+		this.initReader(reader.getLineNumber() - 1);
+		str += reader.readLine();
 		if (lines > 0) {
 			int line = Integer.parseInt(str.replaceAll(".* line ", ""));
 			str = str.replaceAll(" line .*", " line " + (lines + line - 1));
@@ -567,18 +572,29 @@ public class ArffDataSet extends DataSetAbstract {
 	}
 
 	private void readArffAttributes() throws IOException {
-		LineNumberReader lnr = new LineNumberReader(new FileReader(file));
-		String line = lnr.readLine();
-		while (line != null && !line.trim().startsWith(dataStr)) {
-			if (line.startsWith("%@")) {
-				if (!line.contains("=")) {
-					throw new IOException("Missing \"=\" in line: "
-							+ reader.getLineNumber());
+		LineNumberReader lnr = null;
+		try{
+			lnr = new LineNumberReader(new FileReader(file));
+			String line = lnr.readLine();
+			while (line != null && !line.trim().startsWith(dataStr)) {
+				if (line.startsWith("%@")) {
+					if (!line.contains("=")) {
+						throw new IOException("Missing \"=\" in line: "
+								+ reader.getLineNumber());
+					}
+					this.addAmuseAttribute(line.substring(0, line.indexOf("=")),
+							line.substring(line.indexOf("=") + 1));
 				}
-				this.addAmuseAttribute(line.substring(0, line.indexOf("=")),
-						line.substring(line.indexOf("=") + 1));
+				line = lnr.readLine();
 			}
-			line = lnr.readLine();
+		}
+		catch(IOException e){
+			throw e;
+		}
+		finally{
+			if(lnr != null){
+				lnr.close();
+			}
 		}
 	}
 

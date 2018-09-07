@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.controller;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
@@ -36,7 +37,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;

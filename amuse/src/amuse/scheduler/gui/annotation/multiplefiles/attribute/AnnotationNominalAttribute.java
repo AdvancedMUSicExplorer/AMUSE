@@ -11,13 +11,13 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 
 	private DefaultListModel<String> allowedValues; // The List of the values, that are allowed to use in an attribute value
 	
-	public AnnotationNominalAttribute(String name, int id, DefaultListModel<String> allowedValues) {
-		this(name, id);
+	public AnnotationNominalAttribute(String name, DefaultListModel<String> allowedValues) {
+		this(name);
 		this.allowedValues = allowedValues;
 	}
 	
-	public AnnotationNominalAttribute(String name, int id) {
-		super(name, id);
+	public AnnotationNominalAttribute(String name) {
+		super(name);
 		type = AnnotationAttributeType.NOMINAL;
 		allowedValues = new DefaultListModel<String>();
 	}
@@ -34,6 +34,6 @@ public class AnnotationNominalAttribute extends AnnotationAttribute<String>{
 
 	@Override
 	public AnnotationAttribute<String> newInstance() {
-		return new AnnotationNominalAttribute(getName(), getId(), allowedValues);
+		return new AnnotationNominalAttribute(getName(), allowedValues);
 	}
 }

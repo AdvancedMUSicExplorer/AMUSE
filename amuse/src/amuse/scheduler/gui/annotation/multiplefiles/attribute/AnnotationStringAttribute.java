@@ -7,14 +7,14 @@ package amuse.scheduler.gui.annotation.multiplefiles.attribute;
  */
 public class AnnotationStringAttribute extends AnnotationAttribute<String>{
 
-	public AnnotationStringAttribute(String pName, int id) {
-		super(pName, id);
+	public AnnotationStringAttribute(String pName) {
+		super(pName);
 		type = AnnotationAttributeType.STRING;
 	}
 
 	@Override
 	public AnnotationAttribute<String> newInstance() {
-		return new AnnotationStringAttribute(getName(), getId());
+		return new AnnotationStringAttribute(getName());
 	}
 
 }

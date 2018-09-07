@@ -44,7 +44,6 @@ public enum KeysStringValue {
     ANNOTATION_DATABASE,
     FEATURE_DATABASE,
     PROCESSED_FEATURE_DATABASE,
-    CATEGORY_DATABASE, 
     MODEL_DATABASE, 
     MEASURE_DATABASE, 
     OPTIMIZATION_DATABASE,
@@ -110,8 +109,6 @@ public enum KeysStringValue {
                     return false;
                 }
                 return true;
-            case CATEGORY_DATABASE:
-            	return new File(value).isFile();
 
 	    case JAVA_PATH:
 		return true;
@@ -160,7 +157,6 @@ public enum KeysStringValue {
 		map.put(FEATURE_DATABASE.toString(), "Absolute path to database folder with features:");
 		map.put(OPTIMIZATION_DATABASE.toString(), "Absolute path to database folder with optimization results:");
 		map.put(PROCESSED_FEATURE_DATABASE.toString(), "Absolute path to database folder with processed features:");
-		map.put(CATEGORY_DATABASE.toString(), "Absolute path to database folder with music categories:");
 		map.put(MEASURE_DATABASE.toString(), "Absolute path to database folder with validation results:");
 		map.put(MODEL_DATABASE.toString(), "Absolute path to database folder with classification models:");
 		map.put(GRID_SCRIPT_CLASSIFIER.toString(), "Batch command to proceed classifier task in grid:");

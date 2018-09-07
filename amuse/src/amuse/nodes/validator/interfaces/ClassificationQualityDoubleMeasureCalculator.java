@@ -34,7 +34,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * @author Igor Vatolkin
  * @version $Id$
  */
-public abstract class ClassificationQualityDoubleMeasureCalculator implements calculateMulticlassMeasureOnSongLevel {
+public abstract class ClassificationQualityDoubleMeasureCalculator implements ClassificationQualityMeasureCalculatorInterface {
 	
 	/** True if this measure will be calculated on song level*/
 	private boolean calculateForSongLevel = false;
@@ -75,7 +75,7 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements ca
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.calculateMulticlassMeasureOnSongLevel#calculateMeasure(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMeasure(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasure(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		if(groundTruthRelationships.size() != predictedRelationships.size()) {

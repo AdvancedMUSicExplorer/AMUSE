@@ -1,10 +1,8 @@
 package amuse.scheduler.gui.controller;
 
 import java.io.File;
-import java.util.LinkedHashMap;
 
 import javax.swing.RowFilter;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import amuse.data.io.DataSetAbstract;
@@ -13,7 +11,6 @@ import amuse.scheduler.gui.annotation.MusicPlayerModel;
 import amuse.scheduler.gui.annotation.multiplefiles.AnnotationIO;
 import amuse.scheduler.gui.annotation.multiplefiles.AnnotationView;
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationAttribute;
-import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationAttributeType;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.scene.media.MediaPlayer.Status;
 
@@ -36,10 +33,6 @@ public class MultipleFilesAnnotationController extends AbstractController{
 	public void loadMusic(String pPath){
 		musicPlayerModel.load(pPath);
 		annotationView.getMusicPlayerView().repaint();
-	}
-	
-	public void showAddAttributeDialog(String title, AnnotationAttributeType... validTypesToShow){
-		annotationView.getTableControlView().showAddAttributeDialog(title, validTypesToShow);
 	}
 
 	@Override
@@ -69,10 +62,6 @@ public class MultipleFilesAnnotationController extends AbstractController{
 	@Override
 	public AnnotationView getView() {
 		return annotationView;
-	}
-	
-	public LinkedHashMap<Integer, AnnotationAttribute<?>> getAnnotationAttributeTable(){
-		return annotationIO.getAnnotationAttributeTable();
 	}
 	
 	public void repaintTable(){
@@ -111,14 +100,6 @@ public class MultipleFilesAnnotationController extends AbstractController{
 		return musicPlayerModel.getStatusProperty();
 	}
 
-	public int getNextAvailableId() {
-		return annotationIO.getNextAvailableId();
-	}
-	
-	public boolean isAttributeNameAvailable(String name){
-		return annotationIO.isAttributeNameAvailable(name);
-	}
-
 	public void clearAnnotation() {
 		annotationView.getTableView().clearAnnotation();
 	}
@@ -131,8 +112,8 @@ public class MultipleFilesAnnotationController extends AbstractController{
 		return annotationView.getTableView().getColumnModel();
 	}
 
-	public void saveAnnotation(String path) {
-		annotationIO.saveAnnotation(path);
+	public void saveAnnotation(String dataSetName) {
+		annotationIO.saveAnnotation(dataSetName);
 	}
 
 	public void loadAnnotation(String path) {
@@ -153,14 +134,6 @@ public class MultipleFilesAnnotationController extends AbstractController{
 
 	public void addAttribute(AnnotationAttribute<?> att) {
 		annotationView.getTableView().addAttribute(att);
-	}
-	
-	public void addNewAttribute(AnnotationAttribute<?> att){
-		annotationIO.addNewAttribute(att);
-	}
-	
-	public void removeAttributeFromAnnotationAttributeTable(int id){
-		annotationIO.removeAttributeFromAnnotationAttributeTable(id);
 	}
 	
 	public AnnotationAttribute<?> getAttributeFromColumn(int column){

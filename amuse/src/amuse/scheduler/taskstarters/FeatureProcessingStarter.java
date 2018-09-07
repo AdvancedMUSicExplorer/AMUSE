@@ -180,7 +180,7 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
 					    throw new SchedulerException(this.getClass().getName() + " was interrupted: " + e.getMessage());
 					}
 			    }
-			    this.addReturnStringBuilderToNodeScheduler(processorThread);
+			    this.connectSchedulerToErrorDescriptionList(processorThread);
 			    nodeSchedulers.add(processorThread);
 			    processorThread.addListener(this); 
 			    newProcessorThread.start();
