@@ -3,6 +3,8 @@ package amuse.scheduler.gui.annotation.singlefile;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -183,12 +185,14 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 	public class AnnotationUserInterfacePanel extends JPanel{
 
 		private JLabel labelMouseTime, labelCurrentTime, labelMouseFreq;
+		private boolean buttonsSplitIntoRows;
+		final private int BUTTON_SPLIT_THRESHOLD = 1440;
 		private ImageIcon iconPlay, iconPause;
 		private JButton buttonPlayPause;
+
 		public AnnotationUserInterfacePanel(){
 			super();
-			this.setLayout(new MigLayout("", "[fill]"));
-			
+			this.setLayout(new MigLayout("insets 0", "[]", "[]0"));
 			
 			/*
 			 * Init Buttons
@@ -294,25 +298,65 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			checkBoxRepeatWindow.setToolTipText("Enable the repitition of a time window");
 			checkBoxRepeatWindow.addActionListener(e -> audioSpectrumPanel.enableRepeating(checkBoxRepeatWindow.isSelected()));
 			
+			JPanel fstRow = new JPanel(new MigLayout(""));
+			JPanel sndRow = new JPanel(new MigLayout(""));
+			fstRow.add(buttonPlayPause, "");
+			fstRow.add(labelCurrentTime, "");
+			fstRow.add(new JSeparator(SwingConstants.VERTICAL), "growy");
+			fstRow.add(labelMouseTime, "");
+			fstRow.add(labelMouseFreq, "");
+			sndRow.add(new JLabel("Zoom Time:"), "span, split 12");
+			sndRow.add(sliderTimeZoom, "");
+			sndRow.add(new JSeparator(SwingConstants.VERTICAL), "growy");
+			sndRow.add(new JLabel("Zoom Frequency:"), "split 2");
+			sndRow.add(sliderFreqZoom, "");
+			sndRow.add(normalizeCurrentViewButton, "");
+			sndRow.add(new JLabel("Keep Scrolling:"), "split 2");
+			sndRow.add(checkBoxAutoScroll, "");
+			sndRow.add(new JLabel("Repeat Window:"), "split 2");
+			sndRow.add(checkBoxRepeatWindow);
+			sndRow.add(undoButton, "");
+			sndRow.add(redoButton, "");
+			this.add(fstRow, "alignx center");
+			this.add(sndRow, "alignx center");
 			
-			this.add(buttonPlayPause, "");
-			this.add(labelCurrentTime, "");
-			this.add(new JSeparator(SwingConstants.VERTICAL), "growy");
-			this.add(labelMouseTime, "");
-			this.add(labelMouseFreq, "");
-			this.add(new JSeparator(SwingConstants.VERTICAL), "growy");
-			this.add(new JLabel("Zoom Time:"), "split 2");
-			this.add(sliderTimeZoom, "");
-			this.add(new JSeparator(SwingConstants.VERTICAL), "growy");
-			this.add(new JLabel("Zoom Frequency:"), "split 2");
-			this.add(sliderFreqZoom, "");
-			this.add(normalizeCurrentViewButton, "");
-			this.add(new JLabel("Keep Scrolling:"), "split 2");
-			this.add(checkBoxAutoScroll, "");
-			this.add(new JLabel("Repeat Window:"), "split 2");
-			this.add(checkBoxRepeatWindow);
-			this.add(undoButton, "");
-			this.add(redoButton, "");
+			buttonsSplitIntoRows = false;
+			AnnotationView.this.addComponentListener(new ComponentListener() {
+				
+				@Override
+				public void componentShown(ComponentEvent e) {}
+				
+				@Override
+				public void componentResized(ComponentEvent e) {
+					int width = e.getComponent().getWidth();
+					if(!buttonsSplitIntoRows && width < BUTTON_SPLIT_THRESHOLD){
+						buttonsSplitIntoRows = true;
+						removeAll();
+						setLayout(new MigLayout("insets 0", "[]", "[]0"));
+						add(fstRow, "alignx center, wrap");
+						add(sndRow, "");
+						
+						revalidate();
+					}
+					else if(buttonsSplitIntoRows && width >= BUTTON_SPLIT_THRESHOLD){
+						buttonsSplitIntoRows = false;
+						removeAll();
+						setLayout(new MigLayout("insets 0", "[]", "[]0"));
+						add(fstRow, "");
+						add(sndRow, "");
+						
+						revalidate();
+					}
+					
+				}
+				
+				@Override
+				public void componentMoved(ComponentEvent e) {}
+				
+				@Override
+				public void componentHidden(ComponentEvent e) {}
+			});
+			
 		}
 		
 		public void refreshButtonPlayPauseIcon(){

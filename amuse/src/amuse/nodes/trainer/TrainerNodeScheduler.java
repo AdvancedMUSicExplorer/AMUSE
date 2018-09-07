@@ -35,6 +35,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.GroundTruthSourceType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -47,7 +48,6 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
@@ -167,7 +167,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} else {
 			DataSetAbstract categoryList = null;
 			try {
-				categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 			} catch (IOException e) {
 				AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 						"Could not load the category table: " + e.getMessage()); 
@@ -196,7 +196,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 				"Could not prepare trainer input: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}
@@ -210,7 +210,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Could not run data preprocessing: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}
@@ -223,7 +223,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Configuration of trainer failed: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}
@@ -236,7 +236,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Classification training failed: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}

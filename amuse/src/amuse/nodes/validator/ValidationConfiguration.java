@@ -23,6 +23,7 @@
  */ 
 package amuse.nodes.validator;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.Measure;
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,6 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -93,7 +93,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @param processedFeaturesModelName Description of methods used for feature processing
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
-	 * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
 	 * - Path to the labeled file list or
 	 * - Path to the ready labeled input 
 	 * - Ready input (as EditableDataSet)
@@ -134,7 +134,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
 				
 				// Search for the category file
-				DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+				DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 				for(int j=0;j<categoryList.getValueCount();j++) {
 					Integer id = new Double(categoryList.getAttribute("Id").getValueAt(j).toString()).intValue();
 					if(id.toString().equals(currentInputToValidate)) {

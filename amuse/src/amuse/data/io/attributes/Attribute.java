@@ -117,7 +117,7 @@ public abstract class Attribute implements AttributeInterface {
     @Override
     public void setValueAt(int index, Object value) {
     	if (arffDataSet != null) {
-            arffDataSet.setValueAt(index, this,value);
+            arffDataSet.setValueAt(index, this,value); 
         } else {
             valueList.set(index, value);
         }

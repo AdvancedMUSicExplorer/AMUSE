@@ -39,6 +39,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.GroundTruthSourceType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -51,7 +52,6 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
@@ -170,7 +170,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// Set the category description - used for the measure destination folder
 		DataSetAbstract categoryList = null;
 		try {
-			categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+			categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 		} catch (IOException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.FATAL,  
 					"Could not load the category table: " + e.getMessage()); 
@@ -401,7 +401,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						// Search for the category file
 						Integer categoryId = new Integer(((FileInput)((ValidationConfiguration)this.getConfiguration()).
 								getInputToValidate()).toString());
-						DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+						DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 						for(int i=0;i<categoryList.getValueCount();i++) {
 							Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
 							if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {

@@ -160,18 +160,29 @@ public class AnnotationSelectionPanel extends JSplitPane {
 		removeAttributeButton.addActionListener(e -> {
 			AnnotationAttribute<?> att = (AnnotationAttribute<?>) attributeList.getSelectedValue();
 			if (att != null) {
-				int result = JOptionPane.showConfirmDialog(null,
+				String[] options = new String[]{"Delete", "Only Hide", "Cancel"};
+				int result = JOptionPane.showOptionDialog(null,
 						"Do you really want to delete the attribute '" + att.getName() + "'?",
-						"Delete Attribute?", JOptionPane.YES_NO_OPTION);
-				if (result == JOptionPane.YES_OPTION) {
+						"Delete Attribute?",
+						JOptionPane.PLAIN_MESSAGE,
+						JOptionPane.QUESTION_MESSAGE,
+						null,
+						options,
+						options[1]);
+				if (result != 3){
 					annotationController.addUndoableAction(new AnnotationRemoveAttributeAction(annotationController, 
 							att, 
 							annotationController.getAttributeListModel().indexOf(att)));
-					annotationController.removeAttribute(att);
+					if (result == 0){
+						annotationController.deleteAttributeFile(att);
+					}
+					else if (result == 1){
+						annotationController.removeAttribute(att);
+					}
+					attributeList.repaint();
+					attributeList.clearSelection();
+					((AnnotationView) annotationController.getView()).resizePanels();
 				}
-				attributeList.repaint();
-				attributeList.clearSelection();
-				((AnnotationView) annotationController.getView()).resizePanels();
 			}
 
 		});

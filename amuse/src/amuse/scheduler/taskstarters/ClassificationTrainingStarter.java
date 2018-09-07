@@ -146,7 +146,7 @@ public class ClassificationTrainingStarter extends AmuseTaskStarter {
 					    throw new SchedulerException(this.getClass().getName() + " was interrupted: " + e.getMessage());
 					}
 			    }
-			    this.addReturnStringBuilderToNodeScheduler(trainerThread);
+			    this.connectSchedulerToErrorDescriptionList(trainerThread);
 			    nodeSchedulers.add(trainerThread);
 			    trainerThread.addListener(this);
 			    newTrainerThread.start();

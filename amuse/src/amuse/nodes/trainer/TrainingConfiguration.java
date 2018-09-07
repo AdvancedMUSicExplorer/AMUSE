@@ -29,11 +29,11 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Level;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -81,7 +81,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param processedFeaturesModelName Description of the processed features model
  	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
 	 * @param groundTruthSource Source with ground truth for model training. Can be either
-	 * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
 	 * - Path to the labeled file list or
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)

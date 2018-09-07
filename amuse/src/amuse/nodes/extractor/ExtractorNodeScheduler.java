@@ -179,7 +179,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Audio decoding error: " + e.getMessage());
-			returnStringBuilder.append(this.inputFileName);
+			errorDescriptionBuilder.append(this.inputFileName);
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 			return;
 		}
@@ -190,7 +190,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
 		if(!file.exists()) {
 			System.out.println("No music files found: " + file.getAbsolutePath());
-			returnStringBuilder.append(this.inputFileName);
+			errorDescriptionBuilder.append(this.inputFileName);
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 			return;
 		}
@@ -210,7 +210,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 				"Could not configure feature extractor(s): " + e.getMessage());
-			returnStringBuilder.append(this.inputFileName);
+			errorDescriptionBuilder.append(this.inputFileName);
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 			return;
 		}
@@ -221,7 +221,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	    if(this.extractors.size() == 0) {
     		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
     				"No extractor has been properly loaded, exiting the extractor node...");
-			returnStringBuilder.append(this.inputFileName);
+			errorDescriptionBuilder.append(this.inputFileName);
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 			return;
 	    }

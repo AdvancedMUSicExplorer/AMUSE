@@ -45,14 +45,10 @@ public class AnnotationModel {
 	}
 	
 	/**
-	 * Saves the table called "annotationAttributeTable.arff" that should be placed in the annotation database.
+	 * Saves the table called "singleTrackAnnotationAttributeTable.arff" that should be placed in the annotation database.
 	 */
 	private void saveAnnotationAttributeTable(){
-		String tablePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-				+ File.separator
-				+ "config"
-				+ File.separator
-				+ "annotationAttributeTable.arff";
+		String tablePath = AmusePreferences.getSingleTrackAnnotationAttributeTablePath();
 		PrintWriter writer = null;
 		try{
 			writer = new PrintWriter(tablePath);
@@ -91,14 +87,10 @@ public class AnnotationModel {
 	
 	
 	/**
-	 * Loads the table called "annotationAttributeTable.arff" that should be placed in the annotation database.
+	 * Loads the table called "singleTrackAnnotationAttributeTable.arff" that should be placed in the annotation database.
 	 */
 	private void loadAnnotationAttributeTable(){
-		String tablePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH)
-				+ File.separator
-				+ "config"
-				+ File.separator
-				+ "annotationAttributeTable.arff";
+		String tablePath = AmusePreferences.getSingleTrackAnnotationAttributeTablePath();
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(tablePath));
@@ -515,7 +507,7 @@ public class AnnotationModel {
 		if(pathToDir.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 			startIndex = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1;
 		}
-		pathToDir = AmusePreferences.get(KeysStringValue.ANNOTATION_DATABASE)
+		pathToDir = AmusePreferences.getSingleTrackAnnotationDatabase()
 					+ File.separator 
 					+ pathToDir.substring(startIndex, pathToDir.lastIndexOf("."))
 					+ File.separator;
@@ -529,8 +521,12 @@ public class AnnotationModel {
 		new File(pathToDir).mkdirs();
 		for(int i = 0; i < attributeListModel.size(); i++){
 			AnnotationAttribute<?> att = attributeListModel.getElementAt(i);
-			saveAnnotation(pathToDir + att.getId() + "-" + att.getName().replace(" ", "_") + ".arff", att);
+			saveAnnotation(pathToDir + getAttributeFileName(att), att);
 		}
+	}
+	
+	private String getAttributeFileName(AnnotationAttribute<?> att){
+		return att.getId() + "-" + att.getName().replace(" ", "_") + ".arff";
 	}
 	
 	private void saveAnnotation(String pathToArff, AnnotationAttribute<?> att) {
@@ -631,6 +627,10 @@ public class AnnotationModel {
 
 	public int getNextAvailableId() {
 		return maxAssignedId + 1;
+	}
+
+	public void deleteAttributeFile(AnnotationAttribute<?> att) {
+		new File(getAnnotationFolderForMusic() + getAttributeFileName(att)).delete();
 	}
 
 	

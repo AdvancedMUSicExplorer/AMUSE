@@ -14,13 +14,12 @@ import java.util.EventObject;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -28,8 +27,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
-import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -38,6 +35,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationAttribute;
+import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationAttributeType;
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationNominalAttribute;
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationNumericAttribute;
 import amuse.scheduler.gui.annotation.multiplefiles.attribute.AnnotationStringAttribute;
@@ -230,17 +228,39 @@ public class TableView extends JPanel{
 					columnName = table.getColumnName(column);
 				}
 				JLabel title = new JLabel("Add " + columnName + " for all selected tracks");
+				popupMenu.add(title);
 				
 				JTextField editorTextField = new JTextField("");
-				
 				JMenuItem applyItem = new JMenuItem("Apply");
 				applyItem.addActionListener(evt -> {
 					TableCellEditor editor = table.getCellEditor(row, column);
 					editor.getTableCellEditorComponent(table, editorTextField.getText(), true, row, column);
 					editor.stopCellEditing();
-				});
+				});	
+				
+				AnnotationAttribute<?> att = getAttributeFromColumn(column);
+				if(att != null && att.getType() == AnnotationAttributeType.NOMINAL){
+					DefaultListModel<String> allowedValues = ((AnnotationNominalAttribute) att).getAllowedValues();
+					for(int i = 0; i < allowedValues.size(); i++){
+						String allowedValue = allowedValues.getElementAt(i);
+						JMenuItem allowedValueItem = new JMenuItem(allowedValue);
+						allowedValueItem.addActionListener(evt -> {
+							TableCellEditor editor = table.getCellEditor(row, column);
+							editor.getTableCellEditorComponent(table, allowedValue, true, row, column);
+							editor.stopCellEditing();
+						});
+						allowedValueItem.setEnabled(table.getSelectedRowCount() > 0);
+						popupMenu.add(allowedValueItem);
+					}
+				}
+				else{
+					popupMenu.add(editorTextField);
+					popupMenu.add(applyItem);
+				}
+				
 				
 				JMenuItem cancelItem = new JMenuItem("Cancel");
+				popupMenu.add(cancelItem);
 				
 				if(table.getSelectedRowCount() == 0 || column < 2){
 					title.setEnabled(false);
@@ -248,10 +268,7 @@ public class TableView extends JPanel{
 					cancelItem.setEnabled(false);
 					editorTextField.setEnabled(false);
 				}
-				popupMenu.add(title);
-				popupMenu.add(editorTextField);
-				popupMenu.add(applyItem);
-				popupMenu.add(cancelItem);
+				
 				
 				popupMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
@@ -308,19 +325,77 @@ public class TableView extends JPanel{
 		});
 		
 		/*
+		 * Listener for removing a column
+		 */
+		table.getTableHeader().addMouseListener(new MouseListener() {
+					
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						if(e.isPopupTrigger()){
+							showPopupMenu(e);
+						}}
+					
+					@Override
+					public void mousePressed(MouseEvent e) {
+						if(e.isPopupTrigger()){
+							showPopupMenu(e);
+						}
+					}
+					
+					public void showPopupMenu(MouseEvent e){
+						int column = table.columnAtPoint(e.getPoint());
+						if(column >= 2){
+							JPopupMenu popupMenu = new JPopupMenu();
+							
+							JMenuItem deleteItem = new JMenuItem("Delete");
+							deleteItem.addActionListener(evt -> {
+								if(JOptionPane.YES_OPTION == 
+										JOptionPane.showConfirmDialog(null,
+										"Do you really want to delete the column '" + table.getColumnName(column) + "' and its content?",
+										"Remove Column", 
+										JOptionPane.YES_NO_OPTION, 
+										JOptionPane.QUESTION_MESSAGE)){
+									removeColumn(column);
+									
+								}
+							});
+							JMenuItem cancelItem = new JMenuItem("Cancel");
+							popupMenu.add(deleteItem);
+							popupMenu.add(cancelItem);
+							
+							popupMenu.show(e.getComponent(), e.getX(), e.getY());
+						}
+					}
+					
+					
+
+					@Override
+					public void mouseExited(MouseEvent e) {}
+					
+					@Override
+					public void mouseEntered(MouseEvent e) {}
+					
+					@Override
+					public void mouseClicked(MouseEvent e) {}
+		});
+					
+		
+		
+		/*
 		 *  Configure the column containing the path
 		 */
 		showAbsolutePath(false);
 		
-		
-		
-		
-		
+		table.getTableHeader().setReorderingAllowed(false);
 		JScrollPane scrollPane = new JScrollPane(table);
 		
 		
 		
 		this.add(scrollPane);
+	}
+	
+	private void removeColumn(int viewColumnIndex) {
+		table.removeColumn(table.getColumnModel().getColumn(viewColumnIndex));
 	}
 	
 	public void showAbsolutePath(boolean bool){
@@ -369,6 +444,9 @@ public class TableView extends JPanel{
 					commonPathPrefix = commonPathPrefix.substring(0, commonPathPrefix.length() - 1);
 				}
 			}
+			if(commonPathPrefix.lastIndexOf(File.separator) > 0){
+				commonPathPrefix = commonPathPrefix.substring(0, commonPathPrefix.lastIndexOf(File.separator) + 1);
+			}
 		}
 	}
 	
@@ -381,7 +459,7 @@ public class TableView extends JPanel{
 	public void removeSelectedRows(){
 		int[] selectedRows = table.getSelectedRows();
 		for(int i = selectedRows.length - 1; i >= 0; i--){
-			tableModel.removeRow(selectedRows[i]);
+			tableModel.removeRow(table.convertRowIndexToModel(selectedRows[i]));
 		}
 	}
 	

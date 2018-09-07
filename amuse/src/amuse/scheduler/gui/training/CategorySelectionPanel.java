@@ -57,7 +57,7 @@ public class CategorySelectionPanel extends JPanel {
 
 	public CategorySelectionPanel() {
 		super(new MigLayout("fillx"));
-		this.setBorder(new TitledBorder("Select Category"));
+		this.setBorder(new TitledBorder("Select Annotation"));
 		this.add(new JLabel("Category:"));
 		this.add(comboBox, "pushx, gap rel, wrap");
 		try {
@@ -104,7 +104,7 @@ public class CategorySelectionPanel extends JPanel {
 		private List<Category> categories;
 
 		private CategoryComboBoxModel() throws IOException {
-			file = new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE));
+			file = new File(AmusePreferences.getMultipleTracksAnnotationTablePath());
 			DataSetAbstract categorySet = new ArffDataSet(file);
 			List<String> names = categorySet.getAttributeNames();
 			if (!names.contains(idStr) || !names.contains(fileNameStr) || !names.contains(categoryNameStr)) {

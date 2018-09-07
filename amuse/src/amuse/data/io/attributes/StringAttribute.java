@@ -151,6 +151,15 @@ public class StringAttribute extends Attribute {
 					.get((int) getDataSet().getValueFor(index, this));
 		}
 	}
+	
+	@Override
+    public void setValueAt(int index, Object value) {
+    	if (getDataSet() != null) {
+    		stringValues.set((int) getDataSet().getValueFor(index, this), (String) value);
+        } else {
+            valueList.set(index, value);
+        }
+    }
 
 	static String parse(String str) {
 		if (str.startsWith("\"")) {

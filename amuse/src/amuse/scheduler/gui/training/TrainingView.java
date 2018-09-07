@@ -23,7 +23,7 @@
  */
 package amuse.scheduler.gui.training;
 
-import amuse.nodes.GroundTruthSourceType;
+import amuse.data.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.Algorithm;
 import javax.swing.JComponent;
 import javax.swing.JPanel;

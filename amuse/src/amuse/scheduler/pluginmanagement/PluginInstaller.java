@@ -615,8 +615,7 @@ public class PluginInstaller {
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 					Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-					String featureTypeString = installedFeatureList.getAttribute("FeatureType").getValueAt(installedFeatureMap.get(idOfInstalledFeature)).toString();
-					
+					String featureTypeString = newFeatureList.getAttribute("FeatureType").getValueAt(newFeatureMap.get(idOfNewFeature)).toString();
 					values_writer.writeBytes(idOfNewFeature + ", \"" + 
 						newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
 						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
@@ -634,7 +633,7 @@ public class PluginInstaller {
 				String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
 				Double dimensions = new Double(newFeatureList.getAttribute("Dimensions").getValueAt(newFeatureMap.get(idOfNewFeature)).toString());
 				String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
-				String featureTypeString = installedFeatureList.getAttribute("FeatureType").getValueAt(newFeatureMap.get(idOfNewFeature)).toString();
+				String featureTypeString = newFeatureList.getAttribute("FeatureType").getValueAt(newFeatureMap.get(idOfNewFeature)).toString();
 				values_writer.writeBytes(idOfNewFeature + ", \"" + 
 					newFeatureList.getAttribute("Description").getValueAt(newFeatureMap.get(idOfNewFeature)).toString() + "\", " + 
 					extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);

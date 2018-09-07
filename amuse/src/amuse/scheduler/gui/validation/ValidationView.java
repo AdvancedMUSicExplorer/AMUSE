@@ -25,7 +25,7 @@ package amuse.scheduler.gui.validation;
 
 import javax.swing.JComponent;
 
-import amuse.nodes.GroundTruthSourceType;
+import amuse.data.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
 

@@ -132,7 +132,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Configuration of optimizer failed: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_FAILED, this));
 			return;
 		}
@@ -145,7 +145,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Optimization failed: " + e.getMessage()); 
-			returnStringBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.OPTIMIZATION_FAILED, this));
 			return;
 		}

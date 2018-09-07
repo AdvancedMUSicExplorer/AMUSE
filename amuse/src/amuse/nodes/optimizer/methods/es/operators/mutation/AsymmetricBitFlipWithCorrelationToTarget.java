@@ -146,7 +146,7 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip 
 		ArffLoader categoryDescriptionLoader = new ArffLoader();
 		Instance categoryDescriptionInstance;
 		try {	
-			categoryDescriptionLoader.setFile(new File(AmusePreferences.get(KeysStringValue.CATEGORY_DATABASE)));
+			categoryDescriptionLoader.setFile(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
 			categoryDescriptionInstance = categoryDescriptionLoader.getNextInstance(categoryDescriptionLoader.getStructure());
 			Attribute idAttribute = categoryDescriptionLoader.getStructure().attribute("Id");
 			Attribute fileNameAttribute = categoryDescriptionLoader.getStructure().attribute("Path");

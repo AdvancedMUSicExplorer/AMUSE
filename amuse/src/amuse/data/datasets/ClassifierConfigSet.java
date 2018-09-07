@@ -30,13 +30,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.GroundTruthSourceType;
 
 /**
  * This class represents a list of classification tasks as used in AMUSE. Serialisation to ARFF is supported.

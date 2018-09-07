@@ -7,12 +7,10 @@ package amuse.scheduler.gui.annotation.multiplefiles.attribute;
 public abstract class AnnotationAttribute<T>{
 
 	private String name;
-	private int id;
 	protected AnnotationAttributeType type;
 	
-	public AnnotationAttribute(String pName, int pId){
+	public AnnotationAttribute(String pName){
 		name = pName;
-		id = pId;
 	}
 	
 	public AnnotationAttributeType getType(){
@@ -27,10 +25,6 @@ public abstract class AnnotationAttribute<T>{
 		return name;
 	}
 	
-	public int getId(){
-		return id;
-	}
-
 	@Override
 	public String toString(){
 		return name;

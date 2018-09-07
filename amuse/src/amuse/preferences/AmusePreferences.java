@@ -51,8 +51,20 @@ public class AmusePreferences {
         	String path = System.getenv("AMUSEHOME");
         	if(path == null){
         		try {
-        			path = Level.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-        			path = new File(path).getParentFile().getParent();
+        			File file = new File(Level.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        			boolean contains = false;
+        			do{
+        				file = file.getParentFile();
+        				for(String subPath: file.list()){
+        					if(subPath.equals("src")){
+        						contains = true;
+        						break;
+        					}
+        				}
+        			}while(!contains);
+        			if(KeysStringValue.AMUSE_PATH.isValid(file.getAbsolutePath())){
+        				path = file.getAbsolutePath();
+        			}
         		} catch (URISyntaxException e) {
         			e.printStackTrace();
         		}
@@ -63,6 +75,22 @@ public class AmusePreferences {
             throw new RuntimeException("Could not load the preferences: " + e.getMessage());
         }
         preloadAllValues();
+    }
+    
+    public static String getMultipleTracksAnnotationTablePath(){
+    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "multipleTracksAnnotationTable.arff";
+    }
+    
+    public static String getSingleTrackAnnotationAttributeTablePath(){
+    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "singleTrackAnnotationAttributeTable.arff";
+    }
+    
+    public static String getSingleTrackAnnotationDatabase(){
+    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Single Track";
+    }
+    
+    public static String getMultipleTracksAnnotationDatabase(){
+    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Multiple Tracks";
     }
 
     private static void preloadAllValues() {

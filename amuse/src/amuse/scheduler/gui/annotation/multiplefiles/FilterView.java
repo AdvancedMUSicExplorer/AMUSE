@@ -75,7 +75,7 @@ public class FilterView extends JPanel{
 		conditionsPanel.add(new JLabel("Column"));
 		conditionsPanel.add(new JLabel("Type"));
 		conditionsPanel.add(new JLabel("Condition"));
-		conditionsPanel.add(new JLabel("<html><body>Case<br>Sensitive?</body></html>"));
+		conditionsPanel.add(new JLabel("<html><body>Case-<br>Sensitive?</body></html>"));
 		conditionsPanel.add(new JLabel(""));
 		
 		/*

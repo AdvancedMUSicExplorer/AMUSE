@@ -2,17 +2,23 @@ package amuse.scheduler.gui.annotation.multiplefiles;
 
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.io.File;
+import java.io.IOException;
 
-import javax.swing.JFileChooser;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import org.apache.log4j.Level;
 
+import amuse.data.io.ArffDataSet;
+import amuse.preferences.AmusePreferences;
 import amuse.scheduler.gui.controller.MultipleFilesAnnotationController;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
+import amuse.util.AmuseLogger;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -84,15 +90,15 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public void saveButtonClicked() {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
-		fileChooser.setFileFilter(new FileNameExtensionFilter("", "arff"));
-		if(fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION){
-			String path = fileChooser.getSelectedFile().toString();
-			if(!path.endsWith(".arff")){
-				path += ".arff";
+		String dataSetName = null;
+		while((dataSetName = JOptionPane.showInputDialog("Enter the data set name.")) != null){
+			if(dataSetName.contains(" ")){
+				JOptionPane.showConfirmDialog(null, "Please specify a name without whitespaces.", "Naming Error", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
 			}
-			annotationController.saveAnnotation(path);
+			else{
+				annotationController.saveAnnotation(dataSetName);
+				break;
+			}
 		}
 	}
 
@@ -103,11 +109,30 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public void loadButtonClicked() {
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setFileFilter(new FileNameExtensionFilter("", "arff"));
-		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+		ArffDataSet categoryList = null;
+		try {
+			categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
+		} catch (IOException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Could not load the MultipleTracksAnnotationTable. In file '"
+					+ AmusePreferences.getMultipleTracksAnnotationTablePath()
+					+ "' following error occured"
+					+ e.getMessage());
+			return; 
+		}
+		String[] categories = new String[categoryList.getValueCount()];
+		for(int i = 0; i < categoryList.getValueCount(); i++) {
+			categories[i] = categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+		}
+		JComboBox<String> categoryComboBox = new JComboBox<String>(categories);
+		if(JOptionPane.showConfirmDialog(
+				null,
+				new JComponent[] {categoryComboBox},
+				"Choose the annotation name to load",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION
+				&& categoryComboBox.getSelectedIndex() != -1){
 			annotationController.clearAnnotation();
-			annotationController.loadAnnotation(fileChooser.getSelectedFile().toString());
+			annotationController.loadAnnotation(categoryList.getAttribute("Path").getValueAt(categoryComboBox.getSelectedIndex()).toString());
 		}
 	}
 

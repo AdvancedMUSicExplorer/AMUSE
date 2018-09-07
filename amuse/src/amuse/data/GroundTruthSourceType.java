@@ -1,7 +1,7 @@
-package amuse.nodes;
+package amuse.data;
 
 /** Defines the ground truth type. Can be either
- * - Id of the music category from $AMUSECATEGORYDATABASE$/categoryTable.arff or
+ * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
  * - Path to the labeled file list or
  * - Path to the ready training input (prepared e.g. by a validator method) */
 public enum GroundTruthSourceType {
