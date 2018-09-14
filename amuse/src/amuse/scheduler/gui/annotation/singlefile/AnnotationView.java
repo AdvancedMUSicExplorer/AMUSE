@@ -186,7 +186,7 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 
 		private JLabel labelMouseTime, labelCurrentTime, labelMouseFreq;
 		private boolean buttonsSplitIntoRows;
-		final private int BUTTON_SPLIT_THRESHOLD = 1440;
+		final private int BUTTON_SPLIT_THRESHOLD = 1500;
 		private ImageIcon iconPlay, iconPause;
 		private JButton buttonPlayPause;
 

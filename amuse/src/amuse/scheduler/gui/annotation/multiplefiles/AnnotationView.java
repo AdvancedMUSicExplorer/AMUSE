@@ -1,20 +1,27 @@
 package amuse.scheduler.gui.annotation.multiplefiles;
 
+import java.awt.Container;
+import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import org.apache.log4j.Level;
 
 import amuse.data.io.ArffDataSet;
 import amuse.preferences.AmusePreferences;
 import amuse.scheduler.gui.controller.MultipleFilesAnnotationController;
+import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
@@ -44,9 +51,9 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 		tableControlView = new TableControlView(annotationController, tableView.getSelectionModel());
 		
 		JPanel panel = new JPanel(new MigLayout("wrap 2, fillx"));
-		panel.add(filterView, "pushy, growy, w 50%, span 1 2");
-		panel.add(musicPlayerView, "w 50%");
-		panel.add(tableControlView, "w 50%");
+		panel.add(filterView, "pushy, grow, w 50%, span 1 2");
+		panel.add(musicPlayerView, "w 50%, growx");
+		panel.add(tableControlView, "w 50%, growx");
 		
 		this.setTopComponent(panel);
 		this.setBottomComponent(tableView);
@@ -90,16 +97,75 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public void saveButtonClicked() {
-		String dataSetName = null;
+		String dataSetName = annotationController.getLoadedDataSetName();
+		String path = annotationController.getLoadedPath();
+		if(dataSetName != null && path != null){
+			JPopupMenu popupMenu = new JPopupMenu();
+			
+			JMenuItem saveAsItem = new JMenuItem("Save as...");
+			saveAsItem.addActionListener(e -> {
+				String newDataSetName = this.showDataSetNameDialog();
+				if(newDataSetName == null){
+					return;
+				}
+				String newPath = this.showPathDialog();
+				if(newPath == null){
+					return;
+				}
+				annotationController.saveAnnotation(newPath, newDataSetName);
+			});
+
+			JMenuItem saveItem = new JMenuItem("Save");
+			saveItem.addActionListener(e -> annotationController.saveAnnotation(annotationController.getLoadedPath(), 
+					annotationController.getLoadedDataSetName()));
+			
+			popupMenu.add(saveItem);
+			popupMenu.add(saveAsItem);
+			
+			Point mousePos = this.getParent().getParent().getMousePosition();
+			JButton saveButton = (JButton) ((Container) this.getParent().getParent().getComponentAt(mousePos)).getComponentAt(mousePos);
+			popupMenu.show(this, saveButton.getX(), saveButton.getY());
+		}
+		else{
+			if(dataSetName == null){
+				dataSetName = this.showDataSetNameDialog();
+				if(dataSetName == null){
+					return;
+				}
+			}
+			if(path == null){
+				path = this.showPathDialog();
+				if(path == null){
+					return;
+				}
+			}
+			annotationController.saveAnnotation(path, dataSetName);
+		}
+	}
+	
+	private String showDataSetNameDialog(){
+		String dataSetName;
 		while((dataSetName = JOptionPane.showInputDialog("Enter the data set name.")) != null){
 			if(dataSetName.contains(" ")){
 				JOptionPane.showConfirmDialog(null, "Please specify a name without whitespaces.", "Naming Error", JOptionPane.OK_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
 			}
 			else{
-				annotationController.saveAnnotation(dataSetName);
 				break;
 			}
 		}
+		return dataSetName;
+	}
+	
+	private String showPathDialog(){
+		JFileChooser fc = new SelectArffFileChooser("Classification Task", new File(AmusePreferences.getMultipleTracksAnnotationDatabase()));
+        if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return null;
+        }
+        String path = fc.getSelectedFile().getAbsolutePath();
+        if(!path.endsWith(".arff")){
+        	path += ".arff";
+        }
+        return path;
 	}
 
 	@Override
@@ -132,13 +198,14 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 				JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION
 				&& categoryComboBox.getSelectedIndex() != -1){
 			annotationController.clearAnnotation();
-			annotationController.loadAnnotation(categoryList.getAttribute("Path").getValueAt(categoryComboBox.getSelectedIndex()).toString());
+			annotationController.loadAnnotation(categoryList.getAttribute("Path").getValueAt(categoryComboBox.getSelectedIndex()).toString(), (String) categoryComboBox.getSelectedItem());
 		}
 	}
 
 	@Override
 	public String getCaption() {
-		return "Multiple Files Annotation Editor";
+		String dataSetName = annotationController.getLoadedDataSetName();
+		return "Multiple Files Annotation Editor" + (dataSetName == null? "": " - " + dataSetName);
 	}
 
 	public TableControlView getTableControlView() {

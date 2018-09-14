@@ -86,11 +86,11 @@ public class AmusePreferences {
     }
     
     public static String getSingleTrackAnnotationDatabase(){
-    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Single Track";
+    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Single_Track";
     }
     
     public static String getMultipleTracksAnnotationDatabase(){
-    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Multiple Tracks";
+    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Multiple_Tracks";
     }
 
     private static void preloadAllValues() {
