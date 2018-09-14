@@ -171,7 +171,7 @@ public class FilterView extends JPanel{
 			conditionsPanel.repaint();
 		});
 
-		JCheckBox invertSelectionCheckBox = new JCheckBox("Invert selection");
+		JCheckBox invertSelectionCheckBox = new JCheckBox("Invert");
 		
 		JButton applyButton = new JButton("Apply");
 		applyButton.addActionListener(e -> {
@@ -282,11 +282,11 @@ public class FilterView extends JPanel{
 			}
 		});
 		
-		JPanel controlPanel = new JPanel();
-		controlPanel.add(invertSelectionCheckBox);
-		controlPanel.add(addConditionButton);
-		controlPanel.add(applyButton);
-		controlPanel.add(enableFilteringCheckBox);
+		JPanel controlPanel = new JPanel(new MigLayout("fillx, insets 0"));
+		controlPanel.add(invertSelectionCheckBox, "w 25%, growx");
+		controlPanel.add(addConditionButton, "w 25%, growx");
+		controlPanel.add(applyButton, "w 25%, growx");
+		controlPanel.add(enableFilteringCheckBox, "w 25%, growx");
 		
 		this.add(new JScrollPane(conditionsPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), "push, grow");
 		this.add(controlPanel, "pushx, growx");
@@ -294,9 +294,17 @@ public class FilterView extends JPanel{
 	}
 	
 	public String[] getColumnNames(){
-		String[] columnNames = new String[tableModel.getColumnCount()];
-		for(int i = 0; i < columnNames.length; i++){
-			columnNames[i] = tableModel.getColumnName(i);
+		String[] columnNames = null;
+		TableColumnModel columnModel = null;
+		try{
+			columnModel = annotationController.getColumnModel();
+			columnNames = new String[columnModel.getColumnCount()];
+		}
+		catch(NullPointerException e){
+			columnNames = new String[1];
+		}
+		for(int i = 1; i < columnNames.length; i++){
+			columnNames[i] = columnModel.getColumn(i).getHeaderValue().toString();
 		}
 		columnNames[0] = "All";
 		return columnNames;

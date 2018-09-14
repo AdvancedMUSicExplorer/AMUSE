@@ -130,7 +130,10 @@ public class TableView extends JPanel{
 							
 							@Override
 							public boolean stopCellEditing(){
-								Object selectedItem = comboBox.getSelectedItem();
+								String selectedItem = comboBox.getSelectedItem().toString();
+								if(selectedItem.equals("?")){
+									selectedItem = "";
+								}
 								textField.setText(selectedItem + "");
 								setValueForSelectedRowsInColumn(selectedItem, column);
 								return super.stopCellEditing();

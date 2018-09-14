@@ -8,10 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -24,13 +20,10 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.DefaultListSelectionModel;
 
 import amuse.preferences.AmusePreferences;
@@ -48,8 +41,7 @@ public class TableControlView extends JPanel{
 	MultipleFilesAnnotationController annotationController;
 	
 	public TableControlView(MultipleFilesAnnotationController annotationController, ListSelectionModel selectionModel){
-		super();
-		this.setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+		super(new MigLayout("fillx, insets 0"));
 		this.annotationController = annotationController;
 		
 		JButton addTrackButton = new JButton("Add Track(s)");
@@ -80,7 +72,18 @@ public class TableControlView extends JPanel{
 			}
 		});
 		
-		
+		JButton newDataSetButton = new JButton ("New Dataset");
+		newDataSetButton.addActionListener(e -> {
+			if(JOptionPane.YES_OPTION == 
+					JOptionPane.showConfirmDialog(null,
+					"Do you really want to start a new dataset and remove the currently visible content?",
+					"Start new dataset", 
+					JOptionPane.YES_NO_OPTION, 
+					JOptionPane.QUESTION_MESSAGE)){
+				this.annotationController.clearAnnotation();
+				
+			}
+		});
 		
 		JButton removeTracksButton = new JButton ("Remove Selected Track(s)");
 		removeTracksButton.addActionListener(e -> {
@@ -115,13 +118,11 @@ public class TableControlView extends JPanel{
 			annotationController.showAbsolutePath(showAbsolutePathCheckBox.isSelected());
 		});
 		
-		
+		this.add(newDataSetButton, "growx");
+		this.add(addTrackButton, "growx");
+		this.add(removeTracksButton, "growx, wrap");
 		this.add(showAbsolutePathCheckBox);
-		this.add(Box.createRigidArea(new Dimension(30, 10)));
-		this.add(addTrackButton);
-		this.add(removeTracksButton);
-		this.add(Box.createRigidArea(new Dimension(30, 10)));
-		this.add(addAttributeButton);
+		this.add(addAttributeButton, "growx");
 	}
 	
 	private void addFolder(File file, boolean recursive){
@@ -160,6 +161,9 @@ public class TableControlView extends JPanel{
 				else if (input.contains("'")){
 					JOptionPane.showMessageDialog(null, "The name of the new value cannot contain the character '");
 				}
+				else if (input.equals("?")){
+					JOptionPane.showMessageDialog(null, "The name of the new value cannot be the character ?");
+				}
 				else {
 					((DefaultListModel<String>) nominalValueList.getModel()).addElement(input);
 					break;
@@ -183,6 +187,9 @@ public class TableControlView extends JPanel{
 					}
 					else if (input.contains("'")){
 						JOptionPane.showMessageDialog(null, "The name of the value cannot contain the character '");
+					}
+					else if (input.equals("?")){
+						JOptionPane.showMessageDialog(null, "The name of the value cannot be the character ?");
 					}
 					else {
 						((DefaultListModel<String>) nominalValueList.getModel()).set(nominalValueList.getSelectedIndex(), input);
@@ -264,6 +271,7 @@ public class TableControlView extends JPanel{
 					for(int index = 0; index < nominalValueList.getModel().getSize(); index++){
 						((AnnotationNominalAttribute) att).addAllowedValue((String) nominalValueList.getModel().getElementAt(index));
 					}
+					((AnnotationNominalAttribute) att).addAllowedValue("?");
 				break;
 				case STRING: att = new AnnotationStringAttribute(name); break;
 				case NUMERIC: att = new AnnotationNumericAttribute(name); break;

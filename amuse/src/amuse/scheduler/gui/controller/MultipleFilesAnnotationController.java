@@ -102,6 +102,8 @@ public class MultipleFilesAnnotationController extends AbstractController{
 
 	public void clearAnnotation() {
 		annotationView.getTableView().clearAnnotation();
+		annotationIO.startNewAnnotation();
+		wizardController.getTitleUpdater().setTitleSuffix(annotationView.getCaption());
 	}
 	
 	public DefaultTableModel getTableModel(){
@@ -112,12 +114,22 @@ public class MultipleFilesAnnotationController extends AbstractController{
 		return annotationView.getTableView().getColumnModel();
 	}
 
-	public void saveAnnotation(String dataSetName) {
-		annotationIO.saveAnnotation(dataSetName);
+	public void saveAnnotation(String path, String dataSetName) {
+		annotationIO.saveAnnotation(path, dataSetName);
+		wizardController.getTitleUpdater().setTitleSuffix(annotationView.getCaption());
 	}
 
-	public void loadAnnotation(String path) {
-		annotationIO.loadAnnotation(path);
+	public void loadAnnotation(String path, String dataSetName) {
+		annotationIO.loadAnnotation(path, dataSetName);
+		wizardController.getTitleUpdater().setTitleSuffix(annotationView.getCaption());
+	}
+	
+	public String getLoadedDataSetName(){
+		return annotationIO.getLoadedDataSetName();
+	}
+	
+	public String getLoadedPath(){
+		return annotationIO.getLoadedPath();
 	}
 	
 	public void setRowFilter(RowFilter<DefaultTableModel, Integer> filter){
@@ -143,7 +155,7 @@ public class MultipleFilesAnnotationController extends AbstractController{
 	public void addRow(Object[] rowData){
 		annotationView.getTableView().addRow(rowData);
 	}
-
+	
 	public void seekInMusic(double millis) {
 		musicPlayerModel.seek(millis);
 	}
