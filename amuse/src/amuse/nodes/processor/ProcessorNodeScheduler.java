@@ -432,7 +432,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			ArffLoader processingToolsLoader = new ArffLoader();
 		    try {
 		    	if(this.directStart) {
-		    		processingToolsLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorAlgorithmTable.arff"));
+		    		processingToolsLoader.setFile(new File(AmusePreferences.getProcessorAlgorithmTablePath()));
 		    	} else {
 		    		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorAlgorithmTable.arff"));
 		    	}
@@ -534,7 +534,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		ArffLoader processingToolsLoader = new ArffLoader();
 		try {
 		   	if(this.directStart) {
-		   		processingToolsLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorConversionAlgorithmTable.arff"));
+		   		processingToolsLoader.setFile(new File(AmusePreferences.getProcessorConversionAlgorithmTablePath()));
 		   	} else {
 		   		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	}

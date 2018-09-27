@@ -138,7 +138,7 @@ public class PluginRemover {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.getPluginTablePath()));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the list with installed plugins: " + e.getMessage());
 		}
@@ -199,7 +199,7 @@ public class PluginRemover {
 			
 			// Replace pluginTable with pluginTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
+					new File(AmusePreferences.getPluginTablePath()));
 				
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed plugins: " + e.getMessage());
@@ -235,7 +235,7 @@ public class PluginRemover {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Starting tool removal and tool list update...");
 		
 		try {
-			DataSetAbstract installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
+			DataSetAbstract installedToolList = new ArffDataSet(new File(AmusePreferences.getToolTablePath()));
 				
 			// Overwrite the current AMUSE tool list with the new updated version
 			// TODO Better way could be to create a corresponding data set (ToolListSet) and add some functionality
@@ -292,7 +292,7 @@ public class PluginRemover {
 			
 			// Replace toolTable with toolTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
+					new File(AmusePreferences.getToolTablePath()));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not remove the tools: " + e.getMessage());
 		}
@@ -349,7 +349,7 @@ public class PluginRemover {
 			Collections.sort(sortedFeatureIds);
 			
 			// Set with all installed features
-			DataSetAbstract installedFeatureSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
+			DataSetAbstract installedFeatureSet = new ArffDataSet(new File(AmusePreferences.getFeatureTablePath()));
 			
 			// Overwrite the current AMUSE feature list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
@@ -425,7 +425,7 @@ public class PluginRemover {
 			
 			// Replace featureTable with featureTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
+					new File(AmusePreferences.getFeatureTablePath()));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed features: " + e.getMessage());
@@ -454,7 +454,7 @@ public class PluginRemover {
 			Collections.sort(sortedExtractorIds);
 			
 			// Set with all installed feature extractors
-			DataSetAbstract installedExtractorSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			DataSetAbstract installedExtractorSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 			
 			// Overwrite the current AMUSE feature list with the new updated version
 			// TODO Better way could be to create a corresponding data set (FeatureListSet) and add some functionality
@@ -501,7 +501,7 @@ public class PluginRemover {
 			
 			// Replace featureExtractorTable with featureExtractorTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+					new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed feature extractors: " + e.getMessage());

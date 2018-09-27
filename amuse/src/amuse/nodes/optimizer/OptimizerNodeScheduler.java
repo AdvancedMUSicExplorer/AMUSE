@@ -228,7 +228,7 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader optimizerTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		optimizerTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff"));
+	    		optimizerTableLoader.setFile(new File(AmusePreferences.getOptimizerAlgorithmTablePath()));
 	    	} else {
 	    		optimizerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "optimizerAlgorithmTable.arff"));
 	    	}

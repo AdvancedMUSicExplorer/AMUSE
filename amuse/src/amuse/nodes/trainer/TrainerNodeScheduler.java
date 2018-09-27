@@ -552,7 +552,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			try {
 		    	ArffLoader classificationTrainerTableLoader = new ArffLoader();
 		    	if(this.directStart) {
-		    		classificationTrainerTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
+		    		classificationTrainerTableLoader.setFile(new File(AmusePreferences.getClassifierPreprocessingAlgorithmTablePath()));
 		    	} else {
 		    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 		    	}
@@ -658,7 +658,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader classificationTrainerTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		classificationTrainerTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+	    		classificationTrainerTableLoader.setFile(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
 	    	} else {
 	    		classificationTrainerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierAlgorithmTable.arff"));
 	    	}

@@ -132,7 +132,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 		}
 		try {
 			if(this.correspondingScheduler.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+				classificationAlgorithmLoader.setFile(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
 	    	} else {
 	    		classificationAlgorithmLoader.setFile(new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "classifierAlgorithmTable.arff"));
 	    	}

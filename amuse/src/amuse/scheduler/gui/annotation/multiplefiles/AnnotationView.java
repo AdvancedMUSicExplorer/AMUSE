@@ -20,6 +20,7 @@ import org.apache.log4j.Level;
 
 import amuse.data.io.ArffDataSet;
 import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.controller.MultipleFilesAnnotationController;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.navigation.HasCaption;
@@ -157,7 +158,7 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 	}
 	
 	private String showPathDialog(){
-		JFileChooser fc = new SelectArffFileChooser("Classification Task", new File(AmusePreferences.getMultipleTracksAnnotationDatabase()));
+		JFileChooser fc = new SelectArffFileChooser("Classification Task", new File(AmusePreferences.get(KeysStringValue.MULTIPLE_TRACKS_ANNOTATION_DATABASE)));
         if (fc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return null;
         }

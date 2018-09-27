@@ -259,7 +259,7 @@ public class FitnessEvaluator {
 			} else {
 				idOfSearchedAlgorithm = new Integer(classifierConfig);
 			}
-			classifierDescriptionLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+			classifierDescriptionLoader.setFile(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
 			classifierDescriptionInstance = classifierDescriptionLoader.getNextInstance(classifierDescriptionLoader.getStructure());
 			Attribute idAttribute = classifierDescriptionLoader.getStructure().attribute("Id");
 			Attribute nameAttribute = classifierDescriptionLoader.getStructure().attribute("Name");

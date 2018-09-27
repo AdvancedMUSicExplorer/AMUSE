@@ -41,7 +41,8 @@ public enum KeysStringValue {
     AMUSE_PATH,
     AMUSE_VERSION,
     MUSIC_DATABASE,
-    ANNOTATION_DATABASE,
+    SINGLE_TRACK_ANNOTATION_DATABASE,
+    MULTIPLE_TRACKS_ANNOTATION_DATABASE,
     FEATURE_DATABASE,
     PROCESSED_FEATURE_DATABASE,
     MODEL_DATABASE, 
@@ -90,7 +91,8 @@ public enum KeysStringValue {
                 return !value.equalsIgnoreCase("NO_VALUE");
             case MEASURE_DATABASE:
             case MUSIC_DATABASE:
-            case ANNOTATION_DATABASE:
+            case MULTIPLE_TRACKS_ANNOTATION_DATABASE:
+            case SINGLE_TRACK_ANNOTATION_DATABASE:
             case FEATURE_DATABASE:
             case PROCESSED_FEATURE_DATABASE:
             case MODEL_DATABASE:
@@ -153,7 +155,8 @@ public enum KeysStringValue {
 		map.put(AMUSE_PATH.toString(), "Absolute path to Amuse folder:");
 		map.put(AMUSE_VERSION.toString(), "Amuse version:");
 		map.put(MUSIC_DATABASE.toString(), "Absolute path to database folder with music files:");
-		map.put(ANNOTATION_DATABASE.toString(), "Absolute path to database folder with annotations:");
+		map.put(SINGLE_TRACK_ANNOTATION_DATABASE.toString(), "Absolute path to database folder with annotations for a single tack:");
+		map.put(MULTIPLE_TRACKS_ANNOTATION_DATABASE.toString(), "Absolute path to database folder with annotations for multiple tacks:");
 		map.put(FEATURE_DATABASE.toString(), "Absolute path to database folder with features:");
 		map.put(OPTIMIZATION_DATABASE.toString(), "Absolute path to database folder with optimization results:");
 		map.put(PROCESSED_FEATURE_DATABASE.toString(), "Absolute path to database folder with processed features:");

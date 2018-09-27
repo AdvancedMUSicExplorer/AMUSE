@@ -692,7 +692,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 				SwingUtilities.getWindowAncestor(loadFeaturesButton).dispose();
 				
 				// Get available AMUSE Features
-				File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff");
+				File featureTableFile = new File(AmusePreferences.getFeatureTablePath());
 	            List<Feature> features = new FeatureTable(featureTableFile).getFeatures();
 	            for(int i = 0; i < features.size();){
 	            	if(!features.get(i).getFeatureType().equals(Feature.FeatureType.Event.toString())){

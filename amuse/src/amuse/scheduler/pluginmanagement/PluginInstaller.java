@@ -216,7 +216,7 @@ public class PluginInstaller {
 		
 		DataSetAbstract installedPluginList;
 		try {
-			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.getPluginTablePath()));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not load the list with installed plugins: " + e.getMessage());
 		}
@@ -246,7 +246,7 @@ public class PluginInstaller {
 			DataSetAbstract requiredToolList;
 			try {
 				requiredToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(AmusePreferences.getToolTablePath()));
 				
 				// Go through all required tools and check if they are already installed
 				for(int i=0;i<requiredToolList.getValueCount();i++) {
@@ -321,7 +321,7 @@ public class PluginInstaller {
 			HashMap<Integer,Integer> installedToolsMap = new HashMap<Integer,Integer>();
 			try {
 				newToolList = new ArffDataSet(toolList);
-				installedToolList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
+				installedToolList = new ArffDataSet(new File(AmusePreferences.getToolTablePath()));
 				
 				// Go through all installed tools
 				for(int j=0;j<installedToolList.getValueCount();j++) {
@@ -445,7 +445,7 @@ public class PluginInstaller {
 				
 				// Replace toolTable with toolTableUpdated
 				FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTableUpdated.arff"), 
-						new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff"));
+						new File(AmusePreferences.getToolTablePath()));
 				
 			} catch(IOException e) {
 				throw new SchedulerException("Could not update the list with installed tools: " + e.getMessage());
@@ -500,7 +500,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureList = new ArffDataSet(featureList);
-			installedFeatureList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
+			installedFeatureList = new ArffDataSet(new File(AmusePreferences.getFeatureTablePath()));
 				
 			// Go through all installed features
 			for(int j=0;j<installedFeatureList.getValueCount();j++) {
@@ -643,7 +643,7 @@ public class PluginInstaller {
 			
 			// Replace featureTable with featureTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff"));
+					new File(AmusePreferences.getFeatureTablePath()));
 			
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed features: " + e.getMessage());
@@ -668,7 +668,7 @@ public class PluginInstaller {
 		HashMap<Integer,Integer> installedFeatureExtractorMap = new HashMap<Integer,Integer>();
 		try {
 			newFeatureExtractorList = new ArffDataSet(featureExtractorList);
-			installedFeatureExtractorList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			installedFeatureExtractorList = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 				
 			// Go through all installed feature extractor tools
 			for(int j=0;j<installedFeatureExtractorList.getValueCount();j++) {
@@ -776,7 +776,7 @@ public class PluginInstaller {
 			
 			// Replace featureExtractorTable with featureExtractorTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+					new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with feature extractors: " + e.getMessage());
 		}
@@ -795,7 +795,7 @@ public class PluginInstaller {
 		// Key: plugin id; value: position in the DataSet
 		HashMap<Integer,Integer> installedPluginMap = new HashMap<Integer,Integer>();
 		try {
-			installedPluginList = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
+			installedPluginList = new ArffDataSet(new File(AmusePreferences.getPluginTablePath()));
 				
 			// Go through all installed plugins
 			for(int j=0;j<installedPluginList.getValueCount();j++) {
@@ -853,7 +853,7 @@ public class PluginInstaller {
 			
 			// Replace pluginTable with pluginTableUpdated
 			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTableUpdated.arff"), 
-					new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff"));
+					new File(AmusePreferences.getPluginTablePath()));
 				
 		} catch(IOException e) {
 			throw new SchedulerException("Could not update the list with installed plugins: " + e.getMessage());

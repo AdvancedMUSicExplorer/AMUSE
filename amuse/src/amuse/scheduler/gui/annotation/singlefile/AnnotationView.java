@@ -298,8 +298,8 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 			checkBoxRepeatWindow.setToolTipText("Enable the repitition of a time window");
 			checkBoxRepeatWindow.addActionListener(e -> audioSpectrumPanel.enableRepeating(checkBoxRepeatWindow.isSelected()));
 			
-			JPanel fstRow = new JPanel(new MigLayout(""));
-			JPanel sndRow = new JPanel(new MigLayout(""));
+			JPanel fstRow = new JPanel(new MigLayout("insets 0"));
+			JPanel sndRow = new JPanel(new MigLayout("insets 0"));
 			fstRow.add(buttonPlayPause, "");
 			fstRow.add(labelCurrentTime, "");
 			fstRow.add(new JSeparator(SwingConstants.VERTICAL), "growy");

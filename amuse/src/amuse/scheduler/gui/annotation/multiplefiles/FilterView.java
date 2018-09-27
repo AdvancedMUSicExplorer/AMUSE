@@ -171,9 +171,14 @@ public class FilterView extends JPanel{
 			conditionsPanel.repaint();
 		});
 
-		JCheckBox invertSelectionCheckBox = new JCheckBox("Invert");
-		
 		JButton applyButton = new JButton("Apply");
+		JCheckBox invertSelectionCheckBox = new JCheckBox("Invert");
+		invertSelectionCheckBox.addActionListener(e -> {
+			if(applyButton.isEnabled()){
+				applyButton.doClick();
+			}
+		});
+		
 		applyButton.addActionListener(e -> {
 			
 			/*

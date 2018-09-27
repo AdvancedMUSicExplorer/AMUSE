@@ -298,7 +298,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		DataSetAbstract extractorTableSet;
 	    try {
 	    	if(this.directStart) {
-	    		extractorTableSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+	    		extractorTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 	    	} else {
 	    		extractorTableSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "featureExtractorToolTable.arff"));
 	    	}

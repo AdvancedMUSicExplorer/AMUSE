@@ -111,7 +111,9 @@ public class AnnotationIO {
 			TableColumnModel columnModel = annotationController.getColumnModel();
 			tableModel.addRow(new Object[]{null});
 			for(int column = 1; column < columnModel.getColumnCount(); column ++){
-				String value = dataSet.getAttribute(columnModel.getColumn(column).getHeaderValue().toString()).getValueAt(row).toString();
+				Object header = columnModel.getColumn(column).getHeaderValue();
+				String name = header instanceof AnnotationAttribute? ((AnnotationAttribute<?>) header).getName(): header.toString();
+				String value = dataSet.getAttribute(name).getValueAt(row).toString();
 				if(value.equals(ARFF_VALUE_UNDEFINED)
 						|| value.equals("NaN")){
 					value = "";
