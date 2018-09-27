@@ -27,7 +27,7 @@ public abstract class AnnotationAttribute<T>{
 	
 	@Override
 	public String toString(){
-		return name;
+		return name + " (" + type.toString() + ")";
 	}
 	
 	@Override

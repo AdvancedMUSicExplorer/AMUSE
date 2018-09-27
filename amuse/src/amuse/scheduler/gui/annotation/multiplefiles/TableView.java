@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.EventObject;
+import java.util.Vector;
+
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
@@ -49,7 +51,7 @@ import javafx.scene.media.MediaPlayer.Status;
 public class TableView extends JPanel{
 	
 	JTable table;
-	DefaultTableModel tableModel;
+	TableModel tableModel;
 	final JLabel labelPlay, labelPause;
 	MultipleFilesAnnotationController annotationController;
 	final String COLUMN_PLAYPAUSE = " ";
@@ -85,7 +87,7 @@ public class TableView extends JPanel{
 		labelPause = new JLabel(iconPause);
 		
 		
-		tableModel = new DefaultTableModel(new Object[][]{}, new String[]{COLUMN_PLAYPAUSE, COLUMN_PATH});
+		tableModel = new TableModel(new Object[][]{}, new String[]{COLUMN_PLAYPAUSE, COLUMN_PATH});
 		table = new JTable(tableModel){
 			@Override
 			public TableCellEditor getCellEditor(int row, int column){
@@ -397,9 +399,7 @@ public class TableView extends JPanel{
 		this.add(scrollPane);
 	}
 	
-	private void removeColumn(int viewColumnIndex) {
-		table.removeColumn(table.getColumnModel().getColumn(viewColumnIndex));
-	}
+	
 	
 	public void showAbsolutePath(boolean bool){
 		if(bool){
@@ -526,6 +526,36 @@ public class TableView extends JPanel{
 		}
 		for(int row = table.getRowCount() - 1; row >= 0; row--){
 			tableModel.removeRow(row);
+		}
+	}
+	
+	private void removeColumn(int viewColumnIndex) {
+		for(int i = viewColumnIndex + 1; i < table.getColumnCount(); i++){
+			TableColumn column = table.getColumnModel().getColumn(i);
+			column.setModelIndex(column.getModelIndex() - 1);
+		}
+		table.removeColumn(table.getColumnModel().getColumn(viewColumnIndex));
+		tableModel.removeColumn(viewColumnIndex);
+	}
+	
+	private class TableModel extends DefaultTableModel{
+		
+		public TableModel (Object[][] data, Object[] columnNames){
+			super(data, columnNames);
+		}
+		
+		public TableModel (Vector data, Vector columnNames) {
+			super(data, columnNames);
+		}
+		
+		public void removeColumn(int i){
+			int columnCount = this.getColumnCount();
+			for(Object obj: dataVector){
+				((Vector<?>) obj).removeElementAt(i);
+			}
+			columnIdentifiers.removeElementAt(i);
+			
+			this.fireTableStructureChanged();
 		}
 	}
 

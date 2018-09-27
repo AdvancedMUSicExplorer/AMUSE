@@ -507,7 +507,7 @@ public class AnnotationModel {
 		if(pathToDir.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 			startIndex = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1;
 		}
-		pathToDir = AmusePreferences.getSingleTrackAnnotationDatabase()
+		pathToDir = AmusePreferences.get(KeysStringValue.SINGLE_TRACK_ANNOTATION_DATABASE)
 					+ File.separator 
 					+ pathToDir.substring(startIndex, pathToDir.lastIndexOf("."))
 					+ File.separator;

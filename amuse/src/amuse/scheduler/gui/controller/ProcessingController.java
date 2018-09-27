@@ -113,7 +113,7 @@ public class ProcessingController extends AbstractController {
     private JComponent getFilesAndFeatures() {
         JPanel p = new ExtractionPanel();
         if (filesAndFeatures == null) {
-            File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff");
+            File featureTableFile = new File(AmusePreferences.getFeatureTablePath());
             FeatureTable featureTable = new FeatureTable(featureTableFile);
             featureTable.removeUnsuitableForFeatureMatrixProcessing();
             filesAndFeatures = new FilesAndFeaturesFacade(featureTable);

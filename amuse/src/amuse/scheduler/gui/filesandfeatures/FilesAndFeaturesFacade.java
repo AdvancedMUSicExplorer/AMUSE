@@ -56,7 +56,7 @@ public class FilesAndFeaturesFacade {
 
     private final FileTreeView fileTreeView = new FileTreeView();
 
-    private final File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff");
+    private final File featureTableFile = new File(AmusePreferences.getFeatureTablePath());
 
     private final File musicDatabaseFolder = new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE));
 

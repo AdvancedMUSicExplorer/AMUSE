@@ -247,7 +247,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 		// --------------------------------------
     	// Load ARFF extractor table
 		try {
-			DataSetAbstract toolTableSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff"));
+			DataSetAbstract toolTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 			Attribute idAttribute = toolTableSet.getAttribute("Id");
 			Attribute extractorNameAttribute = toolTableSet.getAttribute("Name");
 			Attribute adapterClassAttribute = toolTableSet.getAttribute("AdapterClass");

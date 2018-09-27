@@ -315,7 +315,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		Instance currentInstance;
 		try {
 			if(this.directStart) {
-				validationMethodLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "validationAlgorithmTable.arff"));
+				validationMethodLoader.setFile(new File(AmusePreferences.getValidationAlgorithmTablePath()));
 	    	} else {
 	    		validationMethodLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "validationAlgorithmTable.arff"));
 	    	}
@@ -776,7 +776,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 		try {
 			if(this.getDirectStart()) {
-				classificationAlgorithmLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+				classificationAlgorithmLoader.setFile(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
 	    	} else {
 	    		classificationAlgorithmLoader.setFile(new File(this.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.getTaskId() + File.separator + "classifierAlgorithmTable.arff"));
 	    	}

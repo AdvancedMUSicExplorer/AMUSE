@@ -59,7 +59,8 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		settings.add(new PathSelectionPanel("Amuse Folder", KeysStringValue.AMUSE_PATH));
 		settings.add(new PathSelectionPanel("Music Database", KeysStringValue.MUSIC_DATABASE));
 		settings.add(new PathSelectionPanel("Feature Database", KeysStringValue.FEATURE_DATABASE));
-		settings.add(new PathSelectionPanel("Annotation Database", KeysStringValue.ANNOTATION_DATABASE));
+		settings.add(new PathSelectionPanel("Single Track Annotation Database", KeysStringValue.SINGLE_TRACK_ANNOTATION_DATABASE));
+		settings.add(new PathSelectionPanel("Multiple Tracks Annotation Database", KeysStringValue.MULTIPLE_TRACKS_ANNOTATION_DATABASE));
 		settings.add(new PathSelectionPanel("Processed Feature Database", KeysStringValue.PROCESSED_FEATURE_DATABASE));
 		settings.add(new PathSelectionPanel("Model Database", KeysStringValue.MODEL_DATABASE));
 		settings.add(new PathSelectionPanel("Measure Database", KeysStringValue.MEASURE_DATABASE));

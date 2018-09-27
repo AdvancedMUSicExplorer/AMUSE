@@ -464,7 +464,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		try {
 	    	ArffLoader classifierTableLoader = new ArffLoader();
 	    	if(this.directStart) {
-	    		classifierTableLoader.setFile(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff"));
+	    		classifierTableLoader.setFile(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
 	    	} else {
 	    		classifierTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "classifierAlgorithmTable.arff"));
 	    	}

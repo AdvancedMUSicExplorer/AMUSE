@@ -76,22 +76,6 @@ public class AmusePreferences {
         }
         preloadAllValues();
     }
-    
-    public static String getMultipleTracksAnnotationTablePath(){
-    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "multipleTracksAnnotationTable.arff";
-    }
-    
-    public static String getSingleTrackAnnotationAttributeTablePath(){
-    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "singleTrackAnnotationAttributeTable.arff";
-    }
-    
-    public static String getSingleTrackAnnotationDatabase(){
-    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Single_Track";
-    }
-    
-    public static String getMultipleTracksAnnotationDatabase(){
-    	return get(KeysStringValue.ANNOTATION_DATABASE) + File.separator + "Multiple_Tracks";
-    }
 
     private static void preloadAllValues() {
         for (KeysStringValue key : KeysStringValue.values()) {
@@ -275,4 +259,108 @@ public class AmusePreferences {
         }
         return "No Comment for this Key!";
     }
+    
+    /**
+     * Convenience method to get the path to the multipleTacksAnnotationTable File
+     * @return the path to multipleTacksAnnotationTable.arff
+     */
+    public static String getMultipleTracksAnnotationTablePath(){
+    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "multipleTracksAnnotationTable.arff";
+    }
+    
+    /**
+     * Convenience method to get the path to the singleTrackAnnotationAttributeTable File
+     * @return the path to singleTrackAnnotationAttributeTable.arff
+     */
+    public static String getSingleTrackAnnotationAttributeTablePath(){
+    	return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "singleTrackAnnotationAttributeTable.arff";
+    }
+    
+    /**
+     * Convenience method to get the path to the classifierAlgorithmTable File
+     * @return the path to classifierAlgorithmTable.arff
+     */
+	public static String getClassifierAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the featureExtractorToolTable File
+     * @return the path to featureExtractorToolTable.arff
+     */
+	public static String getFeatureExtractorToolTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureExtractorToolTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the optimizerAlgorithmTable File
+     * @return the path to optimizerAlgorithmTable.arff
+     */
+	public static String getOptimizerAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "optimizerAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the processorAlgorithmTable File
+     * @return the path to processorAlgorithmTable.arff
+     */
+	public static String getProcessorAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the processorConversionAlgorithmTable File
+     * @return the path to processorConversionAlgorithmTable.arff
+     */
+	public static String getProcessorConversionAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "processorConversionAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the classifierPreprocessingAlgorithmTable File
+     * @return the path to classifierPreprocessingAlgorithmTable.arff
+     */
+	public static String getClassifierPreprocessingAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierPreprocessingAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the validationAlgorithmTable File
+     * @return the path to validationAlgorithmTable.arff
+     */
+	public static String getValidationAlgorithmTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "validationAlgorithmTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the featureTable File
+     * @return the path to featureTable.arff
+     */
+	public static String getFeatureTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "featureTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the pluginTable File
+     * @return the path to pluginTable.arff
+     */
+	public static String getPluginTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the multipleTacksAnnotationTable File
+     * @return the path to multipleTacksAnnotationTable.arff
+     */
+	public static String getMeasureTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "measureTable.arff";
+	}
+
+    /**
+     * Convenience method to get the path to the multipleTacksAnnotationTable File
+     * @return the path to multipleTacksAnnotationTable.arff
+     */
+	public static String getToolTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "toolTable.arff";
+	}
 }

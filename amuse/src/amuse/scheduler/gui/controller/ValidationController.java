@@ -61,9 +61,7 @@ public class ValidationController extends AbstractController {
     private ValidationView validationView;
     private final WizardController wizardController;
     private AlgorithmConfigurationFacade validationAlgorithmFacade;
-    private String amusePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH);
-    private File validationAlgorithmTableFile = new File(amusePath
-            + File.separator + "config" + File.separator + "validationAlgorithmTable.arff");
+    private File validationAlgorithmTableFile = new File(AmusePreferences.getValidationAlgorithmTablePath());
     private MeasuresView measuresView;
     private static final File vtFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
             + File.separator + "experiments" + File.separator + "VT");
