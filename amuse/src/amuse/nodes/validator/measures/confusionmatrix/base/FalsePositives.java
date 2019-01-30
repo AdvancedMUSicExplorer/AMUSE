@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  *  Number of false positives
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: FalsePositives.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class FalsePositives extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -49,33 +49,38 @@ public class FalsePositives extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+//		if(isFuzzy()) {
+//			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
+//		}
 		int numberOfFalsePositives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
-			if(currentPredictedValue >= 0.5) {
-				currentPredictedValue = 1.0d;
-			} else {
-				currentPredictedValue = 0.0d;
+			if(!isFuzzy()) {
+				if(currentPredictedValue >= 0.5) {
+					currentPredictedValue = 1.0d;
+				} else {
+					currentPredictedValue = 0.0d;
+				}
 			}
 			
 			// Round the ground truth value to a binary value
 			Double currentGroundTruthValue = groundTruthRelationships.get(i);
+			if(!isFuzzy()) {
 			if(currentGroundTruthValue >= 0.5) {
-				currentGroundTruthValue = 1.0d;
-			} else {
-				currentGroundTruthValue = 0.0d;
+					currentGroundTruthValue = 1.0d;
+				} else {
+					currentGroundTruthValue = 0.0d;
+				}
 			}
 			
-			if(currentGroundTruthValue.doubleValue() == 0.0 && currentPredictedValue.doubleValue() == 1.0) {
-				numberOfFalsePositives++;
-			}
+			numberOfFalsePositives += (1 - currentGroundTruthValue.doubleValue()) * currentPredictedValue.doubleValue();
 			
 		}
 		
@@ -92,13 +97,13 @@ public class FalsePositives extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+//		if(isFuzzy()) {
+//			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
+//		}
 		int numberOfFalsePositives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				if(groundTruthRelationships.get(i).doubleValue() == 0.0 && 
-						predictedRelationships.get(i).getRelationships()[j].doubleValue() == 1.0) {
-					numberOfFalsePositives++;
-				}
+				numberOfFalsePositives += (1-groundTruthRelationships.get(i).doubleValue()) * predictedRelationships.get(i).getRelationships()[j][0].doubleValue();
 			}
 		}
 		
@@ -124,6 +129,22 @@ public class FalsePositives extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 

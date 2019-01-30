@@ -23,6 +23,7 @@
  */
 package amuse.nodes.trainer.methods.supervised;
 
+import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.interfaces.nodes.NodeException;
@@ -42,7 +43,7 @@ import com.rapidminer.Process;
  * Adapter for Random Forest. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: RandomForestAdapter.java 228 2018-02-23 14:15:08Z frederik-h $
  */
 public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 
@@ -79,8 +80,13 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
 	public void trainModel(String outputModel) throws NodeException {
+		//test if the settings are supported
+		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+			throw new NodeException("Only crisp binary or multiclass classification is supported by this method");
+		}
+		
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
 		// Train the model and save it
 		try {
 			Process process = new Process();

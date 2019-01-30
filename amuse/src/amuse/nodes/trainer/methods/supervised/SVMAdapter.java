@@ -25,6 +25,7 @@ package amuse.nodes.trainer.methods.supervised;
 
 import java.util.StringTokenizer;
 
+import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -46,7 +47,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for JMySVMLearner. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: SVMAdapter.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class SVMAdapter extends AmuseTask implements TrainerInterface {
 
@@ -114,8 +115,13 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
 	public void trainModel(String outputModel) throws NodeException {
+		//test if the settings are supported
+		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() != ClassificationType.BINARY) {
+			throw new NodeException("Only crisp binary classification is supported by this method");
+		}
+		
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
 		// Train the model and save it
 		try {
 			Process process = new Process();

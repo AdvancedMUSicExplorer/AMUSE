@@ -28,9 +28,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
+import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -38,7 +40,7 @@ import amuse.nodes.trainer.TrainingConfiguration;
 /**
  * This class represents a Training Configuration as used in AMUSE. Serialization to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id$
+ * @version $Id: TrainingConfigSet.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class TrainingConfigSet extends AbstractArffExperimentSet {
 
@@ -48,6 +50,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
     private static final String groundTruthSourceStr = "GroundTruthSource";
     private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
+    
+    //****
+    private static final String categoriesToClassifyStr = "CategoriesToClassify";
+    private static final String featuresToIgnoreStr  = "FeaturesToIgnore";
+    private static final String classificationTypeStr = "ClassificationType";
+    private static final String fuzzyStr = "Fuzzy";
+    private static final String trainingDescriptionStr = "TrainingDescription";
+    //****
+    
     private static final String pathToOutputModelStr = "PathToOutputModel";
     
     // ARFF attributes
@@ -56,6 +67,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute preprocessingAlgorithmIdAttribute;
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
+    
+    //****
+    private final StringAttribute categoriesToClassifyAttribute;
+    private final StringAttribute featuresToIgnoreAttribute;
+    private final NominalAttribute classificationTypeAttribute;
+    private final NumericAttribute fuzzyAttribute;
+    private final StringAttribute trainingDescriptionAttribute;
+    //****
+    
     private final StringAttribute pathToOutputModelAttribute;
 
     private static final String dataSetNameStr = "TrainerConfig";
@@ -74,6 +94,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(preprocessingAlgorithmIdStr);
         checkStringAttribute(groundTruthSourceStr);
         checkNominalAttribute(groundTruthSourceTypeStr);
+        
+        //****
+        checkStringAttribute(categoriesToClassifyStr);
+        checkStringAttribute(featuresToIgnoreStr);
+        checkNominalAttribute(classificationTypeStr);
+        checkNumericAttribute(fuzzyStr);
+        checkStringAttribute(trainingDescriptionStr);
+        //****
+        
         checkStringAttribute(pathToOutputModelStr);
         processedFeatureDescriptionAttribute =
                 (StringAttribute) this.getAttribute(processedFeatureDescriptionStr);
@@ -81,6 +110,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         preprocessingAlgorithmIdAttribute = (StringAttribute) this.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) this.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) this.getAttribute(groundTruthSourceTypeStr);
+        
+        //****
+        categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(categoriesToClassifyStr);
+        featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(featuresToIgnoreStr);
+        classificationTypeAttribute = (NominalAttribute) this.getAttribute(classificationTypeStr);
+        fuzzyAttribute = (NumericAttribute) this.getAttribute(fuzzyStr);
+        trainingDescriptionAttribute = (StringAttribute) this.getAttribute(trainingDescriptionStr);
+        //****
+        
         pathToOutputModelAttribute = (StringAttribute) this.getAttribute(pathToOutputModelStr);
     }
 
@@ -97,6 +135,20 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthList.add(trainingConfiguration.getGroundTruthSource().toString());
         List<String> groundTruthSourceList = new ArrayList<String>();
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
+        
+        //****
+        List<String> categoriesToClassifyList = new ArrayList<String>();
+        categoriesToClassifyList.add(trainingConfiguration.getCategoriesToClassify().toString());
+        List<String> featuresToIgnoreList = new ArrayList<String>();
+        featuresToIgnoreList.add(trainingConfiguration.getFeaturesToIgnore().toString());
+        List<String> classificationTypeList = new ArrayList<String>();
+        classificationTypeList.add(trainingConfiguration.getClassificationType().toString());
+        List<Double> fuzzyList = new ArrayList<Double>();
+        fuzzyList.add(trainingConfiguration.isFuzzy()?0.0:1.0);
+        List<String> trainingDescriptionList = new ArrayList<String>();
+        trainingDescriptionList.add(trainingConfiguration.getTrainingDescription());
+        //****
+        
         List<String> pathToOutputModel = new ArrayList<String>();
         String tmpPathToOutputModel = trainingConfiguration.getPathToOutputModel();
         if (tmpPathToOutputModel == null){
@@ -113,12 +165,31 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
             allowedValues.add(type.toString());
         }
         groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);
+        
+        categoriesToClassifyAttribute = new StringAttribute(categoriesToClassifyStr, categoriesToClassifyList);
+        featuresToIgnoreAttribute = new StringAttribute(featuresToIgnoreStr, featuresToIgnoreList);
+        allowedValues = new ArrayList<String>();
+        for(ClassificationType type : ClassificationType.values()) {
+        	allowedValues.add(type.toString());
+        }
+        classificationTypeAttribute = new NominalAttribute(classificationTypeStr, allowedValues, classificationTypeList);
+        fuzzyAttribute = new NumericAttribute(fuzzyStr, fuzzyList);
+        
+        trainingDescriptionAttribute = new StringAttribute(trainingDescriptionStr, trainingDescriptionList);
+        
         pathToOutputModelAttribute = new StringAttribute(pathToOutputModelStr, pathToOutputModel);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
+        
+        addAttribute(categoriesToClassifyAttribute);
+        addAttribute(featuresToIgnoreAttribute);
+        addAttribute(classificationTypeAttribute);
+        addAttribute(fuzzyAttribute);
+        addAttribute(trainingDescriptionAttribute);
+        
         addAttribute(pathToOutputModelAttribute);
     }
 
@@ -131,6 +202,14 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(groundTruthSourceStr);
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
         
+        //****
+        dataSet.checkStringAttribute(categoriesToClassifyStr);
+        dataSet.checkStringAttribute(featuresToIgnoreStr);
+        dataSet.checkNominalAttribute(classificationTypeStr);
+        dataSet.checkNumericAttribute(fuzzyStr);
+        dataSet.checkStringAttribute(trainingDescriptionStr);
+        //****
+        
         dataSet.checkStringAttribute(pathToOutputModelStr);
         processedFeatureDescriptionAttribute =
                 (StringAttribute) dataSet.getAttribute(processedFeatureDescriptionStr);
@@ -138,6 +217,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         preprocessingAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
+        
+        //****
+        categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(categoriesToClassifyStr);
+        featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(featuresToIgnoreStr);
+        classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(classificationTypeStr);
+        fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(fuzzyStr);
+        trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(trainingDescriptionStr);
+        //****
+        
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
         
         
@@ -147,6 +235,15 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
+        
+        //****
+        addAttribute(categoriesToClassifyAttribute);
+        addAttribute(featuresToIgnoreAttribute);
+        addAttribute(classificationTypeAttribute);
+        addAttribute(fuzzyAttribute);
+        addAttribute(trainingDescriptionAttribute);
+        //****
+        
         addAttribute(pathToOutputModelAttribute);
     }
     
@@ -168,6 +265,26 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 
     public NominalAttribute getGroundTruthSourceTypeAttribute() {
         return groundTruthSourceTypeAttribute;
+    }
+    
+    public StringAttribute getCategoriesToClassifyAttribute() {
+    	return categoriesToClassifyAttribute;
+    }
+    
+    public StringAttribute getFeaturesToIgnoreAttribute() {
+    	return featuresToIgnoreAttribute;
+    }
+    
+    public NominalAttribute getClassificationTypeAttribute() {
+    	return classificationTypeAttribute;
+    }
+    
+    public NumericAttribute getFuzzyAttribute() {
+    	return fuzzyAttribute;
+    }
+    
+    public StringAttribute getTrainingDescriptionAttribute() {
+    	return trainingDescriptionAttribute;
     }
 
     public StringAttribute getPreprocessingAlgorithmIdAttribute() {

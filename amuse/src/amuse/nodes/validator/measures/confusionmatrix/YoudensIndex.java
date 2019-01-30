@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * (i.e. generally avoid failures).
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: YoudensIndex.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -110,7 +110,22 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
 }
 

@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * and labeled data.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: KendallsTauRankCorrelation.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -59,7 +59,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			predictedSongRelationships.add(currentPredictedValue);
@@ -145,7 +145,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		ArrayList<Double> predictedPartitionRelationships = new ArrayList<Double>();
 		for(int i=0;i<predictedRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				predictedPartitionRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j]));
+				predictedPartitionRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j][0]));
 			}
 		}
 		
@@ -224,7 +224,20 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 }
 

@@ -46,7 +46,7 @@ import com.rapidminer.tools.Ontology;
  * DataSet contains different attributes with values
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DataSet.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class DataSet extends DataSetAbstract {
 
@@ -182,7 +182,7 @@ public class DataSet extends DataSetAbstract {
      *
      * @return RapidMiner ExampleSet
      */
-    public ExampleSet convertToRapidMinerExampleSet() {
+    public ExampleSet convertToRapidMinerExampleSet() throws IOException{
 
 	NominalMapping mapping = null;
 	com.rapidminer.example.Attribute idAttribute = null;
@@ -190,16 +190,22 @@ public class DataSet extends DataSetAbstract {
 
 	// Create attribute list
 	List<com.rapidminer.example.Attribute> attributes = new LinkedList<com.rapidminer.example.Attribute>();
+	int numberOfCategories = 1;
 	for (int a = 0; a < getAttributeCount(); a++) {
 	    if (getAttribute(a).getName().equals("Id")) {
 		idAttribute = AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.INTEGER);
 		attributes.add(idAttribute);
-	    } else if (getAttribute(a).getName().equals("Category")) {
-		labelAttribute = AttributeFactory.createAttribute(getAttribute(
-			a).getName(), Ontology.NOMINAL);
-		attributes.add(labelAttribute);
-		mapping = attributes.get(attributes.size() - 1).getMapping();
-	    } else if (getAttribute(a) instanceof StringAttribute) {
+	    } 
+	    //****
+	    else if (getAttribute(a).getName().equals("NumberOfCategories")) {
+	    	numberOfCategories = (int)((double)getAttribute(a).getValueAt(0));
+	    	labelAttribute = AttributeFactory.createAttribute("Category", Ontology.NOMINAL);
+	    	attributes.add(labelAttribute);
+	    	mapping = attributes.get(attributes.size() - 1).getMapping();
+	    	a += numberOfCategories;
+	    }
+	    //****
+	    else if (getAttribute(a) instanceof StringAttribute) {
 		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.NOMINAL));
 	    } else {
 		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.REAL));
@@ -213,33 +219,47 @@ public class DataSet extends DataSetAbstract {
 	for (int d = 0; d < getValueCount(); d++) {
 	    double[] data = new double[attributes.size()];
 	    // int currData = 0;
+	    int offSet = 0;//offSet between the RapidMiner attributes and the DataSet attributes (NumberOfAttributes + Category in the DataSet correspond to just  Category in the RapidMiner set)
 	    for (int a = 0; a < attributes.size(); a++) {
-		// System.out.println(attributes.get(a).getName());
-		if (attributes.get(a).getName().equals("Id")) {
-		    /*
-		     * System.out.println("id found");
-		     *
-		     * System.out.println(getAttribute(a).getValueAt(d));
-		     * System.
-		     * out.println(getAttribute(a).getValueAt(d).toString());
-		     */
-		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
-		    // data[a] =
-		    // attributes.get(a).getMapping().mapString(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		    // idAttribute.
-
-		} else if (getAttribute(a).getName().equals("Category")) {
-		    data[a] = mapping.mapString(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		} else if (getAttribute(a) instanceof StringAttribute) {
-		    data[a] = attributes.get(a).getMapping().mapString(
-			    getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		} else {
-		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		}
+	    	// System.out.println(attributes.get(a).getName());
+	    	if (attributes.get(a).getName().equals("Id")) {
+	    		/*
+	    		* System.out.println("id found");
+	    		*
+		     	*System.out.println(getAttribute(a).getValueAt(d));
+		     	*System.
+		     	* out.println(getAttribute(a).getValueAt(d).toString());
+		     	*/
+	    		data[a] = new Double(getAttribute(a+offSet).getValueAt(d).toString());
+	    		// data[a] =
+	    		// attributes.get(a).getMapping().mapString(getAttribute(a).getValueAt(d).toString());
+	    		// currData++;offSet++;
+	    		// idAttribute.
+	    		
+	    	} else if (attributes.get(a).getName().equals("Category")) {
+	    		if(offSet != 0) {
+	    			throw new IOException("There is something wrong with the data.");
+	    		}
+	    		if(numberOfCategories == 1) {
+	    			data[a] = mapping.mapString(((double)getAttribute(a+1).getValueAt(d) >= 0.5 ? "" : "NOT_") + getAttribute(a+1).getName());
+			    }
+	    		
+	    		for(int i = 0; i < numberOfCategories; i++) {
+	    			if((double)getAttribute(a+1+i).getValueAt(d) == 1) {
+	    				data[a] = mapping.mapString(i + "-" + getAttribute(a+1+i).getName());
+	    			}
+	    		}
+	    		
+			    offSet += numberOfCategories;
+			    // currData++;
+			} else if (getAttribute(a+offSet) instanceof StringAttribute) {
+	    		data[a] = attributes.get(a).getMapping().mapString(
+			    getAttribute(a+offSet).getValueAt(d).toString());
+	    		// currData++;
+	    	} else {
+	    		data[a] = new Double(getAttribute(a+offSet).getValueAt(d).toString());
+	    		// currData++;
+	    	}
 	    }
 
 	    // Add data row

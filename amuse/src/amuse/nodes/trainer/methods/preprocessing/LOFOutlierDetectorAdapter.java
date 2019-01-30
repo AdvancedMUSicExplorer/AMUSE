@@ -51,7 +51,7 @@ import com.rapidminer.tools.OperatorService;
  * Removes outliers with LOF method 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: LOFOutlierDetectorAdapter.java 200 2017-08-11 12:23:59Z frederik-h $
  */
 public class LOFOutlierDetectorAdapter extends AmuseTask implements ClassificationPreprocessingInterface {
 

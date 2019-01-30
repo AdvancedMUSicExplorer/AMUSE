@@ -33,6 +33,7 @@ import java.util.Random;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSet;
@@ -62,7 +63,7 @@ import amuse.preferences.KeysStringValue;
  * Performs n-fold cross-validation
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: NFoldCrossValidator.java 245 2018-09-27 12:53:32Z frederik-h $
  */
 public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface {
 	
@@ -298,7 +299,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 						// - if the ID is changed to the next song, the ground truth of all partitions is then loaded
 						if(currentSongId != songIdToSearchFor) {
 							currentSongId = songIdToSearchFor;
-							if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+							if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.BINARY) {
 								songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
 									getLabeledAverageSongRelationships().get(songIdToSongNumber.get(songIdToSearchFor)));
 							} else {
@@ -325,7 +326,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				"-1",
 				new DataSetInput(trainingSet),
 				GroundTruthSourceType.READY_INPUT,
-				this.folderForModels + File.separator + "model_" + i + ".mod");
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getFeaturesToIgnore(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), this.folderForModels + File.separator + "model_" + i + ".mod", null);
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);
@@ -336,7 +337,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
-				new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getFeaturesToIgnore(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
 						((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
@@ -349,9 +350,12 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null;
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
-						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.BINARY) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								songRelationshipsValidationSet, predictedSongs);
+						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
+									songRelationshipsMValidationSet, predictedSongs);
 						} else {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 								songRelationshipsMValidationSet, predictedSongs);

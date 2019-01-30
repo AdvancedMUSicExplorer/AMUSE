@@ -35,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: Accuracy.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -50,12 +50,15 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		if(isFuzzy()) {
+			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
+		}
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -92,12 +95,15 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		if(isFuzzy()) {
+			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
+		}
 		int errorSum = 0;
 		int partitionNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			partitionNumber += predictedRelationships.get(i).getRelationships().length;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				if(predictedRelationships.get(i).getRelationships()[j].doubleValue() != groundTruthRelationships.get(i).doubleValue()) {
+				if(predictedRelationships.get(i).getRelationships()[j][0].doubleValue() != groundTruthRelationships.get(i).doubleValue()) {
 					errorSum++;
 				}
 			}
@@ -129,7 +135,22 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
 }
 

@@ -26,6 +26,7 @@ package amuse.nodes.trainer.methods.supervised;
 import java.io.File;
 import java.io.IOException;
 
+import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.interfaces.nodes.NodeException;
@@ -37,7 +38,7 @@ import amuse.nodes.trainer.interfaces.TrainerInterface;
  * Adapter for Linear Discriminant Analysis. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: LinearDiscriminantAnalysisAdapter.java 197 2017-08-11 12:15:34Z frederik-h $
  */
 public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements TrainerInterface {
 
@@ -61,6 +62,11 @@ public class LinearDiscriminantAnalysisAdapter extends AmuseTask implements Trai
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
+		
+		//test if the settings are supported
+		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+			throw new NodeException("Only crisp binary/multiclass classification is supported by this method");
+		}
 		
 		// (1) Save the dataSet as ARFF since Matlab LDA can not save models
 		try {

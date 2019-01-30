@@ -29,7 +29,7 @@ import amuse.interfaces.nodes.NodeException;
  * All measure calculators should implement this interface
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: MeasureCalculatorInterface.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public interface MeasureCalculatorInterface {
 	

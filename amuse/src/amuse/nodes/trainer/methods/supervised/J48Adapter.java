@@ -23,6 +23,7 @@
  */
 package amuse.nodes.trainer.methods.supervised;
 
+import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 
 import amuse.data.io.DataSetInput;
@@ -45,7 +46,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for J48. For further details of Yale see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: J48Adapter.java 197 2017-08-11 12:15:34Z frederik-h $
  */
 public class J48Adapter extends AmuseTask implements TrainerInterface {
 
@@ -83,7 +84,12 @@ public class J48Adapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
+		//test if the settings are supported
+		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() != ClassificationType.BINARY) {
+			throw new NodeException("Only crisp binary classification is supported by this method");
+		}
+		
 		// Train the model and save it
 		try {
 			Process process = new Process();

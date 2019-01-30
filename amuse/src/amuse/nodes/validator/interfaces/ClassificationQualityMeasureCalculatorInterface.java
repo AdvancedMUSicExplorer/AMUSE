@@ -33,7 +33,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * should implement this interface.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassificationQualityMeasureCalculatorInterface.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public interface ClassificationQualityMeasureCalculatorInterface extends MeasureCalculatorInterface {
 	
@@ -43,11 +43,17 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	/** Switchs the measure calculation on partition level on/off */
 	public void setPartitionLevel(boolean level);
 	
+	/** Switchs the fuzzy measure calculation on/off */
+	public void setFuzzy(boolean fuzzy);
+	
 	/** Returns true if this measure will be calculated on song level */
 	public boolean getSongLevel();
 	
 	/** Returns true if this measure will be calculated on partition level */
 	public boolean getPartitionLevel();
+	
+	//** Returns true if this measure will be be calculated in a fuzzily */
+	public boolean isFuzzy();
 	
 	/**
 	 * Calculates the measure
@@ -70,7 +76,6 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	public ValidationMeasure[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
 	
-
 	public ValidationMeasure[] calculateMultiClassMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
 	/**
@@ -80,9 +85,21 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	 * @return Measure or null if this calculator does not support multiclass classifiers
 	 * @throws NodeException
 	 */
-	// TODO v0.x Multiclass fuzzy relationships are currently not supported!
 	public ValidationMeasure[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 	
-	// TODO v0.x Multiclass fuzzy relationships are currently not supported!
 	public ValidationMeasure[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	
+	
+	public ValidationMeasure[] calculateMultiLabelMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	
+	/**
+	 * Calculates the measure, if this calculator supports multilabel classifiers
+	 * @param groundTruthRelationships Multilabel ground truth relationships of classifier input (labeled relationships)
+	 * @param classifierRelationships Multilabel relationships calculated by classifier (predicted relationships)
+	 * @return Measure or null if this calculator does not support multilabel classifiers
+	 * @throws NodeException
+	 */
+	public ValidationMeasure[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	
+	public ValidationMeasure[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
 }

@@ -26,14 +26,18 @@ package amuse.nodes.trainer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Level;
 
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ClassificationType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.FileInput;
+import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.classifier.methods.supervised.FKNNAdapter;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -42,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification training task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: TrainingConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class TrainingConfiguration extends TaskConfiguration {
 
@@ -65,6 +69,15 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
+	//*****
+	private final List<Integer> categoriesToClassify;
+	private final List<Integer> featuresToIgnore;
+	private final ClassificationType classificationType;
+	private final boolean fuzzy;
+	
+	private final String trainingDescription;
+	//****
+	
 	/** Alternative path for saving of training model(s) (e.g. an optimization task may train
 	 * different models and compare their performance; here it is not required to save them to
 	 * the central Amuse model database!) */
@@ -85,19 +98,36 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * - Path to the labeled file list or
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)
-	 * @param groundTruthSourceType Describes the source type of ground truth 
+	 * @param groundTruthSourceType Describes the source type of ground truth
+	 * @param categoriesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param featuresToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
+	 * @param trainingDescription optional description of this experiment, that will be added to the name of the model
+	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> categoriesToClassify, List<Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy, String trainingDescription, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = groundTruthSourceType;
+		this.categoriesToClassify = categoriesToClassify;
+		this.featuresToIgnore = featuresToIgnore;
+		this.classificationType = classificationType;
+		this.fuzzy = fuzzy;
+		this.trainingDescription = trainingDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.pathToOutputModel = pathToOutputModel;
+		
+//		if(classificationType == ClassificationType.MULTICLASS && fuzzy) {
+//			//Ist das gut so?
+//			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.WARN,"Multiclass problems cannot be fuzzy classified. The classification will be crisp.");
+//			fuzzy = false;
+//		}
 	}
 
 	/**
@@ -123,10 +153,50 @@ public class TrainingConfiguration extends TaskConfiguration {
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
+			
+			//****
+			String categoriesToClassifyString = trainingConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
+			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
+			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
+			for(String str : categoriesToClassifyStringArray) {
+				if(!str.equals("")) {
+					currentCategoriesToClassify.add(Integer.parseInt(str));
+				} else {
+					throw new IOException("The categories that should be classified need to be specified.");
+				}
+			}
+			
+			String featuresToIgnoreString = trainingConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
+			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
+			for(String str : featuresToIgnoreStringArray) {
+				if(!str.equals("")) {
+					currentFeaturesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+			
+			ClassificationType currentClassificationType;
+			if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentClassificationType = ClassificationType.UNSUPERVISED;
+			} else if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentClassificationType = ClassificationType.BINARY;
+			} else if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
+				currentClassificationType = ClassificationType.MULTILABEL;
+			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
+				currentClassificationType = ClassificationType.MULTICLASS;
+			}
+			
+			boolean currentFuzzy = trainingConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
+			
+			String currentTrainingDescription = trainingConfig.getTrainingDescriptionAttribute().getValueAt(i).toString();
+			//****
+			
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentCategoriesToClassify, currentFeaturesToIgnore, currentClassificationType, currentFuzzy, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -186,6 +256,26 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public GroundTruthSourceType getGroundTruthSourceType() {
 		return groundTruthSourceType;
+	}
+	
+	public List<Integer> getCategoriesToClassify(){
+		return categoriesToClassify;
+	}
+	
+	public List<Integer> getFeaturesToIgnore(){
+		return featuresToIgnore;
+	}
+	
+	public ClassificationType getClassificationType() {
+		return classificationType;
+	}
+	
+	public boolean isFuzzy() {
+		return fuzzy;
+	}
+	
+	public String getTrainingDescription() {
+		return trainingDescription;
 	}
 
 	/**
@@ -259,7 +349,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, pathToOutputModel); 
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, categoriesToClassify, featuresToIgnore, classificationType, fuzzy, trainingDescription, pathToOutputModel); 
 		return conf;
 	}
 }

@@ -27,23 +27,28 @@ package amuse.nodes.classifier.interfaces;
  * This class saves the results of a classification task
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassifiedSongPartitions.java 197 2017-08-11 12:15:34Z frederik-h $
  */
 public class ClassifiedSongPartitions extends SongPartitionsDescription {
 	
-	/** Corresponding relationships for the partitions */
-	final Double[] relationships; 
+	/** labels that where classified **/
+	final String[] labels;
+	
+	/** Corresponding relationships for the partitions
+	 * 	First dimension represents the partitions, second dimension the categories.
+	 * */
+	final Double[][] relationships;
     
 	/**
 	 * Constructor
 	 * @param pathToMusicSong Music song which was classified
 	 * @param startMs Starts of the partitions in ms
 	 * @param endMs Ends of the partitions in ms
-	 * @param labels Assigned label/category
+	 * @param labels names of the categories
 	 * @param relationships Corresponding relationships for the partitions
 	 */
-	public ClassifiedSongPartitions(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs,
-			Double[] relationships) {
+	public ClassifiedSongPartitions(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs, String[] labels,
+			Double[][] relationships) {
 		super(pathToMusicSong, songId, startMs, endMs);
 		if(relationships.length != startMs.length) {
 			throw new RuntimeException("Could not instantiate ClassifiedSongPartitionsDescription: " +
@@ -51,21 +56,30 @@ public class ClassifiedSongPartitions extends SongPartitionsDescription {
 					"of relationships (" + relationships.length + ")");
 		}
 		this.relationships = relationships;
+		this.labels = labels;
 	}
 
 	/**
 	 * @return the relationships
 	 */
-	public Double[] getRelationships() {
+	public Double[][] getRelationships() {
 		return relationships;
 	}
 	
-	public double getMeanRelationship() {
+	public double getMeanRelationship(int category) {
 		double sum = 0d;
-		for(Double d : relationships) {
+		for(int i=0;i<relationships.length;i++) {
+			double d = relationships[i][category];
 			sum += d;
 		}
 		sum /= relationships.length;
 		return sum;
+	}
+	
+	/**
+	 * @return the label
+	 */
+	public String[] getLabels() {
+		return labels;
 	}
 }

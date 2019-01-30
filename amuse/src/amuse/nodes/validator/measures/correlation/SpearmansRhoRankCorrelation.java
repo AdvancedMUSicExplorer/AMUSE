@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * Spearman's rank correlation coefficient is a special case of Pearson product-moment correlation coefficient.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: SpearmansRhoRankCorrelation.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -60,7 +60,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -124,7 +124,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -163,7 +163,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		ArrayList<Double> sortedLabeledRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				sortedPredictedRelationships.add(predictedRelationships.get(i).getRelationships()[j]);
+				sortedPredictedRelationships.add(predictedRelationships.get(i).getRelationships()[j][0]);
 				sortedLabeledRelationships.add(new Double(groundTruthRelationships.get(i)));
 			}
 		}
@@ -222,8 +222,8 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		double p = overallPartitionNumber * Math.pow((overallPartitionNumber+1d)/2d, 2);
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				sumOfRankMultiplications += predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j]) * labeledValueToRang.get(groundTruthRelationships.get(i));
-				sumOfSquaredPredictedRanks += Math.pow(predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j]), 2);
+				sumOfRankMultiplications += predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][0]) * labeledValueToRang.get(groundTruthRelationships.get(i));
+				sumOfSquaredPredictedRanks += Math.pow(predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][0]), 2);
 				sumOfSquaredLabeledRanks += Math.pow(labeledValueToRang.get(groundTruthRelationships.get(i)), 2);
 			}
 		}
@@ -256,7 +256,22 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
 }
 

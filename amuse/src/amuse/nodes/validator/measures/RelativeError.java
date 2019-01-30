@@ -27,7 +27,6 @@ import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
-import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
@@ -36,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * of instances.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: RelativeError.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class RelativeError extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -56,7 +55,7 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -89,7 +88,7 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				Double error = Math.abs(groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j]);
+				Double error = Math.abs(groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j][0]);
 				errorSum += error;
 			}
 		}
@@ -109,35 +108,36 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		
-		// Go through all songs
-		double errorSum = 0.0d;
-		for(int i=0;i<groundTruthRelationships.size();i++) {
-			
-			// Calculate the error for the current song
-			double songError = 0.0d;
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
-						getLabels()[j];
-				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
-						getLabels()[j];
-				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
-					songError++;
-				}
-			}
-			songError /= ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
-			
-			// Calculate error
-			errorSum += songError;
-		}
-		
-		// Prepare the result
-		ValidationMeasureDouble[] relMeasure = new ValidationMeasureDouble[1];
-		relMeasure[0] = new ValidationMeasureDouble();
-		relMeasure[0].setId(201);
-		relMeasure[0].setName("Relative error on song level");
-		relMeasure[0].setValue(errorSum);
-		return relMeasure;
+		throw new NodeException(this.getClass().getName() + " is not yet implemented for multiclass classification in the current version");
+		//TODO update this method
+//		// Go through all songs
+//		double errorSum = 0.0d;
+//		for(int i=0;i<groundTruthRelationships.size();i++) {
+//			
+//			// Calculate the error for the current song
+//			double songError = 0.0d;
+//			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
+//				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
+//						getLabels()[j];
+//				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
+//						getLabels()[j];
+//				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
+//					songError++;
+//				}
+//			}
+//			songError /= ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
+//			
+//			// Calculate error
+//			errorSum += songError;
+//		}
+//		
+//		// Prepare the result
+//		ValidationMeasureDouble[] relMeasure = new ValidationMeasureDouble[1];
+//		relMeasure[0] = new ValidationMeasureDouble();
+//		relMeasure[0].setId(201);
+//		relMeasure[0].setName("Relative error on song level");
+//		relMeasure[0].setValue(errorSum);
+//		return relMeasure;
 	}
 
 
@@ -145,33 +145,48 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		
-		// Go through all partitions
-		double errorSum = 0.0d;
-		int partitionNumber =0;
-		for(int i=0;i<groundTruthRelationships.size();i++) {
-			partitionNumber += ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
-						getLabels()[j];
-				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
-						getLabels()[j];
-				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
-					errorSum++;
-				}
-			}
-		}
-		
-		// Prepare the result
-		ValidationMeasureDouble[] arelMeasure = new ValidationMeasureDouble[1];
-		arelMeasure[0] = new ValidationMeasureDouble();
-		arelMeasure[0].setId(201);
-		arelMeasure[0].setName("Relative error on partition level");
-		arelMeasure[0].setValue(errorSum);
-		return arelMeasure;
+		throw new NodeException(this.getClass().getName() + " is not yet implemented for multiclass classification in the current version");
+		//TODO update this method
+//		// Go through all partitions
+//		double errorSum = 0.0d;
+//		int partitionNumber =0;
+//		for(int i=0;i<groundTruthRelationships.size();i++) {
+//			partitionNumber += ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
+//			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
+//				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
+//						getLabels()[j];
+//				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
+//						getLabels()[j];
+//				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
+//					errorSum++;
+//				}
+//			}
+//		}
+//		
+//		// Prepare the result
+//		ValidationMeasureDouble[] arelMeasure = new ValidationMeasureDouble[1];
+//		arelMeasure[0] = new ValidationMeasureDouble();
+//		arelMeasure[0].setId(201);
+//		arelMeasure[0].setName("Relative error on partition level");
+//		arelMeasure[0].setValue(errorSum);
+//		return arelMeasure;
 	}
 
-
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
+	}
 
 }
 

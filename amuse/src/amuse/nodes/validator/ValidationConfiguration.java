@@ -23,11 +23,13 @@
  */ 
 package amuse.nodes.validator;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.Measure;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Level;
 
@@ -47,7 +49,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification validation task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ValidationConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class ValidationConfiguration extends TaskConfiguration {
 
@@ -69,6 +71,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
+	
+	
+	private final List<Integer> categoriesToClassify;
+	private final List<Integer> featuresToIgnore;
+	private final ClassificationType classificationType;
+	private final boolean fuzzy;
+	
 	
 	/** ID of classification algorithm from classifierTable.arff 
 	 * (optionally with parameters listed in brackets) */
@@ -101,13 +110,17 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, 
 			String processedFeaturesModelName, String classificationAlgorithmDescription,
-			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType) {
+			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType, List<Integer> categoriesToClassify, List<Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
+		this.categoriesToClassify = categoriesToClassify;
+		this.featuresToIgnore = featuresToIgnore;
+		this.classificationType = classificationType;
+		this.fuzzy = fuzzy;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
@@ -148,13 +161,46 @@ public class ValidationConfiguration extends TaskConfiguration {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
 			
+			
+			String categoriesToClassifyString = validatorConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
+			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
+			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
+			for(String str : categoriesToClassifyStringArray) {
+				currentCategoriesToClassify.add(Integer.parseInt(str));
+			}
+			
+			String featuresToIgnoreString = validatorConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
+			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
+			for(String str : featuresToIgnoreStringArray) {
+				if(!str.equals("")) {
+					currentFeaturesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+			
+			ClassificationType currentClassificationType;
+			if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentClassificationType = ClassificationType.UNSUPERVISED;
+			} else if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentClassificationType = ClassificationType.BINARY;
+			} else if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
+				currentClassificationType = ClassificationType.MULTILABEL;
+			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
+				currentClassificationType = ClassificationType.MULTICLASS;
+			}
+			
+			boolean currentFuzzy = validatorConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
+			//***
+			
 			// Load the measure table
 			MeasureTable currentMeasureTable = new MeasureTable(new File(currentMeasureList));
 			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst));
+		    		gtst, currentCategoriesToClassify, currentFeaturesToIgnore, currentClassificationType, currentFuzzy));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -205,6 +251,22 @@ public class ValidationConfiguration extends TaskConfiguration {
 		return classificationAlgorithmDescription;
 	}
 
+	public List<Integer> getCategoriesToClassify(){
+		return categoriesToClassify;
+	}
+	
+	public List<Integer> getFeaturesToIgnore(){
+		return featuresToIgnore;
+	}
+	
+	public ClassificationType getClassificationType() {
+		return classificationType;
+	}
+	
+	public boolean isFuzzy() {
+		return fuzzy;
+	}
+	
 	/**
 	 * Sets the path to folder to load the processed features from (default: Amuse processed feature database)
 	 * @param processedFeatureDatabase Path to folder

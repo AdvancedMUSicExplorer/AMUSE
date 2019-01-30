@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * Correlation coefficient calculates the correlation between labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: StandardCorrelationCoefficient.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class StandardCorrelationCoefficient extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -58,7 +58,7 @@ public class StandardCorrelationCoefficient extends ClassificationQualityDoubleM
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -77,7 +77,7 @@ public class StandardCorrelationCoefficient extends ClassificationQualityDoubleM
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -117,7 +117,7 @@ public class StandardCorrelationCoefficient extends ClassificationQualityDoubleM
 		double meanLabeledValue = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				meanPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				meanPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 				meanLabeledValue += groundTruthRelationships.get(i);
 			}
 		}
@@ -130,8 +130,8 @@ public class StandardCorrelationCoefficient extends ClassificationQualityDoubleM
 		double varianceLabeled = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				covariance += (predictedRelationships.get(i).getRelationships()[j] - meanPredictedValue)*(groundTruthRelationships.get(i) - meanLabeledValue);
-				variancePredicted += (predictedRelationships.get(i).getRelationships()[j] - meanPredictedValue)*(predictedRelationships.get(i).getRelationships()[j] - meanPredictedValue);
+				covariance += (predictedRelationships.get(i).getRelationships()[j][0] - meanPredictedValue)*(groundTruthRelationships.get(i) - meanLabeledValue);
+				variancePredicted += (predictedRelationships.get(i).getRelationships()[j][0] - meanPredictedValue)*(predictedRelationships.get(i).getRelationships()[j][0] - meanPredictedValue);
 				varianceLabeled += (groundTruthRelationships.get(i) - meanLabeledValue)*(groundTruthRelationships.get(i) - meanLabeledValue);
 			}
 		}	
@@ -166,6 +166,21 @@ public class StandardCorrelationCoefficient extends ClassificationQualityDoubleM
 		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+	}
 }
 

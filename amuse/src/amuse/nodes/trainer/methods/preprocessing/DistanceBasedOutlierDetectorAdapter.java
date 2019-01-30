@@ -51,7 +51,7 @@ import com.rapidminer.tools.OperatorService;
  * Removes outliers with distance-based method 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DistanceBasedOutlierDetectorAdapter.java 200 2017-08-11 12:23:59Z frederik-h $
  */
 public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements ClassificationPreprocessingInterface {
 

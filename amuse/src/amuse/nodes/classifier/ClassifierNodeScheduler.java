@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -37,9 +38,11 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.ClassificationType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.DataSetException;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileListInput;
 import amuse.data.io.attributes.NumericAttribute;
@@ -48,11 +51,10 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
-import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
+import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -62,7 +64,7 @@ import amuse.util.AmuseLogger;
  * are classified with the previously learned classification model. 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassifierNodeScheduler.java 245 2018-09-27 12:53:32Z frederik-h $
  */
 public class ClassifierNodeScheduler extends NodeScheduler { 
 
@@ -257,15 +259,111 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
 			
+			//****
+			//check if the settings are possible
+			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
+				throw new NodeException("Binary classification of more than one category is not possible.");
+			}
+			if(((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ClassificationConfiguration)this.taskConfiguration).isFuzzy()) {
+				throw new NodeException("Multiclass problems cannot be fuzzy classified.");
+			}
+			//****
+			
 			DataSet inputForClassification = null;
+			
+			List<Integer> categoriesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify();
+			List<Integer> featuresToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getFeaturesToIgnore();
 		
 			try {
 			
-				// If the input for classification has been previously prepared (e.g. from validator), it is ready! 
+				// If the input for classification has been previously prepared, it is almost ready!
 				if(((ClassificationConfiguration)this.getConfiguration()).getInputSourceType().
 						equals(ClassificationConfiguration.InputSourceType.READY_INPUT)) {
-					inputForClassification = new DataSet(new File(((ClassificationConfiguration)this.getConfiguration()).
-						getInputToClassify().toString()),"ClassificationSet");
+					
+					//****
+					DataSet completeInput = new DataSet(((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().get(0));
+					
+//					//if the list of categories to classify is empty, that input was prepared by the validator and is completely ready
+//					if(categoriesToClassify.isEmpty()) {
+//							inputForClassification = completeInput;
+//							
+//							//update the list of categories to classify so that it represents how many categories are actually to be classified
+//							for(int i=0;i<completeInput.getAttributeCount();i++) {
+//								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+//									numberOfCategories = (int)((double)completeInput.getAttribute(i).getValueAt(0));
+//									break;
+//								}
+//							}
+//							System.out.println("numberOfCategories == " + numberOfCategories);
+//							for(int i=0;i<numberOfCategories;i++) {
+//								categoriesToClassify.add(i);
+//							}
+//					} else {//otherwise the unwanted attributes have to be removed
+						inputForClassification = new DataSet("ClassificationSet");
+					
+						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
+							if(!categoriesToClassify.contains(i) && !featuresToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+								inputForClassification.addAttribute(completeInput.getAttribute(i));
+							}
+						}
+//					}
+					//prepare the description of the classifier input
+					boolean startAndEnd = true;
+					try {
+						completeInput.getAttribute("Start").getValueAt(0);
+						completeInput.getAttribute("End").getValueAt(0);
+					}
+					catch(DataSetException e) {
+						startAndEnd = false;
+						AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "Missing Start and/or End attributes.");
+					}
+					int id = (int)((double)completeInput.getAttribute("Id").getValueAt(0));
+					List<Double> partitionStarts = new ArrayList<Double>();
+					List<Double> partitionEnds = new ArrayList<Double>();
+					for(int i = 0; i<completeInput.getValueCount(); i++) {
+						int newId = (int)((double)completeInput.getAttribute("Id").getValueAt(i));
+						
+						double start = 0;
+						double end = -1;
+						
+						if(startAndEnd) {
+							start = (double)completeInput.getAttribute("Start").getValueAt(i);
+							end = (double)completeInput.getAttribute("End").getValueAt(i);
+						}
+						
+						if(newId != id) {
+							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
+							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+							
+							for(int j = 0; j < partitionStarts.size(); j++) {
+								partitionStartsAsArray[j] = partitionStarts.get(j);
+								partitionEndsAsArray[j] = partitionEnds.get(j);
+							}						
+							descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
+							partitionStarts = new ArrayList<Double>();
+							partitionEnds = new ArrayList<Double>();
+						}
+						
+						id = newId;
+						partitionStarts.add(start);
+						partitionEnds.add(end);						
+					}
+					
+					Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
+					Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+					
+					for(int j = 0; j < partitionStarts.size(); j++) {
+						partitionStartsAsArray[j] = partitionStarts.get(j);
+						partitionEndsAsArray[j] = partitionEnds.get(j);
+					}						
+					descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
+					
+					
+					//add the id attribute
+//					inputForClassification.addAttribute(completeInput.getAttribute("Id"));
+					//****
 				} 
 				
 				else {
@@ -284,6 +382,26 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString())) {
 							this.categoryDescription = ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString() + 
 								"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+							
+							DataSetAbstract groundTruth = null;
+							try {
+								groundTruth = new ArffDataSet(new File(categoryList.getAttribute("Path").getValueAt(i).toString()));
+							} catch(IOException e) {
+								throw new NodeException("Could not load the category table: " + e.getMessage()); 
+							}
+							
+							//****
+							this.categoryDescription += File.separator;
+							int j = 0;
+							for(int category : categoriesToClassify) {
+								if(j!=0) {
+									this.categoryDescription += "_";
+								}
+								this.categoryDescription += groundTruth.getAttribute(5 + category).getName();
+								j++;
+							}
+							//****
+							
 							break;
 						}
 						i++;
@@ -328,8 +446,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 					// Save the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
-						inputForClassification.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
-								new ArrayList<Double>()));
+						//****
+						//also omit the attributes that are supposed to be ignored
+						if(!featuresToIgnore.contains(i)) {
+							inputForClassification.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
+									new ArrayList<Double>()));
+						}
+						//****
 					}
 						
 					// Save the processed features for classifier
@@ -383,7 +506,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							// (they describe the partition for modeled features)
 							for(i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
 								Double val = processedFeaturesInstance.value(i);
-								inputForClassification.getAttribute(i).addValue(val);
+								//omit the features that are supposed to be ignored
+								if(!featuresToIgnore.contains(i)) {
+									inputForClassification.getAttribute(i).addValue(val);
+								}
 							}
 							
 							processedFeaturesInstance = processedFeaturesLoader.getNextInstance(processedFeaturesLoader.getStructure());
@@ -556,6 +682,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			String pathToModel = new String();
 			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
 					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))) {
+				
 				File folderForModels = new File(AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
 						+ File.separator
 						+ this.categoryDescription
@@ -563,7 +690,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						+ ((AmuseTask)this.cad).getProperties().getProperty("id") 
 						+ "-" 
 						+ ((AmuseTask)this.cad).getProperties().getProperty("name") 
-						+ this.requiredParameters 
+						+ this.requiredParameters + "_"
+						+ ((ClassificationConfiguration)this.taskConfiguration).getClassificationType().toString()
+						+ (((ClassificationConfiguration)this.taskConfiguration).isFuzzy() ? "_FUZZY" : "")
 						+ File.separator
 						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
 				pathToModel = folderForModels 
@@ -589,61 +718,34 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		DataSet d = ((DataSetInput)((ClassificationConfiguration)taskConfiguration).getInputToClassify()).getDataSet();
 		
-		// Is the current classification result binary or multiclass?
-		boolean isMulticlass = false;
-		String predictedLabel = d.getAttribute("PredictedCategory").getValueAt(0).toString();
-		if(predictedLabel.startsWith("NOT")) {
-			predictedLabel = predictedLabel.substring(4,predictedLabel.length());
-		}
-		for(int i=1;i<d.getAttribute("PredictedCategory").getValueCount();i++) {
-			String currentPredictedLabel = d.getAttribute("PredictedCategory").getValueAt(i).toString();
-			if(currentPredictedLabel.startsWith("NOT")) {
-				currentPredictedLabel = currentPredictedLabel.substring(4,currentPredictedLabel.length());
-			}
-			if(!currentPredictedLabel.equals(predictedLabel)) {
-				isMulticlass = true;
-				break;
-			}
-		}
 		
+		int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+		int positionOfFirstCategory = d.getAttributeCount() - numberOfCategories;
+		
+//		System.out.println(d.getValueCount());
 		// Go through all songs
 		int currentPartition = 0;
 		for(int i=0;i<descriptionOfClassifierInput.size();i++) {
 			int numberOfCorrespondingPartitions = descriptionOfClassifierInput.get(i).getStartMs().length;
 			
-			// Gather the partition data for this song
-			Double[] relationships = null;
-			String[] categories = null;
+			// Gather the partition data for this song	
+			Double[][] relationships = new Double[numberOfCorrespondingPartitions][numberOfCategories];
+			String[] labels = new String[numberOfCategories];
 			
-			if(!isMulticlass) {
-				relationships = new Double[numberOfCorrespondingPartitions];
-				for(int j=0;j<numberOfCorrespondingPartitions;j++) {
-					relationships[j] = d.getAttribute("PredictedCategory").getValueAt(currentPartition).toString().startsWith("NOT") ? 
-							0.0 : 1.0;
-					currentPartition++;
+			for(int j=0;j<numberOfCorrespondingPartitions;j++) {
+				for(int category=0;category<numberOfCategories;category++) {
+//					System.out.println(category);
+					relationships[j][category] = (double)d.getAttribute(positionOfFirstCategory + category).getValueAt(currentPartition);
+					if(j==0)labels[category] = d.getAttribute(positionOfFirstCategory + category).getName().substring(10);
 				}
-			} else {
-				categories = new String[numberOfCorrespondingPartitions];
-				relationships = new Double[numberOfCorrespondingPartitions];
-				for(int j=0;j<numberOfCorrespondingPartitions;j++) {
-					categories[j] = d.getAttribute("PredictedCategory").getValueAt(currentPartition).toString();
-					relationships[j] = 1.0; // TODO Currently the single partition cannot be fuzzy classified
-					currentPartition++;
-				}
+				currentPartition++;
 			}
 			
 			// Save the partition data for this song
-			if(!isMulticlass) {
-				classificationResults.add(new BinaryClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
-					descriptionOfClassifierInput.get(i).getSongId(),
-					descriptionOfClassifierInput.get(i).getStartMs(), 
-					descriptionOfClassifierInput.get(i).getEndMs(), predictedLabel, relationships));
-			} else {
-				classificationResults.add(new MulticlassClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
-					descriptionOfClassifierInput.get(i).getSongId(),
-					descriptionOfClassifierInput.get(i).getStartMs(), 
-					descriptionOfClassifierInput.get(i).getEndMs(), categories, relationships));
-			}
+			classificationResults.add(new ClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
+			descriptionOfClassifierInput.get(i).getSongId(),
+			descriptionOfClassifierInput.get(i).getStartMs(), 
+			descriptionOfClassifierInput.get(i).getEndMs(), labels, relationships));
 		}
 		
 		return classificationResults;
@@ -662,6 +764,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			if (!classifierResultFile.exists())
 				classifierResultFile.createNewFile();
 			
+			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			
 			FileOutputStream values_to = new FileOutputStream(classifierResultFile);
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
@@ -679,33 +783,37 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes("@ATTRIBUTE EndMs NUMERIC");
 			values_writer.writeBytes(sep);
-			values_writer.writeBytes("@ATTRIBUTE Category STRING");
-			values_writer.writeBytes(sep);
-			values_writer.writeBytes("@ATTRIBUTE Relationship NUMERIC");
+			for(int category = 0; category < numberOfCategories; category ++) {
+				values_writer.writeBytes("@ATTRIBUTE " + classifierResult.get(0).getLabels()[category] + " NUMERIC");
+				values_writer.writeBytes(sep);
+			}
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes("@DATA");
 			values_writer.writeBytes(sep);
-			String categoryNameString = categoryDescription.substring(categoryDescription.indexOf("-") + 1);
 	        
 			// If the partition classifications should be combined
 			if(((ClassificationConfiguration)taskConfiguration).getMergeSongResults().equals(new Integer("1"))) {
 				
 				// Go through all songs
 				for(int i=0;i<classifierResult.size();i++) {
-					double meanRelationship = 0d;
 					String currentSongName = classifierResult.get(i).getPathToMusicSong();
 					
-					// Go through all partitions of the current song
-					for(int j=0;j<classifierResult.get(i).getRelationships().length;j++) {
-						meanRelationship += classifierResult.get(i).getRelationships()[j];
-					}
-					meanRelationship /= classifierResult.get(i).getRelationships().length;
-					
 					// Save the results
-					values_writer.writeBytes(descriptionOfClassifierInput.get(i).getSongId() + ",'" + currentSongName + "',-1,-1," +
-							categoryNameString + "," + meanRelationship);
+					values_writer.writeBytes(descriptionOfClassifierInput.get(i).getSongId() + ",'" + currentSongName + "',-1,-1");
+					
+					//go through all categories
+					for(int category=0;category<numberOfCategories;category++) {
+						double meanRelationship = 0d;
+						// Go through all partitions of the current song
+						for(int j=0;j<classifierResult.get(i).getRelationships().length;j++) {
+							meanRelationship += classifierResult.get(i).getRelationships()[j][category];
+						}
+						meanRelationship /= classifierResult.get(i).getRelationships().length;
+						values_writer.writeBytes("," + meanRelationship);
+					}
+					
 					values_writer.writeBytes(sep);
 				}
 			}
@@ -721,8 +829,12 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						// Save the results
 						values_writer.writeBytes(descriptionOfClassifierInput.get(i).getSongId() + "," + currentSongName + "," + 
 								classifierResult.get(i).getStartMs()[j] + "," + 
-								classifierResult.get(i).getEndMs()[j] + "," + 
-								categoryNameString + "," + classifierResult.get(i).getRelationships()[j]);
+								classifierResult.get(i).getEndMs()[j]);
+						
+						for(int category=0;category<numberOfCategories;category++) {
+							values_writer.writeBytes("," + classifierResult.get(i).getRelationships()[j][category]);
+						}
+						
 						values_writer.writeBytes(sep);
 					}
 				}

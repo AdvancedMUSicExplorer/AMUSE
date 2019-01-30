@@ -26,11 +26,14 @@ package amuse.data.datasets;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import amuse.data.ClassificationType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
+import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
@@ -38,7 +41,7 @@ import amuse.nodes.validator.ValidationConfiguration;
 /**
  * This class represents a list of ValidationTasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id$
+ * @version $Id: ValidatorConfigSet.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
@@ -50,6 +53,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
     private static final String strGroundTruthSourceType = "GroundTruthSourceType";
     private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
     
+    //****
+    private static final String strCategoriesToClassify = "CategoriesToClassify";
+    private static final String strFeaturesToIgnore  = "FeaturesToIgnore";
+    private static final String strClassificationType = "ClassificationType";
+    private static final String strFuzzy = "Fuzzy";
+    //****
+    
 	// ARFF attributes
 	private final StringAttribute validationMethodIdAttribute;
     private final StringAttribute measureListAttribute;
@@ -57,6 +67,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute inputToValidateAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
     private final StringAttribute classificationAlgorithmIdAttribute;
+    
+    //****
+    private final StringAttribute categoriesToClassifyAttribute;
+    private final StringAttribute featuresToIgnoreAttribute;
+    private final NominalAttribute classificationTypeAttribute;
+    private final NumericAttribute fuzzyAttribute;
+    //****
     
     private String description = "";
 
@@ -74,12 +91,27 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(strInputToValidate);
         checkNominalAttribute(strGroundTruthSourceType);
         checkStringAttribute(strClassificationAlgorithmId);
+        
+        //****
+        checkStringAttribute(strCategoriesToClassify);
+        checkStringAttribute(strFeaturesToIgnore);
+        checkNominalAttribute(strClassificationType);
+        checkNumericAttribute(strFuzzy);
+        //****
+        
         validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
         measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
         processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
         inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
         groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
         classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
+        
+        //****
+        categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(strCategoriesToClassify);
+        featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(strFeaturesToIgnore);
+        classificationTypeAttribute = (NominalAttribute) this.getAttribute(strClassificationType);
+        fuzzyAttribute = (NumericAttribute) this.getAttribute(strFuzzy);
+        //****
     }
 
     public ValidatorConfigSet(  String validationMethodId,
@@ -87,6 +119,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
                                 String processedFeatureDescription,
                                 String inputToValidate,
                                 String groundTruthSourceType,
+                                String categoriesToClassify,
+    							String featuresToIgnore,
+    							String classificationType,
+    							int fuzzy,
                                 String classificationAlgorithmId) {
         super("ValidatorConfig");
         validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
@@ -96,6 +132,16 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         List <String> values = new ArrayList<String>();
         values.add(groundTruthSourceType);
         groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
+        
+        //****
+        categoriesToClassifyAttribute = StringAttribute.createFromString(strClassificationType, classificationType);
+        featuresToIgnoreAttribute = StringAttribute.createFromString(strFeaturesToIgnore, featuresToIgnore);
+        List <String> classificationTypeValues = new ArrayList<String>();
+        classificationTypeValues.add(classificationType);
+        classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypeValues);
+        fuzzyAttribute = NumericAttribute.createFromDouble(strFuzzy, fuzzy);
+        //****
+        
         classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
         addAttribute(validationMethodIdAttribute);
         addAttribute(measureListAttribute);
@@ -113,12 +159,28 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(strProcessedFeatureDescription);
         dataSet.checkStringAttribute(strInputToValidate);
         dataSet.checkNominalAttribute(strGroundTruthSourceType);
+        
+        //****
+        dataSet.checkStringAttribute(strCategoriesToClassify);
+        dataSet.checkStringAttribute(strFeaturesToIgnore);
+        dataSet.checkNominalAttribute(strClassificationType);
+        dataSet.checkNumericAttribute(strFuzzy);
+        //****
+        
         dataSet.checkStringAttribute(strClassificationAlgorithmId);
         validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
         measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
         processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
         inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
+        
+        //****
+        categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strCategoriesToClassify);
+        featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strFeaturesToIgnore);
+        classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(strClassificationType);
+        fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(strFuzzy);
+        //****
+        
         classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
         addAttribute(validationMethodIdAttribute);
         addAttribute(measureListAttribute);
@@ -153,6 +215,22 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
     public NominalAttribute getGroundTruthSourceAttribute() {
         return groundTruthSourceTypeAttribute;
+    }
+    
+    public StringAttribute getCategoriesToClassifyAttribute() {
+    	return categoriesToClassifyAttribute;
+    }
+    
+    public StringAttribute getFeaturesToIgnoreAttribute() {
+    	return featuresToIgnoreAttribute;
+    }
+    
+    public NominalAttribute getClassificationTypeAttribute() {
+    	return classificationTypeAttribute;
+    }
+    
+    public NumericAttribute getFuzzyAttribute() {
+    	return fuzzyAttribute;
     }
 
     public StringAttribute getClassificationAlgorithmIdAttribute() {

@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
@@ -45,7 +46,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassificationConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class ClassificationConfiguration extends TaskConfiguration {
 
@@ -75,6 +76,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	
 	private final GroundTruthSourceType groundTruthSourceType;
 	
+	
+	private final List<Integer> categoriesToClassify;
+	private final List<Integer> featuresToIgnore;
+	private final ClassificationType classificationType;
+	private final boolean fuzzy;
+	
+	
 	/** Flag if song relationship grade should be averaged over all partitions (="1") */
 	private final Integer mergeSongResults;
 	
@@ -96,16 +104,24 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param inputSourceType Defines the input source type
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
+	 * @param categoriesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param featuresToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(DataInputInterface inputToClassify, InputSourceType inputSourceType, 
-			String processedFeaturesModelName, String algorithmDescription, Integer mergeSongResults,
+			String processedFeaturesModelName, String algorithmDescription, List<Integer> categoriesToClassify, List <Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy, Integer mergeSongResults,
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
+		this.categoriesToClassify = categoriesToClassify;
+		this.featuresToIgnore = featuresToIgnore;
+		this.classificationType = classificationType;
+		this.fuzzy = fuzzy;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.groundTruthSource = null;
@@ -119,12 +135,17 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
+	 * @param groundTruthSource the type of the groundTruthSource, file list or ready input
+	 * @param categoriesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param featuresToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, String groundTruthSource, String groundTruthSourceType, Integer mergeSongResults,
-			String classificationOutput) {
+			String algorithmDescription, String groundTruthSource, String groundTruthSourceType, List<Integer> categoriesToClassify, List <Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy, Integer mergeSongResults,
+			String classificationOutput, String pathToInputModel) {
 		List<File> input;
 		List<Integer> ids = null;
 		if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
@@ -151,9 +172,14 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = GroundTruthSourceType.valueOf(groundTruthSourceType);
+		this.categoriesToClassify = categoriesToClassify;
+		this.featuresToIgnore = featuresToIgnore;
+		this.classificationType = classificationType;
+		this.fuzzy = fuzzy;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.pathToInputModel = pathToInputModel;
 	}
 
 	/**
@@ -171,6 +197,47 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).toString();
 			String currentGroundTruthSourceType = classifierConfig.getGroundTruthSourceTypeAttribute().getValueAt(i);
+			
+			
+			
+			String categoriesToClassifyString = classifierConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
+			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
+			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
+			for(String str : categoriesToClassifyStringArray) {
+				if(!str.equals("")) {
+					currentCategoriesToClassify.add(Integer.parseInt(str));
+				} else {
+					throw new IOException("The categories that should be classified need to be specified.");
+				}
+			}
+			
+			String featuresToIgnoreString = classifierConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
+			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
+			for(String str : featuresToIgnoreStringArray) {
+				if(!str.equals("")) {
+					currentFeaturesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+			
+			ClassificationType currentClassificationType;
+			if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentClassificationType = ClassificationType.UNSUPERVISED;
+			} else if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentClassificationType = ClassificationType.BINARY;
+			} else if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
+				currentClassificationType = ClassificationType.MULTILABEL;
+			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
+				currentClassificationType = ClassificationType.MULTICLASS;
+			}
+			
+			boolean currentFuzzy = classifierConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
+			
+			String currentPathToInputModel = classifierConfig.getPathToInputModelAttribute().getValueAt(i);
+			
+			
 			Integer currentMergeSongResults = (new Double(classifierConfig.getMergeSongResultsAttribute().getValueAt(i).toString())).intValue();
 			String currentOutputResult = classifierConfig.getOutputResultAttribute().getValueAt(i).toString();
 			InputSourceType ist;
@@ -181,7 +248,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			}	
 			// Create a classification task
 		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputFileList, currentProcessedFeaturesDescription, 
-		    		currentAlgorithmDescription, currentGroundTruthSource, currentGroundTruthSourceType, currentMergeSongResults, currentOutputResult));
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentGroundTruthSourceType, currentCategoriesToClassify, currentFeaturesToIgnore, currentClassificationType, currentFuzzy, currentMergeSongResults, currentOutputResult, currentPathToInputModel));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -230,6 +297,22 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public String getGroundTruthSource() {
 		return groundTruthSource;
+	}
+	
+	public List<Integer> getCategoriesToClassify(){
+		return categoriesToClassify;
+	}
+	
+	public List<Integer> getFeaturesToIgnore(){
+		return featuresToIgnore;
+	}
+	
+	public ClassificationType getClassificationType() {
+		return classificationType;
+	}
+	
+	public boolean isFuzzy() {
+		return fuzzy;
 	}
 
 	/**

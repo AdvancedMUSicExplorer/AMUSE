@@ -41,7 +41,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * the extraction of the second feature requires 4 smallest time frames.   
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: RatioOfUsedRawTimeWindows.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class RatioOfUsedRawTimeWindows extends DataReductionMeasureCalculator {
 
@@ -53,26 +53,28 @@ public class RatioOfUsedRawTimeWindows extends DataReductionMeasureCalculator {
 		long numberOfInitialRawTimeWindows = 0;
 		long numberOfFinalRawTimeWindows = 0;
 		
-		try {
-			for(String f : usedProcessedFeatureFiles) {
-				BufferedReader reader = new BufferedReader(new FileReader(new File(f)));
-				String line = reader.readLine();
-				boolean initFound = false, finalFound = false;
-				while(line != null) {
-					if(line.startsWith("%initialNumberOfUsedRawTimeWindows")) {
-						numberOfInitialRawTimeWindows += new Long(line.substring(line.indexOf("=")+1, line.length()));
-						initFound = true;
-					} else if(line.startsWith("%finalNumberOfUsedRawTimeWindows")) {
-						numberOfFinalRawTimeWindows += new Long(line.substring(line.indexOf("=")+1, line.length()));
-						finalFound = true;
+		if(usedProcessedFeatureFiles != null) {
+			try {
+				for(String f : usedProcessedFeatureFiles) {
+					BufferedReader reader = new BufferedReader(new FileReader(new File(f)));
+					String line = reader.readLine();
+					boolean initFound = false, finalFound = false;
+					while(line != null) {
+						if(line.startsWith("%initialNumberOfUsedRawTimeWindows")) {
+							numberOfInitialRawTimeWindows += new Long(line.substring(line.indexOf("=")+1, line.length()));
+							initFound = true;
+						} else if(line.startsWith("%finalNumberOfUsedRawTimeWindows")) {
+							numberOfFinalRawTimeWindows += new Long(line.substring(line.indexOf("=")+1, line.length()));
+							finalFound = true;
+						}
+						if(initFound && finalFound) break;
+						line = reader.readLine();
 					}
-					if(initFound && finalFound) break;
-					line = reader.readLine();
+					reader.close();
 				}
-				reader.close();
+			} catch(IOException e) {
+				throw new NodeException("Could not load data from processed feature files: " + e.getMessage());
 			}
-		} catch(IOException e) {
-			throw new NodeException("Could not load data from processed feature files: " + e.getMessage());
 		}
 		
 		Double rate = new Double(numberOfFinalRawTimeWindows) / new Double(numberOfInitialRawTimeWindows);

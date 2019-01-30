@@ -32,6 +32,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.ClassificationType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -54,7 +55,7 @@ import amuse.util.AmuseLogger;
  * Performs n-fold cross-validation
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: SingleEvaluator.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	
@@ -167,7 +168,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
-				0,
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getFeaturesToIgnore(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), 0,
 				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(modelsToEvaluate.get(i).getAbsolutePath());
 				
@@ -182,9 +183,12 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null; 
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
-						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.BINARY) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
+						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
+									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
 						} else {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);

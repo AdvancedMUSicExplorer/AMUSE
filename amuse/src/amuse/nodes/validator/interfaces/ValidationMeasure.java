@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * For all validation measures.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ValidationMeasure.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public abstract class ValidationMeasure {
 	
