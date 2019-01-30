@@ -1,0 +1,274 @@
+/* This file is part of AMUSE framework (Advanced MUsic Explorer).
+ * 
+ * Copyright 2006-2010 by code authors
+ * 
+ * Created at TU Dortmund, Chair of Algorithm Engineering
+ * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
+ *
+ * AMUSE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * AMUSE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * Creation date: 21.01.2008
+ */
+package amuse.nodes.classifier.methods.supervised;
+
+import amuse.data.ClassificationType;
+import amuse.data.io.DataSet;
+import amuse.data.io.DataSetInput;
+import amuse.data.io.attributes.StringAttribute;
+import amuse.data.io.attributes.NumericAttribute;
+import amuse.interfaces.nodes.NodeException;
+import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
+import amuse.nodes.classifier.interfaces.ClassifierInterface;
+import amuse.util.AmuseLogger;
+import amuse.util.LibraryInitializer;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Level;
+
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import com.rapidminer.Process;
+import com.rapidminer.example.ExampleSet;
+import com.rapidminer.operator.IOContainer;
+import com.rapidminer.operator.ModelApplier;
+import com.rapidminer.operator.Operator;
+import com.rapidminer.operator.io.ModelLoader;
+import com.rapidminer.operator.ports.InputPort;
+import com.rapidminer.operator.ports.OutputPort;
+import com.rapidminer.tools.OperatorService;
+
+/**
+ * classifies data using the FKNN algorithm
+ * 
+ * @author Philipp Ginsel
+ */
+public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
+
+	private int neighborNumber;
+	private int m;
+
+	public void setParameters(String parameterString) {
+		// Default parameters?
+				if(parameterString == "" || parameterString == null) {
+					neighborNumber = 1;
+				} else { 
+					neighborNumber = new Integer(parameterString);
+				}
+				
+				//m is always 2. Maybe later it will be possible to change that
+				m = 2;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.interfaces.AmuseTaskInterface#initialize()
+	 */
+	public void initialize() throws NodeException {
+		//Does nothing
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String, java.util.ArrayList, java.lang.String)
+	 */
+	/* (non-Javadoc)
+	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String)
+	 */
+	public void classify(String pathToModelFile) throws NodeException {
+		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
+				getConfiguration()).getInputToClassify()).getDataSet();
+		
+		boolean fuzzy = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy();
+		boolean multiclass = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTICLASS;
+		
+		try {	
+			
+			DataSet trainingDataSet = new DataSet(new File(pathToModelFile));
+			
+			int numberOfCategories = ((Double)trainingDataSet.getAttribute("NumberOfCategories").getValueAt(0)).intValue();
+			int positionOfFirstCategory = trainingDataSet.getAttributeCount() - numberOfCategories;
+			
+			for(int i = positionOfFirstCategory; i < trainingDataSet.getAttributeCount(); i++) {
+				dataSetToClassify.addAttribute(new NumericAttribute("Predicted_" + trainingDataSet.getAttribute(i).getName(), new ArrayList<Double>()));
+			}
+			
+			//iterate through every partition that has to be classified
+			for(int partitionToClassify = 0; partitionToClassify < dataSetToClassify.getAttribute(0).getValueCount(); partitionToClassify++) {
+				
+				//SortedSet of the k nearestNeighbors
+				SortedSet<Example> nearestNeighbors = new TreeSet<Example>();
+				
+				//iterate through all training songs/partitions
+				for(int trainingPartition = 0; trainingPartition < trainingDataSet.getValueCount(); trainingPartition++) {
+					double distance = 0;
+					double classifyValue = 0;
+					double trainValue = 0;
+					boolean nanClassify = false;
+					boolean nanTrain = false;
+					//calculate the distance between test partition and training partition
+					for(int n = 0; n < trainingDataSet.getAttributeCount() - numberOfCategories - 2; n++) {
+						classifyValue = (Double)dataSetToClassify.getAttribute(n).getValueAt(partitionToClassify);
+						trainValue = (Double)trainingDataSet.getAttribute(n).getValueAt(trainingPartition);
+						if(Double.isNaN(classifyValue)){
+							AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in Song " + dataSetToClassify.getAttribute("Id").getValueAt(partitionToClassify));
+							nanClassify = true;
+							break;
+						}
+						if(Double.isNaN(trainValue)){
+							nanTrain = true;
+							break;
+						}
+						
+						distance += Math.pow(classifyValue - trainValue, 2);
+					}
+					if(nanClassify) {//if there is a NaN in the partition, we want to classify, we cannot properly classify it
+						break;
+					}
+					if(nanTrain) {//if there is a NaN in the training partition, we ignore that partition
+						continue;
+					}
+					
+					distance = Math.sqrt(distance);
+					
+					//what category has the training partition?
+					double[] currentRelationships = new double[numberOfCategories];
+					
+					for(int category = 0; category < numberOfCategories; category++) {
+						currentRelationships[category] = (double)trainingDataSet.getAttribute(positionOfFirstCategory + category).getValueAt(trainingPartition);
+					}
+					
+					Example currentExample = new Example(distance, currentRelationships);
+					
+					//add the Example to the k nearest neighbors. Remove the Example with the largest distance, if we have to many neighbors.
+					nearestNeighbors.add(currentExample);
+					if(nearestNeighbors.size() > neighborNumber) {
+						nearestNeighbors.remove(nearestNeighbors.last());
+					}
+				}
+				
+				if(nearestNeighbors.size() == 0) {//If no neighbors were found (probably because of NaN in the partition that has to be classified), the partition cannot be properly classified
+					throw new NodeException("Partition cannot be classified, because no neighbours were found.");
+				}
+				
+				//make sure that the distances are not 0
+				boolean allZero = nearestNeighbors.last().distance == 0;
+				
+				//if all distances are 0, they are weighed equally
+				if(allZero) {
+					AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Distances are zero!");
+					for(Example example : nearestNeighbors) {
+						example.distance = 1;
+					}
+				} else { //otherwise all distances that are 0 are set to a value that is not 0, but is still the smallest distance
+					double minimumDistance = 0; //the smallest distance that is not 0
+					for(Example example : nearestNeighbors) {
+						if(example.distance != 0) {
+							minimumDistance = example.distance;
+							break;
+						}
+					}
+					for(Example example : nearestNeighbors) {
+						if(example.distance == 0) {
+							example.distance = minimumDistance/2;
+						}
+						else {
+							break;
+						}
+					}
+				}
+				
+				double[] relationships = new double[numberOfCategories];
+				
+				for(int category = 0; category < numberOfCategories; category++) {
+				
+					double relationship;
+					double enumerator = 0;
+					double denominator = 0;
+					double weight;
+				
+					for(Example example : nearestNeighbors) {
+						weight = 1.0/(Math.pow(example.distance, 2/(m - 1)));
+						enumerator += example.relationships[category] * weight;
+						denominator += weight;
+					}
+					relationship = enumerator/denominator;
+					
+					//make sure that no errors happened with too small distances (or something similar)
+					if(Double.isNaN(relationship)) {
+					throw new NodeException("Relationship is NaN");
+					}
+					
+					//add the correctValues of Relationship and PredictedCategory to the DataSet
+					relationships[category] = relationship;	
+				}
+				if(multiclass) {
+					double maxRelationship = 0.0;
+					int positionOfMaxRelationship = 0;
+					for(int category = 0; category < numberOfCategories; category++) {
+						if(relationships[category] > maxRelationship) {
+							maxRelationship = relationships[category];
+							positionOfMaxRelationship = category;
+						}
+					}
+					
+					for(int category = 0; category < numberOfCategories; category++) {
+						dataSetToClassify.getAttribute(dataSetToClassify.getAttributeCount() - numberOfCategories + category).addValue(category == positionOfMaxRelationship ? 1.0 : 0.0);
+					}
+				} else {
+					for(int category = 0; category < numberOfCategories; category++) {
+						if(!fuzzy) {
+							relationships[category] = relationships[category] >= 0.5 ? 1.0 : 0.0;
+						}
+						dataSetToClassify.getAttribute(dataSetToClassify.getAttributeCount() - numberOfCategories + category).addValue(relationships[category]);
+//						System.out.println(relationships[category]);
+					}
+				}
+			}
+			
+		} catch(Exception e) {
+			throw new NodeException("Error classifying data: " + e.getMessage());
+		}
+	}
+	
+	private class Example implements Comparable<Example>{
+		
+		private double distance;
+		private double[] relationships;
+		
+		private Example(double distance, double[] relationships) {
+			this.distance = distance;
+			this.relationships = relationships.clone();
+		}
+		
+		public int compareTo(Example e) {
+			//return this.distance - e.distance;//Warum nicht einfach so? - Weil das doubles sind!
+			if(this.distance - e.distance < 0.0) {
+				return -1;
+			} else if(this.distance - e.distance == 0.0) {
+				return 0;
+			}
+			else {
+				return 1;
+			}
+		}
+
+	}
+}
