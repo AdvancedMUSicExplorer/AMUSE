@@ -259,7 +259,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
 			
-			//****
+			
 			//check if the settings are possible
 			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
 			if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
@@ -268,7 +268,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			if(((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ClassificationConfiguration)this.taskConfiguration).isFuzzy()) {
 				throw new NodeException("Multiclass problems cannot be fuzzy classified.");
 			}
-			//****
+			
 			
 			DataSet inputForClassification = null;
 			
@@ -281,25 +281,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				if(((ClassificationConfiguration)this.getConfiguration()).getInputSourceType().
 						equals(ClassificationConfiguration.InputSourceType.READY_INPUT)) {
 					
-					//****
+					
 					DataSet completeInput = new DataSet(((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().get(0));
 					
-//					//if the list of categories to classify is empty, that input was prepared by the validator and is completely ready
-//					if(categoriesToClassify.isEmpty()) {
-//							inputForClassification = completeInput;
-//							
-//							//update the list of categories to classify so that it represents how many categories are actually to be classified
-//							for(int i=0;i<completeInput.getAttributeCount();i++) {
-//								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
-//									numberOfCategories = (int)((double)completeInput.getAttribute(i).getValueAt(0));
-//									break;
-//								}
-//							}
-//							System.out.println("numberOfCategories == " + numberOfCategories);
-//							for(int i=0;i<numberOfCategories;i++) {
-//								categoriesToClassify.add(i);
-//							}
-//					} else {//otherwise the unwanted attributes have to be removed
 						inputForClassification = new DataSet("ClassificationSet");
 					
 						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
@@ -308,7 +292,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								inputForClassification.addAttribute(completeInput.getAttribute(i));
 							}
 						}
-//					}
 					//prepare the description of the classifier input
 					boolean startAndEnd = true;
 					try {
@@ -363,7 +346,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 					//add the id attribute
 //					inputForClassification.addAttribute(completeInput.getAttribute("Id"));
-					//****
+					
 				} 
 				
 				else {
@@ -390,7 +373,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								throw new NodeException("Could not load the category table: " + e.getMessage()); 
 							}
 							
-							//****
+							
 							this.categoryDescription += File.separator;
 							int j = 0;
 							for(int category : categoriesToClassify) {
@@ -400,7 +383,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								this.categoryDescription += groundTruth.getAttribute(5 + category).getName();
 								j++;
 							}
-							//****
+							
 							
 							break;
 						}
@@ -446,13 +429,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 					// Save the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
-						//****
+						
 						//also omit the attributes that are supposed to be ignored
 						if(!featuresToIgnore.contains(i)) {
 							inputForClassification.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
 						}
-						//****
+						
 					}
 						
 					// Save the processed features for classifier

@@ -229,7 +229,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				currentClassificationType = ClassificationType.BINARY;
 			} else if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
 				currentClassificationType = ClassificationType.MULTILABEL;
-			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
+			} else {
 				currentClassificationType = ClassificationType.MULTICLASS;
 			}
 			

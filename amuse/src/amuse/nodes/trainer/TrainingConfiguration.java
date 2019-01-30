@@ -69,14 +69,13 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
-	//*****
 	private final List<Integer> categoriesToClassify;
 	private final List<Integer> featuresToIgnore;
 	private final ClassificationType classificationType;
 	private final boolean fuzzy;
 	
 	private final String trainingDescription;
-	//****
+	
 	
 	/** Alternative path for saving of training model(s) (e.g. an optimization task may train
 	 * different models and compare their performance; here it is not required to save them to
@@ -122,12 +121,6 @@ public class TrainingConfiguration extends TaskConfiguration {
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.pathToOutputModel = pathToOutputModel;
-		
-//		if(classificationType == ClassificationType.MULTICLASS && fuzzy) {
-//			//Ist das gut so?
-//			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.WARN,"Multiclass problems cannot be fuzzy classified. The classification will be crisp.");
-//			fuzzy = false;
-//		}
 	}
 
 	/**
@@ -154,7 +147,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
 			
-			//****
+			
 			String categoriesToClassifyString = trainingConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
 			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
@@ -191,7 +184,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 			boolean currentFuzzy = trainingConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
 			
 			String currentTrainingDescription = trainingConfig.getTrainingDescriptionAttribute().getValueAt(i).toString();
-			//****
+			
 			
 				
 			// Create a training task
