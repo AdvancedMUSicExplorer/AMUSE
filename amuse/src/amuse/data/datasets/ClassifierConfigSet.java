@@ -54,13 +54,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     private static final String strGroundTruthSource = "GroundTruthSource";
     private static final String strGroundTruthSourceType = "GroundTruthSourceType";
     
-    //****
     private static final String strCategoriesToClassify = "CategoriesToClassify";
     private static final String strFeaturesToIgnore  = "FeaturesToIgnore";
     private static final String strClassificationType = "ClassificationType";
     private static final String strFuzzy = "Fuzzy";
     private static final String strPathToInputModel = "PathToInputModel";
-    //****
     
     private static final String strMergeSongResults = "MergeSongResults";
     private static final String strOutputResult = "OutputResult";
@@ -74,13 +72,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
     
-    //****
     private final StringAttribute categoriesToClassifyAttribute;
     private final StringAttribute featuresToIgnoreAttribute;
     private final NominalAttribute classificationTypeAttribute;
     private final NumericAttribute fuzzyAttribute;
     private final StringAttribute pathToInputModelAttribute;
-    //****
     
     private final NumericAttribute mergeSongResultsAttribute;
     private final StringAttribute outputResultAttribute;
@@ -99,13 +95,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(strProcessedFeatureDescription);
         dataSet.checkStringAttribute(strTrainingAlgorithmID);
         
-        //****
         dataSet.checkStringAttribute(strCategoriesToClassify);
         dataSet.checkStringAttribute(strFeaturesToIgnore);
         dataSet.checkNominalAttribute(strClassificationType);
         dataSet.checkNumericAttribute(strFuzzy);
         dataSet.checkStringAttribute(strPathToInputModel);
-        //****
         
         NumericAttribute categoryIdAttribute = null;
         try{
@@ -141,13 +135,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
         classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strTrainingAlgorithmID);
         
-        //****
         categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strCategoriesToClassify);
         featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strFeaturesToIgnore);
         classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(strClassificationType);
         fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(strFuzzy);
         pathToInputModelAttribute = (StringAttribute) dataSet.getAttribute(strPathToInputModel);
-        //****
         
         mergeSongResultsAttribute = (NumericAttribute) dataSet.getAttribute(strMergeSongResults);
         outputResultAttribute = (StringAttribute) dataSet.getAttribute(strOutputResult);
@@ -158,12 +150,10 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceTypeAttribute);
         addAttribute(mergeSongResultsAttribute);
         
-        //****
         addAttribute(categoriesToClassifyAttribute);
         addAttribute(featuresToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
-        //****
         
         addAttribute(outputResultAttribute);
         addAttribute(inputSourceTypeAttribute);
@@ -209,14 +199,12 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         	groundTruthSourceAttribute = new StringAttribute(strGroundTruthSource, categoryIdList);
         	groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Collections.nCopies(categoryIdAttribute.getValueCount(), GroundTruthSourceType.CATEGORY_ID.toString()));
         }
-        
-        //****
+
         checkStringAttribute(strCategoriesToClassify);
         checkStringAttribute(strFeaturesToIgnore);
         checkNominalAttribute(strClassificationType);
         checkNumericAttribute(strFuzzy);
         checkStringAttribute(strPathToInputModel);
-        //****
         
         
         checkNumericAttribute(strMergeSongResults);
@@ -226,13 +214,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
         classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strTrainingAlgorithmID);
         
-        //****
         categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(strCategoriesToClassify);
         featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(strFeaturesToIgnore);
         classificationTypeAttribute = (NominalAttribute) this.getAttribute(strClassificationType);
         fuzzyAttribute = (NumericAttribute) this.getAttribute(strFuzzy);
         pathToInputModelAttribute = (StringAttribute) this.getAttribute(strPathToInputModel);
-        //****
         
         mergeSongResultsAttribute = (NumericAttribute) getAttribute(strMergeSongResults);
         outputResultAttribute = (StringAttribute) getAttribute(strOutputResult);
@@ -262,13 +248,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceAttribute = new StringAttribute(strGroundTruthSource, groundTruthSources);
         groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Arrays.asList(GroundTruthSourceType.stringValues()), groundTruthSourceTypes);
         
-        //****
         categoriesToClassifyAttribute = new StringAttribute(strCategoriesToClassify, categoriesToClassify);
         featuresToIgnoreAttribute = new StringAttribute(strFeaturesToIgnore, featuresToIgnore);
         classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypes);
         fuzzyAttribute = NumericAttribute.createFromIntList(strFuzzy, fuzzy);
         pathToInputModelAttribute = new StringAttribute(strPathToInputModel, pathToInputModel);
-        //****
         
         mergeSongResultsAttribute = NumericAttribute.createFromIntList(strMergeSongResults, mergeSongResults);
         outputResultAttribute = new StringAttribute(strOutputResult, outputResultPaths);
@@ -278,13 +262,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
         
-        //****
         addAttribute(categoriesToClassifyAttribute);
         addAttribute(featuresToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
         addAttribute(pathToInputModelAttribute);
-        //****
         
         addAttribute(mergeSongResultsAttribute);
         addAttribute(outputResultAttribute);
@@ -334,13 +316,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
         
-        //****
         addAttribute(categoriesToClassifyAttribute);
         addAttribute(featuresToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
         addAttribute(pathToInputModelAttribute);
-        //****
         
         addAttribute(mergeSongResultsAttribute);
         addAttribute(outputResultAttribute);

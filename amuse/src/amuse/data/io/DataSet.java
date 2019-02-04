@@ -196,7 +196,7 @@ public class DataSet extends DataSetAbstract {
 		idAttribute = AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.INTEGER);
 		attributes.add(idAttribute);
 	    } 
-	    //****
+	    
 	    else if (getAttribute(a).getName().equals("NumberOfCategories")) {
 	    	numberOfCategories = (int)((double)getAttribute(a).getValueAt(0));
 	    	labelAttribute = AttributeFactory.createAttribute("Category", Ontology.NOMINAL);
@@ -204,7 +204,7 @@ public class DataSet extends DataSetAbstract {
 	    	mapping = attributes.get(attributes.size() - 1).getMapping();
 	    	a += numberOfCategories;
 	    }
-	    //****
+	    
 	    else if (getAttribute(a) instanceof StringAttribute) {
 		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.NOMINAL));
 	    } else {

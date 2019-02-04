@@ -51,13 +51,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String groundTruthSourceStr = "GroundTruthSource";
     private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
     
-    //****
+    
     private static final String categoriesToClassifyStr = "CategoriesToClassify";
     private static final String featuresToIgnoreStr  = "FeaturesToIgnore";
     private static final String classificationTypeStr = "ClassificationType";
     private static final String fuzzyStr = "Fuzzy";
     private static final String trainingDescriptionStr = "TrainingDescription";
-    //****
+    
     
     private static final String pathToOutputModelStr = "PathToOutputModel";
     
@@ -68,13 +68,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
     
-    //****
+    
     private final StringAttribute categoriesToClassifyAttribute;
     private final StringAttribute featuresToIgnoreAttribute;
     private final NominalAttribute classificationTypeAttribute;
     private final NumericAttribute fuzzyAttribute;
     private final StringAttribute trainingDescriptionAttribute;
-    //****
+    
     
     private final StringAttribute pathToOutputModelAttribute;
 
@@ -95,13 +95,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(groundTruthSourceStr);
         checkNominalAttribute(groundTruthSourceTypeStr);
         
-        //****
+        
         checkStringAttribute(categoriesToClassifyStr);
         checkStringAttribute(featuresToIgnoreStr);
         checkNominalAttribute(classificationTypeStr);
         checkNumericAttribute(fuzzyStr);
         checkStringAttribute(trainingDescriptionStr);
-        //****
+        
         
         checkStringAttribute(pathToOutputModelStr);
         processedFeatureDescriptionAttribute =
@@ -111,13 +111,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceAttribute = (StringAttribute) this.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) this.getAttribute(groundTruthSourceTypeStr);
         
-        //****
+        
         categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(categoriesToClassifyStr);
         featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(featuresToIgnoreStr);
         classificationTypeAttribute = (NominalAttribute) this.getAttribute(classificationTypeStr);
         fuzzyAttribute = (NumericAttribute) this.getAttribute(fuzzyStr);
         trainingDescriptionAttribute = (StringAttribute) this.getAttribute(trainingDescriptionStr);
-        //****
+        
         
         pathToOutputModelAttribute = (StringAttribute) this.getAttribute(pathToOutputModelStr);
     }
@@ -136,7 +136,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         List<String> groundTruthSourceList = new ArrayList<String>();
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
         
-        //****
+        
         List<String> categoriesToClassifyList = new ArrayList<String>();
         categoriesToClassifyList.add(trainingConfiguration.getCategoriesToClassify().toString());
         List<String> featuresToIgnoreList = new ArrayList<String>();
@@ -147,7 +147,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         fuzzyList.add(trainingConfiguration.isFuzzy()?0.0:1.0);
         List<String> trainingDescriptionList = new ArrayList<String>();
         trainingDescriptionList.add(trainingConfiguration.getTrainingDescription());
-        //****
+        
         
         List<String> pathToOutputModel = new ArrayList<String>();
         String tmpPathToOutputModel = trainingConfiguration.getPathToOutputModel();
@@ -202,13 +202,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(groundTruthSourceStr);
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
         
-        //****
+        
         dataSet.checkStringAttribute(categoriesToClassifyStr);
         dataSet.checkStringAttribute(featuresToIgnoreStr);
         dataSet.checkNominalAttribute(classificationTypeStr);
         dataSet.checkNumericAttribute(fuzzyStr);
         dataSet.checkStringAttribute(trainingDescriptionStr);
-        //****
+        
         
         dataSet.checkStringAttribute(pathToOutputModelStr);
         processedFeatureDescriptionAttribute =
@@ -218,13 +218,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
         
-        //****
+        
         categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(categoriesToClassifyStr);
         featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(featuresToIgnoreStr);
         classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(classificationTypeStr);
         fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(fuzzyStr);
         trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(trainingDescriptionStr);
-        //****
+        
         
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
         
@@ -236,13 +236,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
         
-        //****
+        
         addAttribute(categoriesToClassifyAttribute);
         addAttribute(featuresToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
         addAttribute(trainingDescriptionAttribute);
-        //****
+        
         
         addAttribute(pathToOutputModelAttribute);
     }
