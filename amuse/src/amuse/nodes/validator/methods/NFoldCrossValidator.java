@@ -326,7 +326,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				"-1",
 				new DataSetInput(trainingSet),
 				GroundTruthSourceType.READY_INPUT,
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getFeaturesToIgnore(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), this.folderForModels + File.separator + "model_" + i + ".mod", null);
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getFeaturesToIgnore(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), "", this.folderForModels + File.separator + "model_" + i + ".mod");
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);
