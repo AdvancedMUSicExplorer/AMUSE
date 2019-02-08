@@ -241,7 +241,8 @@ public class TrainingController extends AbstractController {
     			trainingView.getPreprocessingAlgorithmStr(), 
     			new FileInput(trainingView.getGroundTruthSource()),
     			trainingView.getGroundTruthSourceType(),
-    			pathToOutputModel); //TODO pathToOutputModel
+    			trainingView.getCategoriesToClassify(), trainingView.getFeaturesToIgnore(), trainingView.getClassificationType(),
+    			trainingView.isFuzzy(), trainingView.getTrainingDescription(), pathToOutputModel);
         return conf;
     }
 

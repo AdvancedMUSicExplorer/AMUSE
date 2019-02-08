@@ -152,22 +152,32 @@ public class TrainingConfiguration extends TaskConfiguration {
 			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
 			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
-			for(String str : categoriesToClassifyStringArray) {
-				if(!str.equals("")) {
-					currentCategoriesToClassify.add(Integer.parseInt(str));
-				} else {
-					throw new IOException("The categories that should be classified need to be specified.");
+			try {
+				for(String str : categoriesToClassifyStringArray) {
+					if(!str.equals("")) {
+						currentCategoriesToClassify.add(Integer.parseInt(str));
+					} else {
+						throw new IOException("No categories for training were specified.");
+					}
 				}
+			} catch(NumberFormatException e) {
+				throw new IOException("The categories for training were not properly specified.");
 			}
 			
 			String featuresToIgnoreString = trainingConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
 			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
 			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
-			for(String str : featuresToIgnoreStringArray) {
-				if(!str.equals("")) {
-					currentFeaturesToIgnore.add(Integer.parseInt(str));
+			try {
+				for(String str : featuresToIgnoreStringArray) {
+					if(!str.equals("")) {
+						currentFeaturesToIgnore.add(Integer.parseInt(str));
+					}
 				}
+			} catch(NumberFormatException e) {
+				AmuseLogger.write(TrainingConfiguration.class.getName(), Level.WARN,
+						"The features to ignore were not properly specified. All features will be used for training.");
+				currentFeaturesToIgnore = new ArrayList<Integer>();
 			}
 			
 			ClassificationType currentClassificationType;

@@ -2,8 +2,11 @@ package amuse.scheduler.gui.training;
 
 import java.awt.CardLayout;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -91,6 +94,19 @@ public class GroundTruthSelectionPanel extends JPanel {
 			return fileListSelectionPanel.getPath();
 		case READY_INPUT:
 			return readyInputSelectionPanel.getPath();
+		}
+		return null;
+	}
+	
+	public List<Integer> getCategoriesToClassify(){
+		//TODO make this method work also with other groundtruth source types
+		switch((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem()){
+		case CATEGORY_ID:
+			return categorySelectionPanel.getCategoriesToClassify();
+		case FILE_LIST:
+			return new ArrayList<Integer>();
+		case READY_INPUT:
+			return new ArrayList<Integer>();
 		}
 		return null;
 	}

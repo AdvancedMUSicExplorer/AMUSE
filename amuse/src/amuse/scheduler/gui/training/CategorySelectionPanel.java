@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -40,6 +41,7 @@ import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
@@ -53,23 +55,58 @@ import amuse.preferences.KeysStringValue;
 public class CategorySelectionPanel extends JPanel {
 
 	private JComboBox comboBox = new JComboBox();
+	private List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
 	private CategoryComboBoxModel model;
 
 	public CategorySelectionPanel() {
 		super(new MigLayout("fillx"));
-		this.setBorder(new TitledBorder("Select Annotation"));
-		this.add(new JLabel("Category:"));
+		this.setBorder(new TitledBorder("Select Category"));
+		this.add(new JLabel("Annotation"));
 		this.add(comboBox, "pushx, gap rel, wrap");
 		try {
 			model = new CategoryComboBoxModel();
 			comboBox.setModel(model);
+			updateCheckBoxes();
+			comboBox.addActionListener(e ->{
+				updateCheckBoxes();
+			});
 		} catch (IOException ex) {
 			JOptionPane.showMessageDialog(this, "Unable to load Categories: \""+ ex.getLocalizedMessage() + "\"", "Unable To Load Categories!", JOptionPane.ERROR_MESSAGE);
 		}
 	}
+	
+	private void updateCheckBoxes() {
+		for(JCheckBox checkBox : checkBoxes) {
+			this.remove(checkBox);
+		}
+		checkBoxes = new ArrayList<JCheckBox>();
+		String path = model.selected.fileName;
+		try {
+			DataSet dataSet = new DataSet(new File(path));	
+			for(int i=5;i<dataSet.getAttributeCount();i++) {
+				JCheckBox categoryCheckBox = new JCheckBox(dataSet.getAttribute(i).getName());
+				checkBoxes.add(categoryCheckBox);
+//				this.add(new JLabel(dataSet.getAttribute(i).getName()));
+				this.add(categoryCheckBox, "pushx, gap rel, wrap");
+			}
+		} catch(IOException exception){
+			
+		}
+		this.revalidate();
+	}
 
 	public int getSelectedCategoryID() {
 		return model.getSelectedID();
+	}
+	
+	public List<Integer> getCategoriesToClassify(){
+		List<Integer> categoriesToClassify = new ArrayList<Integer>();
+		for(int i=0;i<checkBoxes.size();i++) {
+			if(checkBoxes.get(i).isSelected()) {
+				categoriesToClassify.add(i);
+			}
+		}
+		return categoriesToClassify;
 	}
 
 	void setSelectedCategory(int value) {

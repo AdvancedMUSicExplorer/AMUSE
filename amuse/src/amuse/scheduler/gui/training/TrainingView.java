@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.training;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.Algorithm;
 import javax.swing.JComponent;
@@ -33,6 +34,8 @@ import javax.swing.border.TitledBorder;
 import net.miginfocom.swing.MigLayout;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import java.io.File;
+import java.util.List;
+
 import javax.swing.JScrollPane;
 
 /**
@@ -48,6 +51,8 @@ public class TrainingView {
 	private ProcessingHistoryPanel processingHistoryPanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
+	private ClassificationTypePanel classificationTypePanel = new ClassificationTypePanel();
+	private TrainingDescriptionPanel trainingDescriptionPanel = new TrainingDescriptionPanel();
 	private static final String trainingViewName = "Setup Training";
 	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
 
@@ -74,7 +79,9 @@ public class TrainingView {
 		}
 		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+		viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		addRightSide(trainingAlgorithmFacade.getPrameterPanel());
+		addRightSide(classificationTypePanel);
 		splitPane.setDividerLocation(0.5);
 	}
 
@@ -125,6 +132,26 @@ public class TrainingView {
 	
 	public GroundTruthSourceType getGroundTruthSourceType(){
 		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
+	}
+	
+	public List<Integer> getCategoriesToClassify(){
+		return groundTruthSelectionPanel.getCategoriesToClassify();
+	}
+	
+	public List<Integer> getFeaturesToIgnore(){
+		return processingHistoryPanel.getFeaturesToIgnore();
+	}
+	
+	public ClassificationType getClassificationType() {
+		return classificationTypePanel.getClassificationType();
+	}
+	
+	public boolean isFuzzy() {
+		return classificationTypePanel.isFuzzy();
+	}
+	
+	public String getTrainingDescription() {
+		return trainingDescriptionPanel.getTrainingDescription();
 	}
 	
 	public String getGroundTruthSource(){

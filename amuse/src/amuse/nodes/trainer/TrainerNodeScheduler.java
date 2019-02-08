@@ -876,9 +876,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getClassificationType().toString() + (((TrainingConfiguration)this.taskConfiguration).isFuzzy() ? "_FUZZY" : "") + File.separator + 
 					((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName();
 			
-			File folderForModels;
-			
-			folderForModels = new File(folderForModelsString);
+			File folderForModels = new File(folderForModelsString);
 			
 			
 			if(!folderForModels.exists()) {
@@ -897,6 +895,18 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			}
 			
 		}
+		else {
+			String trainingDescription = ((TrainingConfiguration)this.taskConfiguration).getTrainingDescription();
+			if(!trainingDescription.equals("")) {
+				this.outputModel = new String(this.outputModel.substring(0, this.outputModel.indexOf(".mod")) + "_" + trainingDescription + ".mod");
+			}
+		}
+		
+		if(new File(this.outputModel).exists()) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The model file '" + this.outputModel + "' already exists and will be overwritten.");
+		}
+		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the classification training with " + 
 				((AmuseTask)this.ctad).getProperties().getProperty("name") + "...");
 		this.ctad.trainModel(this.outputModel);
