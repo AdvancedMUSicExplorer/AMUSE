@@ -31,7 +31,15 @@ public class ClassificationTypePanel extends JPanel {
 		return ClassificationType.valueOf(comboBox.getSelectedItem().toString());
 	}
 	
+	public void setClassificationType(ClassificationType classificationType) {
+		comboBox.setSelectedItem(classificationType.toString());
+	}
+	
 	public boolean isFuzzy() {
 		return checkBox.isSelected();
+	}
+	
+	public void setFuzzy(boolean fuzzy) {
+		checkBox.setSelected(fuzzy);
 	}
 }

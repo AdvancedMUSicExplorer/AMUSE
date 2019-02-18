@@ -210,4 +210,20 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	public boolean isFuzzy() {
 		return trainingView.isFuzzy();
 	}
+
+	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+		trainingView.setAttributesToClassify(attributesToClassify);
+	}
+
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		trainingView.setAttributesToIgnore(attributesToIgnore);
+	}
+
+	public void setClassificationType(ClassificationType classificationType) {
+		trainingView.setClassificationType(classificationType);
+	}
+
+	public void setFuzzy(boolean fuzzy) {
+		trainingView.setFuzzy(fuzzy);
+	}
 }

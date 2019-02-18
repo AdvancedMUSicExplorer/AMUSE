@@ -144,7 +144,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         List<String> classificationTypeList = new ArrayList<String>();
         classificationTypeList.add(trainingConfiguration.getClassificationType().toString());
         List<Double> fuzzyList = new ArrayList<Double>();
-        fuzzyList.add(trainingConfiguration.isFuzzy()?0.0:1.0);
+        fuzzyList.add(trainingConfiguration.isFuzzy()?1.0:0.0);
         List<String> trainingDescriptionList = new ArrayList<String>();
         trainingDescriptionList.add(trainingConfiguration.getTrainingDescription());
         

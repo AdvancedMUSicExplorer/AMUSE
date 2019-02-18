@@ -82,8 +82,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	/** Ground truth relationships for given songs*/
 	private ArrayList<ClassifiedSongPartitions> labeledSongRelationships = null;
 	
-//	private boolean isMulticlass = false;
-	
 	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
 	File groundTruthFile = null;
@@ -938,13 +936,4 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	public File getGroundTruthFile() {
 		return groundTruthFile;
 	}
-
-//	//TODO either delete this method or add methods for the other classification types.
-//	/**
-//	 * @return the isMulticlass
-//	 */
-//	public boolean isMulticlass() {
-//		return isMulticlass;
-//	}
-	
 }

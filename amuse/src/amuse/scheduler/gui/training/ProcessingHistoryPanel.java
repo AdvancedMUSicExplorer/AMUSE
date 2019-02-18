@@ -70,6 +70,7 @@ public class ProcessingHistoryPanel extends JPanel {
         this.add(textField, "growx, wrap");
         this.add(attributesToIgnoreLabel, "pushx, wrap");
         this.add(attributesToIgnoreTextField, "growx, wrap");
+        attributesToIgnoreTextField.setText("[]");
         try {
 			DefaultComboBoxModel model = new DefaultComboBoxModel(ProcessingHistory.getHistoryList());
             comboBox.setModel(model);
@@ -114,5 +115,9 @@ public class ProcessingHistoryPanel extends JPanel {
     void setProcessingModelString(String value) {
 	textField.setText(value);
 	comboBox.setSelectedItem(value);
+    }
+    
+    public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+    	attributesToIgnoreTextField.setText(attributesToIgnore.toString());
     }
 }

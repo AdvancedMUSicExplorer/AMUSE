@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2019 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 16.06.2010
+ * Creation date: 01.06.2018
  */
 package amuse.nodes.trainer.methods.supervised;
 
@@ -83,7 +83,7 @@ public class FKNNAdapter extends AmuseTask implements TrainerInterface {
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
 		
-		// Train the model and save it
+		// save the complete data since FKNN is not trained
 		try {
 			dataSet.saveToArffFile(new File(outputModel));
 			

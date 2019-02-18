@@ -149,12 +149,24 @@ public class TrainingView {
 		return processingHistoryPanel.getAttributesToIgnore();
 	}
 	
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+	}
+	
 	public ClassificationType getClassificationType() {
 		return classificationTypePanel.getClassificationType();
 	}
 	
+	public void setClassificationType(ClassificationType classificationType) {
+		classificationTypePanel.setClassificationType(classificationType);
+	}
+	
 	public boolean isFuzzy() {
 		return classificationTypePanel.isFuzzy();
+	}
+	
+	public void setFuzzy(boolean fuzzy) {
+		classificationTypePanel.setFuzzy(fuzzy);
 	}
 	
 	public String getTrainingDescription() {

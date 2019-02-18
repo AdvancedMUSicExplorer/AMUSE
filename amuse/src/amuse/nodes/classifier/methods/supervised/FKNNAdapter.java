@@ -1,6 +1,6 @@
 /* This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2019 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -18,42 +18,26 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 21.01.2008
+ * Creation date: 01.06.2018
  */
 package amuse.nodes.classifier.methods.supervised;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import org.apache.log4j.Level;
 
 import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
-import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.util.AmuseLogger;
-import amuse.util.LibraryInitializer;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.log4j.Level;
-
-import java.util.Collections;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import com.rapidminer.Process;
-import com.rapidminer.example.ExampleSet;
-import com.rapidminer.operator.IOContainer;
-import com.rapidminer.operator.ModelApplier;
-import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelLoader;
-import com.rapidminer.operator.ports.InputPort;
-import com.rapidminer.operator.ports.OutputPort;
-import com.rapidminer.tools.OperatorService;
 
 /**
  * classifies data using the FKNN algorithm

@@ -26,11 +26,14 @@ package amuse.scheduler.gui.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+
+import org.apache.log4j.Level;
 
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileListInput;
@@ -49,6 +52,7 @@ import amuse.scheduler.gui.filesandfeatures.FileTreeView;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
+import amuse.util.AmuseLogger;
 
 /**
  * @author Clemens Waeltken
@@ -151,6 +155,11 @@ public class ClassifierController extends AbstractController {
         classifierView.setGroundTruthSource(conf.getGroundTruthSource());
         classifierView.setAverageCalculationSelected(conf.getMergeSongResults());
         classifierView.setTargetFilePath(conf.getClassificationOutput());
+        classifierView.setAttributesToClassify(conf.getAttributesToClassify());
+        classifierView.setAttributesToIgnore(conf.getAttributesToIgnore());
+        classifierView.setClassificationType(conf.getClassificationType());
+        classifierView.setFuzzy(conf.isFuzzy());
+        
         if (conf.getInputToClassify() instanceof FileListInput) {
             ftController.loadFiles(((FileListInput) conf.getInputToClassify()).getInputFiles());
         } else {

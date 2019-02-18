@@ -26,14 +26,19 @@ package amuse.scheduler.gui.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Level;
+
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
@@ -46,6 +51,7 @@ import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
 import amuse.scheduler.gui.training.TrainingView;
+import amuse.util.AmuseLogger;
 
 /**
  * @author Clemens Waeltken
@@ -111,6 +117,43 @@ public class TrainingController extends AbstractController {
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
         //TODO set attributesToClassify, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
+        
+        String attributesToClassifyString = ttSet.getAttributesToClassifyAttribute().getValueAt(0).toString();
+		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
+		List<Integer> attributesToClassify = new ArrayList<Integer>();
+		try {
+			for(String str : attributesToClassifyStringArray) {
+				if(!str.equals("")) {
+					attributesToClassify.add(Integer.parseInt(str));
+				}
+			}
+		} catch(NumberFormatException e) {
+		}
+		trainingView.setAttributesToClassify(attributesToClassify);
+		
+		String attributesToIgnoreString = ttSet.getAttributesToIgnoreAttribute().getValueAt(0).toString();
+		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+		try {
+			for(String str : attributesToIgnoreStringArray) {
+				if(!str.equals("")) {
+					attributesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+		} catch(NumberFormatException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The attributes to ignore were not properly specified. All features will be used for training.");
+			attributesToIgnore = new ArrayList<Integer>();
+		}
+		trainingView.setAttributesToIgnore(attributesToIgnore);
+		
+		ClassificationType classificationType = ClassificationType.valueOf(ttSet.getClassificationTypeAttribute().getValueAt(0));
+		trainingView.setClassificationType(classificationType);
+		
+		boolean fuzzy = (double)ttSet.getFuzzyAttribute().getValueAt(0) >= 0.5;
+		trainingView.setFuzzy(fuzzy);
         
         String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
         if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
