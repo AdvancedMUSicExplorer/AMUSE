@@ -1,7 +1,7 @@
 package amuse.data;
 
 public enum ClassificationType {
-	//UNSUPERVISED,
+	UNSUPERVISED,
 	BINARY,
 	MULTILABEL,
 	MULTICLASS;

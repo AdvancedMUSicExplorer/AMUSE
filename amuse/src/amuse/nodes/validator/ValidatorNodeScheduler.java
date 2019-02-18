@@ -381,7 +381,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
 		
 		//check if the settings are possible
-		int numberOfCategories = ((ValidationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+		int numberOfCategories = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 		if(numberOfCategories > 1 && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 			throw new NodeException("Binary classification of more than one category is not possible.");
 		}
@@ -389,8 +389,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			throw new NodeException("Multiclass problems cannot be fuzzy classified.");
 		}
 		
-		List<Integer> categoriesToClassify = ((ValidationConfiguration)this.taskConfiguration).getCategoriesToClassify();
-		List<Integer> featuresToIgnore = ((ValidationConfiguration)this.taskConfiguration).getFeaturesToIgnore();
+		List<Integer> attributesToClassify = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify();
+		List<Integer> attributesToIgnore = ((ValidationConfiguration)this.taskConfiguration).getAttributesToIgnore();
 		
 		// If the validation set is not given as ready data set..
 		if(! (((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput)) {
@@ -406,7 +406,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 					for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-						if(!categoriesToClassify.contains(i) && !featuresToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+						if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 							labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
 						}
 					}
@@ -421,7 +421,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					}
 				
 					//add the category attributes
-					for(int i : categoriesToClassify) {
+					for(int i : attributesToClassify) {
 						labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
 						//if the classification is not fuzzy, the values have to be rounded
 						if(!((ValidationConfiguration)this.taskConfiguration).isFuzzy() && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() != ClassificationType.MULTICLASS) {	
@@ -507,14 +507,14 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(int i=0;i<validatorInputLoader.getStructure().numAttributes()-3;i++) {
 						//also omit the attributes that are supposed to be ignored
-						if(!featuresToIgnore.contains(i)) {
+						if(!attributesToIgnore.contains(i)) {
 							labeledInputForValidation.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
 						}
 					}
 					labeledInputForValidation.addAttribute(new NumericAttribute("Id",new ArrayList<Double>()));
 					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
-					for(int category : categoriesToClassify) {
+					for(int category : attributesToClassify) {
 						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
 					}
 					
@@ -531,7 +531,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						ArrayList<Double> partitionEnds = new ArrayList<Double>();
 						
 						int currentPosition = 0;
-						for(int category : categoriesToClassify) {
+						for(int category : attributesToClassify) {
 							labels[currentPosition] = validatorGroundTruthSet.getAttribute(5 + category).getName();
 							currentPosition++;
 						}
@@ -541,14 +541,14 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							while(inputInstance != null) {
 								for(int j=0;j<validatorInputLoader.getStructure().numAttributes()-3;j++) {
 									//omit the attributes that are supposed to be ignored
-									if(!featuresToIgnore.contains(j)) {
+									if(!attributesToIgnore.contains(j)) {
 										Double val = inputInstance.value(j);
 										labeledInputForValidation.getAttribute(j).addValue(val);
 									}
 								}
 								if(((ValidationConfiguration)this.getConfiguration()).getClassificationType() != ClassificationType.MULTICLASS) {
 									currentPosition = 0;
-									for(int category : categoriesToClassify) {
+									for(int category : attributesToClassify) {
 										String label = validatorGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(((ValidationConfiguration)this.getConfiguration()).isFuzzy()) {
@@ -564,7 +564,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
 									currentPosition = 0;
-									for(int category : categoriesToClassify) {
+									for(int category : attributesToClassify) {
 										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(confidence > maxConfidence) {
 											maxConfidence = confidence;

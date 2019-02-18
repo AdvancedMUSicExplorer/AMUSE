@@ -261,7 +261,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			
 			
 			//check if the settings are possible
-			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 			if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 				throw new NodeException("Binary classification of more than one category is not possible.");
 			}
@@ -272,8 +272,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			
 			DataSet inputForClassification = null;
 			
-			List<Integer> categoriesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify();
-			List<Integer> featuresToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getFeaturesToIgnore();
+			List<Integer> attributesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify();
+			List<Integer> attributesToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToIgnore();
 		
 			try {
 			
@@ -288,7 +288,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-							if(!categoriesToClassify.contains(i) && !featuresToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								inputForClassification.addAttribute(completeInput.getAttribute(i));
 							}
 						}
@@ -376,7 +376,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							
 							this.categoryDescription += File.separator;
 							int j = 0;
-							for(int category : categoriesToClassify) {
+							for(int category : attributesToClassify) {
 								if(j!=0) {
 									this.categoryDescription += "_";
 								}
@@ -431,7 +431,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					for(i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
 						//also omit the attributes that are supposed to be ignored
-						if(!featuresToIgnore.contains(i)) {
+						if(!attributesToIgnore.contains(i)) {
 							inputForClassification.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
 						}
@@ -490,7 +490,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							for(i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
 								Double val = processedFeaturesInstance.value(i);
 								//omit the features that are supposed to be ignored
-								if(!featuresToIgnore.contains(i)) {
+								if(!attributesToIgnore.contains(i)) {
 									inputForClassification.getAttribute(i).addValue(val);
 								}
 							}
@@ -702,7 +702,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		DataSet d = ((DataSetInput)((ClassificationConfiguration)taskConfiguration).getInputToClassify()).getDataSet();
 		
 		
-		int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+		int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 		int positionOfFirstCategory = d.getAttributeCount() - numberOfCategories;
 		
 //		System.out.println(d.getValueCount());
@@ -747,7 +747,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			if (!classifierResultFile.exists())
 				classifierResultFile.createNewFile();
 			
-			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 			
 			FileOutputStream values_to = new FileOutputStream(classifierResultFile);
 			DataOutputStream values_writer = new DataOutputStream(values_to);

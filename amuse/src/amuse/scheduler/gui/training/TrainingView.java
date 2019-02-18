@@ -52,15 +52,15 @@ public class TrainingView {
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
 	private ClassificationTypePanel classificationTypePanel = new ClassificationTypePanel();
-	private TrainingDescriptionPanel trainingDescriptionPanel = new TrainingDescriptionPanel();
+	private TrainingDescriptionPanel trainingDescriptionPanel = null;
 	private static final String trainingViewName = "Setup Training";
 	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
 
-	public TrainingView() {
-		this(trainingViewName);
+	public TrainingView(boolean training) {
+		this(trainingViewName, training);
 	}
 
-	public TrainingView(String leftTitle) {
+	public TrainingView(String leftTitle, boolean training) {
 		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config" + File.separator + "classifierAlgorithmTable.arff"));
 		trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
 		this.groundTruthSelectionPanel = new GroundTruthSelectionPanel();
@@ -79,7 +79,10 @@ public class TrainingView {
 		}
 		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
-		viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
+		if(training) {
+			trainingDescriptionPanel = new TrainingDescriptionPanel();
+			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
+		}
 		addRightSide(trainingAlgorithmFacade.getPrameterPanel());
 		addRightSide(classificationTypePanel);
 		splitPane.setDividerLocation(0.5);
@@ -134,12 +137,16 @@ public class TrainingView {
 		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
 	}
 	
-	public List<Integer> getCategoriesToClassify(){
-		return groundTruthSelectionPanel.getCategoriesToClassify();
+	public List<Integer> getAttributesToClassify(){
+		return groundTruthSelectionPanel.getAttributesToClassify();
 	}
 	
-	public List<Integer> getFeaturesToIgnore(){
-		return processingHistoryPanel.getFeaturesToIgnore();
+	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+		groundTruthSelectionPanel.setAttributesToClassify(attributesToClassify);
+	}
+	
+	public List<Integer> getAttributesToIgnore(){
+		return processingHistoryPanel.getAttributesToIgnore();
 	}
 	
 	public ClassificationType getClassificationType() {
@@ -151,7 +158,7 @@ public class TrainingView {
 	}
 	
 	public String getTrainingDescription() {
-		return trainingDescriptionPanel.getTrainingDescription();
+		return trainingDescriptionPanel != null ? trainingDescriptionPanel.getTrainingDescription() : "";
 	}
 	
 	public String getGroundTruthSource(){

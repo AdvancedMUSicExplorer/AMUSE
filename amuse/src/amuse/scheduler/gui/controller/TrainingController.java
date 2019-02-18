@@ -63,7 +63,7 @@ public class TrainingController extends AbstractController {
      */
     public TrainingController(WizardController wizardController) {
         this.wizardController = wizardController;
-        this.trainingView = new TrainingView();
+        this.trainingView = new TrainingView(true);
         view = new TrainingPanel(trainingView.getView());
 
     }
@@ -110,7 +110,8 @@ public class TrainingController extends AbstractController {
         trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
-
+        //TODO set attributesToClassify, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
+        
         String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
         if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
         	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
@@ -241,7 +242,7 @@ public class TrainingController extends AbstractController {
     			trainingView.getPreprocessingAlgorithmStr(), 
     			new FileInput(trainingView.getGroundTruthSource()),
     			trainingView.getGroundTruthSourceType(),
-    			trainingView.getCategoriesToClassify(), trainingView.getFeaturesToIgnore(), trainingView.getClassificationType(),
+    			trainingView.getAttributesToClassify(), trainingView.getAttributesToIgnore(), trainingView.getClassificationType(),
     			trainingView.isFuzzy(), trainingView.getTrainingDescription(), pathToOutputModel);
         return conf;
     }

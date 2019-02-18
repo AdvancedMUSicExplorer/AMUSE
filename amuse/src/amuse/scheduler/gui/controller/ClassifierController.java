@@ -26,6 +26,7 @@ package amuse.scheduler.gui.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -33,6 +34,7 @@ import javax.swing.JPanel;
 
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileListInput;
+import amuse.data.ClassificationType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.datasets.FileTableSet;
 import amuse.interfaces.nodes.TaskConfiguration;
@@ -96,6 +98,10 @@ public class ClassifierController extends AbstractController {
             mergeSongResults = 0;
         }
         String outputResultPath = classifierView.getTargetFilePath();
+        String attributesToClassify = classifierView.getAttributesToClassify().toString();
+        String attributesToIgnore = classifierView.getAttributesToIgnore().toString();
+        String classificationType = classifierView.getClassificationType().toString();
+        int fuzzy = classifierView.isFuzzy() ? 1 : 0;
         ClassifierConfigSet dataSet = new ClassifierConfigSet(
         		musicFilesFile, 
         		"FILE_LIST", 
@@ -103,8 +109,8 @@ public class ClassifierController extends AbstractController {
         		algorithmId, 
         		groundTruthSource, 
         		groundTruthSourceType,
-        		mergeSongResults, 
-        		outputResultPath);
+        		attributesToClassify, attributesToIgnore, classificationType, fuzzy,
+        		mergeSongResults, outputResultPath, "-1");
         // Create folders...
         musicFilesFile.getParentFile().mkdirs();
         FileTableSet fileTableSet = new FileTableSet(ftModel.getFiles());
@@ -164,6 +170,10 @@ public class ClassifierController extends AbstractController {
             String groundTruthSource = classifierView.getGroundTruthSource();
             String groundTruthSourceType = classifierView.getGroundTruthSourceType().toString();
             int mergeSongResults = 1;
+            List<Integer> attributesToClassify = classifierView.getAttributesToClassify();
+            List<Integer> attributesToIgnore = classifierView.getAttributesToIgnore();
+            ClassificationType classificationType = classifierView.getClassificationType();
+            boolean fuzzy = classifierView.isFuzzy();
             if (!classifierView.isAverageCalculationSelected()) {
                 mergeSongResults = 0;
             }
@@ -180,8 +190,9 @@ public class ClassifierController extends AbstractController {
             		algorithmStr, 
             		groundTruthSource,
             		groundTruthSourceType,
+            		attributesToClassify, attributesToIgnore, classificationType, fuzzy,
             		mergeSongResults, 
-            		outputResultPath);
+            		outputResultPath, outputResultPath);
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }

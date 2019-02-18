@@ -46,209 +46,209 @@ import amuse.nodes.validator.ValidationConfiguration;
 public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
 	// Strings which describe ARFF attributes
-    private static final String strValidationMethodId = "ValidationMethodId";
-    private static final String strMeasureList = "MeasureList";
-    private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
-    private static final String strInputToValidate = "InputToValidate";
-    private static final String strGroundTruthSourceType = "GroundTruthSourceType";
-    private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
-    
-    //****
-    private static final String strCategoriesToClassify = "CategoriesToClassify";
-    private static final String strFeaturesToIgnore  = "FeaturesToIgnore";
-    private static final String strClassificationType = "ClassificationType";
-    private static final String strFuzzy = "Fuzzy";
-    //****
-    
+	private static final String strValidationMethodId = "ValidationMethodId";
+	private static final String strMeasureList = "MeasureList";
+	private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
+	private static final String strInputToValidate = "InputToValidate";
+	private static final String strGroundTruthSourceType = "GroundTruthSourceType";
+	private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
+
+	//****
+	private static final String strAttributesToClassify = "AttributesToClassify";
+	private static final String strAttributesToIgnore  = "AttributesToIgnore";
+	private static final String strClassificationType = "ClassificationType";
+	private static final String strFuzzy = "Fuzzy";
+	//****
+
 	// ARFF attributes
 	private final StringAttribute validationMethodIdAttribute;
-    private final StringAttribute measureListAttribute;
-    private final StringAttribute processedFeatureDescriptionAttribute;
-    private final StringAttribute inputToValidateAttribute;
-    private final NominalAttribute groundTruthSourceTypeAttribute;
-    private final StringAttribute classificationAlgorithmIdAttribute;
-    
-    //****
-    private final StringAttribute categoriesToClassifyAttribute;
-    private final StringAttribute featuresToIgnoreAttribute;
-    private final NominalAttribute classificationTypeAttribute;
-    private final NumericAttribute fuzzyAttribute;
-    //****
-    
-    private String description = "";
+	private final StringAttribute measureListAttribute;
+	private final StringAttribute processedFeatureDescriptionAttribute;
+	private final StringAttribute inputToValidateAttribute;
+	private final NominalAttribute groundTruthSourceTypeAttribute;
+	private final StringAttribute classificationAlgorithmIdAttribute;
 
-    /**
-     * Creates a new ValidatorConfigSet from a file. Validates if the given file contains a ValidatorConfigSet.
-     * @param file The file to load form.
-     * @throws java.io.IOException Thrown whenever given file does not represent a valid ValidatorConfigSet.
-     */
-    public ValidatorConfigSet(File file) throws IOException {
-        super(file);
-        // Check preconditions:
-        checkStringAttribute(strValidationMethodId);
-        checkStringAttribute(strMeasureList);
-        checkStringAttribute(strProcessedFeatureDescription);
-        checkStringAttribute(strInputToValidate);
-        checkNominalAttribute(strGroundTruthSourceType);
-        checkStringAttribute(strClassificationAlgorithmId);
-        
-        //****
-        checkStringAttribute(strCategoriesToClassify);
-        checkStringAttribute(strFeaturesToIgnore);
-        checkNominalAttribute(strClassificationType);
-        checkNumericAttribute(strFuzzy);
-        //****
-        
-        validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
-        measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
-        processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
-        inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
-        groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
-        classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
-        
-        //****
-        categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(strCategoriesToClassify);
-        featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(strFeaturesToIgnore);
-        classificationTypeAttribute = (NominalAttribute) this.getAttribute(strClassificationType);
-        fuzzyAttribute = (NumericAttribute) this.getAttribute(strFuzzy);
-        //****
-    }
+	//****
+	private final StringAttribute attributesToClassifyAttribute;
+	private final StringAttribute attributesToIgnoreAttribute;
+	private final NominalAttribute classificationTypeAttribute;
+	private final NumericAttribute fuzzyAttribute;
+	//****
 
-    public ValidatorConfigSet(  String validationMethodId,
-                                File measureListFile,
-                                String processedFeatureDescription,
-                                String inputToValidate,
-                                String groundTruthSourceType,
-                                String categoriesToClassify,
-    							String featuresToIgnore,
-    							String classificationType,
-    							int fuzzy,
-                                String classificationAlgorithmId) {
-        super("ValidatorConfig");
-        validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
-        measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
-        processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
-        inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
-        List <String> values = new ArrayList<String>();
-        values.add(groundTruthSourceType);
-        groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
-        
-        //****
-        categoriesToClassifyAttribute = StringAttribute.createFromString(strClassificationType, classificationType);
-        featuresToIgnoreAttribute = StringAttribute.createFromString(strFeaturesToIgnore, featuresToIgnore);
-        List <String> classificationTypeValues = new ArrayList<String>();
-        classificationTypeValues.add(classificationType);
-        classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypeValues);
-        fuzzyAttribute = NumericAttribute.createFromDouble(strFuzzy, fuzzy);
-        //****
-        
-        classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
-        addAttribute(validationMethodIdAttribute);
-        addAttribute(measureListAttribute);
-        addAttribute(processedFeatureDescriptionAttribute);
-        addAttribute(inputToValidateAttribute); 
-        addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(classificationAlgorithmIdAttribute);
-    }
+	private String description = "";
 
-    public ValidatorConfigSet(DataSetAbstract dataSet) {
-        super(dataSet.getName());
-        // Check preconditions:
-        dataSet.checkStringAttribute(strValidationMethodId);
-        dataSet.checkStringAttribute(strMeasureList);
-        dataSet.checkStringAttribute(strProcessedFeatureDescription);
-        dataSet.checkStringAttribute(strInputToValidate);
-        dataSet.checkNominalAttribute(strGroundTruthSourceType);
-        
-        //****
-        dataSet.checkStringAttribute(strCategoriesToClassify);
-        dataSet.checkStringAttribute(strFeaturesToIgnore);
-        dataSet.checkNominalAttribute(strClassificationType);
-        dataSet.checkNumericAttribute(strFuzzy);
-        //****
-        
-        dataSet.checkStringAttribute(strClassificationAlgorithmId);
-        validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
-        measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
-        processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
-        inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
-        groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
-        
-        //****
-        categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strCategoriesToClassify);
-        featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strFeaturesToIgnore);
-        classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(strClassificationType);
-        fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(strFuzzy);
-        //****
-        
-        classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
-        addAttribute(validationMethodIdAttribute);
-        addAttribute(measureListAttribute);
-        addAttribute(processedFeatureDescriptionAttribute);
-        addAttribute(inputToValidateAttribute);
-        addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(classificationAlgorithmIdAttribute);
-    }
+	/**
+	 * Creates a new ValidatorConfigSet from a file. Validates if the given file contains a ValidatorConfigSet.
+	 * @param file The file to load form.
+	 * @throws java.io.IOException Thrown whenever given file does not represent a valid ValidatorConfigSet.
+	 */
+	public ValidatorConfigSet(File file) throws IOException {
+		super(file);
+		// Check preconditions:
+		checkStringAttribute(strValidationMethodId);
+		checkStringAttribute(strMeasureList);
+		checkStringAttribute(strProcessedFeatureDescription);
+		checkStringAttribute(strInputToValidate);
+		checkNominalAttribute(strGroundTruthSourceType);
+		checkStringAttribute(strClassificationAlgorithmId);
 
-    public String getType() {
-        return "Validation";
-    }
+		//****
+		checkStringAttribute(strAttributesToClassify);
+		checkStringAttribute(strAttributesToIgnore);
+		checkNominalAttribute(strClassificationType);
+		checkNumericAttribute(strFuzzy);
+		//****
 
-    public String getDescription() {
-        if (description.equals("")) {
-            int measures;
-            try {
-                measures = new MeasureTable(new File(measureListAttribute.getValueAt(0))).size();
-            } catch (IOException ex) {
-                description = "WARNING: Measure selection seems to be broken";
-                return description;
-            }
-            String input = groundTruthSourceTypeAttribute.getValueAt(0).toString();
-            description = "Input: " + input + " Generating " + measures + " measure(s)";
-        }
-        return description;
-    }
+		validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
+		measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
+		processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
+		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
+		groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
+		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
 
-    public StringAttribute getValidationMethodIdAttribute() {
-        return validationMethodIdAttribute;
-    }
+		//****
+		attributesToClassifyAttribute = (StringAttribute) this.getAttribute(strAttributesToClassify);
+		attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(strAttributesToIgnore);
+		classificationTypeAttribute = (NominalAttribute) this.getAttribute(strClassificationType);
+		fuzzyAttribute = (NumericAttribute) this.getAttribute(strFuzzy);
+		//****
+	}
 
-    public NominalAttribute getGroundTruthSourceAttribute() {
-        return groundTruthSourceTypeAttribute;
-    }
-    
-    public StringAttribute getCategoriesToClassifyAttribute() {
-    	return categoriesToClassifyAttribute;
-    }
-    
-    public StringAttribute getFeaturesToIgnoreAttribute() {
-    	return featuresToIgnoreAttribute;
-    }
-    
-    public NominalAttribute getClassificationTypeAttribute() {
-    	return classificationTypeAttribute;
-    }
-    
-    public NumericAttribute getFuzzyAttribute() {
-    	return fuzzyAttribute;
-    }
+	public ValidatorConfigSet(String validationMethodId,
+			File measureListFile,
+			String processedFeatureDescription,
+			String inputToValidate,
+			String groundTruthSourceType,
+			String attributesToClassify,
+			String attributesToIgnore,
+			String classificationType,
+			int fuzzy,
+			String classificationAlgorithmId) {
+		super("ValidatorConfig");
+		validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
+		measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
+		processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
+		inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
+		List <String> values = new ArrayList<String>();
+		values.add(groundTruthSourceType);
+		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
 
-    public StringAttribute getClassificationAlgorithmIdAttribute() {
-        return classificationAlgorithmIdAttribute;
-    }
+		//****
+		attributesToClassifyAttribute = StringAttribute.createFromString(strClassificationType, classificationType);
+		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
+		List <String> classificationTypeValues = new ArrayList<String>();
+		classificationTypeValues.add(classificationType);
+		classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypeValues);
+		fuzzyAttribute = NumericAttribute.createFromDouble(strFuzzy, fuzzy);
+		//****
 
-    public StringAttribute getMeasureListAttribute() {
-        return measureListAttribute;
-    }
+		classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
+		addAttribute(validationMethodIdAttribute);
+		addAttribute(measureListAttribute);
+		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputToValidateAttribute); 
+		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(classificationAlgorithmIdAttribute);
+	}
 
-    @Override
-    public TaskConfiguration[] getTaskConfiguration() {
-    	try {
-    		return ValidationConfiguration.loadConfigurationsFromDataSet(this);
-    	} catch (IOException ex) {
-    		throw new RuntimeException(ex);
-    	}
-    }
+	public ValidatorConfigSet(DataSetAbstract dataSet) {
+		super(dataSet.getName());
+		// Check preconditions:
+		dataSet.checkStringAttribute(strValidationMethodId);
+		dataSet.checkStringAttribute(strMeasureList);
+		dataSet.checkStringAttribute(strProcessedFeatureDescription);
+		dataSet.checkStringAttribute(strInputToValidate);
+		dataSet.checkNominalAttribute(strGroundTruthSourceType);
+
+		//****
+		dataSet.checkStringAttribute(strAttributesToClassify);
+		dataSet.checkStringAttribute(strAttributesToIgnore);
+		dataSet.checkNominalAttribute(strClassificationType);
+		dataSet.checkNumericAttribute(strFuzzy);
+		//****
+
+		dataSet.checkStringAttribute(strClassificationAlgorithmId);
+		validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
+		measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
+		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
+		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
+		groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
+
+		//****
+		attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToClassify);
+		attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToIgnore);
+		classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(strClassificationType);
+		fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(strFuzzy);
+		//****
+
+		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
+		addAttribute(validationMethodIdAttribute);
+		addAttribute(measureListAttribute);
+		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputToValidateAttribute);
+		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(classificationAlgorithmIdAttribute);
+	}
+
+	public String getType() {
+		return "Validation";
+	}
+
+	public String getDescription() {
+		if (description.equals("")) {
+			int measures;
+			try {
+				measures = new MeasureTable(new File(measureListAttribute.getValueAt(0))).size();
+			} catch (IOException ex) {
+				description = "WARNING: Measure selection seems to be broken";
+				return description;
+			}
+			String input = groundTruthSourceTypeAttribute.getValueAt(0).toString();
+			description = "Input: " + input + " Generating " + measures + " measure(s)";
+		}
+		return description;
+	}
+
+	public StringAttribute getValidationMethodIdAttribute() {
+		return validationMethodIdAttribute;
+	}
+
+	public NominalAttribute getGroundTruthSourceAttribute() {
+		return groundTruthSourceTypeAttribute;
+	}
+
+	public StringAttribute getAttributesToClassifyAttribute() {
+		return attributesToClassifyAttribute;
+	}
+
+	public StringAttribute getAttributesToIgnoreAttribute() {
+		return attributesToIgnoreAttribute;
+	}
+
+	public NominalAttribute getClassificationTypeAttribute() {
+		return classificationTypeAttribute;
+	}
+
+	public NumericAttribute getFuzzyAttribute() {
+		return fuzzyAttribute;
+	}
+
+	public StringAttribute getClassificationAlgorithmIdAttribute() {
+		return classificationAlgorithmIdAttribute;
+	}
+
+	public StringAttribute getMeasureListAttribute() {
+		return measureListAttribute;
+	}
+
+	@Override
+	public TaskConfiguration[] getTaskConfiguration() {
+		try {
+			return ValidationConfiguration.loadConfigurationsFromDataSet(this);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
 	/**
 	 * @return the processedFeatureDescriptionAttribute
@@ -256,13 +256,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	public StringAttribute getProcessedFeatureDescriptionAttribute() {
 		return processedFeatureDescriptionAttribute;
 	}
-	
+
 	private static List<String> getAllowedValues() {
-		 List<String> allowedValues = new ArrayList<String>();
-		 allowedValues.add("CATEGORY_ID");
-		 allowedValues.add("FILE_LIST");
-	     allowedValues.add("READY_INPUT");
-	     return allowedValues;
+		List<String> allowedValues = new ArrayList<String>();
+		allowedValues.add("CATEGORY_ID");
+		allowedValues.add("FILE_LIST");
+		allowedValues.add("READY_INPUT");
+		return allowedValues;
 	}
 
 	/**

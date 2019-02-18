@@ -306,7 +306,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			
 			//check if the settings are possible
-			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 			if(numberOfCategories > 1 && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 				throw new NodeException("Binary classification of more than one category is not possible.");
 			}
@@ -317,8 +317,8 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			DataSet labeledInputForTraining = null;
 			
-			List<Integer> categoriesToClassify = ((TrainingConfiguration)this.taskConfiguration).getCategoriesToClassify();
-			List<Integer> featuresToIgnore = ((TrainingConfiguration)this.taskConfiguration).getFeaturesToIgnore();
+			List<Integer> attributesToClassify = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify();
+			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
 			
 			// If the ground truth has been previously prepared, the input is almost ready! 
 			if(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSourceType().
@@ -331,7 +331,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-							if(!categoriesToClassify.contains(i) && !featuresToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
 							}
 						}
@@ -346,7 +346,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 					
 						//add the category attributes
-						for(int i : categoriesToClassify) {
+						for(int i : attributesToClassify) {
 							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
 							//if the classification is not fuzzy, the values have to be rounded
 							if(!((TrainingConfiguration)this.taskConfiguration).isFuzzy() && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() != ClassificationType.MULTICLASS) {	
@@ -476,7 +476,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
 						//also omit the attributes that are supposed to be ignored
-						if(!featuresToIgnore.contains(i)) {
+						if(!attributesToIgnore.contains(i)) {
 							labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
 						}
@@ -487,7 +487,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
-					for(int category : categoriesToClassify) {
+					for(int category : attributesToClassify) {
 						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
 					}
 					
@@ -502,14 +502,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
 									
 									//omit the attributes that are supposed to be ignored
-									if(!featuresToIgnore.contains(j)) {
+									if(!attributesToIgnore.contains(j)) {
 										Double val = inputInstance.value(j);
 										labeledInputForTraining.getAttribute(j).addValue(val);
 									}
 								}
 								
 								if(((TrainingConfiguration)this.getConfiguration()).getClassificationType() != ClassificationType.MULTICLASS) {
-									for(int category : categoriesToClassify) {
+									for(int category : attributesToClassify) {
 										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(((TrainingConfiguration)this.getConfiguration()).isFuzzy()) {
@@ -522,7 +522,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
 									int currentPosition = 0;
-									for(int category : categoriesToClassify) {
+									for(int category : attributesToClassify) {
 										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(confidence > maxConfidence) {
 											maxConfidence = confidence;
@@ -862,7 +862,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			//choose the path according to the categories that are classified;
 			DataSet groundTruthSource = ((DataSetInput)((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource()).getDataSet();
-			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getCategoriesToClassify().size();
+			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 			int firstCategoryPosition = groundTruthSource.getAttributeCount() - numberOfCategories;
 			for(int i = 0; i < numberOfCategories; i++) {
 				if(i != 0) {

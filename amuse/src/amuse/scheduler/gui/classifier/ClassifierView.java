@@ -27,6 +27,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -36,6 +37,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -77,7 +79,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         btnSelectFolder.addActionListener(new SelectFolderListener());
         // Add all elements:
         this.setLayout(new BorderLayout());
-        trainingView = new TrainingView("Setup Classification Model");
+        trainingView = new TrainingView("Setup Classification Model", false);
         selectAverageCalculation.setToolTipText(toolTipCheckboxAverage);
         selectAverageCalculation.setSelected(true);
         trainingView.addLineInView(targetPathSelectionPanel);
@@ -191,5 +193,21 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	
 	public void setGroundTruthSourceType(GroundTruthSourceType type){
 		trainingView.setGroundTruthSourceType(type);
+	}
+	
+	public List<Integer> getAttributesToIgnore(){
+		return trainingView.getAttributesToIgnore();
+	}
+	
+	public List<Integer> getAttributesToClassify(){
+		return trainingView.getAttributesToClassify();
+	}
+	
+	public ClassificationType getClassificationType() {
+		return trainingView.getClassificationType();
+	}
+	
+	public boolean isFuzzy() {
+		return trainingView.isFuzzy();
 	}
 }

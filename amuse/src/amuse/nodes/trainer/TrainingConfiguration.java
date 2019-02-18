@@ -69,8 +69,8 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
-	private final List<Integer> categoriesToClassify;
-	private final List<Integer> featuresToIgnore;
+	private final List<Integer> attributesToClassify;
+	private final List<Integer> attributesToIgnore;
 	private final ClassificationType classificationType;
 	private final boolean fuzzy;
 	
@@ -98,8 +98,8 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth
-	 * @param categoriesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
-	 * @param featuresToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param attributesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
 	 * @param trainingDescription optional description of this experiment, that will be added to the name of the model
@@ -107,14 +107,14 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> categoriesToClassify, List<Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy, String trainingDescription, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy, String trainingDescription, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = groundTruthSourceType;
-		this.categoriesToClassify = categoriesToClassify;
-		this.featuresToIgnore = featuresToIgnore;
+		this.attributesToClassify = attributesToClassify;
+		this.attributesToIgnore = attributesToIgnore;
 		this.classificationType = classificationType;
 		this.fuzzy = fuzzy;
 		this.trainingDescription = trainingDescription;
@@ -148,14 +148,14 @@ public class TrainingConfiguration extends TaskConfiguration {
 			}
 			
 			
-			String categoriesToClassifyString = trainingConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
-			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
-			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
+			String attributesToClassifyString = trainingConfig.getAttributesToClassifyAttribute().getValueAt(i).toString();
+			attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToClassify = new ArrayList<Integer>();
 			try {
-				for(String str : categoriesToClassifyStringArray) {
+				for(String str : attributesToClassifyStringArray) {
 					if(!str.equals("")) {
-						currentCategoriesToClassify.add(Integer.parseInt(str));
+						currentAttributesToClassify.add(Integer.parseInt(str));
 					} else {
 						throw new IOException("No categories for training were specified.");
 					}
@@ -164,20 +164,20 @@ public class TrainingConfiguration extends TaskConfiguration {
 				throw new IOException("The categories for training were not properly specified.");
 			}
 			
-			String featuresToIgnoreString = trainingConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
-			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
-			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
+			String attributesToIgnoreString = trainingConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
+			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToIgnore = new ArrayList<Integer>();
 			try {
-				for(String str : featuresToIgnoreStringArray) {
+				for(String str : attributesToIgnoreStringArray) {
 					if(!str.equals("")) {
-						currentFeaturesToIgnore.add(Integer.parseInt(str));
+						currentAttributesToIgnore.add(Integer.parseInt(str));
 					}
 				}
 			} catch(NumberFormatException e) {
 				AmuseLogger.write(TrainingConfiguration.class.getName(), Level.WARN,
-						"The features to ignore were not properly specified. All features will be used for training.");
-				currentFeaturesToIgnore = new ArrayList<Integer>();
+						"The attributes to ignore were not properly specified. All features will be used for training.");
+				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
 			ClassificationType currentClassificationType;
@@ -199,7 +199,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentCategoriesToClassify, currentFeaturesToIgnore, currentClassificationType, currentFuzzy, currentTrainingDescription, currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToClassify, currentAttributesToIgnore, currentClassificationType, currentFuzzy, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -261,12 +261,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 		return groundTruthSourceType;
 	}
 	
-	public List<Integer> getCategoriesToClassify(){
-		return categoriesToClassify;
+	public List<Integer> getAttributesToClassify(){
+		return attributesToClassify;
 	}
 	
-	public List<Integer> getFeaturesToIgnore(){
-		return featuresToIgnore;
+	public List<Integer> getAttributesToIgnore(){
+		return attributesToIgnore;
 	}
 	
 	public ClassificationType getClassificationType() {
@@ -352,7 +352,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, categoriesToClassify, featuresToIgnore, classificationType, fuzzy, trainingDescription, pathToOutputModel); 
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToClassify, attributesToIgnore, classificationType, fuzzy, trainingDescription, pathToOutputModel); 
 		return conf;
 	}
 }

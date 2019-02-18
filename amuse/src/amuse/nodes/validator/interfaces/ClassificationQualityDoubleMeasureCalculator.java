@@ -42,7 +42,7 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	/** True if this measure will be calculated on partition level */
 	private boolean calculateForPartitionLevel = false;
 	
-	/** True if this measure will be calculated fuzzily */
+	/** True if this measure will be calculated in a fuzzy way */
 	private boolean fuzzy = false;
 
 	/*

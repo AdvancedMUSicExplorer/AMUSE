@@ -118,7 +118,7 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 			DataSet exampleDataSet = new DataSet(exampleSet);
 			DataSet resultDataSet = new DataSet("ClassificationSet");
 			
-			int numberOfCategories = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getCategoriesToClassify().size();
+			int numberOfCategories = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToClassify().size();
 			
 			for(int i=0;i<exampleDataSet.getAttributeCount();i++) {
 				if(exampleDataSet.getAttribute(i).getName().equals("PredictedCategory")) {

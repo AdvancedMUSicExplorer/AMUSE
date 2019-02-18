@@ -73,8 +73,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 	private final GroundTruthSourceType groundTruthSourceType;
 	
 	
-	private final List<Integer> categoriesToClassify;
-	private final List<Integer> featuresToIgnore;
+	private final List<Integer> attributesToClassify;
+	private final List<Integer> attributesToIgnore;
 	private final ClassificationType classificationType;
 	private final boolean fuzzy;
 	
@@ -110,15 +110,15 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, 
 			String processedFeaturesModelName, String classificationAlgorithmDescription,
-			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType, List<Integer> categoriesToClassify, List<Integer> featuresToIgnore, ClassificationType classificationType, boolean fuzzy) {
+			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
-		this.categoriesToClassify = categoriesToClassify;
-		this.featuresToIgnore = featuresToIgnore;
+		this.attributesToClassify = attributesToClassify;
+		this.attributesToIgnore = attributesToIgnore;
 		this.classificationType = classificationType;
 		this.fuzzy = fuzzy;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -162,14 +162,14 @@ public class ValidationConfiguration extends TaskConfiguration {
 			}
 			
 			
-			String categoriesToClassifyString = validatorConfig.getCategoriesToClassifyAttribute().getValueAt(i).toString();
-			categoriesToClassifyString = categoriesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] categoriesToClassifyStringArray = categoriesToClassifyString.split("\\s*,\\s*");
-			List<Integer> currentCategoriesToClassify = new ArrayList<Integer>();
+			String attributesToClassifyString = validatorConfig.getAttributesToClassifyAttribute().getValueAt(i).toString();
+			attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToClassify = new ArrayList<Integer>();
 			try {
-				for(String str : categoriesToClassifyStringArray) {
+				for(String str : attributesToClassifyStringArray) {
 					if(!str.equals("")) {
-						currentCategoriesToClassify.add(Integer.parseInt(str));
+						currentAttributesToClassify.add(Integer.parseInt(str));
 					} else {
 						throw new IOException("No categories for validation were specified.");
 					}
@@ -178,20 +178,20 @@ public class ValidationConfiguration extends TaskConfiguration {
 				throw new IOException("The categories for validation were not properly specified.");
 			}
 			
-			String featuresToIgnoreString = validatorConfig.getFeaturesToIgnoreAttribute().getValueAt(i).toString();
-			featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
-			List<Integer> currentFeaturesToIgnore = new ArrayList<Integer>();
+			String attributesToIgnoreString = validatorConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
+			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToIgnore = new ArrayList<Integer>();
 			try {
-				for(String str : featuresToIgnoreStringArray) {
+				for(String str : attributesToIgnoreStringArray) {
 					if(!str.equals("")) {
-						currentFeaturesToIgnore.add(Integer.parseInt(str));
+						currentAttributesToIgnore.add(Integer.parseInt(str));
 					}
 				}
 			} catch(NumberFormatException e) {
 				AmuseLogger.write(ValidationConfiguration.class.getName(), Level.WARN,
-						"The features to ignore were not properly specified. All features will be used for training.");
-				currentFeaturesToIgnore = new ArrayList<Integer>();
+						"The attributes to ignore were not properly specified. All features will be used for training.");
+				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
 			ClassificationType currentClassificationType;
@@ -214,7 +214,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst, currentCategoriesToClassify, currentFeaturesToIgnore, currentClassificationType, currentFuzzy));
+		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentClassificationType, currentFuzzy));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -265,12 +265,12 @@ public class ValidationConfiguration extends TaskConfiguration {
 		return classificationAlgorithmDescription;
 	}
 
-	public List<Integer> getCategoriesToClassify(){
-		return categoriesToClassify;
+	public List<Integer> getAttributesToClassify(){
+		return attributesToClassify;
 	}
 	
-	public List<Integer> getFeaturesToIgnore(){
-		return featuresToIgnore;
+	public List<Integer> getAttributesToIgnore(){
+		return attributesToIgnore;
 	}
 	
 	public ClassificationType getClassificationType() {

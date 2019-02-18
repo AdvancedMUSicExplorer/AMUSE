@@ -98,17 +98,24 @@ public class GroundTruthSelectionPanel extends JPanel {
 		return null;
 	}
 	
-	public List<Integer> getCategoriesToClassify(){
+	public List<Integer> getAttributesToClassify(){
 		//TODO make this method work also with other groundtruth source types
 		switch((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem()){
 		case CATEGORY_ID:
-			return categorySelectionPanel.getCategoriesToClassify();
+			return categorySelectionPanel.getAttributesToClassify();
 		case FILE_LIST:
 			return new ArrayList<Integer>();
 		case READY_INPUT:
 			return new ArrayList<Integer>();
 		}
 		return null;
+	}
+	
+	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+		//TODO make this method work also with other groundtruth source types
+		if((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem() == GroundTruthSourceType.CATEGORY_ID) {
+			categorySelectionPanel.setAttributesToClassify(attributesToClassify);
+		}
 	}
 
 	public GroundTruthSourceType getSelectedGroundTruthSourceType() {

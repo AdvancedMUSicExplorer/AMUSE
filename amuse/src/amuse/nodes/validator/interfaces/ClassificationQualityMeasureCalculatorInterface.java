@@ -52,7 +52,7 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	/** Returns true if this measure will be calculated on partition level */
 	public boolean getPartitionLevel();
 	
-	//** Returns true if this measure will be be calculated in a fuzzily */
+	//** Returns true if this measure will be be calculated in a fuzzy way */
 	public boolean isFuzzy();
 	
 	/**

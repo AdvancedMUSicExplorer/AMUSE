@@ -52,8 +52,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
     
     
-    private static final String categoriesToClassifyStr = "CategoriesToClassify";
-    private static final String featuresToIgnoreStr  = "FeaturesToIgnore";
+    private static final String attributesToClassifyStr = "AttributesToClassify";
+    private static final String attributesToIgnoreStr  = "AttributesToIgnore";
     private static final String classificationTypeStr = "ClassificationType";
     private static final String fuzzyStr = "Fuzzy";
     private static final String trainingDescriptionStr = "TrainingDescription";
@@ -69,8 +69,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final NominalAttribute groundTruthSourceTypeAttribute;
     
     
-    private final StringAttribute categoriesToClassifyAttribute;
-    private final StringAttribute featuresToIgnoreAttribute;
+    private final StringAttribute attributesToClassifyAttribute;
+    private final StringAttribute attributesToIgnoreAttribute;
     private final NominalAttribute classificationTypeAttribute;
     private final NumericAttribute fuzzyAttribute;
     private final StringAttribute trainingDescriptionAttribute;
@@ -96,8 +96,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkNominalAttribute(groundTruthSourceTypeStr);
         
         
-        checkStringAttribute(categoriesToClassifyStr);
-        checkStringAttribute(featuresToIgnoreStr);
+        checkStringAttribute(attributesToClassifyStr);
+        checkStringAttribute(attributesToIgnoreStr);
         checkNominalAttribute(classificationTypeStr);
         checkNumericAttribute(fuzzyStr);
         checkStringAttribute(trainingDescriptionStr);
@@ -112,8 +112,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceTypeAttribute = (NominalAttribute) this.getAttribute(groundTruthSourceTypeStr);
         
         
-        categoriesToClassifyAttribute = (StringAttribute) this.getAttribute(categoriesToClassifyStr);
-        featuresToIgnoreAttribute = (StringAttribute) this.getAttribute(featuresToIgnoreStr);
+        attributesToClassifyAttribute = (StringAttribute) this.getAttribute(attributesToClassifyStr);
+        attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(attributesToIgnoreStr);
         classificationTypeAttribute = (NominalAttribute) this.getAttribute(classificationTypeStr);
         fuzzyAttribute = (NumericAttribute) this.getAttribute(fuzzyStr);
         trainingDescriptionAttribute = (StringAttribute) this.getAttribute(trainingDescriptionStr);
@@ -137,10 +137,10 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
         
         
-        List<String> categoriesToClassifyList = new ArrayList<String>();
-        categoriesToClassifyList.add(trainingConfiguration.getCategoriesToClassify().toString());
-        List<String> featuresToIgnoreList = new ArrayList<String>();
-        featuresToIgnoreList.add(trainingConfiguration.getFeaturesToIgnore().toString());
+        List<String> attributesToClassifyList = new ArrayList<String>();
+        attributesToClassifyList.add(trainingConfiguration.getAttributesToClassify().toString());
+        List<String> attributesToIgnoreList = new ArrayList<String>();
+        attributesToIgnoreList.add(trainingConfiguration.getAttributesToIgnore().toString());
         List<String> classificationTypeList = new ArrayList<String>();
         classificationTypeList.add(trainingConfiguration.getClassificationType().toString());
         List<Double> fuzzyList = new ArrayList<Double>();
@@ -166,8 +166,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         }
         groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);
         
-        categoriesToClassifyAttribute = new StringAttribute(categoriesToClassifyStr, categoriesToClassifyList);
-        featuresToIgnoreAttribute = new StringAttribute(featuresToIgnoreStr, featuresToIgnoreList);
+        attributesToClassifyAttribute = new StringAttribute(attributesToClassifyStr, attributesToClassifyList);
+        attributesToIgnoreAttribute = new StringAttribute(attributesToIgnoreStr, attributesToIgnoreList);
         allowedValues = new ArrayList<String>();
         for(ClassificationType type : ClassificationType.values()) {
         	allowedValues.add(type.toString());
@@ -184,8 +184,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
         
-        addAttribute(categoriesToClassifyAttribute);
-        addAttribute(featuresToIgnoreAttribute);
+        addAttribute(attributesToClassifyAttribute);
+        addAttribute(attributesToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
         addAttribute(trainingDescriptionAttribute);
@@ -203,8 +203,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
         
         
-        dataSet.checkStringAttribute(categoriesToClassifyStr);
-        dataSet.checkStringAttribute(featuresToIgnoreStr);
+        dataSet.checkStringAttribute(attributesToClassifyStr);
+        dataSet.checkStringAttribute(attributesToIgnoreStr);
         dataSet.checkNominalAttribute(classificationTypeStr);
         dataSet.checkNumericAttribute(fuzzyStr);
         dataSet.checkStringAttribute(trainingDescriptionStr);
@@ -219,8 +219,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
         
         
-        categoriesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(categoriesToClassifyStr);
-        featuresToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(featuresToIgnoreStr);
+        attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(attributesToClassifyStr);
+        attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(attributesToIgnoreStr);
         classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(classificationTypeStr);
         fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(fuzzyStr);
         trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(trainingDescriptionStr);
@@ -237,8 +237,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(groundTruthSourceTypeAttribute);
         
         
-        addAttribute(categoriesToClassifyAttribute);
-        addAttribute(featuresToIgnoreAttribute);
+        addAttribute(attributesToClassifyAttribute);
+        addAttribute(attributesToIgnoreAttribute);
         addAttribute(classificationTypeAttribute);
         addAttribute(fuzzyAttribute);
         addAttribute(trainingDescriptionAttribute);
@@ -267,12 +267,12 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         return groundTruthSourceTypeAttribute;
     }
     
-    public StringAttribute getCategoriesToClassifyAttribute() {
-    	return categoriesToClassifyAttribute;
+    public StringAttribute getAttributesToClassifyAttribute() {
+    	return attributesToClassifyAttribute;
     }
     
-    public StringAttribute getFeaturesToIgnoreAttribute() {
-    	return featuresToIgnoreAttribute;
+    public StringAttribute getAttributesToIgnoreAttribute() {
+    	return attributesToIgnoreAttribute;
     }
     
     public NominalAttribute getClassificationTypeAttribute() {

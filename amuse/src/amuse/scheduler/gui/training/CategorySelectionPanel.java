@@ -99,14 +99,20 @@ public class CategorySelectionPanel extends JPanel {
 		return model.getSelectedID();
 	}
 	
-	public List<Integer> getCategoriesToClassify(){
-		List<Integer> categoriesToClassify = new ArrayList<Integer>();
+	public List<Integer> getAttributesToClassify(){
+		List<Integer> attributesToClassify = new ArrayList<Integer>();
 		for(int i=0;i<checkBoxes.size();i++) {
 			if(checkBoxes.get(i).isSelected()) {
-				categoriesToClassify.add(i);
+				attributesToClassify.add(i);
 			}
 		}
-		return categoriesToClassify;
+		return attributesToClassify;
+	}
+	
+	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+		for(int i=0;i<checkBoxes.size();i++) {
+			checkBoxes.get(i).setSelected(attributesToClassify.contains(i));
+		}
 	}
 
 	void setSelectedCategory(int value) {

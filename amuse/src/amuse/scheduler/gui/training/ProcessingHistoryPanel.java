@@ -57,8 +57,8 @@ public class ProcessingHistoryPanel extends JPanel {
     private JComboBox comboBox = new JComboBox();
     private JLabel textFieldLabel = new JLabel("Processing Steps:");
     private JTextField textField = new JTextField(10);
-    private JLabel featuresToIgnoreLabel = new JLabel("Features to ignore:");
-    private JTextField featuresToIgnoreTextField = new JTextField(10);
+    private JLabel attributesToIgnoreLabel = new JLabel("attributes to ignore:");
+    private JTextField attributesToIgnoreTextField = new JTextField(10);
     private TitledBorder title = new TitledBorder("Select Processing Model");
 
     public ProcessingHistoryPanel () {
@@ -68,8 +68,8 @@ public class ProcessingHistoryPanel extends JPanel {
         this.add(comboBox, "pushx, wrap");
         this.add(textFieldLabel, "pushx, wrap");
         this.add(textField, "growx, wrap");
-        this.add(featuresToIgnoreLabel, "pushx, wrap");
-        this.add(featuresToIgnoreTextField, "growx, wrap");
+        this.add(attributesToIgnoreLabel, "pushx, wrap");
+        this.add(attributesToIgnoreTextField, "growx, wrap");
         try {
 			DefaultComboBoxModel model = new DefaultComboBoxModel(ProcessingHistory.getHistoryList());
             comboBox.setModel(model);
@@ -92,23 +92,23 @@ public class ProcessingHistoryPanel extends JPanel {
         return textField.getText();
     }
     
-    public List<Integer> getFeaturesToIgnore(){
-    	String featuresToIgnoreString = featuresToIgnoreTextField.getText();
-		featuresToIgnoreString = featuresToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
-		String[] featuresToIgnoreStringArray = featuresToIgnoreString.split("\\s*,\\s*");
-		List<Integer> featuresToIgnore = new ArrayList<Integer>();
+    public List<Integer> getAttributesToIgnore(){
+    	String attributesToIgnoreString = attributesToIgnoreTextField.getText();
+		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
 		try {
-			for(String str : featuresToIgnoreStringArray) {
+			for(String str : attributesToIgnoreStringArray) {
 				if(!str.equals("")) {
-					featuresToIgnore.add(Integer.parseInt(str));
+					attributesToIgnore.add(Integer.parseInt(str));
 				}
 			}
 		} catch(NumberFormatException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.WARN,
-					"The features to ignore were not properly specified. All features will be used for training.");
-			featuresToIgnore = new ArrayList<Integer>();
+					"The attributes to ignore were not properly specified. All features will be used for training.");
+			attributesToIgnore = new ArrayList<Integer>();
 		}
-		return featuresToIgnore;
+		return attributesToIgnore;
     }
 
     void setProcessingModelString(String value) {
