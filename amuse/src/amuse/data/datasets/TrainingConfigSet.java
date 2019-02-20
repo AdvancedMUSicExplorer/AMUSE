@@ -55,7 +55,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String attributesToClassifyStr = "AttributesToClassify";
     private static final String attributesToIgnoreStr  = "AttributesToIgnore";
     private static final String classificationTypeStr = "ClassificationType";
-    private static final String fuzzyStr = "Fuzzy";
+    private static final String fuzzyStr = "IsFuzzyPrediction";
     private static final String trainingDescriptionStr = "TrainingDescription";
     
     

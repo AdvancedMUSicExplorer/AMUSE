@@ -57,7 +57,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private static final String strAttributesToClassify = "AttributesToClassify";
 	private static final String strAttributesToIgnore  = "AttributesToIgnore";
 	private static final String strClassificationType = "ClassificationType";
-	private static final String strFuzzy = "Fuzzy";
+	private static final String strFuzzy = "IsFuzzyPrediction";
 	
 
 	// ARFF attributes
