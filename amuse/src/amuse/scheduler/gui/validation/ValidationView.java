@@ -23,8 +23,11 @@
  */
 package amuse.scheduler.gui.validation;
 
+import java.util.List;
+
 import javax.swing.JComponent;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
@@ -86,14 +89,6 @@ public class ValidationView {
 	public GroundTruthSourceType getGroundTruthSourceType(){
 		return trainingView.getGroundTruthSourceType();
 	}
-	
-	/*public String getSelectedReadyInputFile(){
-		return trainingView.getReadyInputSelectionPanel().getSelectedReadyInputFile();
-	}
-
-	public void setSelectedReadyInputFile(String groundTruthSource) {
-		trainingView.getReadyInputSelectionPanel().setSelectedReadyInputFile(groundTruthSource);
-	}*/
 
 	public String getPathToOutputModel() {
 		// TODO Auto-generated method stub
@@ -107,5 +102,36 @@ public class ValidationView {
 	public void setGroundTruthSource(String groundTruthSource) {
 		trainingView.setGroundTruthSource(groundTruthSource);
 	}
-
+	
+	public List<Integer> getAttributesToClassify(){
+		return trainingView.getAttributesToClassify();
+	}
+	
+	public List<Integer> getAttributesToIgnore(){
+		return trainingView.getAttributesToIgnore();
+	}
+	
+	public ClassificationType getClassifcationType() {
+		return trainingView.getClassificationType();
+	}
+	
+	public boolean isFuzzy() {
+		return trainingView.isFuzzy();
+	}
+	
+	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+		trainingView.setAttributesToClassify(attributesToClassify);
+	}
+	
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		trainingView.setAttributesToIgnore(attributesToIgnore);
+	}
+	
+	public void setClassificationType(ClassificationType classificationType) {
+		trainingView.setClassificationType(classificationType);
+	}
+	
+	public void setFuzzy(boolean fuzzy) {
+		trainingView.setFuzzy(fuzzy);
+	}
 }

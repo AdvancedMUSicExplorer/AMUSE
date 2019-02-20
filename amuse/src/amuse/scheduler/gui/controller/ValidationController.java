@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.controller;
 
+import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSetAbstract;
@@ -35,6 +36,8 @@ import java.io.IOException;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+
+import org.apache.log4j.Level;
 
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
@@ -49,7 +52,12 @@ import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
 import amuse.scheduler.gui.validation.MeasuresView;
 import amuse.scheduler.gui.validation.ValidationView;
+import amuse.util.AmuseLogger;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
 import javax.swing.JFileChooser;
 
 /**
@@ -120,12 +128,17 @@ public class ValidationController extends AbstractController {
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
+        String attributesToClassify = validationView.getAttributesToClassify().toString();
+        String attributesToIgnore = validationView.getAttributesToIgnore().toString();
+        String classificationType = validationView.getClassifcationType().toString();
+        int fuzzy = validationView.isFuzzy() ? 1 : 0;
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
         		validationMethodId,
                 measureTableFile, 
                 processedFeatureDescription, 
                 groundTruthSource, 
                 groundTruthSourceType,
+                attributesToClassify, attributesToIgnore, classificationType, fuzzy,
                 classificationAlgorithmId);
         // Create folders...
         measureTableFile.getParentFile().mkdirs();
@@ -171,6 +184,44 @@ public class ValidationController extends AbstractController {
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             measuresView.loadSelection(new File(set.getMeasureListAttribute().getValueAt(0)));
             validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
+            
+            String attributesToClassifyString = set.getAttributesToClassifyAttribute().getValueAt(0).toString();
+    		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
+    		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
+    		List<Integer> attributesToClassify = new ArrayList<Integer>();
+    		try {
+    			for(String str : attributesToClassifyStringArray) {
+    				if(!str.equals("")) {
+    					attributesToClassify.add(Integer.parseInt(str));
+    				}
+    			}
+    		} catch(NumberFormatException e) {
+    		}
+    		validationView.setAttributesToClassify(attributesToClassify);
+    		
+    		String attributesToIgnoreString = set.getAttributesToIgnoreAttribute().getValueAt(0).toString();
+    		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+    		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+    		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+    		try {
+    			for(String str : attributesToIgnoreStringArray) {
+    				if(!str.equals("")) {
+    					attributesToIgnore.add(Integer.parseInt(str));
+    				}
+    			}
+    		} catch(NumberFormatException e) {
+    			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+    					"The attributes to ignore were not properly specified. All features will be used for training.");
+    			attributesToIgnore = new ArrayList<Integer>();
+    		}
+    		validationView.setAttributesToIgnore(attributesToIgnore);
+    		
+    		ClassificationType classificationType = ClassificationType.valueOf(set.getClassificationTypeAttribute().getValueAt(0));
+    		validationView.setClassificationType(classificationType);
+    		
+    		boolean fuzzy = (double)set.getFuzzyAttribute().getValueAt(0) >= 0.5;
+    		validationView.setFuzzy(fuzzy);
+            
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -186,13 +237,18 @@ public class ValidationController extends AbstractController {
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
+        List<Integer> attributesToClassify = validationView.getAttributesToClassify();
+        List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
+        ClassificationType classificationType = validationView.getClassifcationType();
+        boolean fuzzy = validationView.isFuzzy();
         conf = new ValidationConfiguration(
         		validationMethodStr, 
         		measureTable,
                 processedFeatureDescription, 
                 classificationAlgorithmStr, 
                 groundTruthSource,
-                groundTruthSourceType);
+                groundTruthSourceType,
+                attributesToClassify, attributesToIgnore, classificationType, fuzzy);
         return conf;
     }
 

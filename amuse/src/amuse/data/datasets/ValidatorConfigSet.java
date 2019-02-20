@@ -134,7 +134,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
 
 		
-		attributesToClassifyAttribute = StringAttribute.createFromString(strClassificationType, classificationType);
+		attributesToClassifyAttribute = StringAttribute.createFromString(strAttributesToClassify, attributesToClassify);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
 		List <String> classificationTypeValues = new ArrayList<String>();
 		classificationTypeValues.add(classificationType);
@@ -148,6 +148,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(inputToValidateAttribute); 
 		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToIgnoreAttribute);
+		addAttribute(classificationTypeAttribute);
+		addAttribute(fuzzyAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 	}
 
@@ -187,6 +191,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(inputToValidateAttribute);
 		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToIgnoreAttribute);
+		addAttribute(classificationTypeAttribute);
+		addAttribute(fuzzyAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 	}
 
