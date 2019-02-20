@@ -413,6 +413,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					labeledInputForValidation.addAttribute(completeInput.getAttribute("Id"));
 				
 					//add the attribute "NumberOfCategories"
+					//it marks the where the categories that are to be classified start and how many will follow
 					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories", new ArrayList<Double>()));
 					for(int i = 0; i < completeInput.getValueCount(); i++) {
 						labeledInputForValidation.getAttribute(labeledInputForValidation.getAttributeCount() - 1).addValue(new Double(numberOfCategories));
@@ -510,7 +511,10 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 									new ArrayList<Double>()));
 						}
 					}
+					//add the id attribute
 					labeledInputForValidation.addAttribute(new NumericAttribute("Id",new ArrayList<Double>()));
+					//add the "NumberOfCategories" attribute
+					//it marks the where the categories that are to be classified start and how many will follow
 					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					for(int category : attributesToClassify) {
 						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
@@ -519,7 +523,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					// Create the labeled data
 					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
 						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
-//						String label = validatorGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
 						String[] labels = new String[numberOfCategories];
 						Double[] confidences = new Double[numberOfCategories];
 						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();

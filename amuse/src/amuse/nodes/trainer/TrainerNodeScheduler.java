@@ -340,6 +340,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						labeledInputForTraining.addAttribute(completeInput.getAttribute("Id"));
 					
 						//add the attribute "NumberOfCategories"
+						//it marks the where the categories that are to be classified start and how many will follow
 						labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories", new ArrayList<Double>()));
 						for(int i = 0; i < completeInput.getValueCount(); i++) {
 							labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).addValue(new Double(numberOfCategories));
@@ -483,9 +484,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 					}
 					
+					//add the id attribute
 					labeledInputForTraining.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
 					
-					
+					//add the attribute "NumberOfCategories"
+					//it marks the where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					for(int category : attributesToClassify) {
 						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));

@@ -49,9 +49,9 @@ public class FalseNegatives extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-//		if(isFuzzy()) {
-//			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
-//		}
+		if(isFuzzy()) {
+			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
+		}
 		int numberOfFalseNegatives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
@@ -72,7 +72,7 @@ public class FalseNegatives extends ClassificationQualityDoubleMeasureCalculator
 			
 			// Round the ground truth value to a binary value
 			Double currentGroundTruthValue = groundTruthRelationships.get(i);
-				if(!isFuzzy()) {
+			if(!isFuzzy()) {
 				if(currentGroundTruthValue >= 0.5) {
 					currentGroundTruthValue = 1.0d;
 				} else {

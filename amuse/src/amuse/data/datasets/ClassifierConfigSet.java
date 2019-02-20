@@ -298,7 +298,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		groundTruthSourceTypeValues.add(groundTruthType);
 		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, Arrays.asList(GroundTruthSourceType.stringValues()), groundTruthSourceTypeValues);
 
-		//****
+		
 		attributesToClassifyAttribute = StringAttribute.createFromString(strAttributesToClassify, attributesToClassify);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
 		List <String> classificationTypeValues = new ArrayList<String>();
@@ -306,7 +306,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypeValues);
 		fuzzyAttribute = NumericAttribute.createFromDouble(strFuzzy, fuzzy);
 		pathToInputModelAttribute = StringAttribute.createFromString(strPathToInputModel, pathToInputModel);
-		//****
+		
 
 		mergeSongResultsAttribute = NumericAttribute.createFromDouble(strMergeSongResults, mergeSongResults);
 		outputResultAttribute = StringAttribute.createFromString(strOutputResult, outputResultPath);
