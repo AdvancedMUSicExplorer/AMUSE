@@ -111,8 +111,16 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
-	public ClassificationConfiguration(DataInputInterface inputToClassify, InputSourceType inputSourceType, 
-			String processedFeaturesModelName, String algorithmDescription, List<Integer> attributesToClassify, List <Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy, Integer mergeSongResults,
+	public ClassificationConfiguration(
+			DataInputInterface inputToClassify,
+			InputSourceType inputSourceType, 
+			String processedFeaturesModelName,
+			String algorithmDescription,
+			List<Integer> attributesToClassify,
+			List <Integer> attributesToIgnore,
+			ClassificationType classificationType,
+			boolean fuzzy,
+			Integer mergeSongResults,
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
@@ -143,9 +151,20 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
-	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, String groundTruthSource, String groundTruthSourceType, List<Integer> attributesToClassify, List <Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy, Integer mergeSongResults,
-			String classificationOutput, String pathToInputModel) {
+	public ClassificationConfiguration(
+			InputSourceType inputSourceType,
+			String pathToInputSource,
+			String processedFeaturesModelName,
+			String algorithmDescription,
+			String groundTruthSource,
+			String groundTruthSourceType,
+			List<Integer> attributesToClassify,
+			List <Integer> attributesToIgnore,
+			ClassificationType classificationType,
+			boolean fuzzy,
+			Integer mergeSongResults,
+			String classificationOutput,
+			String pathToInputModel) {
 		List<File> input;
 		List<Integer> ids = null;
 		if(inputSourceType.equals(InputSourceType.FILE_LIST)) {

@@ -6,7 +6,6 @@ package amuse.data;
  * - Path to the ready training input (prepared e.g. by a validator method) */
 public enum GroundTruthSourceType {
 	CATEGORY_ID,
-	FILE_LIST, 
 	READY_INPUT;
 	
 	public static String[] stringValues(){

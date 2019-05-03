@@ -151,23 +151,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		// Set the i/o files
 		pathToFileWithLabeledInstances = new String();		
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
-				equals(GroundTruthSourceType.FILE_LIST)) {
-			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
-			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
-			if(this.outputModel.equals(new String("-1")))  {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Path to output model is not set!");
-				return;
-			}
-					
-		} else if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.READY_INPUT)) {
 			pathToFileWithLabeledInstances = new String("-1"); // Input is already labeled!
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
-			if(this.outputModel.equals(new String("-1")))  {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Path to output model is not set!");
-				return;
-			}
+			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
+			this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator));
 		} else {
+			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
+			
 			DataSetAbstract categoryList = null;
 			try {
 				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
@@ -307,7 +298,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			//check if the settings are possible
 			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-			if(numberOfCategories > 1 && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
+			if(numberOfCategories == 0) {
+				throw new NodeException("No category chosen!");
+			}
+			else if(numberOfCategories > 1 && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 				throw new NodeException("Binary classification of more than one category is not possible.");
 			}
 			if(((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((TrainingConfiguration)this.taskConfiguration).isFuzzy()) {
@@ -855,8 +849,8 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		}
 		
 		// If the model(s) should be saved to the Amuse model database..
-		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) &&
-				((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) && 
+				(this.outputModel.equals("-1") || this.outputModel.equals(""))) {
 			
 			
 			String folderForModelsString = 

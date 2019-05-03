@@ -381,6 +381,10 @@ public class ValidationController extends AbstractController {
             validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());
             validationView.setClassifierAlgorithm(valConf.getClassificationAlgorithmDescription());
             measuresView.loadSelection(valConf.getMeasures());
+            validationView.setAttributesToClassify(valConf.getAttributesToClassify());
+            validationView.setAttributesToIgnore(valConf.getAttributesToIgnore());
+            validationView.setClassificationType(valConf.getClassificationType());
+            validationView.setFuzzy(valConf.isFuzzy());
         }
     }
 }

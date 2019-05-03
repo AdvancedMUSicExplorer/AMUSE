@@ -177,15 +177,20 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		}
 		int i=0;
 		// TODO currently works only with category id
-		while(i < categoryList.getValueCount()) {
-			Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
-			if(id.toString().equals(
-					((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString())) {
-				this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString() + 
-					"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
-				break;
+		if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			while(i < categoryList.getValueCount()) {
+				Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
+				if(id.toString().equals(
+						((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString())) {
+					this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString() + 
+						"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+					break;
+				}
+				i++;
 			}
-			i++;
+		} else {
+			this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString();
+			this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separatorChar) + 1, this.categoryDescription.lastIndexOf('.'));
 		}
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Validator node scheduler for category " + 
@@ -380,7 +385,10 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		
 		//check if the settings are possible
 		int numberOfCategories = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-		if(numberOfCategories > 1 && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
+		if(numberOfCategories == 0) {
+			throw new NodeException("No category chosen!");
+		}
+		else if(numberOfCategories > 1 && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 			throw new NodeException("Binary classification of more than one category is not possible.");
 		}
 		if(((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ValidationConfiguration)this.taskConfiguration).isFuzzy()) {

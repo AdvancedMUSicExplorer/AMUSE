@@ -33,6 +33,8 @@ import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
+
+import java.awt.Component;
 import java.io.File;
 import java.util.List;
 
@@ -70,6 +72,9 @@ public class TrainingView {
 		splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
 		this.processingHistoryPanel = new ProcessingHistoryPanel();
 		viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
+		groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
+			setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID));
+		});
 		if (leftTitle.equals(trainingViewName)) {
 			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 			preprocessingAlgorithmFacade.setUseEnableButton(true);
@@ -129,6 +134,15 @@ public class TrainingView {
 		}
 	}
 	
+	private void setChildsEnabled(Component comp, boolean b) {
+		if (comp instanceof JComponent) {
+			for (Component c : ((JComponent) comp).getComponents()) {
+				c.setEnabled(b);
+				setChildsEnabled(c, b);
+			}
+		}
+	}
+	
 	public void setGroundTruthSourceType(GroundTruthSourceType type){
 		groundTruthSelectionPanel.setGroundTruthSourceType(type);
 	}
@@ -146,11 +160,19 @@ public class TrainingView {
 	}
 	
 	public List<Integer> getAttributesToIgnore(){
-		return processingHistoryPanel.getAttributesToIgnore();
+		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			return processingHistoryPanel.getAttributesToIgnore();
+		} else {
+			return groundTruthSelectionPanel.getAttributesToIgnore();
+		}
 	}
 	
 	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
-		processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+		} else {
+			groundTruthSelectionPanel.setAttributesToIgnore(attributesToIgnore);
+		}
 	}
 	
 	public ClassificationType getClassificationType() {

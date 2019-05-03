@@ -24,6 +24,7 @@ public class ClassificationTypePanel extends JPanel {
 		this.add(comboBox, "pushx, wrap");
 		DefaultComboBoxModel model = new DefaultComboBoxModel(ClassificationType.stringValues());
 		comboBox.setModel(model);
+		comboBox.setSelectedItem(ClassificationType.BINARY.toString());
 		this.add(checkBox, "pushx, gap rel, wrap");
 	}
 	

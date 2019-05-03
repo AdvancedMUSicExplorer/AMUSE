@@ -155,8 +155,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 						break;
 					}
 				}
-			} else if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
-				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}

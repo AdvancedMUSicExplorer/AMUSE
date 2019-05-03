@@ -39,11 +39,11 @@ import amuse.scheduler.gui.training.TrainingView;
 public class ValidationView {
 	
 	private TrainingView trainingView;
-        private static final String ToolTipValidationAlgorithms = "Select Validation Method.";
+    private static final String ToolTipValidationAlgorithms = "Select Validation Method.";
 
 	public ValidationView(AlgorithmConfigurationFacade validationAlgorithms) {
 		this.trainingView = new TrainingView("Setup Validation", false);
-                validationAlgorithms.setToolTip(ToolTipValidationAlgorithms);
+        validationAlgorithms.setToolTip(ToolTipValidationAlgorithms);
 		trainingView.addRightSide(validationAlgorithms.getPrameterPanel());
 		trainingView.addLineInView(validationAlgorithms.getAlgorithmSelectionComboBox());
 	}
@@ -74,7 +74,7 @@ public class ValidationView {
         return trainingView.getSelectedTrainingAlgorithmStr();
     }
 
-    public void setSelecstedCategoryID(int value) {
+    public void re(int value) {
         //trainingView.setSelectedCategoryID(value);
     }
 

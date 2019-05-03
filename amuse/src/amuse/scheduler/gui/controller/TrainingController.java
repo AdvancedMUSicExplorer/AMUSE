@@ -118,6 +118,15 @@ public class TrainingController extends AbstractController {
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
         //TODO set attributesToClassify, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
         
+        String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
+        if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
+        }
+        else if(groundTruthSourceType.equals(GroundTruthSourceType.READY_INPUT.toString())){
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.READY_INPUT);
+        }
+        trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
+        
         String attributesToClassifyString = ttSet.getAttributesToClassifyAttribute().getValueAt(0).toString();
 		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
 		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
@@ -154,18 +163,6 @@ public class TrainingController extends AbstractController {
 		
 		boolean fuzzy = (double)ttSet.getFuzzyAttribute().getValueAt(0) >= 0.5;
 		trainingView.setFuzzy(fuzzy);
-        
-        String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
-        if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
-        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
-        }
-        else if(groundTruthSourceType.equals(GroundTruthSourceType.FILE_LIST)){
-        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
-        }
-        else if(groundTruthSourceType.equals(GroundTruthSourceType.READY_INPUT.toString())){
-        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.READY_INPUT);
-        }
-        trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
     }
 
     private class TrainingPanel extends JPanel implements NextButtonUsable,
@@ -265,20 +262,21 @@ public class TrainingController extends AbstractController {
     }
 
     private TrainingConfiguration getTrainingConfiguration() {
-    	String folder = trainingView.getGroundTruthSource();
-    	if(trainingView.getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID){
-    		folder = folder.substring(folder.lastIndexOf(File.separatorChar) + 1, folder.lastIndexOf('.'));
-    	}
-    	String pathToOutputModel = AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
-    			+ File.separator
-    			+ folder
-    			+ File.separator
-    			+ trainingView.getSelectedTrainingAlgorithmStr()
-    			+ File.separator
-    			+ trainingView.getProcessingModelString()
-    			+ File.separator
-    			+ "model.mod";
-    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
+//    	String folder = trainingView.getGroundTruthSource();
+//    	if(trainingView.getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID){
+//    		folder = folder.substring(folder.lastIndexOf(File.separatorChar) + 1, folder.lastIndexOf('.'));
+//    	}
+//    	String pathToOutputModel = AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
+//    			+ File.separator
+//    			+ folder
+//    			+ File.separator
+//    			+ trainingView.getSelectedTrainingAlgorithmStr()
+//    			+ File.separator
+//    			+ trainingView.getProcessingModelString()
+//    			+ File.separator
+//    			+ "model.mod";
+//    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
+    	String pathToOutputModel = "-1";
     	TrainingConfiguration conf = new TrainingConfiguration(
     			trainingView.getProcessingModelString(),
     			trainingView.getSelectedTrainingAlgorithmStr(),
@@ -306,6 +304,10 @@ public class TrainingController extends AbstractController {
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
             trainingView.setGroundTruthSourceType(trainConf.getGroundTruthSourceType());
             trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());
+            trainingView.setAttributesToClassify(trainConf.getAttributesToClassify());
+            trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
+            trainingView.setClassificationType(trainConf.getClassificationType());
+            trainingView.setFuzzy(trainConf.isFuzzy());
         }
     }
 }

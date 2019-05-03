@@ -262,7 +262,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			
 			//check if the settings are possible
 			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-			if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
+			if(numberOfCategories == 0) {
+				throw new NodeException("No category chosen!");
+			}
+			else if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
 				throw new NodeException("Binary classification of more than one category is not possible.");
 			}
 			if(((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ClassificationConfiguration)this.taskConfiguration).isFuzzy()) {
@@ -286,7 +289,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 						inputForClassification = new DataSet("ClassificationSet");
 					
-						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id)
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								inputForClassification.addAttribute(completeInput.getAttribute(i));
@@ -343,15 +346,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					}						
 					descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
 					
-					
-					//add the id attribute
-//					inputForClassification.addAttribute(completeInput.getAttribute("Id"));
-					
 				} 
 				
 				else {
-					
-					// Set the category description only if FILE_LIST as source is used!!!
 					DataSetAbstract categoryList = null;
 					try {
 						categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
@@ -685,6 +682,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			} else {
 				pathToModel = ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel();
 			}
+			
+			System.out.println(pathToModel);
 			
 	    	// Classify
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the classification with " + 
