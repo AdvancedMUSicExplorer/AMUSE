@@ -80,6 +80,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	/** Here the description of data instances (from what music files and intervals) is saved */
 	private ArrayList<SongPartitionsDescription> descriptionOfClassifierInput = null;
 	
+	//** Number of categories that are classified */
+	private int numberOfCategories;
+	
 	/**
 	 * Constructor
 	 */
@@ -258,25 +261,72 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		descriptionOfClassifierInput = new ArrayList<SongPartitionsDescription>();
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
-			
+			System.out.println("AAAAAAAHHHHHHHHH!!!!!!!!!!!!!!!11");
 			
 			//check if the settings are possible
-			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-			if(numberOfCategories == 0) {
-				throw new NodeException("No category chosen!");
-			}
-			else if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
-				throw new NodeException("Binary classification of more than one category is not possible.");
+			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
+					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))){
+				//if the model path was specified the numberOfCategories cannot be checked because they are given implicitely via the model
+				int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
+				if(numberOfCategories == 0) {
+					throw new NodeException("No category chosen!");
+				}
+				else if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
+					throw new NodeException("Binary classification of more than one category is not possible.");
+				}
 			}
 			if(((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ClassificationConfiguration)this.taskConfiguration).isFuzzy()) {
 				throw new NodeException("Multiclass problems cannot be fuzzy classified.");
 			}
 			
-			
-			DataSet inputForClassification = null;
-			
+			//load attributes to ignore and classify
 			List<Integer> attributesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify();
 			List<Integer> attributesToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToIgnore();
+			
+			//load the categoryDescription if no model path is given
+			DataSetAbstract categoryList = null;
+			try {
+				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
+			} catch (IOException e) {
+				throw new NodeException("Could not load the category table: " + e.getMessage()); 
+			}
+			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
+					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))){
+				int i=0;
+				while(i < categoryList.getValueCount()) {
+					Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
+					if(id == ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthCategoryId()) {
+						this.categoryDescription = ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthCategoryId() + 
+								"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+					
+						DataSetAbstract groundTruth = null;
+						try {
+							groundTruth = new ArffDataSet(new File(categoryList.getAttribute("Path").getValueAt(i).toString()));
+						} catch(IOException e) {
+							throw new NodeException("Could not load the category table: " + e.getMessage()); 
+						}
+					
+					
+						this.categoryDescription += File.separator;
+						int j = 0;
+						for(int category : attributesToClassify) {
+							if(j!=0) {
+								this.categoryDescription += "_";
+							}
+							this.categoryDescription += groundTruth.getAttribute(5 + category).getName();
+							j++;
+						}
+						break;
+					}
+					i++;
+				}
+				//if the category id could not be found and no model path is given, throw an exception
+				if(categoryDescription.equals("")) {
+					throw new NodeException("Category Id " + ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthCategoryId() + " could not be found and no model path was given.");
+				}
+			}
+			
+			DataSet inputForClassification = null;
 		
 			try {
 			
@@ -289,9 +339,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 						inputForClassification = new DataSet("ClassificationSet");
 					
-						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id)
+						//add the attributes (except for attributes that are to be ignored and the Id)
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+							if(!attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								inputForClassification.addAttribute(completeInput.getAttribute(i));
 							}
 						}
@@ -349,43 +399,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				} 
 				
 				else {
-					DataSetAbstract categoryList = null;
-					try {
-						categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
-					} catch (IOException e) {
-						throw new NodeException("Could not load the category table: " + e.getMessage()); 
-					}
-					int i=0;
-					while(i < categoryList.getValueCount()) {
-						Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
-						if(id.toString().equals(
-								((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString())) {
-							this.categoryDescription = ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthSource().toString() + 
-								"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
-							
-							DataSetAbstract groundTruth = null;
-							try {
-								groundTruth = new ArffDataSet(new File(categoryList.getAttribute("Path").getValueAt(i).toString()));
-							} catch(IOException e) {
-								throw new NodeException("Could not load the category table: " + e.getMessage()); 
-							}
-							
-							
-							this.categoryDescription += File.separator;
-							int j = 0;
-							for(int category : attributesToClassify) {
-								if(j!=0) {
-									this.categoryDescription += "_";
-								}
-								this.categoryDescription += groundTruth.getAttribute(5 + category).getName();
-								j++;
-							}
-							
-							
-							break;
-						}
-						i++;
-					}
+					
 
 					inputForClassification = new DataSet("ClassificationSet");
 					
@@ -425,7 +439,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 						
 					// Save the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
-					for(i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
+					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
 						//also omit the attributes that are supposed to be ignored
 						if(!attributesToIgnore.contains(i)) {
@@ -484,7 +498,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							
 							// Save the processed features (attributes) omitting UNIT, START and END attributes 
 							// (they describe the partition for modeled features)
-							for(i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
+							for(int i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
 								Double val = processedFeaturesInstance.value(i);
 								//omit the features that are supposed to be ignored
 								if(!attributesToIgnore.contains(i)) {
@@ -682,14 +696,12 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			} else {
 				pathToModel = ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel();
 			}
-			
-			System.out.println(pathToModel);
-			
-	    	// Classify
+			// Classify
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the classification with " + 
 					((AmuseTask)this.cad).getProperties().getProperty("name") + "...");
 			this.cad.classify(pathToModel);
 			AmuseLogger.write(this.getClass().getName(), Level.INFO, "..classification finished!");
+			
 	    } catch(NodeException e) {
 			throw new NodeException("Problem during classification: " + e.getMessage());
 	    }
@@ -700,8 +712,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		DataSet d = ((DataSetInput)((ClassificationConfiguration)taskConfiguration).getInputToClassify()).getDataSet();
 		
-		
-		int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 		int positionOfFirstCategory = d.getAttributeCount() - numberOfCategories;
 		
 //		System.out.println(d.getValueCount());
@@ -745,8 +755,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				}
 			if (!classifierResultFile.exists())
 				classifierResultFile.createNewFile();
-			
-			int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
 			
 			FileOutputStream values_to = new FileOutputStream(classifierResultFile);
 			DataOutputStream values_writer = new DataOutputStream(values_to);
@@ -828,5 +836,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 	}
 	
+	public void setNumberOfCategories(int numberOfCategories) {
+		this.numberOfCategories = numberOfCategories;
+	}
 }
 

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import weka.core.Attribute;
@@ -338,10 +339,14 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			ClassificationConfiguration cConf = new ClassificationConfiguration(
 				new DataSetInput(validationSet),
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
+				new ArrayList<Integer>(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToClassify(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToIgnore(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(), ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(), new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,
-						((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
+				new ArrayList<Integer>(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(),
+				new Integer(((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().substring(0,((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription().indexOf("-"))),
+				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);

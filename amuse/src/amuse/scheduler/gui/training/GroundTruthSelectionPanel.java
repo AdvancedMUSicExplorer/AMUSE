@@ -58,7 +58,7 @@ public class GroundTruthSelectionPanel extends JPanel {
 		this.add(cardLayoutPanel, "pushx, growx");
 	}
 	
-	class ReadyInputSelectionPanel extends JPanel{
+	private class ReadyInputSelectionPanel extends JPanel{
 		
 		private JTextField pathField;
 		private JLabel attributesToClassifyLabel = new JLabel("Attributes to classify:");

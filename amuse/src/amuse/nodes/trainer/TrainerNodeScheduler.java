@@ -155,7 +155,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			pathToFileWithLabeledInstances = new String("-1"); // Input is already labeled!
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
-			this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator));
+			if(this.categoryDescription.contains(File.separator)) {
+				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator));
+			}
 		} else {
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			
@@ -294,7 +296,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	 */
 	private void prepareTrainerInput() throws NodeException {
 		if(! (((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource() instanceof DataSetInput)) {
-			
+			System.out.println("AAAAAAAHHHHHHHHH!!!!!!!!!!!!!!!11");
 			
 			//check if the settings are possible
 			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
@@ -492,7 +494,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					// Create the labeled data
 					for(int i=0;i<classifierGroundTruthSet.getValueCount();i++) {
 						Integer end = new Double(classifierGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
-							
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
@@ -528,7 +529,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 										currentPosition++;
 									}
 									int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
-									for(int category=0;category<numberOfCategories;i++) {
+									for(int category=0;category<numberOfCategories;category++) {
 										labeledInputForTraining.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
 									}
 								}

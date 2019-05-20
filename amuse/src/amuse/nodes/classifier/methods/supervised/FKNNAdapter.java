@@ -36,6 +36,7 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.util.AmuseLogger;
 
@@ -87,7 +88,11 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 			
 			DataSet trainingDataSet = new DataSet(new File(pathToModelFile));
 			
+			dataSetToClassify.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/DataSetToClassify.arff"));
+			trainingDataSet.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/TrainingDataSet.arff"));
+			
 			int numberOfCategories = ((Double)trainingDataSet.getAttribute("NumberOfCategories").getValueAt(0)).intValue();
+			((ClassifierNodeScheduler)this.correspondingScheduler).setNumberOfCategories(numberOfCategories);
 			int positionOfFirstCategory = trainingDataSet.getAttributeCount() - numberOfCategories;
 			
 			for(int i = positionOfFirstCategory; i < trainingDataSet.getAttributeCount(); i++) {

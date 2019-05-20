@@ -277,9 +277,9 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 					cConf = new ClassificationConfiguration(
 						new DataSetInput(featuresToClassify),
 						ClassificationConfiguration.InputSourceType.READY_INPUT,
+						new ArrayList<Integer>(),
 						processedFeaturesDescription, 
 						currentClassifierTok.nextToken(),
-						new ArrayList<Integer>(),
 						new ArrayList<Integer>(),
 						ClassificationType.BINARY,
 						false,

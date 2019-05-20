@@ -30,12 +30,14 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.util.LibraryInitializer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
@@ -81,15 +83,22 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String, java.util.ArrayList, java.lang.String)
 	 */
 	public void classify(String pathToModelFile) throws NodeException {
+		//test if the settings are supported
+		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType().equals(ClassificationType.MULTILABEL)) {
+			throw new NodeException("Multilabel classificaiton is not supported by this method.");
+		}
 		
 		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
 				getConfiguration()).getInputToClassify()).getDataSet();
 		
+		
 		try {
+			
 			Process process = new Process();
 			
 			// (1) Create ExampleSet from the ClassificationConfiguration 
 			ExampleSet exampleSet = dataSetToClassify.convertToRapidMinerExampleSet();
+			int numberOfAttributes = new DataSet(exampleSet).getAttributeCount();//Number of attributes before classification
 			
 			// (2) Load the model
 			Operator modelLoader = OperatorService.createOperator(ModelLoader.class); 
@@ -118,38 +127,63 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 			DataSet exampleDataSet = new DataSet(exampleSet);
 			DataSet resultDataSet = new DataSet("ClassificationSet");
 			
-			int numberOfCategories = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToClassify().size();
-			
+			List<String> labels = new ArrayList<String>();
 			for(int i=0;i<exampleDataSet.getAttributeCount();i++) {
-				if(exampleDataSet.getAttribute(i).getName().equals("PredictedCategory")) {
-					//If only one  category was classified, it is distinguished between Category and NOT_Category
-					if(numberOfCategories == 1) {
-						String categoryName = exampleDataSet.getAttribute(i).getValueAt(0).toString();
-						if(categoryName.startsWith("NOT")) {
-						categoryName = categoryName.substring(4);
+				//the original attributes are copied
+				if(i < numberOfAttributes) {
+					resultDataSet.addAttribute(exampleDataSet.getAttribute(i));
+				}
+				//the names of the predicted labels are saved in labels
+				else if(i < exampleDataSet.getAttributeCount() - 1) {
+					String name = exampleDataSet.getAttribute(i).getName();
+					labels.add(name.substring(11, name.length() - 1));
+				}
+				//the last attribute is the predicted category
+				else {
+					//find out the number of categories and sort the names
+					int numberOfCategories = labels.size();
+					String[] categoryNames;
+					//for binary classification it is differentiated between Category and NOT_Category
+					if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType().equals(ClassificationType.BINARY)) {
+						numberOfCategories = 1;
+						categoryNames = new String[numberOfCategories];
+						if(labels.size() != 2 || 
+								(!labels.get(0).startsWith("NOT") && !labels.get(1).startsWith("NOT"))) {
+							throw new NodeException("The model is not suited for binary classification!");
 						}
-						resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryName, new ArrayList<Double>()));
-						for(int j=0;j<exampleDataSet.getValueCount();j++) {
-							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
-							resultDataSet.getAttribute(i).addValue(predictedLabel.startsWith("NOT") ? 0.0 : 1.0);
+						categoryNames[0] = labels.get(0);
+						if(categoryNames[0].startsWith("NOT")) {
+							categoryNames[0] = categoryNames[0].substring(4);
 						}
 					}
-					//If there are categories, it is distinguished between all the different names
+					//for multiclass classification the names are sorted like they were during training
 					else {
-						String[] categoryNames = new String[numberOfCategories];
-						//find out the names of the categories and the position they had in the training set
-						for(int j=0; j<exampleDataSet.getValueCount(); j++) {
-							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
-							int position = Integer.parseInt(predictedLabel.substring(0, predictedLabel.indexOf("-")));
-							if(categoryNames[position] == null) {
-								categoryNames[position] = predictedLabel.substring(predictedLabel.indexOf("-") + 1);
+						categoryNames = new String[numberOfCategories];
+						for(String label : labels) {
+							int position = 0;
+							try {
+								position = Integer.parseInt(label.substring(0, label.indexOf("-")));
+							} catch(Exception e) {
+								throw new NodeException("The model is not suited for multiclass classification!");
 							}
+							categoryNames[position] = label.substring(label.indexOf("-") + 1);
 						}
-						//set the names of the categories, whose names could not be found out and add an attribute for each of them
+					}
+					
+					((ClassifierNodeScheduler)this.correspondingScheduler).setNumberOfCategories(numberOfCategories);
+					
+					//If only one  category was classified, it is distinguished between Category and NOT_Category
+					if(numberOfCategories == 1) {
+						resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[0], new ArrayList<Double>()));
+						for(int j=0;j<exampleDataSet.getValueCount();j++) {
+							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
+							resultDataSet.getAttribute(i - labels.size()).addValue(predictedLabel.startsWith("NOT") ? 0.0 : 1.0);
+						}
+					}
+					//If there are more categories, it is distinguished between all the different names
+					else {
+						//add attributes for all categories
 						for(int k = 0; k < numberOfCategories; k++) {
-							if(categoryNames[k] == null) {
-								categoryNames[k] = "Category_" + new Integer(k+1).toString();
-							}
 							resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[k], new ArrayList<Double>()));
 						}
 						//add the predicted relationships of the categories to their attributes
@@ -162,9 +196,6 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 						}
 						
 					}
-				}
-				else {
-					resultDataSet.addAttribute(exampleDataSet.getAttribute(i));
 				}
 			}
 			
