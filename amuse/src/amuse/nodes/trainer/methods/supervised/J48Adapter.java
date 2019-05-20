@@ -83,13 +83,13 @@ public class J48Adapter extends AmuseTask implements TrainerInterface {
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
 	public void trainModel(String outputModel) throws NodeException {
-		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-		
 		//test if the settings are supported
 		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() != ClassificationType.BINARY) {
 			throw new NodeException("Only crisp binary classification is supported by this method");
 		}
-		
+				
+		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
+
 		// Train the model and save it
 		try {
 			Process process = new Process();

@@ -78,6 +78,9 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String)
 	 */
 	public void classify(String pathToModelFile) throws NodeException {
+		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
+			throw new NodeException("Unsupervised classification is not supported by this method.");
+		}
 		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
 				getConfiguration()).getInputToClassify()).getDataSet();
 		

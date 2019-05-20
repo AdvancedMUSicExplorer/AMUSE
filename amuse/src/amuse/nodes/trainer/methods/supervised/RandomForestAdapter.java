@@ -81,7 +81,7 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		//test if the settings are supported
-		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
 			throw new NodeException("Only crisp binary or multiclass classification is supported by this method");
 		}
 		
