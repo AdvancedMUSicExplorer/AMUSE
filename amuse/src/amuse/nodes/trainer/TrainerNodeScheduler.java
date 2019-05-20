@@ -853,6 +853,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) && 
 				(this.outputModel.equals("-1") || this.outputModel.equals(""))) {
 			
+			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.READY_INPUT) {
+				throw new NodeException("No output model is given!");
+			}
 			
 			String folderForModelsString = 
 					((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 
