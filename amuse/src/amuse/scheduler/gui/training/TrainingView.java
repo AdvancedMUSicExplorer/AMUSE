@@ -80,7 +80,7 @@ public class TrainingView {
 			preprocessingAlgorithmFacade.setUseEnableButton(true);
 			preprocessingAlgorithmFacade.setSelectedAlgorithm("-1");
 			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
-			addRightSide(preprocessingAlgorithmFacade.getPrameterPanel());
+			addRightSide(preprocessingAlgorithmFacade.getParameterPanel());
 		}
 		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
@@ -88,7 +88,7 @@ public class TrainingView {
 			trainingDescriptionPanel = new TrainingDescriptionPanel();
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		}
-		addRightSide(trainingAlgorithmFacade.getPrameterPanel());
+		addRightSide(trainingAlgorithmFacade.getParameterPanel());
 		addRightSide(classificationTypePanel);
 		splitPane.setDividerLocation(0.5);
 	}
@@ -103,7 +103,7 @@ public class TrainingView {
 	}
 
 	/**
-	 * @return
+	 * @return processingModelString
 	 */
 	public String getProcessingModelString() {
 		return processingHistoryPanel.getProcessingHistoryString();
@@ -217,6 +217,10 @@ public class TrainingView {
 
 	public void setGroundTruthSource(String groundTruthSource) {
 		groundTruthSelectionPanel.setGroundTruthSource(groundTruthSource);
+	}
+
+	public void setTrainingDescription(String trainingDescription) {
+		trainingDescriptionPanel.setTrainingDescription(trainingDescription);
 	}
 
 }

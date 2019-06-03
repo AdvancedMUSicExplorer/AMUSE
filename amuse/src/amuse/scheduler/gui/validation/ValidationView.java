@@ -44,7 +44,7 @@ public class ValidationView {
 	public ValidationView(AlgorithmConfigurationFacade validationAlgorithms) {
 		this.trainingView = new TrainingView("Setup Validation", false);
         validationAlgorithms.setToolTip(ToolTipValidationAlgorithms);
-		trainingView.addRightSide(validationAlgorithms.getPrameterPanel());
+		trainingView.addRightSide(validationAlgorithms.getParameterPanel());
 		trainingView.addLineInView(validationAlgorithms.getAlgorithmSelectionComboBox());
 	}
 	

@@ -1,5 +1,7 @@
 package amuse.data.io;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -125,4 +127,5 @@ public abstract class DataSetAbstract {
 		return attributes.size();
 	}
 
+	public abstract void saveToArffFile(File file) throws IOException;
 }

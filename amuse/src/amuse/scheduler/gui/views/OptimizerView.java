@@ -75,7 +75,7 @@ public class OptimizerView {
 	leftPanel.add(categoryPanelTest, "growx, wrap");
         leftPanel.add(optimizierAlgorithm.getAlgorithmSelectionComboBox(), "growx, wrap");
 	leftPanel.add(outputPanel, "growx, wrap");
-        rightPanel.add(optimizierAlgorithm.getPrameterPanel(), "growx, wrap");
+        rightPanel.add(optimizierAlgorithm.getParameterPanel(), "growx, wrap");
     }
 
     public JComponent getView() {

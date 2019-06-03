@@ -261,7 +261,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		descriptionOfClassifierInput = new ArrayList<SongPartitionsDescription>();
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
-			System.out.println("AAAAAAAHHHHHHHHH!!!!!!!!!!!!!!!11");
+			
 			
 			//check if the settings are possible
 			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null

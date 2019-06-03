@@ -51,4 +51,8 @@ public class TrainingDescriptionPanel extends JPanel {
 	public String getTrainingDescription() {
 		return textField.getText();
 	}
+
+	public void setTrainingDescription(String trainingDescription) {
+		textField.setText(trainingDescription);
+	}
 }

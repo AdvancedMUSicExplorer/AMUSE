@@ -117,16 +117,16 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strTrainingDescription);
 		
 		addAttribute(inputFileListAttribute);
+		addAttribute(inputSourceTypeAttribute);
+		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(classificationTypeAttribute);
 		addAttribute(fuzzyAttribute);
 		addAttribute(outputResultAttribute);
-		addAttribute(inputSourceTypeAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
 
@@ -200,17 +200,17 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		trainingDescriptionAttribute = new StringAttribute(strTrainingDescription, trainingDescriptions);
 		
 		addAttribute(inputFileListAttribute);
+		addAttribute(inputSourceTypeAttribute);
+		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(classificationTypeAttribute);
 		addAttribute(fuzzyAttribute);
-		addAttribute(pathToInputModelAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(outputResultAttribute);
-		addAttribute(inputSourceTypeAttribute);
+		addAttribute(pathToInputModelAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
 
@@ -220,7 +220,6 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String processedFeatureDescription,
 			String algorithmId,
 			int groundTruthSource,
-			String groundTruthType,
 			String attributesToClassify,
 			String classificationType,
 			int fuzzy,
@@ -249,11 +248,11 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		
 		addAttribute(inputFileListAttribute);
 		addAttribute(inputSourceTypeAttribute);
+		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(classificationTypeAttribute);
 		addAttribute(fuzzyAttribute);
 		addAttribute(mergeSongResultsAttribute);

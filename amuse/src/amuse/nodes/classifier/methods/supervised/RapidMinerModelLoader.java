@@ -84,7 +84,7 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 	 */
 	public void classify(String pathToModelFile) throws NodeException {
 		//test if the settings are supported
-		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
+		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL || ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
 			throw new NodeException("Only crisp binary or multiclass classification is supported by this method.");
 		}
 		

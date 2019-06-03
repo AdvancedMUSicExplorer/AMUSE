@@ -308,6 +308,7 @@ public class TrainingController extends AbstractController {
             trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
             trainingView.setClassificationType(trainConf.getClassificationType());
             trainingView.setFuzzy(trainConf.isFuzzy());
+            trainingView.setTrainingDescription(trainConf.getTrainingDescription());
         }
     }
 }

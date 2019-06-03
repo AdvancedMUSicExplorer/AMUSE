@@ -287,7 +287,7 @@ public class AlgorithmConfigurationFacade {
 	 * Place this Panel in your GUI to allow algorithm configuration.
 	 * @return the panel to setup parameters for the currently selected algorithm.
 	 */
-	public JComponent getPrameterPanel() {
+	public JComponent getParameterPanel() {
 		return pnlParameterDisplay;
 	}
 
