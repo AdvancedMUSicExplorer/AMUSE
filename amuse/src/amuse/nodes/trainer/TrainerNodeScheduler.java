@@ -36,16 +36,16 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
-import amuse.data.io.DataSetException;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
@@ -296,18 +296,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	 */
 	private void prepareTrainerInput() throws NodeException {
 		if(! (((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource() instanceof DataSetInput)) {
-			System.out.println("AAAAAAAHHHHHHHHH!!!!!!!!!!!!!!!11");
 			
-			//check if the settings are possible
-			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-			if(numberOfCategories == 0) {
-				throw new NodeException("No category chosen!");
-			}
-			else if(numberOfCategories > 1 && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
-				throw new NodeException("Binary classification of more than one category is not possible.");
-			}
-			if(((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((TrainingConfiguration)this.taskConfiguration).isFuzzy()) {
-				throw new NodeException("Multiclass problems cannot be fuzzy classified.");
+			//check if the settings are supported
+			if(((TrainingConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
+				throw new NodeException("Currently only supervised classification is supported.");
 			}
 			
 			
@@ -315,6 +307,15 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			List<Integer> attributesToClassify = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify();
 			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
+			int numberOfCategories = attributesToClassify.size();
+			
+			//check if the number of categories is correct
+			if(((TrainingConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
+				throw new NodeException("Single label classification is not possible for more than one category.");
+			}
+			if(numberOfCategories <= 0 ) {
+				throw new NodeException("No attributes to classify were given.");
+			}
 			
 			// If the ground truth has been previously prepared, the input is almost ready! 
 			if(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSourceType().
@@ -345,15 +346,15 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						//add the category attributes
 						for(int i : attributesToClassify) {
 							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
-							//if the classification is not fuzzy, the values have to be rounded
-							if(!((TrainingConfiguration)this.taskConfiguration).isFuzzy() && ((TrainingConfiguration)this.taskConfiguration).getClassificationType() != ClassificationType.MULTICLASS) {	
+							//if the classification is not continuous, the values have to be rounded
+							if(((TrainingConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.BINARY && ((TrainingConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
 								for(int j = 0; j < completeInput.getAttribute(i).getValueCount(); j++) {
 									labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).setValueAt(j, (double)completeInput.getAttribute(i).getValueAt(j) >= 0.5 ? 1.0 : 0.0);
 								}
 							}
 						}
 						//if the classification is multiclass only the highest relationship of each partition is 1
-						if(((TrainingConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS) {
+						if(((TrainingConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
 							int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
 							for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
 								double max = 0;
@@ -365,8 +366,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 										maxCategory = category;
 									}
 								}
+								
 								for(int category = 0; category < numberOfCategories; category++) {
-									labeledInputForTraining.getAttribute(category).setValueAt(positionOfFirstCategory + category, category == maxCategory ? 1.0 : 0.0);
+									labeledInputForTraining.getAttribute(positionOfFirstCategory + category).setValueAt(partition, category == maxCategory ? 1.0 : 0.0);
 								}
 							}
 						}
@@ -506,16 +508,18 @@ public class TrainerNodeScheduler extends NodeScheduler {
 									}
 								}
 								
-								if(((TrainingConfiguration)this.getConfiguration()).getClassificationType() != ClassificationType.MULTICLASS) {
+								//if the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((TrainingConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 									for(int category : attributesToClassify) {
 										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
-										if(((TrainingConfiguration)this.getConfiguration()).isFuzzy()) {
+										if(((TrainingConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
 											labeledInputForTraining.getAttribute(label).addValue(confidence);
 										} else {
 											labeledInputForTraining.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
 										}
 									}
+									//if the classification is multiclass only the relationship of the class with the highest confidence is 1
 								} else {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
@@ -774,12 +778,79 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			Attribute startScriptAttribute = classificationTrainerTableLoader.getStructure().attribute("StartScript");
 			Attribute inputBaseTrainingBatchAttribute = classificationTrainerTableLoader.getStructure().attribute("InputBaseTrainingBatch");
 			Attribute inputTrainingBatchAttribute = classificationTrainerTableLoader.getStructure().attribute("InputTrainingBatch");
+			Attribute supportsBinaryAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsBinary");
+			Attribute supportsContinuousAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsContinuous");
+			Attribute supportsMulticlassAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsMulticlass");
+			Attribute supportsMultilabelAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsMultilabel");
+			Attribute supportsSinglelabelAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsSinglelabel");
+			Attribute supportsSupervisedAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsSupervised");
+			Attribute supportsUnsupervisedAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsUnsupervised");
+			Attribute supportsRegressionAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsRegression");
 			while(currentInstance != null) {
 				Integer idOfCurrentAlgorithm = new Double(currentInstance.value(idAttribute)).intValue();
 				if(idOfCurrentAlgorithm.equals(requiredAlgorithm)) {
 					
 					// Configure the adapter class
 					try {
+						//check if the method supports the settings
+						boolean supportsBinary = new Double(currentInstance.value(supportsBinaryAttribute)) != 0;
+						boolean supportsContinuous = new Double(currentInstance.value(supportsContinuousAttribute)) != 0;
+						boolean supportsMulticlass = new Double(currentInstance.value(supportsMulticlassAttribute)) != 0;
+						boolean supportsMultilabel = new Double(currentInstance.value(supportsMultilabelAttribute)) != 0;
+						boolean supportsSinglelabel = new Double(currentInstance.value(supportsSinglelabelAttribute)) != 0;
+						boolean supportsSupervised = new Double(currentInstance.value(supportsSupervisedAttribute)) != 0;
+						boolean supportsUnsupervised = new Double(currentInstance.value(supportsUnsupervisedAttribute)) != 0;
+						boolean supportsRegression = new Double(currentInstance.value(supportsRegressionAttribute)) != 0;
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getRelationshipType()) {
+						case BINARY:
+							if(!supportsBinary) {
+								throw new NodeException("This method does not support binary relationships.");
+							}
+							break;
+						case CONTINUOUS:
+							if(!supportsContinuous) {
+								throw new NodeException("This method does not support continuous relationships.");
+							}
+							break;
+						}
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getLabelType()) {
+						case MULTICLASS:
+							if(!supportsMulticlass) {
+								throw new NodeException("This method does not support multiclass classification.");
+							}
+							break;
+						case MULTILABEL:
+							if(!supportsMultilabel) {
+								throw new NodeException("This method does not support multilabel classification.");
+							}
+							break;
+						case SINGLELABEL:
+							if(!supportsSinglelabel) {
+								throw new NodeException("This method does not support singlelabel classification.");
+							}
+							break;
+						}
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getMethodType()) {
+						case SUPERVISED:
+							if(!supportsSupervised) {
+								throw new NodeException("This method does not support supervised classification.");
+							}
+							break;
+						case UNSUPERVISED:
+							if(!supportsUnsupervised) {
+								throw new NodeException("This method does not support unsupervised classification.");
+							}
+							break;
+						case REGRESSION:
+							if(!supportsRegression) {
+								throw new NodeException("This method does not support regression.");
+							}
+							break;
+						}
+						
 						Class<?> adapter = Class.forName(currentInstance.stringValue(trainerAdapterClassAttribute));
 						this.ctad = (TrainerInterface)adapter.newInstance();
 						Properties trainerProperties = new Properties();
@@ -874,7 +945,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
 					"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-					requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getClassificationType().toString() + (((TrainingConfiguration)this.taskConfiguration).isFuzzy() ? "_FUZZY" : "") + File.separator + 
+					requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
 					((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName();
 			
 			File folderForModels = new File(folderForModelsString);

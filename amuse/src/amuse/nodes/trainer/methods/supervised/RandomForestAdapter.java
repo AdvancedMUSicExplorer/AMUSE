@@ -23,7 +23,6 @@
  */
 package amuse.nodes.trainer.methods.supervised;
 
-import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.interfaces.nodes.NodeException;
@@ -37,6 +36,9 @@ import com.rapidminer.operator.io.ModelWriter;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;
+
+import java.io.File;
+
 import com.rapidminer.Process;
 
 /**
@@ -80,15 +82,11 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
 	public void trainModel(String outputModel) throws NodeException {
-		//test if the settings are supported
-		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
-			throw new NodeException("Only crisp binary or multiclass classification is supported by this method");
-		}
-		
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
 		
 		// Train the model and save it
 		try {
+			
 			Process process = new Process();
 			
 			// Train the model
@@ -111,6 +109,7 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 			processOutputPort.connectTo(modelLearnerInputPort);
 			
 			// Run the process
+			new DataSet(dataSet.convertToRapidMinerExampleSet()).saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/crossValidationTrainingRapidMinerExampleSet.arff"));
 			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());

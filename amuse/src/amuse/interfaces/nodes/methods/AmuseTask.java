@@ -54,7 +54,7 @@ public abstract class AmuseTask implements AmuseTaskInterface {
 		this.properties = properties;
 		this.correspondingScheduler = correspondingScheduler;
 		this.setParameters(parameterString);
-		this.initialize(); 
+		this.initialize();
 	}
 	
 	/**

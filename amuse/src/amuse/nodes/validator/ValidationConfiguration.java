@@ -23,7 +23,10 @@
  */ 
 package amuse.nodes.validator;
 
-import amuse.data.ClassificationType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.Measure;
 import java.io.File;
@@ -72,11 +75,14 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
-	
+	/** The attributes of the ready input or the categories of the category file that are to be classified */
 	private final List<Integer> attributesToClassify;
+	
+	/** The attributes of the ready input or the processed features that are to be ignored*/
 	private final List<Integer> attributesToIgnore;
-	private final ClassificationType classificationType;
-	private final boolean fuzzy;
+	
+	/** The type of the model that is used for classification and training*/
+	private final ModelType modelType;
 	
 	
 	/** ID of classification algorithm from classifierTable.arff 
@@ -108,9 +114,15 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth 
 	 */
-	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, 
-			String processedFeaturesModelName, String classificationAlgorithmDescription,
-			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy) {
+	public ValidationConfiguration(String validationAlgorithmDescription,
+			MeasureTable measures, 
+			String processedFeaturesModelName,
+			String classificationAlgorithmDescription,
+			DataInputInterface inputToValidate,
+			GroundTruthSourceType groundTruthSourceType,
+			List<Integer> attributesToClassify,
+			List<Integer> attributesToIgnore,
+			ModelType modelType) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
@@ -119,8 +131,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 		this.groundTruthSourceType = groundTruthSourceType;
 		this.attributesToClassify = attributesToClassify;
 		this.attributesToIgnore = attributesToIgnore;
-		this.classificationType = classificationType;
-		this.fuzzy = fuzzy;
+		this.modelType = modelType;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
@@ -168,12 +179,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 				for(String str : attributesToClassifyStringArray) {
 					if(!str.equals("")) {
 						currentAttributesToClassify.add(Integer.parseInt(str));
-					} else {
-						throw new IOException("No categories for validation were specified.");
 					}
 				}
 			} catch(NumberFormatException e) {
-				throw new IOException("The categories for validation were not properly specified.");
+				throw new IOException("The attributes to classify were not properly specified.");
 			}
 			
 			String attributesToIgnoreString = validatorConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
@@ -192,19 +201,38 @@ public class ValidationConfiguration extends TaskConfiguration {
 				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
-			ClassificationType currentClassificationType;
-			if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
-				currentClassificationType = ClassificationType.UNSUPERVISED;
-			} else if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
-				currentClassificationType = ClassificationType.BINARY;
-			} else if(validatorConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
-				currentClassificationType = ClassificationType.MULTILABEL;
-			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
-				currentClassificationType = ClassificationType.MULTICLASS;
+			RelationshipType currentRelationshipType;
+			if(validatorConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(validatorConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
+			} else {
+				throw new IOException("The relationship type was not properly specified.");
 			}
 			
-			boolean currentFuzzy = validatorConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
-			//***
+			LabelType currentLabelType;
+			if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
 			
 			// Load the measure table
 			MeasureTable currentMeasureTable = new MeasureTable(new File(currentMeasureList));
@@ -212,7 +240,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentClassificationType, currentFuzzy));
+		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -263,20 +291,46 @@ public class ValidationConfiguration extends TaskConfiguration {
 		return classificationAlgorithmDescription;
 	}
 
+	/**
+	 * @return the attributesToClassify
+	 */
 	public List<Integer> getAttributesToClassify(){
 		return attributesToClassify;
 	}
 	
+	/**
+	 * @return the attributesToIgnore
+	 */
 	public List<Integer> getAttributesToIgnore(){
 		return attributesToIgnore;
 	}
 	
-	public ClassificationType getClassificationType() {
-		return classificationType;
+	/**
+	 * @return the relationshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
 	}
 	
-	public boolean isFuzzy() {
-		return fuzzy;
+	/**
+	 * @return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+	
+	/**
+	 * @return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
 	}
 	
 	/**

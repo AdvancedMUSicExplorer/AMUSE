@@ -26,12 +26,11 @@ package amuse.data.datasets;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import amuse.data.ClassificationType;
-import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.NominalAttribute;
@@ -55,8 +54,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private static final String strGroundTruthCategoryId = "GroundTruthCategoryId";
 	private static final String strAttributesToClassify = "AttributesToClassify";
 	private static final String strPathToInputModel = "PathToInputModel";
-	private static final String strClassificationType = "ClassificationType";
-	private static final String strFuzzy = "IsFuzzyPrediction";
+	private static final String strRelationshipType = "RelationshipType";
+	private static final String strLabelType = "LabelType";
+	private static final String strMethodType = "MethodType";
 	private static final String strMergeSongResults = "MergeSongResults";
 	private static final String strOutputResult = "OutputResult";
 	private static final String strTrainingDescription = "TrainingDescription";
@@ -71,8 +71,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute classificationAlgorithmIdAttribute;
 	private final NumericAttribute groundTruthCategoryIdAttribute;
 	private final StringAttribute attributesToClassifyAttribute;
-	private final NominalAttribute classificationTypeAttribute;
-	private final NumericAttribute fuzzyAttribute;
+	private final NominalAttribute relationshipTypeAttribute;
+	private final NominalAttribute labelTypeAttribute;
+	private final NominalAttribute methodTypeAttribute;
 	private final StringAttribute pathToInputModelAttribute;
 	private final NumericAttribute mergeSongResultsAttribute;
 	private final StringAttribute outputResultAttribute;
@@ -94,8 +95,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 
 		dataSet.checkStringAttribute(strAttributesToClassify);
 		dataSet.checkStringAttribute(strAttributesToIgnore);
-		dataSet.checkNominalAttribute(strClassificationType);
-		dataSet.checkNumericAttribute(strFuzzy);
+		dataSet.checkNominalAttribute(strRelationshipType);
+		dataSet.checkNominalAttribute(strLabelType);
+		dataSet.checkNominalAttribute(strMethodType);
 		dataSet.checkStringAttribute(strPathToInputModel);
 		dataSet.checkNumericAttribute(strGroundTruthCategoryId);
 		dataSet.checkNumericAttribute(strMergeSongResults);
@@ -109,8 +111,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		groundTruthCategoryIdAttribute = (NumericAttribute) dataSet.getAttribute(strGroundTruthCategoryId);
 		attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToClassify);
 		attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToIgnore);
-		classificationTypeAttribute = (NominalAttribute) dataSet.getAttribute(strClassificationType);
-		fuzzyAttribute = (NumericAttribute) dataSet.getAttribute(strFuzzy);
+		relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(strRelationshipType);
+		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
+		methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(strMethodType);
 		pathToInputModelAttribute = (StringAttribute) dataSet.getAttribute(strPathToInputModel);
 		mergeSongResultsAttribute = (NumericAttribute) dataSet.getAttribute(strMergeSongResults);
 		outputResultAttribute = (StringAttribute) dataSet.getAttribute(strOutputResult);
@@ -124,8 +127,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(classificationTypeAttribute);
-		addAttribute(fuzzyAttribute);
+		addAttribute(relationshipTypeAttribute);
+		addAttribute(labelTypeAttribute);
+		addAttribute(methodTypeAttribute);
 		addAttribute(outputResultAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
@@ -146,8 +150,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		checkNumericAttribute(strGroundTruthCategoryId);
 		checkStringAttribute(strAttributesToClassify);
 		checkStringAttribute(strAttributesToIgnore);
-		checkNominalAttribute(strClassificationType);
-		checkNumericAttribute(strFuzzy);
+		checkNominalAttribute(strRelationshipType);
+		checkNominalAttribute(strLabelType);
+		checkNominalAttribute(strMethodType);
 		checkStringAttribute(strPathToInputModel);
 		checkNumericAttribute(strMergeSongResults);
 		checkStringAttribute(strOutputResult);
@@ -160,8 +165,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		groundTruthCategoryIdAttribute = (NumericAttribute) getAttribute(strGroundTruthCategoryId);
 		attributesToClassifyAttribute = (StringAttribute) this.getAttribute(strAttributesToClassify);
 		attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(strAttributesToIgnore);
-		classificationTypeAttribute = (NominalAttribute) this.getAttribute(strClassificationType);
-		fuzzyAttribute = (NumericAttribute) this.getAttribute(strFuzzy);
+		relationshipTypeAttribute = (NominalAttribute) this.getAttribute(strRelationshipType);
+		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
+		methodTypeAttribute = (NominalAttribute) this.getAttribute(strMethodType);
 		pathToInputModelAttribute = (StringAttribute) this.getAttribute(strPathToInputModel);
 		mergeSongResultsAttribute = (NumericAttribute) getAttribute(strMergeSongResults);
 		outputResultAttribute = (StringAttribute) getAttribute(strOutputResult);
@@ -175,8 +181,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			List<String> algorithmIDs,
 			List<Integer> groundTruthSources,
 			List<String> attributesToClassify,
-			List<String> classificationTypes,
-			List<Integer> fuzzy,
+			List<String> relationshipTypes,
+			List<String> labelTypes,
+			List<String> methodTypes,
 			List<Integer> mergeSongResults,
 			List<String> outputResultPaths,
 			List<String> pathToInputModel,
@@ -192,8 +199,22 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromIntList(strGroundTruthCategoryId, groundTruthSources);
 		attributesToClassifyAttribute = new StringAttribute(strAttributesToClassify, attributesToClassify);
 		attributesToIgnoreAttribute = new StringAttribute(strAttributesToIgnore, attributesToIgnore);
-		classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypes);
-		fuzzyAttribute = NumericAttribute.createFromIntList(strFuzzy, fuzzy);
+		
+		List<String> relationshipTypeValues = new ArrayList<String>();
+		List<String> labelTypeValues = new ArrayList<String>();
+		List<String> methodTypeValues = new ArrayList<String>();
+		for(RelationshipType type : RelationshipType.values()) {
+			relationshipTypeValues.add(type.toString());
+		}
+		for(LabelType type : LabelType.values()) {
+			labelTypeValues.add(type.toString());
+		}
+		for(MethodType type : MethodType.values()) {
+			methodTypeValues.add(type.toString());
+		}
+		relationshipTypeAttribute = new NominalAttribute(strRelationshipType, relationshipTypeValues, relationshipTypes);
+		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
+		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
 		pathToInputModelAttribute = new StringAttribute(strPathToInputModel, pathToInputModel);
 		mergeSongResultsAttribute = NumericAttribute.createFromIntList(strMergeSongResults, mergeSongResults);
 		outputResultAttribute = new StringAttribute(strOutputResult, outputResultPaths);
@@ -206,8 +227,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(classificationTypeAttribute);
-		addAttribute(fuzzyAttribute);
+		addAttribute(relationshipTypeAttribute);
+		addAttribute(labelTypeAttribute);
+		addAttribute(methodTypeAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(outputResultAttribute);
 		addAttribute(pathToInputModelAttribute);
@@ -221,8 +243,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String algorithmId,
 			int groundTruthSource,
 			String attributesToClassify,
-			String classificationType,
-			int fuzzy,
+			String relationshipType,
+			String labelType,
+			String methodType,
 			int mergeSongResults,
 			String outputResultPath,
 			String pathToInputModel,
@@ -237,10 +260,27 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromDouble(strGroundTruthCategoryId, groundTruthSource);
 		attributesToClassifyAttribute = StringAttribute.createFromString(strAttributesToClassify, attributesToClassify);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
-		List <String> classificationTypeValues = new ArrayList<String>();
-		classificationTypeValues.add(classificationType);
-		classificationTypeAttribute = new NominalAttribute(strClassificationType, Arrays.asList(ClassificationType.stringValues()), classificationTypeValues);
-		fuzzyAttribute = NumericAttribute.createFromDouble(strFuzzy, fuzzy);
+		List<String> relationshipTypeValues = new ArrayList<String>();
+		List<String> labelTypeValues = new ArrayList<String>();
+		List<String> methodTypeValues = new ArrayList<String>();
+		for(RelationshipType type : RelationshipType.values()) {
+			relationshipTypeValues.add(type.toString());
+		}
+		for(LabelType type : LabelType.values()) {
+			labelTypeValues.add(type.toString());
+		}
+		for(MethodType type : MethodType.values()) {
+			methodTypeValues.add(type.toString());
+		}
+		List <String> relationshipTypes = new ArrayList<String>();
+		relationshipTypes.add(relationshipType);
+		List<String> labelTypes = new ArrayList<String>();
+		labelTypes.add(labelType);
+		List<String> methodTypes = new ArrayList<String>();
+		methodTypes.add(methodType);
+		relationshipTypeAttribute = new NominalAttribute(strRelationshipType, relationshipTypeValues, relationshipTypes);
+		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
+		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
 		pathToInputModelAttribute = StringAttribute.createFromString(strPathToInputModel, pathToInputModel);
 		mergeSongResultsAttribute = NumericAttribute.createFromDouble(strMergeSongResults, mergeSongResults);
 		outputResultAttribute = StringAttribute.createFromString(strOutputResult, outputResultPath);
@@ -253,8 +293,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToClassifyAttribute);
-		addAttribute(classificationTypeAttribute);
-		addAttribute(fuzzyAttribute);
+		addAttribute(relationshipTypeAttribute);
+		addAttribute(labelTypeAttribute);
+		addAttribute(methodTypeAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(outputResultAttribute);
 		addAttribute(pathToInputModelAttribute);
@@ -319,12 +360,16 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		return attributesToIgnoreAttribute;
 	}
 
-	public NominalAttribute getClassificationTypeAttribute() {
-		return classificationTypeAttribute;
+	public NominalAttribute getRelationshipTypeAttribute() {
+		return relationshipTypeAttribute;
 	}
-
-	public NumericAttribute getFuzzyAttribute() {
-		return fuzzyAttribute;
+	
+	public NominalAttribute getLabelTypeAttribute() {
+		return labelTypeAttribute;
+	}
+	
+	public NominalAttribute getMethodTypeAttribute() {
+		return methodTypeAttribute;
 	}
 
 	public StringAttribute getPathToInputModelAttribute() {

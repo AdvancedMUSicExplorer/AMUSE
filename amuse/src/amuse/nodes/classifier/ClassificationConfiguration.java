@@ -30,8 +30,10 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
-import amuse.data.ClassificationType;
-import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
@@ -77,14 +79,11 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Id of the groundtrhuth category. Is not used if the concrete model path is known.*/
 	private final int groundTruthCategoryId;
 	
-	/** categories of the groundtruth that were used for training. Is not used if the concrete model path is known.*/
+	/** Categories of the groundtruth that were used for training. Is not used if the concrete model path is known.*/
 	private final List<Integer> attributesToClassify;
 	
-	/** the type of classifcation that is performed */
-	private final ClassificationType classificationType;
-	
-	/** is the classification fuzzy?*/
-	private final boolean fuzzy;
+	/** Type of the model that is used for classification*/
+	private final ModelType modelType;
 	
 	/** Flag if song relationship grade should be averaged over all partitions (="1") */
 	private final Integer mergeSongResults;
@@ -124,8 +123,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String processedFeaturesModelName,
 			String algorithmDescription,
 			List<Integer> attributesToClassify,
-			ClassificationType classificationType,
-			boolean fuzzy,
+			ModelType modelType,
 			Integer mergeSongResults,
 			String classificationOutput) {
 		
@@ -135,8 +133,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.algorithmDescription = algorithmDescription;
 		this.attributesToClassify = attributesToClassify;
 		this.attributesToIgnore = attributesToIgnore;
-		this.classificationType = classificationType;
-		this.fuzzy = fuzzy;
+		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.groundTruthCategoryId = -1;
@@ -164,8 +161,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String algorithmDescription,
 			int groundTruthSource,
 			List<Integer> attributesToClassify,
-			ClassificationType classificationType,
-			boolean fuzzy,
+			ModelType modelType,
 			Integer mergeSongResults,
 			String classificationOutput,
 			String pathToInputModel,
@@ -197,8 +193,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.groundTruthCategoryId = groundTruthSource;
 		this.attributesToClassify = attributesToClassify;
 		this.attributesToIgnore = attributesToIgnore;
-		this.classificationType = classificationType;
-		this.fuzzy = fuzzy;
+		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -232,7 +227,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 					}
 				}
 			} catch(NumberFormatException e) {
-				throw new IOException("The categories for classification were not properly specified.");
+				throw new IOException("The attributes to classify were not properly specified.");
 			}
 			
 			String attributesToIgnoreString = classifierConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
@@ -251,18 +246,38 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
-			ClassificationType currentClassificationType;
-			if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
-				currentClassificationType = ClassificationType.UNSUPERVISED;
-			} else if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
-				currentClassificationType = ClassificationType.BINARY;
-			} else if(classifierConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
-				currentClassificationType = ClassificationType.MULTILABEL;
+			RelationshipType currentRelationshipType;
+			if(classifierConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(classifierConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
 			} else {
-				currentClassificationType = ClassificationType.MULTICLASS;
+				throw new IOException("The relationship type was not properly specified.");
 			}
 			
-			boolean currentFuzzy = classifierConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
+			LabelType currentLabelType;
+			if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
 			
 			String currentPathToInputModel = classifierConfig.getPathToInputModelAttribute().getValueAt(i);
 			
@@ -280,7 +295,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			
 			// Create a classification task
 		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputFileList, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
-		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToClassify, currentClassificationType, currentFuzzy, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToClassify, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -324,24 +339,53 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		return algorithmDescription;
 	}
 	
+	/**
+	 * @return the groundTruthCategoryId
+	 */
 	public int getGroundTruthCategoryId() {
 		return groundTruthCategoryId;
 	}
 	
+	/**
+	 * @return the attributesToClassify
+	 */
 	public List<Integer> getAttributesToClassify(){
 		return attributesToClassify;
 	}
 	
+	/**
+	 * @return the attributesToIgnore
+	 */
 	public List<Integer> getAttributesToIgnore(){
 		return attributesToIgnore;
 	}
 	
-	public ClassificationType getClassificationType() {
-		return classificationType;
+	/**
+	 * @return the relationshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
 	}
 	
-	public boolean isFuzzy() {
-		return fuzzy;
+	/**
+	 * @return return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+	
+	/**
+	 * @return return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
 	}
 
 	/**

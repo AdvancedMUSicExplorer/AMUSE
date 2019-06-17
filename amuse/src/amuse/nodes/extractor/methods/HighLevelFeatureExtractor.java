@@ -45,7 +45,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import amuse.data.ClassificationType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.FeatureTable;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
@@ -281,8 +284,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						processedFeaturesDescription, 
 						currentClassifierTok.nextToken(),
 						new ArrayList<Integer>(),
-						ClassificationType.BINARY,
-						false,
+						new ModelType(RelationshipType.BINARY, LabelType.SINGLELABEL, MethodType.SUPERVISED),
 						0,
 						this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 							

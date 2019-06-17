@@ -25,7 +25,6 @@ package amuse.nodes.trainer.methods.supervised;
 
 import java.util.StringTokenizer;
 
-import amuse.data.ClassificationType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -115,11 +114,6 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
 	public void trainModel(String outputModel) throws NodeException {
-		//test if the settings are supported
-		if(((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() != ClassificationType.BINARY) {
-			throw new NodeException("Only crisp binary classification is supported by this method");
-		}
-		
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
 		
 		// Train the model and save it

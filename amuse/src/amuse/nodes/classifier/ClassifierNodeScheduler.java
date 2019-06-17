@@ -38,7 +38,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -54,7 +54,6 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
-import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -262,21 +261,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
 			
-			
-			//check if the settings are possible
-			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
-					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))){
-				//if the model path was specified the numberOfCategories cannot be checked because they are given implicitely via the model
-				int numberOfCategories = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-				if(numberOfCategories == 0) {
-					throw new NodeException("No category chosen!");
-				}
-				else if(numberOfCategories > 1 && ((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
-					throw new NodeException("Binary classification of more than one category is not possible.");
-				}
-			}
-			if(((ClassificationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ClassificationConfiguration)this.taskConfiguration).isFuzzy()) {
-				throw new NodeException("Multiclass problems cannot be fuzzy classified.");
+			//check if the settings are supported
+			if(((ClassificationConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
+				throw new NodeException("Currently only supervised classification is supported.");
 			}
 			
 			//load attributes to ignore and classify
@@ -596,12 +583,79 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			Attribute startScriptAttribute = classifierTableLoader.getStructure().attribute("StartScript");
 			Attribute inputBaseClassificationBatchAttribute = classifierTableLoader.getStructure().attribute("InputBaseClassificationBatch");
 			Attribute inputClassificationBatchAttribute = classifierTableLoader.getStructure().attribute("InputClassificationBatch");
+			Attribute supportsBinaryAttribute = classifierTableLoader.getStructure().attribute("SupportsBinary");
+			Attribute supportsContinuousAttribute = classifierTableLoader.getStructure().attribute("SupportsContinuous");
+			Attribute supportsMulticlassAttribute = classifierTableLoader.getStructure().attribute("SupportsMulticlass");
+			Attribute supportsMultilabelAttribute = classifierTableLoader.getStructure().attribute("SupportsMultilabel");
+			Attribute supportsSinglelabelAttribute = classifierTableLoader.getStructure().attribute("SupportsSinglelabel");
+			Attribute supportsSupervisedAttribute = classifierTableLoader.getStructure().attribute("SupportsSupervised");
+			Attribute supportsUnsupervisedAttribute = classifierTableLoader.getStructure().attribute("SupportsUnsupervised");
+			Attribute supportsRegressionAttribute = classifierTableLoader.getStructure().attribute("SupportsRegression");
 			while(currentInstance != null) {
 				Integer idOfCurrentAlgorithm = new Double(currentInstance.value(idAttribute)).intValue();
 				if(idOfCurrentAlgorithm.equals(requiredAlgorithm)) {
 					
 					// Configure the adapter class
 					try {
+						//check if the method supports the settings
+						boolean supportsBinary = new Double(currentInstance.value(supportsBinaryAttribute)) != 0;
+						boolean supportsContinuous = new Double(currentInstance.value(supportsContinuousAttribute)) != 0;
+						boolean supportsMulticlass = new Double(currentInstance.value(supportsMulticlassAttribute)) != 0;
+						boolean supportsMultilabel = new Double(currentInstance.value(supportsMultilabelAttribute)) != 0;
+						boolean supportsSinglelabel = new Double(currentInstance.value(supportsSinglelabelAttribute)) != 0;
+						boolean supportsSupervised = new Double(currentInstance.value(supportsSupervisedAttribute)) != 0;
+						boolean supportsUnsupervised = new Double(currentInstance.value(supportsUnsupervisedAttribute)) != 0;
+						boolean supportsRegression = new Double(currentInstance.value(supportsRegressionAttribute)) != 0;
+						
+						switch(((ClassificationConfiguration)this.taskConfiguration).getRelationshipType()) {
+						case BINARY:
+							if(!supportsBinary) {
+								throw new NodeException("This method does not support binary relationships.");
+							}
+							break;
+						case CONTINUOUS:
+							if(!supportsContinuous) {
+								throw new NodeException("This method does not support continuous relationships.");
+							}
+							break;
+						}
+						
+						switch(((ClassificationConfiguration)this.taskConfiguration).getLabelType()) {
+						case MULTICLASS:
+							if(!supportsMulticlass) {
+								throw new NodeException("This method does not support multiclass classification.");
+							}
+							break;
+						case MULTILABEL:
+							if(!supportsMultilabel) {
+								throw new NodeException("This method does not support multilabel classification.");
+							}
+							break;
+						case SINGLELABEL:
+							if(!supportsSinglelabel) {
+								throw new NodeException("This method does not support singlelabel classification.");
+							}
+							break;
+						}
+						
+						switch(((ClassificationConfiguration)this.taskConfiguration).getMethodType()) {
+						case SUPERVISED:
+							if(!supportsSupervised) {
+								throw new NodeException("This method does not support supervised classification.");
+							}
+							break;
+						case UNSUPERVISED:
+							if(!supportsUnsupervised) {
+								throw new NodeException("This method does not support unsupervised classification.");
+							}
+							break;
+						case REGRESSION:
+							if(!supportsRegression) {
+								throw new NodeException("This method does not support regression.");
+							}
+							break;
+						}
+						
 						Class<?> adapter = Class.forName(currentInstance.stringValue(classifierAdapterClassAttribute));
 						this.cad = (ClassifierInterface)adapter.newInstance();
 						Properties classifierProperties = new Properties();
@@ -685,8 +739,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						+ "-" 
 						+ ((AmuseTask)this.cad).getProperties().getProperty("name") 
 						+ this.requiredParameters + "_"
-						+ ((ClassificationConfiguration)this.taskConfiguration).getClassificationType().toString()
-						+ (((ClassificationConfiguration)this.taskConfiguration).isFuzzy() ? "_FUZZY" : "")
+						+ ((ClassificationConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_"
+						+ ((ClassificationConfiguration)this.taskConfiguration).getLabelType().toString() + "_"
+						+ ((ClassificationConfiguration)this.taskConfiguration).getMethodType().toString()
 						+ File.separator
 						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
 				pathToModel = folderForModels 

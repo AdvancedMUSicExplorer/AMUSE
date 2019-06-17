@@ -23,19 +23,6 @@
  */
 package amuse.nodes.classifier.methods.supervised;
 
-import amuse.data.ClassificationType;
-import amuse.data.io.DataSet;
-import amuse.data.io.DataSetInput;
-import amuse.data.io.attributes.NumericAttribute;
-import amuse.interfaces.nodes.NodeException;
-import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.ClassificationConfiguration;
-import amuse.nodes.classifier.ClassifierNodeScheduler;
-import amuse.nodes.classifier.interfaces.ClassifierInterface;
-import amuse.nodes.trainer.TrainingConfiguration;
-import amuse.util.LibraryInitializer;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +35,17 @@ import com.rapidminer.operator.io.ModelLoader;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;
+
+import amuse.data.ModelType.LabelType;
+import amuse.data.io.DataSet;
+import amuse.data.io.DataSetInput;
+import amuse.data.io.attributes.NumericAttribute;
+import amuse.interfaces.nodes.NodeException;
+import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
+import amuse.nodes.classifier.interfaces.ClassifierInterface;
+import amuse.util.LibraryInitializer;
 
 /**
  * Loads the binary classificatio model created by RapidMiner.
@@ -83,10 +81,6 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String, java.util.ArrayList, java.lang.String)
 	 */
 	public void classify(String pathToModelFile) throws NodeException {
-		//test if the settings are supported
-		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy() || ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL || ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
-			throw new NodeException("Only crisp binary or multiclass classification is supported by this method.");
-		}
 		
 		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
 				getConfiguration()).getInputToClassify()).getDataSet();
@@ -127,6 +121,10 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 			DataSet exampleDataSet = new DataSet(exampleSet);
 			DataSet resultDataSet = new DataSet("ClassificationSet");
 			
+			//read the numberOfCategories which is saved in the predicted labels
+			String nameOfFirstLabel = exampleDataSet.getAttribute(numberOfAttributes).getName();
+			int numberOfCategories = new Integer(nameOfFirstLabel.substring(11, nameOfFirstLabel.indexOf("-")));
+			
 			List<String> labels = new ArrayList<String>();
 			for(int i=0;i<exampleDataSet.getAttributeCount();i++) {
 				//the original attributes are copied
@@ -136,24 +134,26 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 				//the names of the predicted labels are saved in labels
 				else if(i < exampleDataSet.getAttributeCount() - 1) {
 					String name = exampleDataSet.getAttribute(i).getName();
-					labels.add(name.substring(11, name.length() - 1));
+					labels.add(name.substring(name.indexOf("-") + 1, name.length() - 1));
 				}
 				//the last attribute is the predicted category
 				else {
-					//find out the number of categories and sort the names
-					int numberOfCategories = labels.size();
 					String[] categoryNames;
-					//for binary classification it is differentiated between Category and NOT_Category
-					if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType().equals(ClassificationType.BINARY)) {
-						numberOfCategories = 1;
-						categoryNames = new String[numberOfCategories];
-						if(labels.size() != 2 || 
-								(!labels.get(0).startsWith("NOT") && !labels.get(1).startsWith("NOT"))) {
+					//for single label classification it is differentiated between Category and NOT_Category
+					if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
+						if(numberOfCategories != 1) {
 							throw new NodeException("The model is not suited for binary classification!");
 						}
+						categoryNames = new String[numberOfCategories];
 						categoryNames[0] = labels.get(0);
 						if(categoryNames[0].startsWith("NOT")) {
 							categoryNames[0] = categoryNames[0].substring(4);
+						}
+						//add the relationship values
+						resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[0], new ArrayList<Double>()));
+						for(int j=0;j<exampleDataSet.getValueCount();j++) {
+							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
+							resultDataSet.getAttribute(i - labels.size()).addValue(predictedLabel.startsWith("NOT") ? 0.0 : 1.0);
 						}
 					}
 					//for multiclass classification the names are sorted like they were during training
@@ -168,34 +168,27 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 							}
 							categoryNames[position] = label.substring(label.indexOf("-") + 1);
 						}
-					}
-					
-					((ClassifierNodeScheduler)this.correspondingScheduler).setNumberOfCategories(numberOfCategories);
-					
-					//If only one  category was classified, it is distinguished between Category and NOT_Category
-					if(numberOfCategories == 1) {
-						resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[0], new ArrayList<Double>()));
-						for(int j=0;j<exampleDataSet.getValueCount();j++) {
-							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
-							resultDataSet.getAttribute(i - labels.size()).addValue(predictedLabel.startsWith("NOT") ? 0.0 : 1.0);
-						}
-					}
-					//If there are more categories, it is distinguished between all the different names
-					else {
+						
 						//add attributes for all categories
 						for(int k = 0; k < numberOfCategories; k++) {
+							//some category names may be unknown, if no examples for this category were present in the training set (this can happen with cross validation)
+							//these categories get auxiliary names
+							if(categoryNames[k] == null) {
+								categoryNames[k] = "Category_" + k;
+							}
 							resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[k], new ArrayList<Double>()));
 						}
 						//add the predicted relationships of the categories to their attributes
 						for(int j=0; j<exampleDataSet.getValueCount(); j++) {
 							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
-							int position = Integer.parseInt(predictedLabel.substring(0, predictedLabel.indexOf("-")));
+							//the number of the predicted category is found between the first to occurrences of "-"
+							int position = Integer.parseInt(predictedLabel.substring(predictedLabel.indexOf("-") + 1, predictedLabel.indexOf("-", predictedLabel.indexOf("-") + 1)));
 							for(int k = 0; k < numberOfCategories; k++) {
 								resultDataSet.getAttribute(resultDataSet.getAttributeCount() - numberOfCategories + k).addValue(k == position ? 1.0 : 0.0);
 							}
 						}
-						
 					}
+					((ClassifierNodeScheduler)this.correspondingScheduler).setNumberOfCategories(numberOfCategories);
 				}
 			}
 			

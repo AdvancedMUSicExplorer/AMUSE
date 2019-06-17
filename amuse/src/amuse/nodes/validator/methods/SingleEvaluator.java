@@ -32,7 +32,7 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType.LabelType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -170,8 +170,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToClassify(),
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType(),
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
 				0,
 				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(modelsToEvaluate.get(i).getAbsolutePath());
@@ -187,10 +186,10 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null; 
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
-						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.BINARY) {
+						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
-						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTILABEL) {
+						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTILABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
 									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
 						} else {

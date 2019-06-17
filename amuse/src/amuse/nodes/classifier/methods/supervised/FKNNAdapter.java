@@ -29,7 +29,8 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Level;
 
-import amuse.data.ClassificationType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.attributes.NumericAttribute;
@@ -78,14 +79,11 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 	 * @see amuse.nodes.classifier.interfaces.ClassifierInterface#classify(java.lang.String)
 	 */
 	public void classify(String pathToModelFile) throws NodeException {
-		if(((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.UNSUPERVISED) {
-			throw new NodeException("Unsupervised classification is not supported by this method.");
-		}
 		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
 				getConfiguration()).getInputToClassify()).getDataSet();
 		
-		boolean fuzzy = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).isFuzzy();
-		boolean multiclass = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationType() == ClassificationType.MULTICLASS;
+		boolean fuzzy = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS;
+		boolean multiclass = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTICLASS;
 		
 		try {	
 			

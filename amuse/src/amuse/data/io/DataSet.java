@@ -70,7 +70,6 @@ public class DataSet extends DataSetAbstract {
 	Object[] values = new Object[fileSet.getAttributeCount()];
 	int aCount = 0;
 	for (Attribute a : fileSet.attributes) {
-	    Attribute newAttr;
 	    if (a instanceof NumericAttribute) {
 		values[aCount] = new Double[fileSet.getValueCount()];
 	    } else if (a instanceof StringAttribute) {
@@ -229,15 +228,17 @@ public class DataSet extends DataSetAbstract {
 	    		
 	    	} else if (attributes.get(a).getName().equals("Category")) {
 	    		//If there is only one category. The label attribute gets the values "Category" and "NOT_Category"
+	    		//the number of categories is saved before the name
 	    		if(numberOfCategories == 1) {
-	    			data[a] = mapping.mapString(((double)getAttribute(a+1).getValueAt(d) >= 0.5 ? "" : "NOT_") + getAttribute(a+1).getName());
+	    			data[a] = mapping.mapString(numberOfCategories + "-" + ((double)getAttribute(a+1).getValueAt(d) >= 0.5 ? "" : "NOT_") + getAttribute(a+1).getName());
 			    }
 	    		//Otherwise the label attribute gets the name of the category of the current partition as its name.
+	    		//the number of categories and the number of the current category is saved before the name
 	    		else {
 	    			for(int i = 0; i < numberOfCategories; i++) {
 	    				//add the name of the current category
 	    				if((double)getAttribute(a+1+i).getValueAt(d) == 1) {
-	    					data[a] = mapping.mapString(i + "-" + getAttribute(a+1+i).getName());
+	    					data[a] = mapping.mapString(numberOfCategories + "-" +  i + "-" + getAttribute(a+1+i).getName());
 	    				}
 	    			}
 	    		}

@@ -42,6 +42,9 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -54,6 +57,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
@@ -383,20 +387,22 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private void prepareValidatorInput() throws NodeException {
 		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
 		
-		//check if the settings are possible
-		int numberOfCategories = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify().size();
-		if(numberOfCategories == 0) {
-			throw new NodeException("No category chosen!");
-		}
-		else if(numberOfCategories > 1 && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.BINARY) {
-			throw new NodeException("Binary classification of more than one category is not possible.");
-		}
-		if(((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS && ((ValidationConfiguration)this.taskConfiguration).isFuzzy()) {
-			throw new NodeException("Multiclass problems cannot be fuzzy classified.");
+		//check if the settings are supported
+		if(((ValidationConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
+			throw new NodeException("Currently only supervised classification is supported.");
 		}
 		
 		List<Integer> attributesToClassify = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify();
 		List<Integer> attributesToIgnore = ((ValidationConfiguration)this.taskConfiguration).getAttributesToIgnore();
+		int numberOfCategories = attributesToClassify.size();
+		
+		//check if the number of categories is correct
+		if(((ValidationConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
+			throw new NodeException("Single label classification is not possible for more than one category.");
+		}
+		if(numberOfCategories <= 0 ) {
+			throw new NodeException("No attributes to classify were given.");
+		}
 		
 		// If the validation set is not given as ready data set..
 		if(! (((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput)) {
@@ -430,15 +436,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					//add the category attributes
 					for(int i : attributesToClassify) {
 						labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
-						//if the classification is not fuzzy, the values have to be rounded
-						if(!((ValidationConfiguration)this.taskConfiguration).isFuzzy() && ((ValidationConfiguration)this.taskConfiguration).getClassificationType() != ClassificationType.MULTICLASS) {	
+						//if the classification is not continuous, the values have to be rounded
+						if(((ValidationConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.CONTINUOUS && ((ValidationConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
 							for(int j = 0; j < completeInput.getAttribute(i).getValueCount(); j++) {
 								labeledInputForValidation.getAttribute(labeledInputForValidation.getAttributeCount() - 1).setValueAt(j, (double)completeInput.getAttribute(i).getValueAt(j) >= 0.5 ? 1.0 : 0.0);
 							}
 						}
 					}
 					//if the classification is multiclass only the highest relationship of each partition is 1
-					if(((ValidationConfiguration)this.taskConfiguration).getClassificationType() == ClassificationType.MULTICLASS) {
+					if(((ValidationConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
 						int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
 						for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
 							double max = 0;
@@ -555,12 +561,13 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										labeledInputForValidation.getAttribute(j).addValue(val);
 									}
 								}
-								if(((ValidationConfiguration)this.getConfiguration()).getClassificationType() != ClassificationType.MULTICLASS) {
+								//if the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 									currentPosition = 0;
 									for(int category : attributesToClassify) {
 										String label = validatorGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
-										if(((ValidationConfiguration)this.getConfiguration()).isFuzzy()) {
+										if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
 											labeledInputForValidation.getAttribute(label).addValue(confidence);
 											confidences[currentPosition] = confidence;
 										} else {
@@ -569,6 +576,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										}
 										currentPosition++;
 									}
+									//if the classification is multiclass only the relationship of the class with the highest confidence is 1
 								} else {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
@@ -582,7 +590,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										currentPosition++;
 									}
 									int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
-									for(int category=0;category<numberOfCategories;i++) {
+									for(int category=0;category<numberOfCategories;category++) {
 										labeledInputForValidation.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
 										confidences[category] = category == positionOfMax ? 1.0 : 0.0;
 									}
@@ -726,11 +734,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					labels = new String[numberOfCategories];
 				} 
 						
-				if(((ValidationConfiguration)this.getConfiguration()).getClassificationType() != ClassificationType.MULTICLASS) {
+				if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 					Double[] currentRelationships = new Double[numberOfCategories];
 					for(int category=0;category<numberOfCategories;category++) {
 						double confidence = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(i);
-						if(((ValidationConfiguration)this.getConfiguration()).isFuzzy()) {
+						if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
 							currentRelationships[category] = confidence;
 						} else {
 							currentRelationships[category] = confidence >= 0.5 ? 1.0 : 0.0;
@@ -875,7 +883,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						folderForMeasuresString += labels[i];
 					}
 					
-					folderForMeasuresString += File.separator + classifierDescription + "_" + ((ValidationConfiguration)this.taskConfiguration).getClassificationType().toString() + (((ValidationConfiguration)this.taskConfiguration).isFuzzy() ? "_FUZZY" : "") + File.separator +
+					folderForMeasuresString += File.separator + classifierDescription + "_" + ((ValidationConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator +
 							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +
 							validatorMethodId + 
 							"-" + ((AmuseTask)vmi).getProperties().getProperty("name");

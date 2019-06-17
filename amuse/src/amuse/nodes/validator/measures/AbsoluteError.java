@@ -100,16 +100,16 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		// Go through all songs
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			
 			// Calculate the error for the current song
 			double songError = 0.0d;
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
-					if(groundTruthRelationships.get(i).getRelationships()[j][category]!=predictedRelationships.get(i).getRelationships()[j][category]) {
-						songError++; break;
-					}
+					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
+				songError += error/2;
 			}
+			
 			songError /= groundTruthRelationships.get(i).getRelationships().length;
 			
 			// Calculate error
@@ -130,29 +130,24 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " is not yet implemented for multiclass classification in the current version");
-		//TODO update this Method
 		// Go through all partitions
-//		double errorSum = 0.0d;
-//		for(int i=0;i<groundTruthRelationships.size();i++) {
-//			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-//				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
-//						getLabels()[j];
-//				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
-//						getLabels()[j];
-//				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
-//					errorSum++;
-//				}
-//			}
-//		}
-//		
-//		// Prepare the result
-//		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
-//		absMeasure[0] = new ValidationMeasureDouble();
-//		absMeasure[0].setId(200);
-//		absMeasure[0].setName("Absolute error on partition level");
-//		absMeasure[0].setValue(errorSum);
-//		return absMeasure;
+		double errorSum = 0.0d;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
+					Double error = Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
+					errorSum += error;
+				}
+			}
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
+		absMeasure[0] = new ValidationMeasureDouble();
+		absMeasure[0].setId(200);
+		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setValue(errorSum);
+		return absMeasure;
 	}
 
 	/*

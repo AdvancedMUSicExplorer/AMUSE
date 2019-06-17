@@ -31,13 +31,14 @@ import java.util.List;
 import org.apache.log4j.Level;
 
 import amuse.data.GroundTruthSourceType;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.FileInput;
-import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.classifier.methods.supervised.FKNNAdapter;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -71,8 +72,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	
 	private final List<Integer> attributesToClassify;
 	private final List<Integer> attributesToIgnore;
-	private final ClassificationType classificationType;
-	private final boolean fuzzy;
+	private final ModelType modelType;
 	
 	private final String trainingDescription;
 	
@@ -107,7 +107,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ClassificationType classificationType, boolean fuzzy, String trainingDescription, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
@@ -115,8 +115,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 		this.groundTruthSourceType = groundTruthSourceType;
 		this.attributesToClassify = attributesToClassify;
 		this.attributesToIgnore = attributesToIgnore;
-		this.classificationType = classificationType;
-		this.fuzzy = fuzzy;
+		this.modelType = modelType;
 		this.trainingDescription = trainingDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
@@ -154,8 +153,6 @@ public class TrainingConfiguration extends TaskConfiguration {
 				for(String str : attributesToClassifyStringArray) {
 					if(!str.equals("")) {
 						currentAttributesToClassify.add(Integer.parseInt(str));
-					} else {
-						throw new IOException("No categories for training were specified.");
 					}
 				}
 			} catch(NumberFormatException e) {
@@ -178,18 +175,38 @@ public class TrainingConfiguration extends TaskConfiguration {
 				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
-			ClassificationType currentClassificationType;
-			if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
-				currentClassificationType = ClassificationType.UNSUPERVISED;
-			} else if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
-				currentClassificationType = ClassificationType.BINARY;
-			} else if(trainingConfig.getClassificationTypeAttribute().getValueAt(i).equals("MULTILABEL")) {
-				currentClassificationType = ClassificationType.MULTILABEL;
-			} else { //Ist es gut Sachen einfach standardmaessig als multiclass einzustellen, wenn sich jemand vertippt oder so?
-				currentClassificationType = ClassificationType.MULTICLASS;
+			RelationshipType currentRelationshipType;
+			if(trainingConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(trainingConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
+			} else {
+				throw new IOException("The relationship type was not properly specified.");
 			}
 			
-			boolean currentFuzzy = trainingConfig.getFuzzyAttribute().getValueAt(i) >= 0.5;
+			LabelType currentLabelType;
+			if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
 			
 			String currentTrainingDescription = trainingConfig.getTrainingDescriptionAttribute().getValueAt(i).toString();
 			
@@ -197,7 +214,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToClassify, currentAttributesToIgnore, currentClassificationType, currentFuzzy, currentTrainingDescription, currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -259,22 +276,23 @@ public class TrainingConfiguration extends TaskConfiguration {
 		return groundTruthSourceType;
 	}
 	
+	/**
+	 * @return the attributesToClassify
+	 */
 	public List<Integer> getAttributesToClassify(){
 		return attributesToClassify;
 	}
 	
+	/**
+	 * @return the attributesToIgnore
+	 */
 	public List<Integer> getAttributesToIgnore(){
 		return attributesToIgnore;
 	}
 	
-	public ClassificationType getClassificationType() {
-		return classificationType;
-	}
-	
-	public boolean isFuzzy() {
-		return fuzzy;
-	}
-	
+	/**
+	 * @return the trainingDescription
+	 */
 	public String getTrainingDescription() {
 		return trainingDescription;
 	}
@@ -350,7 +368,35 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToClassify, attributesToIgnore, classificationType, fuzzy, trainingDescription, pathToOutputModel); 
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToClassify, attributesToIgnore, modelType, trainingDescription, pathToOutputModel); 
 		return conf;
+	}
+
+	/**
+	 * @return the relatioshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
+	}
+
+	/**
+	 * @return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+
+	/**
+	 * @return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
 	}
 }
