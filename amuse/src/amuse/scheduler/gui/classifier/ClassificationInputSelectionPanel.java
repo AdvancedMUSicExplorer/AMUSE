@@ -77,14 +77,14 @@ public class ClassificationInputSelectionPanel extends JPanel{
 	}
 
 	public void setInputToClassify(DataInputInterface inputToClassify) {
-		if(getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
-			readyInputSelectionPanel.setSelectedPath(inputToClassify.toString());
-		} else {
-			if (inputToClassify instanceof FileListInput) {
+		if (inputToClassify instanceof FileListInput) {
+			if(getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
+				readyInputSelectionPanel.setSelectedPath(((FileListInput) inputToClassify).getInputFiles().get(0).getPath());
+			} else {
 				ftController.loadFiles(((FileListInput) inputToClassify).getInputFiles());
-	        } else {
-	        	throw new UnsupportedOperationException();
-	        }
+			}
+		} else {
+			throw new UnsupportedOperationException();
 		}
 	}
 
@@ -98,6 +98,10 @@ public class ClassificationInputSelectionPanel extends JPanel{
 		} else {
 			return new FileTableSet(ftModel.getFiles());
 		}
+	}
+
+	public String getReadyInputPath() {
+		return readyInputSelectionPanel.getPath();
 	}
 
 }

@@ -27,8 +27,8 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
 
@@ -111,14 +111,6 @@ public class ValidationView {
 		return trainingView.getAttributesToIgnore();
 	}
 	
-	public ClassificationType getClassifcationType() {
-		return trainingView.getClassificationType();
-	}
-	
-	public boolean isFuzzy() {
-		return trainingView.isFuzzy();
-	}
-	
 	public void setAttributesToClassify(List<Integer> attributesToClassify) {
 		trainingView.setAttributesToClassify(attributesToClassify);
 	}
@@ -127,11 +119,11 @@ public class ValidationView {
 		trainingView.setAttributesToIgnore(attributesToIgnore);
 	}
 	
-	public void setClassificationType(ClassificationType classificationType) {
-		trainingView.setClassificationType(classificationType);
+	public ModelType getModelType() {
+		return trainingView.getModelType();
 	}
-	
-	public void setFuzzy(boolean fuzzy) {
-		trainingView.setFuzzy(fuzzy);
+
+	public void setModelType(ModelType modelType) {
+		trainingView.setModelType(modelType);
 	}
 }

@@ -26,36 +26,27 @@ package amuse.scheduler.gui.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
-import org.apache.log4j.Level;
-
+import amuse.data.ModelType;
+import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
-import amuse.data.io.FileListInput;
-import amuse.data.ClassificationType;
-import amuse.data.datasets.ClassifierConfigSet;
-import amuse.data.datasets.FileTableSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.classifier.ClassifierView;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
-import amuse.scheduler.gui.filesandfeatures.FileTreeController;
-import amuse.scheduler.gui.filesandfeatures.FileTreeModel;
-import amuse.scheduler.gui.filesandfeatures.FileTreeView;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
-import amuse.util.AmuseLogger;
-import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
 
 /**
  * @author Clemens Waeltken
@@ -96,7 +87,12 @@ public class ClassifierController extends AbstractController {
             return;
         }
         /* Gather all neccessary information and create variables */
-        File musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
+        File musicFilesFile = null;
+        if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
+        	musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
+        } else {
+        	musicFilesFile = new File(classifierView.getReadyInputPath());
+        }
         String inputSourceType = classifierView.getInputSourceType().toString();
         String processedFeatureDescription = classifierView.getProcessingModelString();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
@@ -108,10 +104,11 @@ public class ClassifierController extends AbstractController {
         String outputResultPath = classifierView.getTargetFilePath();
         String attributesToClassify = classifierView.getAttributesToClassify().toString();
         String attributesToIgnore = classifierView.getAttributesToIgnore().toString();
-        String classificationType = classifierView.getClassificationType().toString();
+        String relationshipType = classifierView.getModelType().getRelationshipType().toString();
+        String labelType = classifierView.getModelType().getLabelType().toString();
+        String methodType = classifierView.getModelType().getMethodType().toString();
         String trainingDescription = classifierView.getTrainingDescription();
         String pathToInputModel = classifierView.getPathToInputModel();
-        int fuzzy = classifierView.isFuzzy() ? 1 : 0;
         
         ClassifierConfigSet dataSet = new ClassifierConfigSet(
         		musicFilesFile, 
@@ -121,26 +118,34 @@ public class ClassifierController extends AbstractController {
         		algorithmId, 
         		groundTruthCategoryId,
         		attributesToClassify,
-        		classificationType,
-        		fuzzy,
+        		relationshipType,
+        		labelType,
+        		methodType,
         		mergeSongResults,
         		outputResultPath,
         		pathToInputModel,
         		trainingDescription);
         
-        // Create folders...
-        musicFilesFile.getParentFile().mkdirs();
-        DataSetAbstract inputToClassify = null;
-        try {
-        	inputToClassify = classifierView.getInputToClassify();
-        } catch (IOException ex) {
-        	showErr(ex.getLocalizedMessage());
+        //if the input is given as files a file list must be saved
+        if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
+	        // Create folders...
+	        musicFilesFile.getParentFile().mkdirs();
+	        DataSetAbstract inputToClassify = null;
+	        try {
+	        	inputToClassify = classifierView.getInputToClassify();
+	        } catch (IOException ex) {
+	        	showErr(ex.getLocalizedMessage());
+	        }
+	        try {
+	        	inputToClassify.saveToArffFile(musicFilesFile);
+	        } catch(IOException ex) {
+	        	showErr(ex.getLocalizedMessage());
+	        }
         }
-        
+	        
         // Save Files and Features:
         try {
             dataSet.saveToArffFile(file);
-            inputToClassify.saveToArffFile(musicFilesFile);
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -176,8 +181,7 @@ public class ClassifierController extends AbstractController {
         classifierView.setTargetFilePath(conf.getClassificationOutput());
         classifierView.setAttributesToClassify(conf.getAttributesToClassify());
         classifierView.setAttributesToIgnore(conf.getAttributesToIgnore());
-        classifierView.setClassificationType(conf.getClassificationType());
-        classifierView.setFuzzy(conf.isFuzzy());
+        classifierView.setModelType(conf.getModelType());
         classifierView.setMergeSongResults(conf.getMergeSongResults());
         classifierView.setOutputResult(conf.getClassificationOutput());
         classifierView.setTrainingDescription(conf.getTrainingDescription());
@@ -205,16 +209,20 @@ public class ClassifierController extends AbstractController {
         /* Gather all neccessary information and create variables */
         ClassificationConfiguration conf = null;
         try {
-            File musicFilesFile = File.createTempFile("FileTable", "arff");
-            musicFilesFile.deleteOnExit();
+        	File musicFilesFile = null;
+        	if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
+	            musicFilesFile = File.createTempFile("FileTable", "arff");
+	            musicFilesFile.deleteOnExit();
+            } else {
+            	musicFilesFile = new File(classifierView.getReadyInputPath());
+            }
             String inputSourceType = classifierView.getInputSourceType().toString();
             String processedFeatureDescription = classifierView.getProcessingModelString();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
             int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
             List<Integer> attributesToClassify = classifierView.getAttributesToClassify();
             List<Integer> attributesToIgnore = classifierView.getAttributesToIgnore();
-            ClassificationType classificationType = classifierView.getClassificationType();
-            boolean fuzzy = classifierView.isFuzzy();
+            ModelType modelType = classifierView.getModelType();
             int mergeSongResults = 1;
             if (!classifierView.isAverageCalculationSelected()) {
                 mergeSongResults = 0;
@@ -223,10 +231,13 @@ public class ClassifierController extends AbstractController {
             String pathToInputModel = classifierView.getPathToInputModel();
             String trainingDescription = classifierView.getTrainingDescription();
             
-            //Create folders...
-            musicFilesFile.getParentFile().mkdirs();
-            DataSetAbstract inputToClassify = classifierView.getInputToClassify();
-            inputToClassify.saveToArffFile(musicFilesFile);
+            //if the input is given as files a file list needs to be saved
+            if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
+	            //Create folders...
+	            musicFilesFile.getParentFile().mkdirs();
+	            DataSetAbstract inputToClassify = classifierView.getInputToClassify();
+	            inputToClassify.saveToArffFile(musicFilesFile);
+            }
             
             // Save Files and Features:
             conf = new ClassificationConfiguration(
@@ -237,8 +248,7 @@ public class ClassifierController extends AbstractController {
             		algorithmStr, 
             		groundTruthCategoryId,
             		attributesToClassify,
-            		classificationType,
-            		fuzzy,
+            		modelType,
             		mergeSongResults, 
             		outputResultPath,
             		pathToInputModel,

@@ -42,7 +42,10 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
@@ -55,7 +58,7 @@ import amuse.scheduler.gui.controller.ClassifierController;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
-import amuse.scheduler.gui.training.ClassificationTypePanel;
+import amuse.scheduler.gui.training.ModelTypePanel;
 import amuse.scheduler.gui.training.ProcessingHistoryPanel;
 import amuse.scheduler.gui.training.TrainingDescriptionPanel;
 import amuse.scheduler.gui.training.TrainingView;
@@ -74,7 +77,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	private ClassificationGroundTruthSelectionPanel groundTruthSelectionPanel;
 	private ProcessingHistoryPanel processingHistoryPanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
-	private ClassificationTypePanel classificationTypePanel = new ClassificationTypePanel();
+	private ModelTypePanel modelTypePanel = new ModelTypePanel();
 	private TrainingDescriptionPanel trainingDescriptionPanel = null;
     private JPanel targetPathSelectionPanel = new JPanel(new MigLayout("fillx"));
     private final ClassifierController classifierController;
@@ -119,7 +122,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         viewLeft.add(processingHistoryPanel, "growx, span, wrap");
         addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
         addRightSide(trainingAlgorithmFacade.getParameterPanel());
-        addRightSide(classificationTypePanel);
+        addRightSide(modelTypePanel);
 
         targetPathSelectionPanel.add(selectAverageCalculation, "growx, wrap");
         targetPathSelectionPanel.add(new JLabel("Enter Filename for Result:"), "wrap");
@@ -136,7 +139,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         
 		trainingDescriptionPanel = new TrainingDescriptionPanel();
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
-		addRightSide(classificationTypePanel);
+		addRightSide(modelTypePanel);
 		addRightSide(targetPathSelectionPanel);
 		addRightSide(trainingDescriptionPanel);
 		splitPane.setDividerLocation(0.5);
@@ -273,12 +276,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		return groundTruthSelectionPanel.getAttributesToClassify();
 	}
 	
-	public ClassificationType getClassificationType() {
-		return classificationTypePanel.getClassificationType();
-	}
-	
-	public boolean isFuzzy() {
-		return classificationTypePanel.isFuzzy();
+	public ModelType getModelType() {
+		return modelTypePanel.getModelType();
 	}
 
 	public void setAttributesToClassify(List<Integer> attributesToClassify) {
@@ -293,12 +292,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		}
 	}
 
-	public void setClassificationType(ClassificationType classificationType) {
-		classificationTypePanel.setClassificationType(classificationType);
-	}
-
-	public void setFuzzy(boolean fuzzy) {
-		classificationTypePanel.setFuzzy(fuzzy);
+	public void setModelType(ModelType modelType) {
+		modelTypePanel.setModelType(modelType);
 	}
 
 	public InputSourceType getInputSourceType() {
@@ -347,5 +342,9 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 
 	public void setPathToInputModel(String pathToInputModel) {
 		groundTruthSelectionPanel.setPath(pathToInputModel);
+	}
+
+	public String getReadyInputPath() {
+		return inputSelectionPanel.getReadyInputPath();
 	}
 }

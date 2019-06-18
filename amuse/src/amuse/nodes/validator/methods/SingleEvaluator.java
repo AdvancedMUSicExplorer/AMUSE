@@ -184,7 +184,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			try {
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
-					ValidationMeasure[] currMeas = null; 
+					ValidationMeasure[] currMeas = null;
+					Object test = this.measureCalculators.get(currentMeasure);
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
@@ -202,8 +203,10 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 					} else {
 						throw new NodeException("Unknown measure: " + this.measureCalculators.get(currentMeasure));
 					}
-					for(int k=0;k<currMeas.length;k++) {
-						measuresOfThisRun.add(currMeas[k]);
+					if(currMeas != null) {
+						for(int k=0;k<currMeas.length;k++) {
+							measuresOfThisRun.add(currMeas[k]);
+						}
 					}
 				}
 				measuresForEveryModel.add(measuresOfThisRun);

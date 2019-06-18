@@ -37,34 +37,31 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
-import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
-import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.ClassificationConfiguration;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
-import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
+import weka.core.Attribute;
+import weka.core.Instance;
+import weka.core.converters.ArffLoader;
 
 /**
  * ValidationNodeScheduler configures and runs the appropriate classifier validation method.
@@ -419,7 +416,12 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 					for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 						if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
-							labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
+							if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+								AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
+							}
+							else {
+								labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
+							}
 						}
 					}
 				

@@ -329,7 +329,12 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						//add the attributes (except for attributes that are to be ignored and the Id)
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 							if(!attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
-								inputForClassification.addAttribute(completeInput.getAttribute(i));
+								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+									AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
+								}
+								else {
+									inputForClassification.addAttribute(completeInput.getAttribute(i));
+								}
 							}
 						}
 					//prepare the description of the classifier input
@@ -691,7 +696,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					} catch(NodeException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 								"Setting of parameters failed for classifier class: " + e.getMessage());
-						System.exit(1);
+						//System.exit(1);
 					}
 					
 					algorithmFound = true;

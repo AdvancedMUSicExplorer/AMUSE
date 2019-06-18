@@ -38,7 +38,10 @@ import org.apache.log4j.Level;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
-import amuse.data.ClassificationType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
@@ -138,6 +141,9 @@ public class TrainingController extends AbstractController {
 				}
 			}
 		} catch(NumberFormatException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The attributes to classify were not properly specified.");
+			attributesToClassify = new ArrayList<Integer>();
 		}
 		trainingView.setAttributesToClassify(attributesToClassify);
 		
@@ -153,17 +159,18 @@ public class TrainingController extends AbstractController {
 			}
 		} catch(NumberFormatException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.WARN,
-					"The attributes to ignore were not properly specified. All features will be used for training.");
+					"The attributes to ignore were not properly specified.");
 			attributesToIgnore = new ArrayList<Integer>();
 		}
 		trainingView.setAttributesToIgnore(attributesToIgnore);
 		
-		ClassificationType classificationType = ClassificationType.valueOf(ttSet.getClassificationTypeAttribute().getValueAt(0));
-		trainingView.setClassificationType(classificationType);
-		
-		boolean fuzzy = (double)ttSet.getFuzzyAttribute().getValueAt(0) >= 0.5;
-		trainingView.setFuzzy(fuzzy);
-    }
+		try {
+			ModelType modelType = new ModelType(RelationshipType.valueOf(ttSet.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(ttSet.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(ttSet.getMethodTypeAttribute().getValueAt(0)));
+			trainingView.setModelType(modelType);
+		} catch(IOException e) {
+			showErr(e.getLocalizedMessage());
+		}
+	}
 
     private class TrainingPanel extends JPanel implements NextButtonUsable,
             HasCaption, HasSaveButton, HasLoadButton {
@@ -283,8 +290,11 @@ public class TrainingController extends AbstractController {
     			trainingView.getPreprocessingAlgorithmStr(), 
     			new FileInput(trainingView.getGroundTruthSource()),
     			trainingView.getGroundTruthSourceType(),
-    			trainingView.getAttributesToClassify(), trainingView.getAttributesToIgnore(), trainingView.getClassificationType(),
-    			trainingView.isFuzzy(), trainingView.getTrainingDescription(), pathToOutputModel);
+    			trainingView.getAttributesToClassify(),
+    			trainingView.getAttributesToIgnore(),
+    			trainingView.getModelType(),
+    			trainingView.getTrainingDescription(),
+    			pathToOutputModel);
         return conf;
     }
 
@@ -306,8 +316,7 @@ public class TrainingController extends AbstractController {
             trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());
             trainingView.setAttributesToClassify(trainConf.getAttributesToClassify());
             trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
-            trainingView.setClassificationType(trainConf.getClassificationType());
-            trainingView.setFuzzy(trainConf.isFuzzy());
+            trainingView.setModelType(((TrainingConfiguration) conf).getModelType());
             trainingView.setTrainingDescription(trainConf.getTrainingDescription());
         }
     }

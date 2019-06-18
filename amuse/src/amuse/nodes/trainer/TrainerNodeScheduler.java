@@ -51,6 +51,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
@@ -329,7 +330,12 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
-								labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
+								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+									AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
+								}
+								else {
+									labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
+								}
 							}
 						}
 					

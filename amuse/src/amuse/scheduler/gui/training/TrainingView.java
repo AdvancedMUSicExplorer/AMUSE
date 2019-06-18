@@ -23,8 +23,8 @@
  */
 package amuse.scheduler.gui.training;
 
-import amuse.data.ClassificationType;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
 import amuse.scheduler.gui.algorithm.Algorithm;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -53,7 +53,7 @@ public class TrainingView {
 	private ProcessingHistoryPanel processingHistoryPanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
-	private ClassificationTypePanel classificationTypePanel = new ClassificationTypePanel();
+	private ModelTypePanel modelTypePanel = new ModelTypePanel();
 	private TrainingDescriptionPanel trainingDescriptionPanel = null;
 	private static final String trainingViewName = "Setup Training";
 	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
@@ -89,7 +89,7 @@ public class TrainingView {
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		}
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
-		addRightSide(classificationTypePanel);
+		addRightSide(modelTypePanel);
 		splitPane.setDividerLocation(0.5);
 	}
 
@@ -175,22 +175,6 @@ public class TrainingView {
 		}
 	}
 	
-	public ClassificationType getClassificationType() {
-		return classificationTypePanel.getClassificationType();
-	}
-	
-	public void setClassificationType(ClassificationType classificationType) {
-		classificationTypePanel.setClassificationType(classificationType);
-	}
-	
-	public boolean isFuzzy() {
-		return classificationTypePanel.isFuzzy();
-	}
-	
-	public void setFuzzy(boolean fuzzy) {
-		classificationTypePanel.setFuzzy(fuzzy);
-	}
-	
 	public String getTrainingDescription() {
 		return trainingDescriptionPanel != null ? trainingDescriptionPanel.getTrainingDescription() : "";
 	}
@@ -221,6 +205,14 @@ public class TrainingView {
 
 	public void setTrainingDescription(String trainingDescription) {
 		trainingDescriptionPanel.setTrainingDescription(trainingDescription);
+	}
+
+	public void setModelType(ModelType modelType) {
+		modelTypePanel.setModelType(modelType);
+	}
+
+	public ModelType getModelType() {
+		return modelTypePanel.getModelType();
 	}
 
 }

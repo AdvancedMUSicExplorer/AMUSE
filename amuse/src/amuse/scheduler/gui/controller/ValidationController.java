@@ -23,22 +23,29 @@
  */
 package amuse.scheduler.gui.controller;
 
-import amuse.data.ClassificationType;
-import amuse.data.GroundTruthSourceType;
-import amuse.data.MeasureTable;
-import amuse.data.io.DataSetAbstract;
-import amuse.data.io.DataSetException;
-import amuse.data.io.FileInput;
-import amuse.data.datasets.ValidatorConfigSet;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Level;
 
+import amuse.data.GroundTruthSourceType;
+import amuse.data.MeasureTable;
+import amuse.data.ModelType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.datasets.ValidatorConfigSet;
+import amuse.data.io.DataSetAbstract;
+import amuse.data.io.DataSetException;
+import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
@@ -53,12 +60,6 @@ import amuse.scheduler.gui.navigation.NextButtonUsable;
 import amuse.scheduler.gui.validation.MeasuresView;
 import amuse.scheduler.gui.validation.ValidationView;
 import amuse.util.AmuseLogger;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.JFileChooser;
 
 /**
  * @author Clemens Waeltken
@@ -130,15 +131,20 @@ public class ValidationController extends AbstractController {
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
         String attributesToClassify = validationView.getAttributesToClassify().toString();
         String attributesToIgnore = validationView.getAttributesToIgnore().toString();
-        String classificationType = validationView.getClassifcationType().toString();
-        int fuzzy = validationView.isFuzzy() ? 1 : 0;
+        String relationshipType = validationView.getModelType().getRelationshipType().toString();
+        String labelType = validationView.getModelType().getLabelType().toString();
+        String methodType = validationView.getModelType().getMethodType().toString();
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
         		validationMethodId,
                 measureTableFile, 
                 processedFeatureDescription, 
                 groundTruthSource, 
                 groundTruthSourceType,
-                attributesToClassify, attributesToIgnore, classificationType, fuzzy,
+                attributesToClassify,
+                attributesToIgnore,
+                relationshipType,
+                labelType,
+                methodType,
                 classificationAlgorithmId);
         // Create folders...
         measureTableFile.getParentFile().mkdirs();
@@ -216,11 +222,8 @@ public class ValidationController extends AbstractController {
     		}
     		validationView.setAttributesToIgnore(attributesToIgnore);
     		
-    		ClassificationType classificationType = ClassificationType.valueOf(set.getClassificationTypeAttribute().getValueAt(0));
-    		validationView.setClassificationType(classificationType);
-    		
-    		boolean fuzzy = (double)set.getFuzzyAttribute().getValueAt(0) >= 0.5;
-    		validationView.setFuzzy(fuzzy);
+    		ModelType modelType = new ModelType(RelationshipType.valueOf(set.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(set.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(set.getMethodTypeAttribute().getValueAt(0)));
+    		validationView.setModelType(modelType);
             
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
@@ -239,8 +242,7 @@ public class ValidationController extends AbstractController {
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
         List<Integer> attributesToClassify = validationView.getAttributesToClassify();
         List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
-        ClassificationType classificationType = validationView.getClassifcationType();
-        boolean fuzzy = validationView.isFuzzy();
+        ModelType modelType = validationView.getModelType();
         conf = new ValidationConfiguration(
         		validationMethodStr, 
         		measureTable,
@@ -248,7 +250,9 @@ public class ValidationController extends AbstractController {
                 classificationAlgorithmStr, 
                 groundTruthSource,
                 groundTruthSourceType,
-                attributesToClassify, attributesToIgnore, classificationType, fuzzy);
+                attributesToClassify,
+                attributesToIgnore,
+                modelType);
         return conf;
     }
 
@@ -383,8 +387,7 @@ public class ValidationController extends AbstractController {
             measuresView.loadSelection(valConf.getMeasures());
             validationView.setAttributesToClassify(valConf.getAttributesToClassify());
             validationView.setAttributesToIgnore(valConf.getAttributesToIgnore());
-            validationView.setClassificationType(valConf.getClassificationType());
-            validationView.setFuzzy(valConf.isFuzzy());
+            validationView.setModelType(valConf.getModelType());
         }
     }
 }

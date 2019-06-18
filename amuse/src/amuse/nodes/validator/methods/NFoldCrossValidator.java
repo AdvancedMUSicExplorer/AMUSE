@@ -373,9 +373,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 					} else {
 						throw new NodeException("Unknown measure: " + this.measureCalculators.get(currentMeasure));
 					}
-					
-					for(int k=0;k<currMeas.length;k++) {
-						measuresOfThisRun.add(currMeas[k]);
+					if(currMeas != null) {
+						for(int k=0;k<currMeas.length;k++) {
+							measuresOfThisRun.add(currMeas[k]);
+						}
 					}
 				}
 				measuresOfEveryValidationRun.add(measuresOfThisRun);
