@@ -164,6 +164,8 @@ public class TrainingController extends AbstractController {
 		}
 		trainingView.setAttributesToIgnore(attributesToIgnore);
 		
+		trainingView.setTrainingDescription(ttSet.getTrainingDescriptionAttribute().getValueAt(0).toString());
+		
 		try {
 			ModelType modelType = new ModelType(RelationshipType.valueOf(ttSet.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(ttSet.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(ttSet.getMethodTypeAttribute().getValueAt(0)));
 			trainingView.setModelType(modelType);

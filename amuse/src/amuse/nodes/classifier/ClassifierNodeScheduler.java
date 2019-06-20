@@ -54,6 +54,7 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
 import amuse.nodes.classifier.interfaces.SongPartitionsDescription;
+import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -490,11 +491,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							
 							// Save the processed features (attributes) omitting UNIT, START and END attributes 
 							// (they describe the partition for modeled features)
+							int currentAttribute = 0;
 							for(int i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
 								Double val = processedFeaturesInstance.value(i);
 								//omit the features that are supposed to be ignored
 								if(!attributesToIgnore.contains(i)) {
-									inputForClassification.getAttribute(i).addValue(val);
+									inputForClassification.getAttribute(currentAttribute).addValue(val);
+									currentAttribute++;
 								}
 							}
 							
@@ -696,7 +699,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					} catch(NodeException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 								"Setting of parameters failed for classifier class: " + e.getMessage());
-						//System.exit(1);
+						System.exit(1);
 					}
 					
 					algorithmFound = true;
@@ -749,9 +752,14 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						+ ((ClassificationConfiguration)this.taskConfiguration).getMethodType().toString()
 						+ File.separator
 						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
-				pathToModel = folderForModels 
-						+ File.separator 
-						+ "model.mod";
+				
+				String trainingDescription = ((ClassificationConfiguration)this.taskConfiguration).getTrainingDescription();
+				if(trainingDescription.equals("")) {
+					pathToModel = new String(folderForModels + File.separator + "model.mod");
+				} else {
+					pathToModel = new String(folderForModels + File.separator + "model_" + trainingDescription + ".mod");
+				}
+				
 				pathToModel = pathToModel.replaceAll(File.separator + "+", File.separator);
 			} else {
 				pathToModel = ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel();

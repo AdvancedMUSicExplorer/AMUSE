@@ -492,8 +492,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					labeledInputForTraining.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
 					
 					//add the attribute "NumberOfCategories"
-					//it marks the where the categories that are to be classified start and how many will follow
+					//it marks where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
+					//add the category attributes
 					for(int category : attributesToClassify) {
 						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
 					}
@@ -505,12 +506,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
+								int currentAttribute = 0;
 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
 									
 									//omit the attributes that are supposed to be ignored
 									if(!attributesToIgnore.contains(j)) {
 										Double val = inputInstance.value(j);
-										labeledInputForTraining.getAttribute(j).addValue(val);
+										labeledInputForTraining.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
 									}
 								}
 								
@@ -930,9 +933,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) && 
 				(this.outputModel.equals("-1") || this.outputModel.equals(""))) {
 			
-			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.READY_INPUT) {
-				throw new NodeException("No output model is given!");
-			}
+			//TODO: decide if a exception should be thrown for READY_INPUT
+//			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.READY_INPUT) {
+//				throw new NodeException("No output model is given!");
+//			}
 			
 			String folderForModelsString = 
 					((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 

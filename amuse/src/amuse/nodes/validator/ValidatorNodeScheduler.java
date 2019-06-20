@@ -177,7 +177,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			return;
 		}
 		int i=0;
-		// TODO currently works only with category id
+		// TODO is this a good solution for READY_INPUT?
 		if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
 			while(i < categoryList.getValueCount()) {
 				Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
@@ -556,11 +556,13 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
+								int currentAttribute = 0;
 								for(int j=0;j<validatorInputLoader.getStructure().numAttributes()-3;j++) {
 									//omit the attributes that are supposed to be ignored
 									if(!attributesToIgnore.contains(j)) {
 										Double val = inputInstance.value(j);
-										labeledInputForValidation.getAttribute(j).addValue(val);
+										labeledInputForValidation.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
 									}
 								}
 								//if the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary

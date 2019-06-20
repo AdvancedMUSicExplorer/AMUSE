@@ -97,16 +97,19 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		//TODO: check if it should be calculated like that
 		// Go through all songs
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			// Calculate the error for the current song
 			double songError = 0.0d;
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				//calculate the error for the current partition
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
+				//divide the error by two because otherwise wrong partitions are counted twice
 				songError += error/2;
 			}
 			
@@ -130,14 +133,18 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		//TODO: check if it should be calculated like that
 		// Go through all partitions
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				//calculate the error of the partition
+				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
-					Double error = Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
-					errorSum += error;
+					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
+				//divide the error by two, because otherwise wrong partitions are counted twice
+				errorSum += error/2;
 			}
 		}
 		
@@ -155,7 +162,34 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
+		//TODO: check if it should be calculated like that
+		// Go through all songs
+		double errorSum = 0.0d;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			// Calculate the error for the current song
+			double songError = 0.0d;
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				//calculate the error for the current partition
+				double error = 0;
+				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
+					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);
+				}
+				songError += Math.sqrt(error);
+			}
+			
+			songError /= groundTruthRelationships.get(i).getRelationships().length;
+			
+			// Calculate error
+			errorSum += songError;
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
+		absMeasure[0] = new ValidationMeasureDouble();
+		absMeasure[0].setId(200);
+		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setValue(errorSum);
+		return absMeasure;
 	}
 	
 	/*
@@ -163,7 +197,27 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
+		//TODO: check if it should be calculated like that
+		// Go through all partitions
+		double errorSum = 0.0d;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				//calculate the error of the partition
+				double error = 0;
+				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
+					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);
+				}
+				errorSum += Math.sqrt(error);
+			}
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
+		absMeasure[0] = new ValidationMeasureDouble();
+		absMeasure[0].setId(200);
+		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setValue(errorSum);
+		return absMeasure;
 	}
 }
 

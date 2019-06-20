@@ -37,7 +37,7 @@ import net.miginfocom.swing.MigLayout;
  */
 
 public class TrainingDescriptionPanel extends JPanel {
-	private JLabel textFieldLabel = new JLabel("Training Descrption:");
+	private JLabel textFieldLabel = new JLabel("Training Description:");
 	private JTextField textField = new JTextField(10);
 	private TitledBorder title = new TitledBorder("Optional Training Description");
 	

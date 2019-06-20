@@ -313,7 +313,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	}
 
 	public void setMergeSongResults(Integer mergeSongResults) {
-		selectAverageCalculation.setEnabled(mergeSongResults == 1);
+		selectAverageCalculation.setSelected(mergeSongResults == 1);
 	}
 
 	public void setOutputResult(String classificationOutput) {

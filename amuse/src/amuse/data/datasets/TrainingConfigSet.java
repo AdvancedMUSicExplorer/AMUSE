@@ -219,7 +219,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(attributesToClassifyStr);
         attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(attributesToIgnoreStr);
         relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(relationshipTypeStr);
-        labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(relationshipTypeStr);
+        labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(labelTypeStr);
         methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(methodTypeStr);
         trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(trainingDescriptionStr);
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
