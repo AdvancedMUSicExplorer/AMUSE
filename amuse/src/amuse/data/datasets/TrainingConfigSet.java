@@ -302,10 +302,10 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 
     @Override
     public TaskConfiguration[] getTaskConfiguration() {
-	try {
-	    return TrainingConfiguration.loadConfigurationsFromDataSet(this);
-	} catch (IOException ex) {
-	    throw new RuntimeException(ex);
-	}
+		try {
+		    return TrainingConfiguration.loadConfigurationsFromDataSet(this);
+		} catch (IOException ex) {
+		    throw new RuntimeException(ex);
+		}
     }
 }

@@ -140,6 +140,8 @@ public class TrainingConfiguration extends TaskConfiguration {
 			GroundTruthSourceType gtst;
 			if(trainingConfig.getGroundTruthSourceTypeAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
+			} else if(trainingConfig.getGroundTruthSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
+				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}

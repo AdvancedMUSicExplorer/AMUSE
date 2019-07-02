@@ -150,18 +150,30 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		
 		
 		// Set the i/o files
-		pathToFileWithLabeledInstances = new String();		
+		pathToFileWithLabeledInstances = new String();	
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
+				equals(GroundTruthSourceType.FILE_LIST)) {
+			//the groundTruthSourceType is the path to the file with the labeled instances
+			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
+			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
+			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
+			if(this.categoryDescription.contains(File.separator)) {
+				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator) + 1);
+			}
+			
+		} else if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.READY_INPUT)) {
 			pathToFileWithLabeledInstances = new String("-1"); // Input is already labeled!
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
 			if(this.categoryDescription.contains(File.separator)) {
-				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator));
+				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator) + 1);
 			}
 		} else {
+			
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			
+			//search for the file with the correct category id
 			DataSetAbstract categoryList = null;
 			try {
 				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
@@ -932,11 +944,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		// If the model(s) should be saved to the Amuse model database..
 		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) && 
 				(this.outputModel.equals("-1") || this.outputModel.equals(""))) {
-			
-			//TODO: decide if a exception should be thrown for READY_INPUT
-//			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.READY_INPUT) {
-//				throw new NodeException("No output model is given!");
-//			}
 			
 			String folderForModelsString = 
 					((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 

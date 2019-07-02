@@ -156,16 +156,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 			GroundTruthSourceType gtst;
 			if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
-				
-				// Search for the category file
-				DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
-				for(int j=0;j<categoryList.getValueCount();j++) {
-					Integer id = new Double(categoryList.getAttribute("Id").getValueAt(j).toString()).intValue();
-					if(id.toString().equals(currentInputToValidate)) {
-						currentInputToValidate = id.toString();
-						break;
-					}
-				}
+			} else if (validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))){
+				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}

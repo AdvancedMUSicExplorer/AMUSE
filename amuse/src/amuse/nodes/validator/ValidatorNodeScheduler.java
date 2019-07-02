@@ -177,8 +177,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			return;
 		}
 		int i=0;
-		// TODO is this a good solution for READY_INPUT?
+		
 		if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			// Search for the category file
 			while(i < categoryList.getValueCount()) {
 				Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
 				if(id.toString().equals(
@@ -190,6 +191,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				i++;
 			}
 		} else {
+			//set the category description according to the name of the input file
 			this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString();
 			this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separatorChar) + 1, this.categoryDescription.lastIndexOf('.'));
 		}

@@ -38,8 +38,10 @@ import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.FileInput;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -67,7 +69,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Defines the input source type. Can be either
 	 * - List with music files to classify
 	 * - Path to the ready classification input (prepared e.g. by a validator method) */
-	public enum InputSourceType {FILE_LIST, READY_INPUT};
+	public enum InputSourceType {FILE_LIST, CATEGORY_ID, READY_INPUT};
 	
 	/** Description of the processed features model */
 	private final String processedFeaturesModelName;
@@ -143,7 +145,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * Alternative constructor if the song list to classify is loaded by the category id
 	 * @param inputSourceType Defines the input source type
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
-	 * @param pathToInputSource Input for classification
+	 * @param inputSource Input for classification
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
@@ -155,7 +157,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public ClassificationConfiguration(
 			InputSourceType inputSourceType,
-			String pathToInputSource,
+			String inputSource,
 			List <Integer> attributesToIgnore,
 			String processedFeaturesModelName,
 			String algorithmDescription,
@@ -165,13 +167,27 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			Integer mergeSongResults,
 			String classificationOutput,
 			String pathToInputModel,
-			String trainingDescription) {
+			String trainingDescription) throws IOException{
 		List<File> input;
 		List<Integer> ids = null;
-		if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
+		
+		if(inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
+			// Search for the category file
+			Integer categoryId = new Integer(inputSource);
+			DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
+			for(int i=0;i<categoryList.getValueCount();i++) {
+				Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
+				if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {
+					inputSource = new String(categoryList.getAttribute("Path").getValueAt(i).toString());
+					break;
+				}
+			}
+		}
+		
+		if(inputSourceType.equals(InputSourceType.FILE_LIST) || inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
 			DataSetAbstract inputFileSet; 
 			try {
-				inputFileSet = new ArffDataSet(new File(pathToInputSource));
+				inputFileSet = new ArffDataSet(new File(inputSource));
 			} catch(IOException e) {
 				throw new RuntimeException("Could not create ClassificationConfiguration: " + e.getMessage());
 			}
@@ -184,7 +200,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			
 		} else {
 			input = new ArrayList<File>(1);
-			input.add(new File(pathToInputSource));
+			input.add(new File(inputSource));
 		}
 		this.inputSourceType = inputSourceType;
 		this.inputToClassify = new FileListInput(input,ids);
@@ -211,7 +227,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<classifierConfig.getValueCount();i++) {
-			String currentInputFileList = classifierConfig.getInputFileListAttribute().getValueAt(i).toString();
+			String currentInputFileList = classifierConfig.getInputSourceAttribute().getValueAt(i).toString();
 			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
@@ -287,9 +303,11 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			InputSourceType ist;
 			if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
 				ist = InputSourceType.FILE_LIST;
+			} else if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))){
+				ist = InputSourceType.CATEGORY_ID;
 			} else {
 				ist = InputSourceType.READY_INPUT;
-			}	
+			}
 			
 			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
 			

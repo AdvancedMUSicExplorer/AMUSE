@@ -46,7 +46,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 public class ClassifierConfigSet extends AbstractArffExperimentSet {
 
 	// Strings which describe ARFF attributes
-	private static final String strInputFileList = "InputFileList";
+	private static final String strInputSource = "InputSource";
 	private static final String strInputSourceType = "InputSourceType";
 	private static final String strAttributesToIgnore  = "AttributesToIgnore";
 	private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
@@ -64,7 +64,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private static final String strDataSetName = "ClassifierConfiguration";
 
 	// ARFF attributes
-	private final StringAttribute inputFileListAttribute;
+	private final StringAttribute inputSourceAttribute;
 	private final NominalAttribute inputSourceTypeAttribute;
 	private final StringAttribute attributesToIgnoreAttribute;
 	private final StringAttribute processedFeatureDescriptionAttribute;
@@ -88,7 +88,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	public ClassifierConfigSet(DataSetAbstract dataSet) throws DataSetException {
 		super(dataSet.getName());
 		// Check preconditions:
-		dataSet.checkStringAttribute(strInputFileList);
+		dataSet.checkStringAttribute(strInputSource);
 		dataSet.checkNominalAttribute(strInputSourceType);
 		dataSet.checkStringAttribute(strProcessedFeatureDescription);
 		dataSet.checkStringAttribute(strTrainingAlgorithmID);
@@ -104,7 +104,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strOutputResult);
 		dataSet.checkStringAttribute(strTrainingDescription);
 		
-		inputFileListAttribute = (StringAttribute) dataSet.getAttribute(strInputFileList);
+		inputSourceAttribute = (StringAttribute) dataSet.getAttribute(strInputSource);
 		inputSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputSourceType);
 		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
 		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strTrainingAlgorithmID);
@@ -119,7 +119,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		outputResultAttribute = (StringAttribute) dataSet.getAttribute(strOutputResult);
 		trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strTrainingDescription);
 		
-		addAttribute(inputFileListAttribute);
+		addAttribute(inputSourceAttribute);
 		addAttribute(inputSourceTypeAttribute);
 		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
@@ -143,7 +143,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	public ClassifierConfigSet(File file) throws IOException {
 		super(file);
 		// Check preconditions:
-		checkStringAttribute(strInputFileList);
+		checkStringAttribute(strInputSource);
 		checkNominalAttribute(strInputSourceType);
 		checkStringAttribute(strProcessedFeatureDescription);
 		checkStringAttribute(strTrainingAlgorithmID);
@@ -158,7 +158,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strOutputResult);
 		checkStringAttribute(strTrainingDescription);
 		
-		inputFileListAttribute = (StringAttribute) getAttribute(strInputFileList);
+		inputSourceAttribute = (StringAttribute) getAttribute(strInputSource);
 		inputSourceTypeAttribute = (NominalAttribute) getAttribute(strInputSourceType);
 		processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strTrainingAlgorithmID);
@@ -192,7 +192,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		List<String> files = new ArrayList<String>();
 		for (File f: inputFileList)
 			files.add(f.getAbsolutePath());
-		inputFileListAttribute = new StringAttribute(strInputFileList, files);
+		inputSourceAttribute = new StringAttribute(strInputSource, files);
 		inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, getAllowedValues(), inputSourceTypeList);
 		processedFeatureDescriptionAttribute = new StringAttribute(strProcessedFeatureDescription, processedFeatureDescription);
 		classificationAlgorithmIdAttribute = new StringAttribute(strTrainingAlgorithmID, algorithmIDs);
@@ -220,7 +220,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		outputResultAttribute = new StringAttribute(strOutputResult, outputResultPaths);
 		trainingDescriptionAttribute = new StringAttribute(strTrainingDescription, trainingDescriptions);
 		
-		addAttribute(inputFileListAttribute);
+		addAttribute(inputSourceAttribute);
 		addAttribute(inputSourceTypeAttribute);
 		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
@@ -251,7 +251,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String pathToInputModel,
 			String trainingDescription) {
 		super(strDataSetName);
-		inputFileListAttribute = StringAttribute.createFromString(strInputFileList, inputFile.getAbsolutePath());
+		inputSourceAttribute = StringAttribute.createFromString(strInputSource, inputFile.getAbsolutePath());
 		List <String> values = new ArrayList<String>();
 		values.add(inputSourceType);
 		inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, getAllowedValues(), values);
@@ -286,7 +286,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		outputResultAttribute = StringAttribute.createFromString(strOutputResult, outputResultPath);
 		trainingDescriptionAttribute = StringAttribute.createFromString(strTrainingDescription, trainingDescription);
 		
-		addAttribute(inputFileListAttribute);
+		addAttribute(inputSourceAttribute);
 		addAttribute(inputSourceTypeAttribute);
 		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(processedFeatureDescriptionAttribute);
@@ -304,8 +304,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 
 	public List<File> getInputFileLists() {
 		List<File> musicFileLists = new ArrayList<File>();
-		for (int i = 0; i < inputFileListAttribute.getValueCount(); i++)
-			musicFileLists.add(new File(inputFileListAttribute.getValueAt(i)));
+		for (int i = 0; i < inputSourceAttribute.getValueCount(); i++)
+			musicFileLists.add(new File(inputSourceAttribute.getValueAt(i)));
 		return musicFileLists;
 	}
 
@@ -343,8 +343,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		return outputResultAttribute;
 	}
 
-	public StringAttribute getInputFileListAttribute() {
-		return inputFileListAttribute;
+	public StringAttribute getInputSourceAttribute() {
+		return inputSourceAttribute;
 	}
 
 	public NominalAttribute getInputSourceTypeAttribute() {
