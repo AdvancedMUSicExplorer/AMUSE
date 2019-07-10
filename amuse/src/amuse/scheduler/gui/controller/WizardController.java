@@ -23,6 +23,21 @@
  */
 package amuse.scheduler.gui.controller;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import org.apache.log4j.Level;
+
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
@@ -41,21 +56,6 @@ import amuse.scheduler.gui.settings.JPanelSettings;
 import amuse.scheduler.gui.views.TaskManagerView;
 import amuse.scheduler.gui.views.WizardView;
 import amuse.util.AmuseLogger;
-
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import org.apache.log4j.Level;
 
 
 /**

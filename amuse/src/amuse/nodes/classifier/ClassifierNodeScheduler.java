@@ -40,6 +40,7 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.MethodType;
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
@@ -262,16 +263,16 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
 			
-			//check if the settings are supported
+			//Check if the settings are supported
 			if(((ClassificationConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
 				throw new NodeException("Currently only supervised classification is supported.");
 			}
 			
-			//load attributes to ignore and classify
+			//Load attributes to ignore and classify
 			List<Integer> attributesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify();
 			List<Integer> attributesToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToIgnore();
 			
-			//load the categoryDescription if no model path is given
+			//Load the categoryDescription if no model path is given
 			DataSetAbstract categoryList = null;
 			try {
 				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
@@ -308,7 +309,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					}
 					i++;
 				}
-				//if the category id could not be found and no model path is given, throw an exception
+				//If the category id could not be found and no model path is given, throw an exception
 				if(categoryDescription.equals("")) {
 					throw new NodeException("Category Id " + ((ClassificationConfiguration)this.taskConfiguration).getGroundTruthCategoryId() + " could not be found and no model path was given.");
 				}
@@ -338,7 +339,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								}
 							}
 						}
-					//prepare the description of the classifier input
+					//Prepare the description of the classifier input
 					boolean startAndEnd = true;
 					try {
 						completeInput.getAttribute("Start").getValueAt(0);
@@ -396,10 +397,33 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 
 					inputForClassification = new DataSet("ClassificationSet");
 					
+					DataInputInterface inputToClassify = ((ClassificationConfiguration)this.taskConfiguration).getInputToClassify();
+					
+					if(((ClassificationConfiguration)this.taskConfiguration).getInputSourceType() == ClassificationConfiguration.InputSourceType.CATEGORY_ID) {
+						// Search for the category file
+						Integer categoryId = new Integer(inputToClassify.toString());
+						for(int i=0;i<categoryList.getValueCount();i++) {
+							Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
+							if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {
+								String inputPath = new String(categoryList.getAttribute("Path").getValueAt(i).toString());
+								DataSetAbstract inputFileSet = new ArffDataSet(new File(inputPath));
+								List<Integer> ids = new ArrayList<Integer>(inputFileSet.getValueCount());
+								List<File> input = new ArrayList<File>(inputFileSet.getValueCount());
+								for(int j=0;j<inputFileSet.getValueCount();j++) {
+									ids.add(new Double(inputFileSet.getAttribute("Id").getValueAt(j).toString()).intValue());
+									input.add(new File(inputFileSet.getAttribute("Path").getValueAt(j).toString()));
+								}
+								inputToClassify = new FileListInput(input, ids);
+								break;
+							}
+						}
+					}
+					
 					// Load the processed feature files for a given music file list
 					// Load the first classifier input for attributes information
-					String currentInputFile = ((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).
+					String currentInputFile = ((FileListInput)inputToClassify).
 						getInputFiles().get(0).toString();
+					
 					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
 						currentInputFile = 
 							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
@@ -434,7 +458,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					// Save the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
-						//also omit the attributes that are supposed to be ignored
+						//Also omit the attributes that are supposed to be ignored
 						if(!attributesToIgnore.contains(i)) {
 							inputForClassification.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
@@ -443,8 +467,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					}
 						
 					// Save the processed features for classifier
-					for(int k=0;k<((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().size();k++) {
-						currentInputFile = ((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().get(k).toString();
+					for(int k=0;k<((FileListInput)inputToClassify).getInputFiles().size();k++) {
+						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(k).toString();
 						ArrayList<Double> partitionStarts = new ArrayList<Double>();
 						ArrayList<Double> partitionEnds = new ArrayList<Double>();
 						
@@ -511,7 +535,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							partitionStartsAsArray[l] = partitionStarts.get(l);
 							partitionEndsAsArray[l] = partitionEnds.get(l);
 						}
-						int currentInputSongId = ((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFileIds().get(k);
+						int currentInputSongId = ((FileListInput)inputToClassify).getInputFileIds().get(k);
 						descriptionOfClassifierInput.add(new SongPartitionsDescription(currentInputSong,currentInputSongId,
 								partitionStartsAsArray,partitionEndsAsArray));
 					}
@@ -605,7 +629,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 					// Configure the adapter class
 					try {
-						//check if the method supports the settings
+						//Check if the method supports the settings
 						boolean supportsBinary = new Double(currentInstance.value(supportsBinaryAttribute)) != 0;
 						boolean supportsContinuous = new Double(currentInstance.value(supportsContinuousAttribute)) != 0;
 						boolean supportsMulticlass = new Double(currentInstance.value(supportsMulticlassAttribute)) != 0;
@@ -697,9 +721,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								"Instantiation failed for classifier class: " + currentInstance.stringValue(classifierAdapterClassAttribute));
 						System.exit(1);
 					} catch(NodeException e) {
-						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Setting of parameters failed for classifier class: " + e.getMessage());
-						System.exit(1);
+						throw new NodeException("Setting of parameters failed for classifier class: " + e.getMessage());
 					}
 					
 					algorithmFound = true;

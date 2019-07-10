@@ -133,17 +133,16 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		//TODO: check if it should be calculated like that
 		// Go through all partitions
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//calculate the error of the partition
+				//Calculate the error of the partition
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
-				//divide the error by two, because otherwise wrong partitions are counted twice
+				//Divide the error by two, because otherwise wrong partitions are counted twice
 				errorSum += error/2;
 			}
 		}
@@ -169,7 +168,7 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 			// Calculate the error for the current song
 			double songError = 0.0d;
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//calculate the error for the current partition
+				//Calculate the error for the current partition
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);
@@ -202,7 +201,7 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//calculate the error of the partition
+				//Calculate the error of the partition
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);

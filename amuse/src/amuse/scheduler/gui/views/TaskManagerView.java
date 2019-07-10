@@ -227,6 +227,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     private void startTasks() {
 		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
 		wizard.startTasks(tasks);
+		experimentTable.experiments = new ArrayList<TaskConfiguration>();
     }
 
     public void addExperiment(TaskConfiguration ex) {

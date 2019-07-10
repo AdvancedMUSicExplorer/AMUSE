@@ -16,6 +16,7 @@ import amuse.data.datasets.FileTableSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.FileInput;
 import amuse.data.io.FileListInput;
 import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
 import amuse.preferences.AmusePreferences;
@@ -23,6 +24,7 @@ import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.filesandfeatures.FileTreeController;
 import amuse.scheduler.gui.filesandfeatures.FileTreeModel;
 import amuse.scheduler.gui.filesandfeatures.FileTreeView;
+import amuse.scheduler.gui.training.CategorySelectionPanel;
 import amuse.scheduler.gui.training.ReadyInputSelectionPanel;
 import net.miginfocom.swing.MigLayout;
 
@@ -35,6 +37,7 @@ public class ClassificationInputSelectionPanel extends JPanel{
   private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
   private FileTreeController ftController = new FileTreeController(ftModel, fileView);
   private ReadyInputSelectionPanel readyInputSelectionPanel;
+  private CategorySelectionPanel categorySelectionPanel;
   private JComboBox<InputSourceType> inputSourceTypeComboBox;
 	
 	public ClassificationInputSelectionPanel() {
@@ -42,14 +45,16 @@ public class ClassificationInputSelectionPanel extends JPanel{
 		this.setBorder(new TitledBorder("Select Classification Input"));
 		
 		readyInputSelectionPanel = new ReadyInputSelectionPanel("Select the Ready Input File", true);
+		categorySelectionPanel = new CategorySelectionPanel(true);
 		
 		CardLayout cardLayout = new CardLayout();
 		JPanel cardLayoutPanel = new JPanel(cardLayout);
 		
 		cardLayoutPanel.add(readyInputSelectionPanel, InputSourceType.READY_INPUT.toString());
 		cardLayoutPanel.add(fileView.getView(), InputSourceType.FILE_LIST.toString());
+		cardLayoutPanel.add(categorySelectionPanel, InputSourceType.CATEGORY_ID.toString());
 		
-		inputSourceTypeComboBox = new JComboBox<InputSourceType>(new InputSourceType[]{InputSourceType.FILE_LIST, InputSourceType.READY_INPUT});
+		inputSourceTypeComboBox = new JComboBox<InputSourceType>(new InputSourceType[]{InputSourceType.FILE_LIST, InputSourceType.CATEGORY_ID, InputSourceType.READY_INPUT});
 		inputSourceTypeComboBox.addActionListener(e -> {
 			cardLayout.show(cardLayoutPanel, inputSourceTypeComboBox.getSelectedItem().toString());
 		});
@@ -77,14 +82,12 @@ public class ClassificationInputSelectionPanel extends JPanel{
 	}
 
 	public void setInputToClassify(DataInputInterface inputToClassify) {
-		if (inputToClassify instanceof FileListInput) {
-			if(getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
-				readyInputSelectionPanel.setSelectedPath(((FileListInput) inputToClassify).getInputFiles().get(0).getPath());
-			} else {
-				ftController.loadFiles(((FileListInput) inputToClassify).getInputFiles());
-			}
+		if(getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
+			readyInputSelectionPanel.setSelectedPath(((FileListInput) inputToClassify).getInputFiles().get(0).getPath());
+		} else if (getSelectedInputSourceType().equals(InputSourceType.FILE_LIST)){
+			ftController.loadFiles(((FileListInput) inputToClassify).getInputFiles());
 		} else {
-			throw new UnsupportedOperationException();
+			categorySelectionPanel.setCategory(new Integer(inputToClassify.toString()));
 		}
 	}
 
@@ -95,13 +98,19 @@ public class ClassificationInputSelectionPanel extends JPanel{
 	public DataSetAbstract getInputToClassify() throws IOException {
 		if(getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
 			return new DataSet(new File(readyInputSelectionPanel.getPath()), "ClassificationSet");
-		} else {
+		} else if(getSelectedInputSourceType().equals(InputSourceType.FILE_LIST)){
 			return new FileTableSet(ftModel.getFiles());
+		} else {
+			return new DataSet(new File(categorySelectionPanel.getSelectedCategoryPath()));
 		}
 	}
 
 	public String getReadyInputPath() {
 		return readyInputSelectionPanel.getPath();
+	}
+
+	public int getCategoryId() {
+		return categorySelectionPanel.getSelectedCategoryID();
 	}
 
 }

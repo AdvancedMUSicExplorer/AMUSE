@@ -54,6 +54,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
+import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
@@ -529,10 +530,10 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 									new ArrayList<Double>()));
 						}
 					}
-					//add the id attribute
+					//Add the id attribute
 					labeledInputForValidation.addAttribute(new NumericAttribute("Id",new ArrayList<Double>()));
-					//add the "NumberOfCategories" attribute
-					//it marks the where the categories that are to be classified start and how many will follow
+					//Add the "NumberOfCategories" attribute
+					//It marks the where the categories that are to be classified start and how many will follow
 					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					for(int category : attributesToClassify) {
 						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
@@ -567,7 +568,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										currentAttribute++;
 									}
 								}
-								//if the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
 								if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 									currentPosition = 0;
 									for(int category : attributesToClassify) {
@@ -582,7 +583,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										}
 										currentPosition++;
 									}
-									//if the classification is multiclass only the relationship of the class with the highest confidence is 1
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
 								} else {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
@@ -787,8 +788,17 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private void saveMeasuresToFile() throws NodeException {
 		try {
 			
-			// Check if the folder for measure file exists; if not create it
-			File folderForMeasures = createMeasureFolder();
+			String outputPath = ((ValidationConfiguration)this.taskConfiguration).getOutputPath();
+			//If the outputPath should be calculated automatically
+			if(!(outputPath.equals("-1") || outputPath.equals(""))) {
+				// Check if the folder for measure file exists; if not create it
+				File folderForMeasures = createMeasureFolder();
+				outputPath = folderForMeasures + File.separator + "measures.arff";
+				if(!(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.CATEGORY_ID)) {
+					AmuseLogger.write(ValidatorNodeScheduler.class.getClass().getName(), Level.WARN,"No output path given! The results will be saved at " + outputPath);
+				}
+			}
+			
 			
 			// If no measure file is there, save header
 			boolean saveHeader = false;
@@ -797,7 +807,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				saveHeader = true;
 			//}
 			//FileOutputStream values_to = new FileOutputStream(this.folderForMeasures + File.separator + "measures.arff",true);
-			FileOutputStream values_to = new FileOutputStream(folderForMeasures + File.separator + "measures.arff");
+			FileOutputStream values_to = new FileOutputStream(outputPath);
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
 			

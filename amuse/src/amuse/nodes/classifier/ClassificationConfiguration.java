@@ -128,7 +128,6 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			ModelType modelType,
 			Integer mergeSongResults,
 			String classificationOutput) {
-		
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
 		this.processedFeaturesModelName = processedFeaturesModelName;
@@ -172,19 +171,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		List<Integer> ids = null;
 		
 		if(inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
-			// Search for the category file
-			Integer categoryId = new Integer(inputSource);
-			DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
-			for(int i=0;i<categoryList.getValueCount();i++) {
-				Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
-				if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {
-					inputSource = new String(categoryList.getAttribute("Path").getValueAt(i).toString());
-					break;
-				}
-			}
-		}
-		
-		if(inputSourceType.equals(InputSourceType.FILE_LIST) || inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
+			this.inputToClassify = new FileInput(inputSource);
+		} else if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
 			DataSetAbstract inputFileSet; 
 			try {
 				inputFileSet = new ArffDataSet(new File(inputSource));
@@ -197,13 +185,15 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				ids.add(new Double(inputFileSet.getAttribute("Id").getValueAt(j).toString()).intValue());
 				input.add(new File(inputFileSet.getAttribute("Path").getValueAt(j).toString()));
 			}
+			this.inputToClassify = new FileListInput(input,ids);
 			
 		} else {
 			input = new ArrayList<File>(1);
 			input.add(new File(inputSource));
+			this.inputToClassify = new FileListInput(input,ids);
 		}
 		this.inputSourceType = inputSourceType;
-		this.inputToClassify = new FileListInput(input,ids);
+		
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthCategoryId = groundTruthSource;
@@ -227,7 +217,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<classifierConfig.getValueCount();i++) {
-			String currentInputFileList = classifierConfig.getInputSourceAttribute().getValueAt(i).toString();
+			String currentInputSource = classifierConfig.getInputSourceAttribute().getValueAt(i).toString();
 			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
@@ -312,7 +302,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
 			
 			// Create a classification task
-		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputFileList, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
+		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
 		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToClassify, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}

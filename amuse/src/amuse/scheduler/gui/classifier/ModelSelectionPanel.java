@@ -17,7 +17,6 @@ public class ModelSelectionPanel extends JPanel {
 	
 	public ModelSelectionPanel(String title) {
 		super(new MigLayout("fillx"));
-		pathField = new JTextField();
 		
 		JButton selectPathButton = new JButton("...");
 		selectPathButton.addActionListener(e ->{
@@ -28,8 +27,8 @@ public class ModelSelectionPanel extends JPanel {
 	        pathField.setText(fc.getSelectedFile().toString());
 		});
 		this.add(pathLabel, "pushx, wrap");
-		this.add(pathField, "split 2, growx, pushx");
-		this.add(selectPathButton, "pushx, wrap");
+		this.add(pathField, "split 2, growx");
+		this.add(selectPathButton, "wrap");
 	}
 
 	public String getPath() {

@@ -127,6 +127,8 @@ public class TrainingController extends AbstractController {
         }
         else if(groundTruthSourceType.equals(GroundTruthSourceType.READY_INPUT.toString())){
         	trainingView.setGroundTruthSourceType(GroundTruthSourceType.READY_INPUT);
+        } else {
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.FILE_LIST);
         }
         trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
         

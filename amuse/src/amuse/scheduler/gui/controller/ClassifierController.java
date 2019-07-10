@@ -34,7 +34,6 @@ import javax.swing.JPanel;
 
 import amuse.data.ModelType;
 import amuse.data.datasets.ClassifierConfigSet;
-import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
@@ -55,13 +54,6 @@ import amuse.scheduler.gui.navigation.NextButtonUsable;
 public class ClassifierController extends AbstractController {
 
     private WizardController wizardController;
-//    private String[] endings = {"mp3", "wav"};
-//    private File musicDatabaseFolder = new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE));
-//    private String musicDatabaseLabel = "Music Database";
-//    private FileTreeView fileView = new FileTreeView();
-//    private FileTreePanel ftPanel = new FileTreePanel(fileView);
-//    private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
-//    private FileTreeController ftController = new FileTreeController(ftModel, fileView);
     private ClassifierView classifierView;
     private static final File clFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "experiments" + File.separator + "CL");
 
@@ -76,10 +68,6 @@ public class ClassifierController extends AbstractController {
         return view;
     }
 
-//    private void goToClassifierSetup() {
-//        wizardController.setWizardPanel(classifierView);
-//    }
-
     @Override
     public void saveTask(File file) {
         file = addArff(file);
@@ -87,11 +75,15 @@ public class ClassifierController extends AbstractController {
             return;
         }
         /* Gather all neccessary information and create variables */
+        String inputSource = "";
         File musicFilesFile = null;
         if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
         	musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
+        	inputSource = musicFilesFile.getAbsolutePath();
+        } else if(classifierView.getInputSourceType() == InputSourceType.READY_INPUT) {
+        	inputSource = classifierView.getReadyInputPath();
         } else {
-        	musicFilesFile = new File(classifierView.getReadyInputPath());
+        	inputSource = Integer.toString(classifierView.getCategoryId());
         }
         String inputSourceType = classifierView.getInputSourceType().toString();
         String processedFeatureDescription = classifierView.getProcessingModelString();
@@ -111,7 +103,7 @@ public class ClassifierController extends AbstractController {
         String pathToInputModel = classifierView.getPathToInputModel();
         
         ClassifierConfigSet dataSet = new ClassifierConfigSet(
-        		musicFilesFile, 
+        		inputSource, 
         		inputSourceType,
         		attributesToIgnore,
         		processedFeatureDescription, 
@@ -196,12 +188,6 @@ public class ClassifierController extends AbstractController {
         	classifierView.setPathToInputModel(conf.getPathToInputModel());
         }
         
-//        if (conf.getInputToClassify() instanceof FileListInput) {
-//            ftController.loadFiles(((FileListInput) conf.getInputToClassify()).getInputFiles());
-//        } else {
-//            throw new UnsupportedOperationException();
-//        }
-        
     }
 
     @Override
@@ -209,12 +195,16 @@ public class ClassifierController extends AbstractController {
         /* Gather all neccessary information and create variables */
         ClassificationConfiguration conf = null;
         try {
+        	String inputSource = "";
         	File musicFilesFile = null;
         	if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
 	            musicFilesFile = File.createTempFile("FileTable", "arff");
 	            musicFilesFile.deleteOnExit();
+	            inputSource = musicFilesFile.getAbsolutePath();
+            } else if(classifierView.getInputSourceType() == InputSourceType.READY_INPUT) {
+            	inputSource = classifierView.getReadyInputPath();
             } else {
-            	musicFilesFile = new File(classifierView.getReadyInputPath());
+            	inputSource = Integer.toString(classifierView.getCategoryId());
             }
             String inputSourceType = classifierView.getInputSourceType().toString();
             String processedFeatureDescription = classifierView.getProcessingModelString();
@@ -242,7 +232,7 @@ public class ClassifierController extends AbstractController {
             // Save Files and Features:
             conf = new ClassificationConfiguration(
             		InputSourceType.valueOf(inputSourceType),
-            		musicFilesFile.getAbsolutePath(),
+            		inputSource,
             		attributesToIgnore,
             		processedFeatureDescription, 
             		algorithmStr, 
@@ -265,65 +255,6 @@ public class ClassifierController extends AbstractController {
             setConfiguration((ClassificationConfiguration) conf);
         }
     }
-
-//    private class FileTreePanel extends JPanel implements HasCaption, NextButtonUsable, HasLoadButton {
-//
-//        private static final long serialVersionUID = 6775206923190367970L;
-//
-//        /**
-//         * @param fileView
-//         */
-//        public FileTreePanel(FileTreeView fileView) {
-//            this.setLayout(new BorderLayout());
-//            this.add(fileView.getView(), BorderLayout.CENTER);
-//        }
-//
-//        /* (non-Javadoc)
-//         * @see amuse.scheduler.gui.navigation.HasCaption#getCaption()
-//         */
-//        @Override
-//        public String getCaption() {
-//            return "Classification Configurator - Select Music Files to Classify";
-//        }
-//
-//        /* (non-Javadoc)
-//         * @see amuse.scheduler.gui.navigation.NextButtonUsable#getNextButtonText()
-//         */
-//        @Override
-//        public String getNextButtonText() {
-//            return "Setup Classifier";
-//        }
-//
-//        /* (non-Javadoc)
-//         * @see amuse.scheduler.gui.navigation.NextButtonUsable#nextButtonClicked()
-//         */
-//        @Override
-//        public boolean nextButtonClicked() {
-//            goToClassifierSetup();
-//            return false;
-//        }
-//
-//        @Override
-//        public String getLoadButtonText() {
-//            return "Load";
-//        }
-//
-//        @Override
-//        public void loadButtonClicked() {
-//            clFolder.mkdirs();
-//            JFileChooser fc = new SelectArffFileChooser(
-//                    "Classification Task", clFolder);
-//            if (fc.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) {
-//                return;
-//            }
-//            File selectedFile = fc.getSelectedFile();
-//            try {
-//                loadTask(selectedFile);
-//            } catch (IOException ex) {
-//                showErr(ex.getLocalizedMessage());
-//            }
-//        }
-//    }
 
     private class ClassificationPanel extends JPanel implements NextButtonUsable,
             HasCaption, HasSaveButton, HasLoadButton {

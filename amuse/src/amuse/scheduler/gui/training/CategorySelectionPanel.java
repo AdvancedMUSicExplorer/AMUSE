@@ -39,14 +39,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import net.miginfocom.swing.MigLayout;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.preferences.AmusePreferences;
-import amuse.preferences.KeysStringValue;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author Clemens Waeltken
@@ -55,38 +54,38 @@ import amuse.preferences.KeysStringValue;
 public class CategorySelectionPanel extends JPanel {
 
 	private JComboBox comboBox = new JComboBox();
-	private List<JCheckBox> checkBoxes = new ArrayList<JCheckBox>();
+	private List<JCheckBox> checkBoxes;
 	private CategoryComboBoxModel model;
 
-	public CategorySelectionPanel() {
+	public CategorySelectionPanel(boolean classificationInput) {
 		super(new MigLayout("fillx"));
 		this.setBorder(new TitledBorder("Select Category"));
 		this.add(new JLabel("Annotation"));
 		this.add(comboBox, "pushx, gap rel, wrap");
+		
+		if(!classificationInput) checkBoxes = new ArrayList<JCheckBox>();
 		try {
 			model = new CategoryComboBoxModel();
 			comboBox.setModel(model);
-			updateCheckBoxes();
-			comboBox.addActionListener(e ->{
-				updateCheckBoxes();
-			});
+			if(!classificationInput) updateCheckBoxes();
+			if(!classificationInput) {
+				comboBox.addActionListener(e ->{
+					updateCheckBoxes();
+				});
+			}
 		} catch (IOException ex) {
 			JOptionPane.showMessageDialog(this, "Unable to load Categories: \""+ ex.getLocalizedMessage() + "\"", "Unable To Load Categories!", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
 	private void updateCheckBoxes() {
-		for(JCheckBox checkBox : checkBoxes) {
-			this.remove(checkBox);
-		}
-		checkBoxes = new ArrayList<JCheckBox>();
+		removeCheckBoxes();
 		String path = model.selected.fileName;
 		try {
 			DataSet dataSet = new DataSet(new File(path));	
 			for(int i=5;i<dataSet.getAttributeCount();i++) {
 				JCheckBox categoryCheckBox = new JCheckBox(dataSet.getAttribute(i).getName());
 				checkBoxes.add(categoryCheckBox);
-//				this.add(new JLabel(dataSet.getAttribute(i).getName()));
 				this.add(categoryCheckBox, "pushx, gap rel, wrap");
 			}
 		} catch(IOException exception){
@@ -94,9 +93,20 @@ public class CategorySelectionPanel extends JPanel {
 		}
 		this.revalidate();
 	}
+	
+	private void removeCheckBoxes() {
+		for(JCheckBox checkBox : checkBoxes) {
+			this.remove(checkBox);
+		}
+		checkBoxes = new ArrayList<JCheckBox>();
+	}
 
 	public int getSelectedCategoryID() {
 		return model.getSelectedID();
+	}
+	
+	public String getSelectedCategoryPath() {
+		return model.getSelectedCategoryPath();
 	}
 	
 	public List<Integer> getAttributesToClassify(){
@@ -135,7 +145,7 @@ public class CategorySelectionPanel extends JPanel {
 	public void setCategory(int id) {
 		setSelectedCategory(id);
 	}
-
+	
 	private class CategoryComboBoxModel extends DefaultComboBoxModel {
 
 		private static final long serialVersionUID = -680154994516168686L;
@@ -176,6 +186,10 @@ public class CategorySelectionPanel extends JPanel {
 			for (Category cat : categories) {
 				super.addElement(cat);
 			}
+		}
+
+		public String getSelectedCategoryPath() {
+			return selected.fileName;
 		}
 
 		@Override

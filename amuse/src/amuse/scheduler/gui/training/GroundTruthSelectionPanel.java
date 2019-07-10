@@ -1,30 +1,14 @@
 package amuse.scheduler.gui.training;
 
 import java.awt.CardLayout;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.apache.log4j.Level;
 
 import amuse.data.GroundTruthSourceType;
-import amuse.data.io.DataSet;
-import amuse.scheduler.gui.dialogs.AttributeSelector;
-import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
-import amuse.util.AmuseLogger;
 import net.miginfocom.swing.MigLayout;
 
 public class GroundTruthSelectionPanel extends JPanel {
@@ -32,21 +16,24 @@ public class GroundTruthSelectionPanel extends JPanel {
 	private JComboBox<GroundTruthSourceType> groundTruthSourceTypeComboBox;
 	private ReadyInputSelectionPanel readyInputSelectionPanel;
 	private CategorySelectionPanel categorySelectionPanel;
+	private FileListSelectionPanel fileListSelectionPanel;
 
 	public GroundTruthSelectionPanel() {
 		super(new MigLayout("fillx, wrap"));
 		this.setBorder(new TitledBorder("Select Ground Truth"));
 		
-		categorySelectionPanel = new CategorySelectionPanel();
+		categorySelectionPanel = new CategorySelectionPanel(false);
+		fileListSelectionPanel = new FileListSelectionPanel();
 		readyInputSelectionPanel = new ReadyInputSelectionPanel("Select the Ready Input File", false);
 		
 		CardLayout cardLayout = new CardLayout();
 		JPanel cardLayoutPanel = new JPanel(cardLayout);
 
 		cardLayoutPanel.add(categorySelectionPanel, GroundTruthSourceType.CATEGORY_ID.toString());
+		cardLayoutPanel.add(fileListSelectionPanel, GroundTruthSourceType.FILE_LIST.toString());
 		cardLayoutPanel.add(readyInputSelectionPanel, GroundTruthSourceType.READY_INPUT.toString());
 		
-		groundTruthSourceTypeComboBox = new JComboBox<GroundTruthSourceType>(new GroundTruthSourceType[]{GroundTruthSourceType.CATEGORY_ID, GroundTruthSourceType.READY_INPUT});
+		groundTruthSourceTypeComboBox = new JComboBox<GroundTruthSourceType>(new GroundTruthSourceType[]{GroundTruthSourceType.CATEGORY_ID, GroundTruthSourceType.FILE_LIST, GroundTruthSourceType.READY_INPUT});
 		groundTruthSourceTypeComboBox.addActionListener(e -> {
 			cardLayout.show(cardLayoutPanel, groundTruthSourceTypeComboBox.getSelectedItem().toString());
 		});
@@ -64,6 +51,8 @@ public class GroundTruthSelectionPanel extends JPanel {
 			return categorySelectionPanel.getSelectedCategoryID() + "";
 		case READY_INPUT:
 			return readyInputSelectionPanel.getPath();
+		case FILE_LIST:
+			return fileListSelectionPanel.getPath();
 		}
 		return null;
 	}
@@ -74,6 +63,8 @@ public class GroundTruthSelectionPanel extends JPanel {
 			return categorySelectionPanel.getAttributesToClassify();
 		case READY_INPUT:
 			return readyInputSelectionPanel.getAttributesToClassify();
+		case FILE_LIST:
+			return fileListSelectionPanel.getAttributesToClassify();
 		}
 		return null;
 	}
@@ -84,6 +75,8 @@ public class GroundTruthSelectionPanel extends JPanel {
 			categorySelectionPanel.setAttributesToClassify(attributesToClassify); break;
 		case READY_INPUT:
 			readyInputSelectionPanel.setAttributesToClassify(attributesToClassify); break;
+		case FILE_LIST:
+			fileListSelectionPanel.setAttributesToClassify(attributesToClassify); break;
 		}
 	}
 
@@ -102,6 +95,9 @@ public class GroundTruthSelectionPanel extends JPanel {
 			break;
 		case READY_INPUT:
 			readyInputSelectionPanel.setSelectedPath(groundTruthSource);
+			break;
+		case FILE_LIST:
+			fileListSelectionPanel.setSelectedPath(groundTruthSource);
 			break;
 		}
 	}

@@ -17,7 +17,7 @@ import net.miginfocom.swing.MigLayout;
 
 public class ClassificationGroundTruthSelectionPanel extends JPanel {
 	
-	private CategorySelectionPanel categorySelectionPanel = new CategorySelectionPanel();
+	private CategorySelectionPanel categorySelectionPanel = new CategorySelectionPanel(false);
 	private ModelSelectionPanel modelSelectionPanel = new ModelSelectionPanel("Select Input Model");
 	private JComboBox<String> groundTruthSourceTypeComboBox;
 	

@@ -153,7 +153,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		pathToFileWithLabeledInstances = new String();	
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.FILE_LIST)) {
-			//the groundTruthSourceType is the path to the file with the labeled instances
+			//The groundTruthSourceType is the path to the file with the labeled instances
 			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
@@ -310,7 +310,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	private void prepareTrainerInput() throws NodeException {
 		if(! (((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource() instanceof DataSetInput)) {
 			
-			//check if the settings are supported
+			//Check if the settings are supported
 			if(((TrainingConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
 				throw new NodeException("Currently only supervised classification is supported.");
 			}
@@ -322,7 +322,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
 			int numberOfCategories = attributesToClassify.size();
 			
-			//check if the number of categories is correct
+			//Check if the number of categories is correct
 			if(((TrainingConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
 				throw new NodeException("Single label classification is not possible for more than one category.");
 			}
@@ -339,7 +339,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 						labeledInputForTraining = new DataSet("TrainingSet");
 					
-						//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+						//Aadd the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
@@ -351,27 +351,27 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							}
 						}
 					
-						//add the id attribute
+						//Add the id attribute
 						labeledInputForTraining.addAttribute(completeInput.getAttribute("Id"));
 					
-						//add the attribute "NumberOfCategories"
-						//it marks the where the categories that are to be classified start and how many will follow
+						//Add the attribute "NumberOfCategories"
+						//It marks the where the categories that are to be classified start and how many will follow
 						labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories", new ArrayList<Double>()));
 						for(int i = 0; i < completeInput.getValueCount(); i++) {
 							labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).addValue(new Double(numberOfCategories));
 						}
 					
-						//add the category attributes
+						//Add the category attributes
 						for(int i : attributesToClassify) {
 							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
-							//if the classification is not continuous, the values have to be rounded
+							//If the classification is not continuous, the values have to be rounded
 							if(((TrainingConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.BINARY && ((TrainingConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
 								for(int j = 0; j < completeInput.getAttribute(i).getValueCount(); j++) {
 									labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).setValueAt(j, (double)completeInput.getAttribute(i).getValueAt(j) >= 0.5 ? 1.0 : 0.0);
 								}
 							}
 						}
-						//if the classification is multiclass only the highest relationship of each partition is 1
+						//If the classification is multiclass only the highest relationship of each partition is 1
 						if(((TrainingConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
 							int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
 							for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
@@ -492,7 +492,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
-						//also omit the attributes that are supposed to be ignored
+						//Also omit the attributes that are supposed to be ignored
 						if(!attributesToIgnore.contains(i)) {
 							labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
 									new ArrayList<Double>()));
@@ -500,11 +500,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 					}
 					
-					//add the id attribute
+					//Add the id attribute
 					labeledInputForTraining.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
 					
-					//add the attribute "NumberOfCategories"
-					//it marks where the categories that are to be classified start and how many will follow
+					//Add the attribute "NumberOfCategories"
+					//It marks where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					//add the category attributes
 					for(int category : attributesToClassify) {
@@ -521,7 +521,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								int currentAttribute = 0;
 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
 									
-									//omit the attributes that are supposed to be ignored
+									//Omit the attributes that are supposed to be ignored
 									if(!attributesToIgnore.contains(j)) {
 										Double val = inputInstance.value(j);
 										labeledInputForTraining.getAttribute(currentAttribute).addValue(val);
@@ -529,7 +529,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 									}
 								}
 								
-								//if the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
 								if(((TrainingConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 									for(int category : attributesToClassify) {
 										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
@@ -540,7 +540,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 											labeledInputForTraining.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
 										}
 									}
-									//if the classification is multiclass only the relationship of the class with the highest confidence is 1
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
 								} else {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
@@ -906,9 +906,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								"Instantiation failed for classification trainer class: " + currentInstance.stringValue(trainerAdapterClassAttribute));
 						System.exit(1);
 					} catch(NodeException e) {
-						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Setting of parameters failed for classification trainer class: " + e.getMessage());
-						System.exit(1);
+						throw new NodeException("Setting of parameters failed for classification trainer class: " + e.getMessage());
 					}
 					
 					algorithmFound = true;

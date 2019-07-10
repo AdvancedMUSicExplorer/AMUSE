@@ -98,6 +98,9 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Folder to store the classification validation results (default: Amuse measure database) */
 	private String measureDatabase;
 	
+	/** Path to were the validation result should be saved. If it is empty or -1, the path is calculated automatically*/
+	private String outputPath;
+	
 	/** Calculated measures are stored here after the corresponding validation task has been successfully applied */
 	private ArrayList<ValidationMeasure> calculatedMeasures;
 	
@@ -122,7 +125,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 			GroundTruthSourceType groundTruthSourceType,
 			List<Integer> attributesToClassify,
 			List<Integer> attributesToIgnore,
-			ModelType modelType) {
+			ModelType modelType,
+			String outputPath) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
@@ -136,6 +140,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
 		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
+		this.outputPath = outputPath;
 	}
 	
 	/**
@@ -229,10 +234,12 @@ public class ValidationConfiguration extends TaskConfiguration {
 			// Load the measure table
 			MeasureTable currentMeasureTable = new MeasureTable(new File(currentMeasureList));
 			
+			String currentOutputPath = validatorConfig.getOutputPathAttribute().getValueAt(i);
+			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType));
+		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -427,6 +434,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public void setCalculatedMeasures(ArrayList<ValidationMeasure> calculatedMeasures) {
 		this.calculatedMeasures = calculatedMeasures;
+	}
+	
+	/**
+	 * @return the outputPath
+	 */
+	public String getOutputPath() {
+		return outputPath;
 	}
 
 }

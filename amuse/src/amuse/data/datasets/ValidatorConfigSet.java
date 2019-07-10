@@ -57,6 +57,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private static final String strRelationshipType = "RelationshipType";
 	private static final String strLabelType = "LabelType";
 	private static final String strMethodType = "MethodType";
+	private static final String strOutputPath = "OutputPath";
 	
 
 	// ARFF attributes
@@ -71,6 +72,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private final NominalAttribute relationshipTypeAttribute;
 	private final NominalAttribute labelTypeAttribute;
 	private final NominalAttribute methodTypeAttribute;
+	private final StringAttribute outputPathAttribute;
 	
 
 	private String description = "";
@@ -94,6 +96,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		checkNominalAttribute(strRelationshipType);
 		checkNominalAttribute(strLabelType);
 		checkNominalAttribute(strMethodType);
+		checkNominalAttribute(strOutputPath);
 		
 
 		validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
@@ -107,6 +110,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		relationshipTypeAttribute = (NominalAttribute) this.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
 		methodTypeAttribute = (NominalAttribute) this.getAttribute(strMethodType);
+		outputPathAttribute = (StringAttribute) this.getAttribute(strOutputPath);
 		
 	}
 
@@ -120,7 +124,8 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 			String relationshipType,
 			String labelType,
 			String methodType,
-			String classificationAlgorithmId) {
+			String classificationAlgorithmId,
+			String outputPath) {
 		super("ValidatorConfig");
 		validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
 		measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
@@ -155,6 +160,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
 		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
 		classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
+		outputPathAttribute = StringAttribute.createFromString(strOutputPath, outputPath);
 		
 		addAttribute(validationMethodIdAttribute);
 		addAttribute(measureListAttribute);
@@ -167,6 +173,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
+		addAttribute(outputPathAttribute);
 	}
 
 	public ValidatorConfigSet(DataSetAbstract dataSet) {
@@ -183,6 +190,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkNominalAttribute(strLabelType);
 		dataSet.checkNominalAttribute(strMethodType);
 		dataSet.checkStringAttribute(strClassificationAlgorithmId);
+		dataSet.checkStringAttribute(strOutputPath);
 		
 		validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
 		measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
@@ -194,6 +202,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
 		methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(strMethodType);
+		outputPathAttribute = (StringAttribute) dataSet.getAttribute(strOutputPath);
 
 		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
 		addAttribute(validationMethodIdAttribute);
@@ -207,6 +216,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
+		addAttribute(outputPathAttribute);
 	}
 
 	public String getType() {
@@ -293,5 +303,12 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	 */
 	public StringAttribute getInputToValidateAttribute() {
 		return inputToValidateAttribute;
+	}
+	
+	/**
+	 * @return the outputPathAttribute
+	 */
+	public StringAttribute getOutputPathAttribute() {
+		return outputPathAttribute;
 	}
 }

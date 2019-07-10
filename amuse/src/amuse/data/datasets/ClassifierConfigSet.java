@@ -31,6 +31,7 @@ import java.util.List;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.NominalAttribute;
@@ -236,7 +237,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(trainingDescriptionAttribute);
 	}
 
-	public ClassifierConfigSet( File inputFile,
+	public ClassifierConfigSet( String inputSource,
 			String inputSourceType,
 			String attributesToIgnore,
 			String processedFeatureDescription,
@@ -251,7 +252,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String pathToInputModel,
 			String trainingDescription) {
 		super(strDataSetName);
-		inputSourceAttribute = StringAttribute.createFromString(strInputSource, inputFile.getAbsolutePath());
+		inputSourceAttribute = StringAttribute.createFromString(strInputSource, inputSource);
 		List <String> values = new ArrayList<String>();
 		values.add(inputSourceType);
 		inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, getAllowedValues(), values);
@@ -387,8 +388,9 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 
 	private static List<String> getAllowedValues() {
 		List<String> allowedValues = new ArrayList<String>();
-		allowedValues.add("FILE_LIST");
-		allowedValues.add("READY_INPUT");
+		for(InputSourceType value : InputSourceType.values()) {
+			allowedValues.add(value.toString());
+		}
 		return allowedValues;
 	}
 }

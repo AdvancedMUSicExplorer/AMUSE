@@ -347,4 +347,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	public String getReadyInputPath() {
 		return inputSelectionPanel.getReadyInputPath();
 	}
+	
+	public int getCategoryId() {
+		return inputSelectionPanel.getCategoryId();
+	}
 }

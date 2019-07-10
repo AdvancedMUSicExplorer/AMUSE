@@ -82,12 +82,12 @@ public class TrainingView {
 			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 			addRightSide(preprocessingAlgorithmFacade.getParameterPanel());
 		}
-		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
 		if(training) {
 			trainingDescriptionPanel = new TrainingDescriptionPanel();
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		}
+		addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
 		addRightSide(modelTypePanel);
 		splitPane.setDividerLocation(0.5);

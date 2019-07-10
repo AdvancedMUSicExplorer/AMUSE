@@ -30,10 +30,10 @@ public class ReadyInputSelectionPanel extends JPanel{
 	
 	public ReadyInputSelectionPanel(String title, boolean classify) {
 		super(new MigLayout("fillx"));
-		pathField = new JTextField();
+		pathField = new JTextField(10);
 		
 		JButton selectPathButton = new JButton("...");
-		selectPathButton.addActionListener(e ->{
+		selectPathButton.addActionListener(e -> {
 			JFileChooser fc = new SelectArffFileChooser("", new File(""));
 	        if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
 	            return;
@@ -72,23 +72,23 @@ public class ReadyInputSelectionPanel extends JPanel{
 			
 			private void update() {
 				File f = new File(pathField.getText());
-				selectAttributesToClassifyButton.setEnabled(f.exists() && !f.isDirectory() && pathField.getText().endsWith(".arff"));
-				selectAttributesToIgnoreButton.setEnabled(f.exists() && !f.isDirectory() && pathField.getText().endsWith(".arff"));
+				boolean enable = f.exists() && !f.isDirectory() && pathField.getText().endsWith(".arff");
+				selectAttributesToClassifyButton.setEnabled(enable);
+				selectAttributesToIgnoreButton.setEnabled(enable);
 			}
 		});
 		
 		this.setBorder(new TitledBorder(title));
-		
-		this.add(pathField, "split 2, growx, pushx");
-		this.add(selectPathButton, "pushx, wrap");
+		this.add(pathField, "split 2, growx");
+		this.add(selectPathButton, "wrap");
 		if(!classify) {
 			this.add(attributesToClassifyLabel, "pushx, wrap");
-        	this.add(attributesToClassifyTextField, "split 2, growx, pushx");
-        	this.add(selectAttributesToClassifyButton, "pushx, wrap");
+        	this.add(attributesToClassifyTextField, "split2, growx");
+        	this.add(selectAttributesToClassifyButton, "wrap");
         }
         this.add(attributesToIgnoreLabel, "pushx, wrap");
-        this.add(attributesToIgnoreTextField, "split 2, growx, pushx");
-        this.add(selectAttributesToIgnoreButton, "pushx, wrap");
+        this.add(attributesToIgnoreTextField, "split 2, growx");
+        this.add(selectAttributesToIgnoreButton, "wrap");
 		
 	}
 	
