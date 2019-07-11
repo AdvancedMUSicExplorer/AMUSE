@@ -134,6 +134,7 @@ public class ValidationController extends AbstractController {
         String relationshipType = validationView.getModelType().getRelationshipType().toString();
         String labelType = validationView.getModelType().getLabelType().toString();
         String methodType = validationView.getModelType().getMethodType().toString();
+        String outputPath = validationView.getOuputPath();
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
         		validationMethodId,
                 measureTableFile, 
@@ -145,7 +146,8 @@ public class ValidationController extends AbstractController {
                 relationshipType,
                 labelType,
                 methodType,
-                classificationAlgorithmId);
+                classificationAlgorithmId,
+                outputPath);
         // Create folders...
         measureTableFile.getParentFile().mkdirs();
         // Save Files and Features:
@@ -224,6 +226,7 @@ public class ValidationController extends AbstractController {
     		
     		ModelType modelType = new ModelType(RelationshipType.valueOf(set.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(set.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(set.getMethodTypeAttribute().getValueAt(0)));
     		validationView.setModelType(modelType);
+    		validationView.setOutputPath(set.getOutputPathAttribute().getValueAt(0).toString());
             
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
@@ -242,6 +245,7 @@ public class ValidationController extends AbstractController {
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
         List<Integer> attributesToClassify = validationView.getAttributesToClassify();
         List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
+        String outputPath = validationView.getOuputPath();
         ModelType modelType = validationView.getModelType();
         conf = new ValidationConfiguration(
         		validationMethodStr, 
@@ -252,7 +256,8 @@ public class ValidationController extends AbstractController {
                 groundTruthSourceType,
                 attributesToClassify,
                 attributesToIgnore,
-                modelType);
+                modelType,
+                outputPath);
         return conf;
     }
 
@@ -388,6 +393,7 @@ public class ValidationController extends AbstractController {
             validationView.setAttributesToClassify(valConf.getAttributesToClassify());
             validationView.setAttributesToIgnore(valConf.getAttributesToIgnore());
             validationView.setModelType(valConf.getModelType());
+            validationView.setOutputPath(valConf.getOutputPath());
         }
     }
 }

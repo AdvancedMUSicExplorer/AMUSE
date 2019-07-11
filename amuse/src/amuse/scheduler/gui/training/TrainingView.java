@@ -25,16 +25,26 @@ package amuse.scheduler.gui.training;
 
 import amuse.data.GroundTruthSourceType;
 import amuse.data.ModelType;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.algorithm.Algorithm;
+
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
@@ -44,8 +54,9 @@ import javax.swing.JScrollPane;
  * @author Clemens Waeltken
  *
  */
-public class TrainingView {
+public class TrainingView extends JPanel {
 
+	private static final long serialVersionUID = 6467742990267146553L;
 	private JPanel viewLeft;
 	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
 	private JSplitPane splitPane = new JSplitPane();
@@ -57,6 +68,10 @@ public class TrainingView {
 	private TrainingDescriptionPanel trainingDescriptionPanel = null;
 	private static final String trainingViewName = "Setup Training";
 	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
+	private JPanel targetPathSelectionPanel = new JPanel(new MigLayout("fillx"));
+    private JButton btnSelectFolder = new JButton("Select File");
+    private JTextField txtTargetFilePath = new JTextField(30);
+    private TitledBorder pathSelectionTitle = new TitledBorder("Optional Output Path");
 
 	public TrainingView(boolean training) {
 		this(trainingViewName, training);
@@ -90,6 +105,21 @@ public class TrainingView {
 		addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
 		addRightSide(modelTypePanel);
+		
+		if(training) {
+			targetPathSelectionPanel.add(new JLabel("Enter Filename for Output Model:"), "wrap");
+	        targetPathSelectionPanel.add(txtTargetFilePath, "growx");
+	        txtTargetFilePath.setText("");
+	        targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
+	        targetPathSelectionPanel.setBorder(pathSelectionTitle);
+	        btnSelectFolder.addActionListener(new SelectFolderListener());
+        }
+        
+		trainingDescriptionPanel = new TrainingDescriptionPanel();
+		addRightSide(trainingAlgorithmFacade.getParameterPanel());
+		addRightSide(modelTypePanel);
+		if(training)addRightSide(targetPathSelectionPanel);
+		
 		splitPane.setDividerLocation(0.5);
 	}
 
@@ -142,6 +172,23 @@ public class TrainingView {
 			}
 		}
 	}
+	
+	private final class SelectFolderListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser(txtTargetFilePath.getText());
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(false);
+            if (fileChooser.showSaveDialog(targetPathSelectionPanel) == JFileChooser.APPROVE_OPTION) {
+                String absolutePath = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!absolutePath.endsWith(".mod")) {
+                    absolutePath = absolutePath + ".mod";
+                }
+                txtTargetFilePath.setText(absolutePath);
+            }
+        }
+    }
 	
 	public void setGroundTruthSourceType(GroundTruthSourceType type){
 		groundTruthSelectionPanel.setGroundTruthSourceType(type);
@@ -213,6 +260,14 @@ public class TrainingView {
 
 	public ModelType getModelType() {
 		return modelTypePanel.getModelType();
+	}
+
+	public String getPathToOutputModel() {
+		return txtTargetFilePath.getText();
+	}
+
+	public void setPathToOutputModel(String pathToOutputModel) {
+		txtTargetFilePath.setText(pathToOutputModel);
 	}
 
 }

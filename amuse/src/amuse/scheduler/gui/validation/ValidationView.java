@@ -23,14 +23,23 @@
  */
 package amuse.scheduler.gui.validation;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
 
 import amuse.data.GroundTruthSourceType;
 import amuse.data.ModelType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * @author Clemens Waeltken
@@ -40,13 +49,42 @@ public class ValidationView {
 	
 	private TrainingView trainingView;
     private static final String ToolTipValidationAlgorithms = "Select Validation Method.";
+    private JPanel targetPathSelectionPanel = new JPanel(new MigLayout("fillx"));
+    private JButton btnSelectFolder = new JButton("Select File");
+    private JTextField txtTargetFilePath = new JTextField(30);
+    private TitledBorder pathSelectionTitle = new TitledBorder("Optional Output Path");
 
 	public ValidationView(AlgorithmConfigurationFacade validationAlgorithms) {
 		this.trainingView = new TrainingView("Setup Validation", false);
         validationAlgorithms.setToolTip(ToolTipValidationAlgorithms);
 		trainingView.addRightSide(validationAlgorithms.getParameterPanel());
 		trainingView.addLineInView(validationAlgorithms.getAlgorithmSelectionComboBox());
+		
+		targetPathSelectionPanel.add(new JLabel("Enter Filename for Results:"), "wrap");
+        targetPathSelectionPanel.add(txtTargetFilePath, "growx");
+        txtTargetFilePath.setText("");
+        targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
+        targetPathSelectionPanel.setBorder(pathSelectionTitle);
+        btnSelectFolder.addActionListener(new SelectFolderListener());
+        trainingView.addRightSide(targetPathSelectionPanel);
 	}
+	
+	private final class SelectFolderListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser(txtTargetFilePath.getText());
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(false);
+            if (fileChooser.showSaveDialog(targetPathSelectionPanel) == JFileChooser.APPROVE_OPTION) {
+                String absolutePath = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!absolutePath.endsWith(".arff")) {
+                    absolutePath = absolutePath + ".arff";
+                }
+                txtTargetFilePath.setText(absolutePath);
+            }
+        }
+    }
 	
 	public JComponent getView() {
 		return trainingView.getView();
@@ -90,9 +128,8 @@ public class ValidationView {
 		return trainingView.getGroundTruthSourceType();
 	}
 
-	public String getPathToOutputModel() {
-		// TODO Auto-generated method stub
-		return "/home/heerde/workspace/Music/Models/randomforest/model.mod";
+	public String getOuputPath() {
+		return txtTargetFilePath.getText();
 	}
 	
 	public String getGroundTruthSource(){
@@ -125,5 +162,9 @@ public class ValidationView {
 
 	public void setModelType(ModelType modelType) {
 		trainingView.setModelType(modelType);
+	}
+
+	public void setOutputPath(String outputPath) {
+		txtTargetFilePath.setText(outputPath);
 	}
 }

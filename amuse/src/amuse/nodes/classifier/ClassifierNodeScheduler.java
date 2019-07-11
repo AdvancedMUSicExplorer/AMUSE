@@ -838,6 +838,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	 */
 	private void saveClassifierResultToFile(ArrayList<ClassifiedSongPartitions> classifierResult) throws NodeException {
 		try {
+			String classificationOutput = ((ClassificationConfiguration)taskConfiguration).getClassificationOutput();
 			File classifierResultFile = new File(((ClassificationConfiguration)taskConfiguration).getClassificationOutput());
 			if (classifierResultFile.exists())
 				if (!classifierResultFile.canWrite()) {

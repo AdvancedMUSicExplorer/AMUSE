@@ -167,6 +167,7 @@ public class TrainingController extends AbstractController {
 		trainingView.setAttributesToIgnore(attributesToIgnore);
 		
 		trainingView.setTrainingDescription(ttSet.getTrainingDescriptionAttribute().getValueAt(0).toString());
+		trainingView.setPathToOutputModel(ttSet.getPathToOutputModelAttribute().getValueAt(0).toString());
 		
 		try {
 			ModelType modelType = new ModelType(RelationshipType.valueOf(ttSet.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(ttSet.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(ttSet.getMethodTypeAttribute().getValueAt(0)));
@@ -287,7 +288,6 @@ public class TrainingController extends AbstractController {
 //    			+ File.separator
 //    			+ "model.mod";
 //    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
-    	String pathToOutputModel = "-1";
     	TrainingConfiguration conf = new TrainingConfiguration(
     			trainingView.getProcessingModelString(),
     			trainingView.getSelectedTrainingAlgorithmStr(),
@@ -298,7 +298,7 @@ public class TrainingController extends AbstractController {
     			trainingView.getAttributesToIgnore(),
     			trainingView.getModelType(),
     			trainingView.getTrainingDescription(),
-    			pathToOutputModel);
+    			trainingView.getPathToOutputModel());
         return conf;
     }
 
@@ -322,6 +322,7 @@ public class TrainingController extends AbstractController {
             trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
             trainingView.setModelType(((TrainingConfiguration) conf).getModelType());
             trainingView.setTrainingDescription(trainConf.getTrainingDescription());
+            trainingView.setPathToOutputModel(trainConf.getPathToOutputModel());
         }
     }
 }

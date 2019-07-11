@@ -981,6 +981,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				this.outputModel = new String(folderForModels + File.separator + "model_" + trainingDescription + ".mod");
 			}
 			
+			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
+				AmuseLogger.write(this.getClass().getName(), Level.WARN, "No output path given! Model will be saved at " + outputModel);
+			}
+			
 		}
 		else {
 			String trainingDescription = ((TrainingConfiguration)this.taskConfiguration).getTrainingDescription();
