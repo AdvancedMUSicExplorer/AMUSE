@@ -96,7 +96,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		checkNominalAttribute(strRelationshipType);
 		checkNominalAttribute(strLabelType);
 		checkNominalAttribute(strMethodType);
-		checkNominalAttribute(strOutputPath);
+		checkStringAttribute(strOutputPath);
 		
 
 		validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);

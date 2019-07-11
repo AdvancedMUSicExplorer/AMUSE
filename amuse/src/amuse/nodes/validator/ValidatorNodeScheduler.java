@@ -790,11 +790,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			
 			String outputPath = ((ValidationConfiguration)this.taskConfiguration).getOutputPath();
 			//If the outputPath should be calculated automatically
-			if(!(outputPath.equals("-1") || outputPath.equals(""))) {
+			if(outputPath.equals("-1") || outputPath.equals("")) {
 				// Check if the folder for measure file exists; if not create it
 				File folderForMeasures = createMeasureFolder();
 				outputPath = folderForMeasures + File.separator + "measures.arff";
-				if(!(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType() == GroundTruthSourceType.CATEGORY_ID)) {
+				if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
 					AmuseLogger.write(ValidatorNodeScheduler.class.getClass().getName(), Level.WARN,"No output path given! The results will be saved at " + outputPath);
 				}
 			}
