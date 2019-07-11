@@ -109,19 +109,19 @@ public class CategorySelectionPanel extends JPanel {
 		return model.getSelectedCategoryPath();
 	}
 	
-	public List<Integer> getAttributesToClassify(){
-		List<Integer> attributesToClassify = new ArrayList<Integer>();
+	public List<Integer> getAttributesToPredict(){
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
 		for(int i=0;i<checkBoxes.size();i++) {
 			if(checkBoxes.get(i).isSelected()) {
-				attributesToClassify.add(i);
+				attributesToPredict.add(i);
 			}
 		}
-		return attributesToClassify;
+		return attributesToPredict;
 	}
 	
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
 		for(int i=0;i<checkBoxes.size();i++) {
-			checkBoxes.get(i).setSelected(attributesToClassify.contains(i));
+			checkBoxes.get(i).setSelected(attributesToPredict.contains(i));
 		}
 	}
 

@@ -326,7 +326,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				"-1",
 				new DataSetInput(trainingSet),
 				GroundTruthSourceType.READY_INPUT,
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToClassify(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToPredict(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToIgnore(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
 				"",

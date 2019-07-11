@@ -198,12 +198,12 @@ public class TrainingView extends JPanel {
 		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
 	}
 	
-	public List<Integer> getAttributesToClassify(){
-		return groundTruthSelectionPanel.getAttributesToClassify();
+	public List<Integer> getAttributesToPredict(){
+		return groundTruthSelectionPanel.getAttributesToPredict();
 	}
 	
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
-		groundTruthSelectionPanel.setAttributesToClassify(attributesToClassify);
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		groundTruthSelectionPanel.setAttributesToPredict(attributesToPredict);
 	}
 	
 	public List<Integer> getAttributesToIgnore(){

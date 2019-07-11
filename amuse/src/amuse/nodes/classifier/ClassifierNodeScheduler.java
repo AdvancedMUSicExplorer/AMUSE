@@ -269,7 +269,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			}
 			
 			//Load attributes to ignore and classify
-			List<Integer> attributesToClassify = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToClassify();
+			List<Integer> attributesToPredict = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToPredict();
 			List<Integer> attributesToIgnore = ((ClassificationConfiguration)this.taskConfiguration).getAttributesToIgnore();
 			
 			//Load the categoryDescription if no model path is given
@@ -298,7 +298,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 						this.categoryDescription += File.separator;
 						int j = 0;
-						for(int category : attributesToClassify) {
+						for(int category : attributesToPredict) {
 							if(j!=0) {
 								this.categoryDescription += "_";
 							}

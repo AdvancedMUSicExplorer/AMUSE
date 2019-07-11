@@ -51,7 +51,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
     private static final String groundTruthSourceStr = "GroundTruthSource";
     private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
-    private static final String attributesToClassifyStr = "AttributesToClassify";
+    private static final String attributesToPredictStr = "AttributesToPredict";
     private static final String attributesToIgnoreStr  = "AttributesToIgnore";
     private static final String relationshipTypeStr = "RelationshipType";
     private static final String labelTypeStr = "LabelType";
@@ -65,7 +65,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute preprocessingAlgorithmIdAttribute;
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
-    private final StringAttribute attributesToClassifyAttribute;
+    private final StringAttribute attributesToPredictAttribute;
     private final StringAttribute attributesToIgnoreAttribute;
     private final NominalAttribute relationshipTypeAttribute;
     private final NominalAttribute labelTypeAttribute;
@@ -91,7 +91,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkNominalAttribute(groundTruthSourceTypeStr);
         
         
-        checkStringAttribute(attributesToClassifyStr);
+        checkStringAttribute(attributesToPredictStr);
         checkStringAttribute(attributesToIgnoreStr);
         checkNominalAttribute(relationshipTypeStr);
         checkNominalAttribute(labelTypeStr);
@@ -105,7 +105,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         preprocessingAlgorithmIdAttribute = (StringAttribute) this.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) this.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) this.getAttribute(groundTruthSourceTypeStr);
-        attributesToClassifyAttribute = (StringAttribute) this.getAttribute(attributesToClassifyStr);
+        attributesToPredictAttribute = (StringAttribute) this.getAttribute(attributesToPredictStr);
         attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(attributesToIgnoreStr);
         relationshipTypeAttribute = (NominalAttribute) this.getAttribute(relationshipTypeStr);
         labelTypeAttribute = (NominalAttribute) this.getAttribute(labelTypeStr);
@@ -127,8 +127,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthList.add(trainingConfiguration.getGroundTruthSource().toString());
         List<String> groundTruthSourceList = new ArrayList<String>();
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
-        List<String> attributesToClassifyList = new ArrayList<String>();
-        attributesToClassifyList.add(trainingConfiguration.getAttributesToClassify().toString());
+        List<String> attributesToPredictList = new ArrayList<String>();
+        attributesToPredictList.add(trainingConfiguration.getAttributesToPredict().toString());
         List<String> attributesToIgnoreList = new ArrayList<String>();
         attributesToIgnoreList.add(trainingConfiguration.getAttributesToIgnore().toString());
         List<String> relationshipTypeList = new ArrayList<String>();
@@ -156,7 +156,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         }
         groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);
         
-        attributesToClassifyAttribute = new StringAttribute(attributesToClassifyStr, attributesToClassifyList);
+        attributesToPredictAttribute = new StringAttribute(attributesToPredictStr, attributesToPredictList);
         attributesToIgnoreAttribute = new StringAttribute(attributesToIgnoreStr, attributesToIgnoreList);
         
         allowedValues = new ArrayList<String>();
@@ -185,7 +185,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(attributesToClassifyAttribute);
+        addAttribute(attributesToPredictAttribute);
         addAttribute(attributesToIgnoreAttribute);
         addAttribute(relationshipTypeAttribute);
         addAttribute(labelTypeAttribute);
@@ -202,7 +202,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(preprocessingAlgorithmIdStr);
         dataSet.checkStringAttribute(groundTruthSourceStr);
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
-        dataSet.checkStringAttribute(attributesToClassifyStr);
+        dataSet.checkStringAttribute(attributesToPredictStr);
         dataSet.checkStringAttribute(attributesToIgnoreStr);
         dataSet.checkNominalAttribute(relationshipTypeStr);
         dataSet.checkNominalAttribute(labelTypeStr);
@@ -216,7 +216,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         preprocessingAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
-        attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(attributesToClassifyStr);
+        attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(attributesToPredictStr);
         attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(attributesToIgnoreStr);
         relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(relationshipTypeStr);
         labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(labelTypeStr);
@@ -229,7 +229,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(attributesToClassifyAttribute);
+        addAttribute(attributesToPredictAttribute);
         addAttribute(attributesToIgnoreAttribute);
         addAttribute(relationshipTypeAttribute);
         addAttribute(labelTypeAttribute);
@@ -258,8 +258,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         return groundTruthSourceTypeAttribute;
     }
     
-    public StringAttribute getAttributesToClassifyAttribute() {
-    	return attributesToClassifyAttribute;
+    public StringAttribute getAttributesToPredictAttribute() {
+    	return attributesToPredictAttribute;
     }
     
     public StringAttribute getAttributesToIgnoreAttribute() {

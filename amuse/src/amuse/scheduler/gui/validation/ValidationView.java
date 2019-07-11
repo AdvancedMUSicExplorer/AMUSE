@@ -140,16 +140,16 @@ public class ValidationView {
 		trainingView.setGroundTruthSource(groundTruthSource);
 	}
 	
-	public List<Integer> getAttributesToClassify(){
-		return trainingView.getAttributesToClassify();
+	public List<Integer> getAttributesToPredict(){
+		return trainingView.getAttributesToPredict();
 	}
 	
 	public List<Integer> getAttributesToIgnore(){
 		return trainingView.getAttributesToIgnore();
 	}
 	
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
-		trainingView.setAttributesToClassify(attributesToClassify);
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		trainingView.setAttributesToPredict(attributesToPredict);
 	}
 	
 	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {

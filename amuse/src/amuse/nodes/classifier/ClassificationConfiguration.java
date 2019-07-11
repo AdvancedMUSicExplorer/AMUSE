@@ -82,7 +82,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	private final int groundTruthCategoryId;
 	
 	/** Categories of the groundtruth that were used for training. Is not used if the concrete model path is known.*/
-	private final List<Integer> attributesToClassify;
+	private final List<Integer> attributesToPredict;
 	
 	/** Type of the model that is used for classification*/
 	private final ModelType modelType;
@@ -112,7 +112,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
-	 * @param attributesToClassify the categories of the category file of the annotation database
+	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
@@ -124,7 +124,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			List <Integer> attributesToIgnore,
 			String processedFeaturesModelName,
 			String algorithmDescription,
-			List<Integer> attributesToClassify,
+			List<Integer> attributesToPredict,
 			ModelType modelType,
 			Integer mergeSongResults,
 			String classificationOutput) {
@@ -132,7 +132,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.inputSourceType = inputSourceType;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
-		this.attributesToClassify = attributesToClassify;
+		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
@@ -148,7 +148,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
-	 * @param attributesToClassify the categories of the category file of the annotation database
+	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
@@ -161,7 +161,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String processedFeaturesModelName,
 			String algorithmDescription,
 			int groundTruthSource,
-			List<Integer> attributesToClassify,
+			List<Integer> attributesToPredict,
 			ModelType modelType,
 			Integer mergeSongResults,
 			String classificationOutput,
@@ -197,7 +197,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthCategoryId = groundTruthSource;
-		this.attributesToClassify = attributesToClassify;
+		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
@@ -222,14 +222,14 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
 
-			String attributesToClassifyString = classifierConfig.getAttributesToClassifyAttribute().getValueAt(i).toString();
-			attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-			List<Integer> currentAttributesToClassify = new ArrayList<Integer>();
+			String attributesToPredictString = classifierConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
 			try {
-				for(String str : attributesToClassifyStringArray) {
+				for(String str : attributesToPredictStringArray) {
 					if(!str.equals("")) {
-						currentAttributesToClassify.add(Integer.parseInt(str));
+						currentAttributesToPredict.add(Integer.parseInt(str));
 					}
 				}
 			} catch(NumberFormatException e) {
@@ -303,7 +303,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			
 			// Create a classification task
 		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
-		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToClassify, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -355,10 +355,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * @return the attributesToClassify
+	 * @return the attributesToPredict
 	 */
-	public List<Integer> getAttributesToClassify(){
-		return attributesToClassify;
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
 	}
 	
 	/**

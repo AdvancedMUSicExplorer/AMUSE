@@ -57,26 +57,26 @@ public class GroundTruthSelectionPanel extends JPanel {
 		return null;
 	}
 	
-	public List<Integer> getAttributesToClassify(){
+	public List<Integer> getAttributesToPredict(){
 		switch((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem()){
 		case CATEGORY_ID:
-			return categorySelectionPanel.getAttributesToClassify();
+			return categorySelectionPanel.getAttributesToPredict();
 		case READY_INPUT:
-			return readyInputSelectionPanel.getAttributesToClassify();
+			return readyInputSelectionPanel.getAttributesToPredict();
 		case FILE_LIST:
-			return fileListSelectionPanel.getAttributesToClassify();
+			return fileListSelectionPanel.getAttributesToPredict();
 		}
 		return null;
 	}
 	
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
 		switch((GroundTruthSourceType)groundTruthSourceTypeComboBox.getSelectedItem()) {
 		case CATEGORY_ID:
-			categorySelectionPanel.setAttributesToClassify(attributesToClassify); break;
+			categorySelectionPanel.setAttributesToPredict(attributesToPredict); break;
 		case READY_INPUT:
-			readyInputSelectionPanel.setAttributesToClassify(attributesToClassify); break;
+			readyInputSelectionPanel.setAttributesToPredict(attributesToPredict); break;
 		case FILE_LIST:
-			fileListSelectionPanel.setAttributesToClassify(attributesToClassify); break;
+			fileListSelectionPanel.setAttributesToPredict(attributesToPredict); break;
 		}
 	}
 

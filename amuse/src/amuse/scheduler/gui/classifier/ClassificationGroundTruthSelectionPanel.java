@@ -67,16 +67,16 @@ public class ClassificationGroundTruthSelectionPanel extends JPanel {
 		groundTruthSourceTypeComboBox.setSelectedItem(type);
 	}
 
-	public List<Integer> getAttributesToClassify() {
+	public List<Integer> getAttributesToPredict() {
 		if(getSelectedGroundTruthSourceType().equals("CATEGORY_ID")) {
-			return categorySelectionPanel.getAttributesToClassify();
+			return categorySelectionPanel.getAttributesToPredict();
 		} else {
 			return new ArrayList<Integer>();
 		}
 	}
 
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
-		categorySelectionPanel.setAttributesToClassify(attributesToClassify);
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		categorySelectionPanel.setAttributesToPredict(attributesToPredict);
 	}
 
 	public String getPath() {

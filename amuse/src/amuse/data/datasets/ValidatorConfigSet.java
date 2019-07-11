@@ -52,7 +52,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private static final String strInputToValidate = "InputToValidate";
 	private static final String strGroundTruthSourceType = "GroundTruthSourceType";
 	private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
-	private static final String strAttributesToClassify = "AttributesToClassify";
+	private static final String strAttributesToPredict = "AttributesToPredict";
 	private static final String strAttributesToIgnore  = "AttributesToIgnore";
 	private static final String strRelationshipType = "RelationshipType";
 	private static final String strLabelType = "LabelType";
@@ -67,7 +67,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute inputToValidateAttribute;
 	private final NominalAttribute groundTruthSourceTypeAttribute;
 	private final StringAttribute classificationAlgorithmIdAttribute;
-	private final StringAttribute attributesToClassifyAttribute;
+	private final StringAttribute attributesToPredictAttribute;
 	private final StringAttribute attributesToIgnoreAttribute;
 	private final NominalAttribute relationshipTypeAttribute;
 	private final NominalAttribute labelTypeAttribute;
@@ -91,7 +91,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strInputToValidate);
 		checkNominalAttribute(strGroundTruthSourceType);
 		checkStringAttribute(strClassificationAlgorithmId);
-		checkStringAttribute(strAttributesToClassify);
+		checkStringAttribute(strAttributesToPredict);
 		checkStringAttribute(strAttributesToIgnore);
 		checkNominalAttribute(strRelationshipType);
 		checkNominalAttribute(strLabelType);
@@ -105,7 +105,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
-		attributesToClassifyAttribute = (StringAttribute) this.getAttribute(strAttributesToClassify);
+		attributesToPredictAttribute = (StringAttribute) this.getAttribute(strAttributesToPredict);
 		attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(strAttributesToIgnore);
 		relationshipTypeAttribute = (NominalAttribute) this.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
@@ -119,7 +119,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 			String processedFeatureDescription,
 			String inputToValidate,
 			String groundTruthSourceType,
-			String attributesToClassify,
+			String attributesToPredict,
 			String attributesToIgnore,
 			String relationshipType,
 			String labelType,
@@ -136,7 +136,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
 
 		
-		attributesToClassifyAttribute = StringAttribute.createFromString(strAttributesToClassify, attributesToClassify);
+		attributesToPredictAttribute = StringAttribute.createFromString(strAttributesToPredict, attributesToPredict);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
 		List<String> relationshipTypeValues = new ArrayList<String>();
 		List<String> labelTypeValues = new ArrayList<String>();
@@ -167,7 +167,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(inputToValidateAttribute); 
 		addAttribute(groundTruthSourceTypeAttribute);
-		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToPredictAttribute);
 		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
@@ -184,7 +184,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strProcessedFeatureDescription);
 		dataSet.checkStringAttribute(strInputToValidate);
 		dataSet.checkNominalAttribute(strGroundTruthSourceType);
-		dataSet.checkStringAttribute(strAttributesToClassify);
+		dataSet.checkStringAttribute(strAttributesToPredict);
 		dataSet.checkStringAttribute(strAttributesToIgnore);
 		dataSet.checkNominalAttribute(strRelationshipType);
 		dataSet.checkNominalAttribute(strLabelType);
@@ -197,7 +197,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
 		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
-		attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToClassify);
+		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
 		attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToIgnore);
 		relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
@@ -210,7 +210,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(inputToValidateAttribute);
 		addAttribute(groundTruthSourceTypeAttribute);
-		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToPredictAttribute);
 		addAttribute(attributesToIgnoreAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
@@ -246,8 +246,8 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		return groundTruthSourceTypeAttribute;
 	}
 
-	public StringAttribute getAttributesToClassifyAttribute() {
-		return attributesToClassifyAttribute;
+	public StringAttribute getAttributesToPredictAttribute() {
+		return attributesToPredictAttribute;
 	}
 
 	public StringAttribute getAttributesToIgnoreAttribute() {

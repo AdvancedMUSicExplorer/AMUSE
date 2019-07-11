@@ -23,8 +23,8 @@ import net.miginfocom.swing.MigLayout;
 public class ReadyInputSelectionPanel extends JPanel{
 	
 	private JTextField pathField;
-	private JLabel attributesToClassifyLabel = new JLabel("Attributes to classify:");
-    private JTextField attributesToClassifyTextField = new JTextField(10);
+	private JLabel attributesToPredictLabel = new JLabel("Attributes to classify:");
+    private JTextField attributesToPredictTextField = new JTextField(10);
     private JLabel attributesToIgnoreLabel = new JLabel("Attributes to ignore:");
     private JTextField attributesToIgnoreTextField = new JTextField(10);
 	
@@ -42,10 +42,10 @@ public class ReadyInputSelectionPanel extends JPanel{
 
 		});
 		
-		JButton selectAttributesToClassifyButton = new JButton("...");
-		selectAttributesToClassifyButton.addActionListener(e -> {
-			AttributeSelector attributeSelector = new AttributeSelector(pathField.getText(), attributesToClassifyTextField.getText());
-			attributesToClassifyTextField.setText(attributeSelector.getSelectedAttributes().toString().replaceAll("\\[", "").replaceAll("\\]", ""));
+		JButton selectAttributesToPredictButton = new JButton("...");
+		selectAttributesToPredictButton.addActionListener(e -> {
+			AttributeSelector attributeSelector = new AttributeSelector(pathField.getText(), attributesToPredictTextField.getText());
+			attributesToPredictTextField.setText(attributeSelector.getSelectedAttributes().toString().replaceAll("\\[", "").replaceAll("\\]", ""));
 		});
 		
 		JButton selectAttributesToIgnoreButton = new JButton("...");
@@ -54,7 +54,7 @@ public class ReadyInputSelectionPanel extends JPanel{
 			attributesToIgnoreTextField.setText(attributeSelector.getSelectedAttributes().toString().replaceAll("\\[", "").replaceAll("\\]", ""));
 		});
 		
-		selectAttributesToClassifyButton.setEnabled(false);
+		selectAttributesToPredictButton.setEnabled(false);
 		selectAttributesToIgnoreButton.setEnabled(false);
 		
 		pathField.getDocument().addDocumentListener(new DocumentListener() {
@@ -73,7 +73,7 @@ public class ReadyInputSelectionPanel extends JPanel{
 			private void update() {
 				File f = new File(pathField.getText());
 				boolean enable = f.exists() && !f.isDirectory() && pathField.getText().endsWith(".arff");
-				selectAttributesToClassifyButton.setEnabled(enable);
+				selectAttributesToPredictButton.setEnabled(enable);
 				selectAttributesToIgnoreButton.setEnabled(enable);
 			}
 		});
@@ -82,9 +82,9 @@ public class ReadyInputSelectionPanel extends JPanel{
 		this.add(pathField, "split 2, growx");
 		this.add(selectPathButton, "wrap");
 		if(!classify) {
-			this.add(attributesToClassifyLabel, "pushx, wrap");
-        	this.add(attributesToClassifyTextField, "split2, growx");
-        	this.add(selectAttributesToClassifyButton, "wrap");
+			this.add(attributesToPredictLabel, "pushx, wrap");
+        	this.add(attributesToPredictTextField, "split2, growx");
+        	this.add(selectAttributesToPredictButton, "wrap");
         }
         this.add(attributesToIgnoreLabel, "pushx, wrap");
         this.add(attributesToIgnoreTextField, "split 2, growx");
@@ -123,26 +123,26 @@ public class ReadyInputSelectionPanel extends JPanel{
     	attributesToIgnoreTextField.setText(attributesToIgnore.toString());
     }
 	
-	public List<Integer> getAttributesToClassify(){
-    	String attributesToClassifyString = attributesToClassifyTextField.getText();
-		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-		List<Integer> attributesToClassify = new ArrayList<Integer>();
+	public List<Integer> getAttributesToPredict(){
+    	String attributesToPredictString = attributesToPredictTextField.getText();
+		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
 		try {
-			for(String str : attributesToClassifyStringArray) {
+			for(String str : attributesToPredictStringArray) {
 				if(!str.equals("")) {
-					attributesToClassify.add(Integer.parseInt(str));
+					attributesToPredict.add(Integer.parseInt(str));
 				}
 			}
 		} catch(NumberFormatException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.WARN,
 					"The attributes to classify were not properly specified.");
-			attributesToClassify = new ArrayList<Integer>();
+			attributesToPredict = new ArrayList<Integer>();
 		}
-		return attributesToClassify;
+		return attributesToPredict;
     }
 	
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
-		attributesToClassifyTextField.setText(attributesToClassify.toString());
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		attributesToPredictTextField.setText(attributesToPredict.toString());
 	}
 }

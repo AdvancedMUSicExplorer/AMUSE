@@ -129,7 +129,7 @@ public class ValidationController extends AbstractController {
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
-        String attributesToClassify = validationView.getAttributesToClassify().toString();
+        String attributesToPredict = validationView.getAttributesToPredict().toString();
         String attributesToIgnore = validationView.getAttributesToIgnore().toString();
         String relationshipType = validationView.getModelType().getRelationshipType().toString();
         String labelType = validationView.getModelType().getLabelType().toString();
@@ -141,7 +141,7 @@ public class ValidationController extends AbstractController {
                 processedFeatureDescription, 
                 groundTruthSource, 
                 groundTruthSourceType,
-                attributesToClassify,
+                attributesToPredict,
                 attributesToIgnore,
                 relationshipType,
                 labelType,
@@ -193,19 +193,19 @@ public class ValidationController extends AbstractController {
             measuresView.loadSelection(new File(set.getMeasureListAttribute().getValueAt(0)));
             validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
             
-            String attributesToClassifyString = set.getAttributesToClassifyAttribute().getValueAt(0).toString();
-    		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-    		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-    		List<Integer> attributesToClassify = new ArrayList<Integer>();
+            String attributesToPredictString = set.getAttributesToPredictAttribute().getValueAt(0).toString();
+    		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+    		String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+    		List<Integer> attributesToPredict = new ArrayList<Integer>();
     		try {
-    			for(String str : attributesToClassifyStringArray) {
+    			for(String str : attributesToPredictStringArray) {
     				if(!str.equals("")) {
-    					attributesToClassify.add(Integer.parseInt(str));
+    					attributesToPredict.add(Integer.parseInt(str));
     				}
     			}
     		} catch(NumberFormatException e) {
     		}
-    		validationView.setAttributesToClassify(attributesToClassify);
+    		validationView.setAttributesToPredict(attributesToPredict);
     		
     		String attributesToIgnoreString = set.getAttributesToIgnoreAttribute().getValueAt(0).toString();
     		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
@@ -243,7 +243,7 @@ public class ValidationController extends AbstractController {
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
-        List<Integer> attributesToClassify = validationView.getAttributesToClassify();
+        List<Integer> attributesToPredict = validationView.getAttributesToPredict();
         List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
         String outputPath = validationView.getOuputPath();
         ModelType modelType = validationView.getModelType();
@@ -254,7 +254,7 @@ public class ValidationController extends AbstractController {
                 classificationAlgorithmStr, 
                 groundTruthSource,
                 groundTruthSourceType,
-                attributesToClassify,
+                attributesToPredict,
                 attributesToIgnore,
                 modelType,
                 outputPath);
@@ -390,7 +390,7 @@ public class ValidationController extends AbstractController {
             validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());
             validationView.setClassifierAlgorithm(valConf.getClassificationAlgorithmDescription());
             measuresView.loadSelection(valConf.getMeasures());
-            validationView.setAttributesToClassify(valConf.getAttributesToClassify());
+            validationView.setAttributesToPredict(valConf.getAttributesToPredict());
             validationView.setAttributesToIgnore(valConf.getAttributesToIgnore());
             validationView.setModelType(valConf.getModelType());
             validationView.setOutputPath(valConf.getOutputPath());

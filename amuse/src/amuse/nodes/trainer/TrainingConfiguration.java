@@ -70,7 +70,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
-	private final List<Integer> attributesToClassify;
+	private final List<Integer> attributesToPredict;
 	private final List<Integer> attributesToIgnore;
 	private final ModelType modelType;
 	
@@ -98,7 +98,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth
-	 * @param attributesToClassify the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param attributesToPredict the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
@@ -107,13 +107,13 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToClassify, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = groundTruthSourceType;
-		this.attributesToClassify = attributesToClassify;
+		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
 		this.trainingDescription = trainingDescription;
@@ -147,14 +147,14 @@ public class TrainingConfiguration extends TaskConfiguration {
 			}
 			
 			
-			String attributesToClassifyString = trainingConfig.getAttributesToClassifyAttribute().getValueAt(i).toString();
-			attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-			List<Integer> currentAttributesToClassify = new ArrayList<Integer>();
+			String attributesToPredictString = trainingConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
 			try {
-				for(String str : attributesToClassifyStringArray) {
+				for(String str : attributesToPredictStringArray) {
 					if(!str.equals("")) {
-						currentAttributesToClassify.add(Integer.parseInt(str));
+						currentAttributesToPredict.add(Integer.parseInt(str));
 					}
 				}
 			} catch(NumberFormatException e) {
@@ -216,7 +216,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -279,10 +279,10 @@ public class TrainingConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * @return the attributesToClassify
+	 * @return the attributesToPredict
 	 */
-	public List<Integer> getAttributesToClassify(){
-		return attributesToClassify;
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
 	}
 	
 	/**
@@ -370,7 +370,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToClassify, attributesToIgnore, modelType, trainingDescription, pathToOutputModel); 
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel); 
 		return conf;
 	}
 

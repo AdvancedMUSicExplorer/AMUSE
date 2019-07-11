@@ -76,7 +76,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	private final GroundTruthSourceType groundTruthSourceType;
 	
 	/** The attributes of the ready input or the categories of the category file that are to be classified */
-	private final List<Integer> attributesToClassify;
+	private final List<Integer> attributesToPredict;
 	
 	/** The attributes of the ready input or the processed features that are to be ignored*/
 	private final List<Integer> attributesToIgnore;
@@ -123,7 +123,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			String classificationAlgorithmDescription,
 			DataInputInterface inputToValidate,
 			GroundTruthSourceType groundTruthSourceType,
-			List<Integer> attributesToClassify,
+			List<Integer> attributesToPredict,
 			List<Integer> attributesToIgnore,
 			ModelType modelType,
 			String outputPath) {
@@ -133,7 +133,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
-		this.attributesToClassify = attributesToClassify;
+		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -168,14 +168,14 @@ public class ValidationConfiguration extends TaskConfiguration {
 			}
 			
 			
-			String attributesToClassifyString = validatorConfig.getAttributesToClassifyAttribute().getValueAt(i).toString();
-			attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-			String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-			List<Integer> currentAttributesToClassify = new ArrayList<Integer>();
+			String attributesToPredictString = validatorConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
 			try {
-				for(String str : attributesToClassifyStringArray) {
+				for(String str : attributesToPredictStringArray) {
 					if(!str.equals("")) {
-						currentAttributesToClassify.add(Integer.parseInt(str));
+						currentAttributesToPredict.add(Integer.parseInt(str));
 					}
 				}
 			} catch(NumberFormatException e) {
@@ -239,7 +239,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst, currentAttributesToClassify, currentAttributesToIgnore, currentModelType, currentOutputPath));
+		    		gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -291,10 +291,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the attributesToClassify
+	 * @return the attributesToPredict
 	 */
-	public List<Integer> getAttributesToClassify(){
-		return attributesToClassify;
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
 	}
 	
 	/**

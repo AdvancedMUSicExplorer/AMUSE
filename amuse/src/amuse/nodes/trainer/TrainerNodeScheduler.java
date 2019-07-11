@@ -318,9 +318,9 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			DataSet labeledInputForTraining = null;
 			
-			List<Integer> attributesToClassify = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify();
+			List<Integer> attributesToPredict = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict();
 			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
-			int numberOfCategories = attributesToClassify.size();
+			int numberOfCategories = attributesToPredict.size();
 			
 			//Check if the number of categories is correct
 			if(((TrainingConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
@@ -341,7 +341,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 						//Aadd the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-							if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+							if(!attributesToPredict.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
 									AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
 								}
@@ -362,7 +362,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 					
 						//Add the category attributes
-						for(int i : attributesToClassify) {
+						for(int i : attributesToPredict) {
 							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
 							//If the classification is not continuous, the values have to be rounded
 							if(((TrainingConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.BINARY && ((TrainingConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
@@ -507,7 +507,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					//It marks where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					//add the category attributes
-					for(int category : attributesToClassify) {
+					for(int category : attributesToPredict) {
 						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
 					}
 					
@@ -531,7 +531,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								
 								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
 								if(((TrainingConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
-									for(int category : attributesToClassify) {
+									for(int category : attributesToPredict) {
 										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(((TrainingConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
@@ -545,7 +545,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
 									int currentPosition = 0;
-									for(int category : attributesToClassify) {
+									for(int category : attributesToPredict) {
 										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(confidence > maxConfidence) {
 											maxConfidence = confidence;
@@ -949,7 +949,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			//choose the path according to the categories that are classified;
 			DataSet groundTruthSource = ((DataSetInput)((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource()).getDataSet();
-			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToClassify().size();
+			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict().size();
 			int firstCategoryPosition = groundTruthSource.getAttributeCount() - numberOfCategories;
 			for(int i = 0; i < numberOfCategories; i++) {
 				if(i != 0) {

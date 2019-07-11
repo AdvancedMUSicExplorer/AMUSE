@@ -94,7 +94,7 @@ public class ClassifierController extends AbstractController {
             mergeSongResults = 0;
         }
         String outputResultPath = classifierView.getTargetFilePath();
-        String attributesToClassify = classifierView.getAttributesToClassify().toString();
+        String attributesToPredict = classifierView.getAttributesToPredict().toString();
         String attributesToIgnore = classifierView.getAttributesToIgnore().toString();
         String relationshipType = classifierView.getModelType().getRelationshipType().toString();
         String labelType = classifierView.getModelType().getLabelType().toString();
@@ -109,7 +109,7 @@ public class ClassifierController extends AbstractController {
         		processedFeatureDescription, 
         		algorithmId, 
         		groundTruthCategoryId,
-        		attributesToClassify,
+        		attributesToPredict,
         		relationshipType,
         		labelType,
         		methodType,
@@ -171,7 +171,7 @@ public class ClassifierController extends AbstractController {
         classifierView.setGroundTruthCategoryId(conf.getGroundTruthCategoryId());
         classifierView.setAverageCalculationSelected(conf.getMergeSongResults());
         classifierView.setTargetFilePath(conf.getClassificationOutput());
-        classifierView.setAttributesToClassify(conf.getAttributesToClassify());
+        classifierView.setAttributesToPredict(conf.getAttributesToPredict());
         classifierView.setAttributesToIgnore(conf.getAttributesToIgnore());
         classifierView.setModelType(conf.getModelType());
         classifierView.setMergeSongResults(conf.getMergeSongResults());
@@ -210,7 +210,7 @@ public class ClassifierController extends AbstractController {
             String processedFeatureDescription = classifierView.getProcessingModelString();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
             int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
-            List<Integer> attributesToClassify = classifierView.getAttributesToClassify();
+            List<Integer> attributesToPredict = classifierView.getAttributesToPredict();
             List<Integer> attributesToIgnore = classifierView.getAttributesToIgnore();
             ModelType modelType = classifierView.getModelType();
             int mergeSongResults = 1;
@@ -237,7 +237,7 @@ public class ClassifierController extends AbstractController {
             		processedFeatureDescription, 
             		algorithmStr, 
             		groundTruthCategoryId,
-            		attributesToClassify,
+            		attributesToPredict,
             		modelType,
             		mergeSongResults, 
             		outputResultPath,

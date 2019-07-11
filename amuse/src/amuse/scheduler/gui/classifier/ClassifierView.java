@@ -272,16 +272,16 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		}
 	}
 	
-	public List<Integer> getAttributesToClassify(){
-		return groundTruthSelectionPanel.getAttributesToClassify();
+	public List<Integer> getAttributesToPredict(){
+		return groundTruthSelectionPanel.getAttributesToPredict();
 	}
 	
 	public ModelType getModelType() {
 		return modelTypePanel.getModelType();
 	}
 
-	public void setAttributesToClassify(List<Integer> attributesToClassify) {
-		groundTruthSelectionPanel.setAttributesToClassify(attributesToClassify);
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		groundTruthSelectionPanel.setAttributesToPredict(attributesToPredict);
 	}
 
 	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {

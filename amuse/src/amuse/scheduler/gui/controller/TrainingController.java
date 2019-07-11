@@ -119,7 +119,7 @@ public class TrainingController extends AbstractController {
         trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
-        //TODO set attributesToClassify, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
+        //TODO set attributesToPredict, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
         
         String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
         if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
@@ -132,22 +132,22 @@ public class TrainingController extends AbstractController {
         }
         trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
         
-        String attributesToClassifyString = ttSet.getAttributesToClassifyAttribute().getValueAt(0).toString();
-		attributesToClassifyString = attributesToClassifyString.replaceAll("\\[", "").replaceAll("\\]", "");
-		String[] attributesToClassifyStringArray = attributesToClassifyString.split("\\s*,\\s*");
-		List<Integer> attributesToClassify = new ArrayList<Integer>();
+        String attributesToPredictString = ttSet.getAttributesToPredictAttribute().getValueAt(0).toString();
+		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
 		try {
-			for(String str : attributesToClassifyStringArray) {
+			for(String str : attributesToPredictStringArray) {
 				if(!str.equals("")) {
-					attributesToClassify.add(Integer.parseInt(str));
+					attributesToPredict.add(Integer.parseInt(str));
 				}
 			}
 		} catch(NumberFormatException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.WARN,
 					"The attributes to classify were not properly specified.");
-			attributesToClassify = new ArrayList<Integer>();
+			attributesToPredict = new ArrayList<Integer>();
 		}
-		trainingView.setAttributesToClassify(attributesToClassify);
+		trainingView.setAttributesToPredict(attributesToPredict);
 		
 		String attributesToIgnoreString = ttSet.getAttributesToIgnoreAttribute().getValueAt(0).toString();
 		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
@@ -294,7 +294,7 @@ public class TrainingController extends AbstractController {
     			trainingView.getPreprocessingAlgorithmStr(), 
     			new FileInput(trainingView.getGroundTruthSource()),
     			trainingView.getGroundTruthSourceType(),
-    			trainingView.getAttributesToClassify(),
+    			trainingView.getAttributesToPredict(),
     			trainingView.getAttributesToIgnore(),
     			trainingView.getModelType(),
     			trainingView.getTrainingDescription(),
@@ -318,7 +318,7 @@ public class TrainingController extends AbstractController {
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
             trainingView.setGroundTruthSourceType(trainConf.getGroundTruthSourceType());
             trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());
-            trainingView.setAttributesToClassify(trainConf.getAttributesToClassify());
+            trainingView.setAttributesToPredict(trainConf.getAttributesToPredict());
             trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
             trainingView.setModelType(((TrainingConfiguration) conf).getModelType());
             trainingView.setTrainingDescription(trainConf.getTrainingDescription());

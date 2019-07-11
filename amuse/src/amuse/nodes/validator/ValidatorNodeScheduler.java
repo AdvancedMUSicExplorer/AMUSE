@@ -392,9 +392,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			throw new NodeException("Currently only supervised classification is supported.");
 		}
 		
-		List<Integer> attributesToClassify = ((ValidationConfiguration)this.taskConfiguration).getAttributesToClassify();
+		List<Integer> attributesToPredict = ((ValidationConfiguration)this.taskConfiguration).getAttributesToPredict();
 		List<Integer> attributesToIgnore = ((ValidationConfiguration)this.taskConfiguration).getAttributesToIgnore();
-		int numberOfCategories = attributesToClassify.size();
+		int numberOfCategories = attributesToPredict.size();
 		
 		//check if the number of categories is correct
 		if(((ValidationConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
@@ -418,7 +418,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 					for(int i = 0; i < completeInput.getAttributeCount(); i++) {
-						if(!attributesToClassify.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+						if(!attributesToPredict.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 							if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
 								AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
 							}
@@ -439,7 +439,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					}
 				
 					//add the category attributes
-					for(int i : attributesToClassify) {
+					for(int i : attributesToPredict) {
 						labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
 						//if the classification is not continuous, the values have to be rounded
 						if(((ValidationConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.CONTINUOUS && ((ValidationConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
@@ -535,7 +535,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					//Add the "NumberOfCategories" attribute
 					//It marks the where the categories that are to be classified start and how many will follow
 					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
-					for(int category : attributesToClassify) {
+					for(int category : attributesToPredict) {
 						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
 					}
 					
@@ -551,7 +551,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						ArrayList<Double> partitionEnds = new ArrayList<Double>();
 						
 						int currentPosition = 0;
-						for(int category : attributesToClassify) {
+						for(int category : attributesToPredict) {
 							labels[currentPosition] = validatorGroundTruthSet.getAttribute(5 + category).getName();
 							currentPosition++;
 						}
@@ -571,7 +571,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
 								if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
 									currentPosition = 0;
-									for(int category : attributesToClassify) {
+									for(int category : attributesToPredict) {
 										String label = validatorGroundTruthSet.getAttribute(5 + category).getName();
 										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
@@ -588,7 +588,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 									double maxConfidence = 0;
 									int positionOfMax = 0;
 									currentPosition = 0;
-									for(int category : attributesToClassify) {
+									for(int category : attributesToPredict) {
 										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
 										if(confidence > maxConfidence) {
 											maxConfidence = confidence;

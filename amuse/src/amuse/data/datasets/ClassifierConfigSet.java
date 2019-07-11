@@ -53,7 +53,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
 	private static final String strTrainingAlgorithmID = "AlgorithmId";
 	private static final String strGroundTruthCategoryId = "GroundTruthCategoryId";
-	private static final String strAttributesToClassify = "AttributesToClassify";
+	private static final String strAttributesToPredict = "AttributesToPredict";
 	private static final String strPathToInputModel = "PathToInputModel";
 	private static final String strRelationshipType = "RelationshipType";
 	private static final String strLabelType = "LabelType";
@@ -71,7 +71,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute processedFeatureDescriptionAttribute;
 	private final StringAttribute classificationAlgorithmIdAttribute;
 	private final NumericAttribute groundTruthCategoryIdAttribute;
-	private final StringAttribute attributesToClassifyAttribute;
+	private final StringAttribute attributesToPredictAttribute;
 	private final NominalAttribute relationshipTypeAttribute;
 	private final NominalAttribute labelTypeAttribute;
 	private final NominalAttribute methodTypeAttribute;
@@ -94,7 +94,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strProcessedFeatureDescription);
 		dataSet.checkStringAttribute(strTrainingAlgorithmID);
 
-		dataSet.checkStringAttribute(strAttributesToClassify);
+		dataSet.checkStringAttribute(strAttributesToPredict);
 		dataSet.checkStringAttribute(strAttributesToIgnore);
 		dataSet.checkNominalAttribute(strRelationshipType);
 		dataSet.checkNominalAttribute(strLabelType);
@@ -110,7 +110,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
 		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strTrainingAlgorithmID);
 		groundTruthCategoryIdAttribute = (NumericAttribute) dataSet.getAttribute(strGroundTruthCategoryId);
-		attributesToClassifyAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToClassify);
+		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
 		attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToIgnore);
 		relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
@@ -127,7 +127,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(mergeSongResultsAttribute);
-		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToPredictAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
@@ -149,7 +149,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strProcessedFeatureDescription);
 		checkStringAttribute(strTrainingAlgorithmID);
 		checkNumericAttribute(strGroundTruthCategoryId);
-		checkStringAttribute(strAttributesToClassify);
+		checkStringAttribute(strAttributesToPredict);
 		checkStringAttribute(strAttributesToIgnore);
 		checkNominalAttribute(strRelationshipType);
 		checkNominalAttribute(strLabelType);
@@ -164,7 +164,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strTrainingAlgorithmID);
 		groundTruthCategoryIdAttribute = (NumericAttribute) getAttribute(strGroundTruthCategoryId);
-		attributesToClassifyAttribute = (StringAttribute) this.getAttribute(strAttributesToClassify);
+		attributesToPredictAttribute = (StringAttribute) this.getAttribute(strAttributesToPredict);
 		attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(strAttributesToIgnore);
 		relationshipTypeAttribute = (NominalAttribute) this.getAttribute(strRelationshipType);
 		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
@@ -181,7 +181,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			List<String> processedFeatureDescription,
 			List<String> algorithmIDs,
 			List<Integer> groundTruthSources,
-			List<String> attributesToClassify,
+			List<String> attributesToPredict,
 			List<String> relationshipTypes,
 			List<String> labelTypes,
 			List<String> methodTypes,
@@ -198,7 +198,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		processedFeatureDescriptionAttribute = new StringAttribute(strProcessedFeatureDescription, processedFeatureDescription);
 		classificationAlgorithmIdAttribute = new StringAttribute(strTrainingAlgorithmID, algorithmIDs);
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromIntList(strGroundTruthCategoryId, groundTruthSources);
-		attributesToClassifyAttribute = new StringAttribute(strAttributesToClassify, attributesToClassify);
+		attributesToPredictAttribute = new StringAttribute(strAttributesToPredict, attributesToPredict);
 		attributesToIgnoreAttribute = new StringAttribute(strAttributesToIgnore, attributesToIgnore);
 		
 		List<String> relationshipTypeValues = new ArrayList<String>();
@@ -227,7 +227,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
-		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToPredictAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
@@ -243,7 +243,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String processedFeatureDescription,
 			String algorithmId,
 			int groundTruthSource,
-			String attributesToClassify,
+			String attributesToPredict,
 			String relationshipType,
 			String labelType,
 			String methodType,
@@ -259,7 +259,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
 		classificationAlgorithmIdAttribute = StringAttribute.createFromString(strTrainingAlgorithmID, algorithmId);
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromDouble(strGroundTruthCategoryId, groundTruthSource);
-		attributesToClassifyAttribute = StringAttribute.createFromString(strAttributesToClassify, attributesToClassify);
+		attributesToPredictAttribute = StringAttribute.createFromString(strAttributesToPredict, attributesToPredict);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
 		List<String> relationshipTypeValues = new ArrayList<String>();
 		List<String> labelTypeValues = new ArrayList<String>();
@@ -293,7 +293,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(processedFeatureDescriptionAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
-		addAttribute(attributesToClassifyAttribute);
+		addAttribute(attributesToPredictAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
@@ -353,8 +353,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	}
 
 
-	public StringAttribute getAttributesToClassifyAttribute() {
-		return attributesToClassifyAttribute;
+	public StringAttribute getAttributesToPredictAttribute() {
+		return attributesToPredictAttribute;
 	}
 
 	public StringAttribute getAttributesToIgnoreAttribute() {
