@@ -52,7 +52,9 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -79,7 +81,9 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -105,7 +109,7 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -113,7 +117,7 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
@@ -121,7 +125,28 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double firstLog = Math.log10(recall[0].getValue()/(1.0d-recall[0].getValue()));
+		double secondLog = Math.log10(specificity[0].getValue()/(1.0d-specificity[0].getValue()));
+		double dp = Math.sqrt(3.0d) / Math.PI;
+		dp *= (firstLog + secondLog);
+		
+		// Prepare the result
+		ValidationMeasureDouble[] discriminantPowerMeasure = new ValidationMeasureDouble[1];
+		discriminantPowerMeasure[0] = new ValidationMeasureDouble(false);
+		discriminantPowerMeasure[0].setId(112);
+		discriminantPowerMeasure[0].setName("Discriminant power on song level");
+		discriminantPowerMeasure[0].setValue(new Double(dp));
+		return discriminantPowerMeasure;
 	}
 
 
@@ -130,7 +155,28 @@ public class DiscriminantPower extends ClassificationQualityDoubleMeasureCalcula
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double firstLog = Math.log10(recall[0].getValue()/(1.0d-recall[0].getValue()));
+		double secondLog = Math.log10(specificity[0].getValue()/(1.0d-specificity[0].getValue()));
+		double dp = Math.sqrt(3.0d) / Math.PI;
+		dp *= (firstLog + secondLog);
+		
+		// Prepare the result
+		ValidationMeasureDouble[] discriminantPowerMeasure = new ValidationMeasureDouble[1];
+		discriminantPowerMeasure[0] = new ValidationMeasureDouble(false);
+		discriminantPowerMeasure[0].setId(112);
+		discriminantPowerMeasure[0].setName("Discriminant power on partition level");
+		discriminantPowerMeasure[0].setValue(new Double(dp));
+		return discriminantPowerMeasure;
 	}
 }
 

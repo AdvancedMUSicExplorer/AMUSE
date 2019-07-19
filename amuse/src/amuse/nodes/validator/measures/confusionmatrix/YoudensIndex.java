@@ -52,7 +52,9 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -76,7 +78,9 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -99,7 +103,7 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -107,7 +111,7 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
@@ -115,7 +119,25 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double index = specificity[0].getValue() + recall[0].getValue() - 1;
+		
+		// Prepare the result
+		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[1];
+		youdenxIndexMeasure[0] = new ValidationMeasureDouble(false);
+		youdenxIndexMeasure[0].setId(110);
+		youdenxIndexMeasure[0].setName("Youden's index on song level");
+		youdenxIndexMeasure[0].setValue(new Double(index));
+		return youdenxIndexMeasure;
 	}
 
 
@@ -124,7 +146,25 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double index = specificity[0].getValue() + recall[0].getValue() - 1;
+		
+		// Prepare the result
+		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[1];
+		youdenxIndexMeasure[0] = new ValidationMeasureDouble(false);
+		youdenxIndexMeasure[0].setId(110);
+		youdenxIndexMeasure[0].setName("Youden's index on partition level");
+		youdenxIndexMeasure[0].setValue(new Double(index));
+		return youdenxIndexMeasure;
 	}
 
 }
