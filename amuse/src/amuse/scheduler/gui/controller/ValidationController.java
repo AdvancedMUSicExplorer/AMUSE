@@ -111,7 +111,6 @@ public class ValidationController extends AbstractController {
         /* Gather all necessary information and create variables */
         File measureTableFile = new File(file.getParent() + File.separator + "measureTables" + File.separator
                 + file.getName());
-        String parameterStr = "";
         if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {
         	Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
         	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
@@ -121,7 +120,6 @@ public class ValidationController extends AbstractController {
         			currentParameterValues[i] = "|" + currentParameterValues[i] + "|";
         		}
         	}
-            parameterStr = Arrays.toString(validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues());
         }
         String validationMethodId = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
         MeasureTable measureTable = measuresView.getMeasureTable();
@@ -237,6 +235,16 @@ public class ValidationController extends AbstractController {
     public ValidationConfiguration getExperimentConfiguration() {
         /* Gather all neccessary information and create variables */
         ValidationConfiguration conf = null;
+        if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {
+        	Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
+        	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
+        	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
+        	for(int i = 0; i < currentParameterValues.length; i++){
+        		if(allowedParameterStrings[i].equals("fof")){
+        			currentParameterValues[i] = "|" + currentParameterValues[i] + "|";
+        		}
+        	}
+        }
         String validationMethodStr = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
         MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();

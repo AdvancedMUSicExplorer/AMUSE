@@ -57,7 +57,7 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#isFuzzy()
 	 */
-	public boolean isFuzzy() {
+	public boolean isContinuous() {
 		return fuzzy;
 	}
 
@@ -89,7 +89,7 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#setFuzzy(boolean)
 	 */
-	public void setFuzzy(boolean fuzzy) {
+	public void setContinuous(boolean fuzzy) {
 		this.fuzzy = fuzzy;
 	}
 	

@@ -31,7 +31,7 @@ package amuse.nodes.classifier.interfaces;
  */
 public class ClassifiedSongPartitions extends SongPartitionsDescription {
 	
-	/** labels that where classified **/
+	/** labels that were classified **/
 	final String[] labels;
 	
 	/** Corresponding relationships for the partitions

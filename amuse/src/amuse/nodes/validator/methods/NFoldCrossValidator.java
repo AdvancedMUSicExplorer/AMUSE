@@ -34,6 +34,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSet;
@@ -357,6 +358,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null;
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
+						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								songRelationshipsValidationSet, predictedSongs);

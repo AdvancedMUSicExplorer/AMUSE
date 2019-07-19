@@ -50,7 +50,7 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isFuzzy()) {
+		if(isContinuous()) {
 			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
 		}
 		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
@@ -104,7 +104,7 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isFuzzy()) {
+		if(isContinuous()) {
 			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
 		}
 		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
@@ -154,8 +154,8 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 				}
 			}
 			for(int category=0;category<groundTruthRelationships.get(i).getLabels().length; category++) {
-				currentPredictedRelationships[category] = currentPredictedRelationships[category] / predictedRelationships.get(i).getRelationships().length >= 0.5 ? 1.0 : 0.0;
-				currentGroundTruthRelationships[category] = currentGroundTruthRelationships[category] / groundTruthRelationships.get(i).getRelationships().length >= 0.5 ? 1.0 : 0.0;
+				currentPredictedRelationships[category] = (currentPredictedRelationships[category] / predictedRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
+				currentGroundTruthRelationships[category] = (currentGroundTruthRelationships[category] / groundTruthRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
 				if(currentPredictedRelationships[category] != currentGroundTruthRelationships[category]) {
 					currentSongPredictedCorrectly = false; break;
 				}

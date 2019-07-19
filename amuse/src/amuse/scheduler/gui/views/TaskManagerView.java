@@ -228,6 +228,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
 		wizard.startTasks(tasks);
 		experimentTable.experiments = new ArrayList<TaskConfiguration>();
+		experimentTable.notifyListeners();
     }
 
     public void addExperiment(TaskConfiguration ex) {
@@ -350,8 +351,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
         private void notifyListeners() {
             for (TableModelListener l: listeners) {
-		l.tableChanged(new TableModelEvent(this));
-	    }
+            	l.tableChanged(new TableModelEvent(this));
+            }
         }
 
         private void remove(int index) {
@@ -383,8 +384,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
         private void notifyListenersOfAdd(int index) {
             for (TableModelListener l: listeners) {
-		l.tableChanged(new TableModelEvent(this, index));
-	    }
+            	l.tableChanged(new TableModelEvent(this, index));
+            }
         }
 
         private TaskConfiguration getExperiment(int index) {

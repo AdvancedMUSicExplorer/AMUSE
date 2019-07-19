@@ -43,7 +43,7 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	private boolean calculateForPartitionLevel = false;
 	
 	/** True if this measure will be calculated in a fuzzy way */
-	private boolean fuzzy = false;
+	private boolean continuous = false;
 
 	/*
 	 * (non-Javadoc)
@@ -57,8 +57,8 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#isFuzzy()
 	 */
-	public boolean isFuzzy() {
-		return fuzzy;
+	public boolean isContinuous() {
+		return continuous;
 	}
 
 	/*
@@ -89,8 +89,8 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#setFuzzy(boolean)
 	 */
-	public void setFuzzy(boolean fuzzy) {
-		this.fuzzy = fuzzy;
+	public void setContinuous(boolean continuous) {
+		this.continuous = continuous;
 	}
 	
 	/**
@@ -117,9 +117,13 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
 			return measureOnPartLev;
 		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[2];
-			measures[0] = measureOnSongLev[0];
-			measures[1] = measureOnPartLev[0];
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
 			return measures;
 		} else {
 			return null;
@@ -152,9 +156,13 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
 			return measureOnPartLev;
 		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[2];
-			measures[0] = measureOnSongLev[0];
-			measures[1] = measureOnPartLev[0];
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
 			return measures;
 		} else {
 			return null;
@@ -183,9 +191,13 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
 			return measureOnPartLev;
 		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[2];
-			measures[0] = measureOnSongLev[0];
-			measures[1] = measureOnPartLev[0];
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
 			return measures;
 		} else {
 			return null;

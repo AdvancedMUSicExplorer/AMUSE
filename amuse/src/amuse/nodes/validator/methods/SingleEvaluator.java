@@ -33,6 +33,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -187,6 +188,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 					ValidationMeasure[] currMeas = null;
 					Object test = this.measureCalculators.get(currentMeasure);
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
+						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);

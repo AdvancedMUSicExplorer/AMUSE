@@ -50,7 +50,7 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isFuzzy()) {
+		if(isContinuous()) {
 			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
 		}
 		double errorSum = 0.0d;
@@ -95,7 +95,7 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isFuzzy()) {
+		if(isContinuous()) {
 			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
 		}
 		int errorSum = 0;

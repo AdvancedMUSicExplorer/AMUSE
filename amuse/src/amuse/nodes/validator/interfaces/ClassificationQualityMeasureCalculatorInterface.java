@@ -44,7 +44,7 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	public void setPartitionLevel(boolean level);
 	
 	/** Switchs the fuzzy measure calculation on/off */
-	public void setFuzzy(boolean fuzzy);
+	public void setContinuous(boolean fuzzy);
 	
 	/** Returns true if this measure will be calculated on song level */
 	public boolean getSongLevel();
@@ -53,7 +53,7 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	public boolean getPartitionLevel();
 	
 	//** Returns true if this measure will be be calculated in a fuzzy way */
-	public boolean isFuzzy();
+	public boolean isContinuous();
 	
 	/**
 	 * Calculates the measure
