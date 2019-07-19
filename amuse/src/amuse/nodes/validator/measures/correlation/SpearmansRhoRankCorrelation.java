@@ -245,7 +245,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -253,7 +253,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
@@ -261,7 +261,106 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
+		
+		double[] corrCoef = new double[numberOfCategories];
+		for(int category = 0; category < numberOfCategories; category++) {
+			// Sort labeled and predicted values
+			ArrayList<Double> sortedPredictedRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+			ArrayList<Double> sortedLabeledRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+			for(int i=0;i<groundTruthRelationships.size();i++) {
+				
+				// Calculate the predicted value for this song (averaging among all partitions)
+				Double currentPredictedValue = 0.0d;
+				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
+				}
+				currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
+				
+				sortedPredictedRelationships.add(currentPredictedValue);
+				sortedLabeledRelationships.add(new Double(groundTruthRelationships.get(i).getRelationships()[0][category]));
+			}
+			Collections.sort(sortedPredictedRelationships);
+			Collections.sort(sortedLabeledRelationships);
+			
+			// Calculate ranks for predicted values
+			HashMap<Double, Double> predictedValueToRang = new HashMap<Double, Double>();
+			for(int i=sortedPredictedRelationships.size()-1;i>=0;i--) {
+				
+				// Calculate the number of the equal values
+				int equalValuesNumber = 1;
+				double rank = sortedPredictedRelationships.size() - i; // First position in descending order
+				for(int j=i-1;j>=0;j--) {
+					if(sortedPredictedRelationships.get(j).equals(sortedPredictedRelationships.get(i))) {
+						equalValuesNumber++;
+						rank += sortedPredictedRelationships.size() - j; // Add the next position in descending order
+					} else {
+						break;
+					}
+				}
+				rank /= equalValuesNumber;
+				predictedValueToRang.put(sortedPredictedRelationships.get(i), rank);
+				
+				// Go to the next position with different value
+				i -= (equalValuesNumber-1);
+			}
+			
+			// Calculate ranks for labeled values
+			HashMap<Double, Double> labeledValueToRang = new HashMap<Double, Double>();
+			for(int i=sortedLabeledRelationships.size()-1;i>=0;i--) {
+				
+				// Calculate the number of the equal values
+				int equalValuesNumber = 1;
+				double rank = sortedLabeledRelationships.size() - i; // First position in descending order
+				for(int j=i-1;j>=0;j--) {
+					if(sortedLabeledRelationships.get(j).equals(sortedLabeledRelationships.get(i))) {
+						equalValuesNumber++;
+						rank += sortedLabeledRelationships.size() - j; // Add the next position in descending order
+					} else {
+						break;
+					}
+				}
+				rank /= equalValuesNumber;
+				labeledValueToRang.put(sortedLabeledRelationships.get(i), rank);
+				
+				// Go to the next position with different value
+				i -= (equalValuesNumber-1);
+			}
+			
+			// Calculate the Spearman's rank correlation
+			double sumOfRankMultiplications = 0.0d;
+			double sumOfSquaredPredictedRanks = 0.0d;
+			double sumOfSquaredLabeledRanks = 0.0d;
+			double p = groundTruthRelationships.size() * Math.pow((groundTruthRelationships.size()+1d)/2d, 2);
+			for(int i=0;i<groundTruthRelationships.size();i++) {
+				
+				// Calculate the predicted value for this song (averaging among all partitions)
+				Double currentPredictedValue = 0.0d;
+				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
+				}
+				currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
+				
+				sumOfRankMultiplications += predictedValueToRang.get(currentPredictedValue) * labeledValueToRang.get(groundTruthRelationships.get(i).getRelationships()[0][category]);
+				sumOfSquaredPredictedRanks += Math.pow(predictedValueToRang.get(currentPredictedValue), 2);
+				sumOfSquaredLabeledRanks += Math.pow(labeledValueToRang.get(groundTruthRelationships.get(i).getRelationships()[0][category]), 2);
+				
+			}	
+			
+			// Calculate the correlation coefficient
+			corrCoef[category] = (sumOfRankMultiplications - p) / 
+				(Math.sqrt(sumOfSquaredPredictedRanks - p) * Math.sqrt(sumOfSquaredLabeledRanks - p));
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[numberOfCategories];
+		for(int category = 0; category < numberOfCategories; category++) {
+			correlationMeasure[category] = new ValidationMeasureDouble(false);
+			correlationMeasure[category].setId(301);
+			correlationMeasure[category].setName("Speraman's rank correlation coefficient on song level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setValue(corrCoef[category]);
+		}
+		return correlationMeasure;
 	}
 
 
@@ -270,7 +369,100 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
+		
+		double[] corrCoef = new double[numberOfCategories];
+		for(int category = 0; category < numberOfCategories; category++) {
+			// Calculate the number of all partitions
+			int overallPartitionNumber = 0;
+			for(int i=0;i<groundTruthRelationships.size();i++) {
+				overallPartitionNumber += predictedRelationships.get(i).getRelationships().length;
+			}
+			
+			// Sort labeled and predicted values
+			ArrayList<Double> sortedPredictedRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+			ArrayList<Double> sortedLabeledRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+			for(int i=0;i<groundTruthRelationships.size();i++) {
+				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+					sortedPredictedRelationships.add(predictedRelationships.get(i).getRelationships()[j][category]);
+					sortedLabeledRelationships.add(new Double(groundTruthRelationships.get(i).getRelationships()[j][category]));
+				}
+			}
+			Collections.sort(sortedPredictedRelationships);
+			Collections.sort(sortedLabeledRelationships);
+			
+			
+			// Calculate ranks for predicted values
+			HashMap<Double, Double> predictedValueToRang = new HashMap<Double, Double>();
+			for(int i=sortedPredictedRelationships.size()-1;i>=0;i--) {
+				
+				// Calculate the number of the equal values
+				int equalValuesNumber = 1;
+				double rank = sortedPredictedRelationships.size() - i; // First position in descending order
+				for(int j=i-1;j>=0;j--) {
+					if(sortedPredictedRelationships.get(j).equals(sortedPredictedRelationships.get(i))) {
+						equalValuesNumber++;
+						rank += sortedPredictedRelationships.size() - j; // Add the next position in descending order
+					} else {
+						break;
+					}
+				}
+				rank /= equalValuesNumber;
+				predictedValueToRang.put(sortedPredictedRelationships.get(i), rank);
+				
+				// Go to the next position with different value
+				i -= (equalValuesNumber-1);
+			}
+			
+			// Calculate ranks for labeled values
+			HashMap<Double, Double> labeledValueToRang = new HashMap<Double, Double>();
+			for(int i=sortedLabeledRelationships.size()-1;i>=0;i--) {
+				
+				// Calculate the number of the equal values
+				int equalValuesNumber = 1;
+				double rank = sortedLabeledRelationships.size() - i; // First position in descending order
+				for(int j=i-1;j>=0;j--) {
+					if(sortedLabeledRelationships.get(j).equals(sortedLabeledRelationships.get(i))) {
+						equalValuesNumber++;
+						rank += sortedLabeledRelationships.size() - j; // Add the next position in descending order
+					} else {
+						break;
+					}
+				}
+				rank /= equalValuesNumber;
+				labeledValueToRang.put(sortedLabeledRelationships.get(i), rank);
+				
+				// Go to the next position with different value
+				i -= (equalValuesNumber-1);
+			}
+			
+			// Calculate the Spearman's rank correlation
+			double sumOfRankMultiplications = 0.0d;
+			double sumOfSquaredPredictedRanks = 0.0d;
+			double sumOfSquaredLabeledRanks = 0.0d;
+			double p = overallPartitionNumber * Math.pow((overallPartitionNumber+1d)/2d, 2);
+			for(int i=0;i<groundTruthRelationships.size();i++) {
+				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+					sumOfRankMultiplications += predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][category]) * labeledValueToRang.get(groundTruthRelationships.get(i).getRelationships()[j][category]);
+					sumOfSquaredPredictedRanks += Math.pow(predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][category]), 2);
+					sumOfSquaredLabeledRanks += Math.pow(labeledValueToRang.get(groundTruthRelationships.get(i).getRelationships()[j][category]), 2);
+				}
+			}
+		
+			// Calculate the correlation coefficient
+			corrCoef[category] = (sumOfRankMultiplications - p) / 
+				(Math.sqrt(sumOfSquaredPredictedRanks - p) * Math.sqrt(sumOfSquaredLabeledRanks - p));
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[numberOfCategories];
+		for(int category = 0; category < numberOfCategories; category++) {
+			correlationMeasure[category] = new ValidationMeasureDouble(false);
+			correlationMeasure[category].setId(301);
+			correlationMeasure[category].setName("Speraman's rank correlation coefficient on partition level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setValue(corrCoef[category]);
+		}
+		return correlationMeasure;
 	}
 
 }

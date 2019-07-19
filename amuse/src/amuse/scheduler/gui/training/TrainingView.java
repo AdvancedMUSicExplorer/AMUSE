@@ -102,9 +102,9 @@ public class TrainingView extends JPanel {
 			trainingDescriptionPanel = new TrainingDescriptionPanel();
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		}
+		addRightSide(modelTypePanel);
 		addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
-		addRightSide(modelTypePanel);
 		
 		if(training) {
 			targetPathSelectionPanel.add(new JLabel("Enter Filename for Output Model:"), "wrap");
@@ -116,8 +116,6 @@ public class TrainingView extends JPanel {
         }
         
 		trainingDescriptionPanel = new TrainingDescriptionPanel();
-		addRightSide(trainingAlgorithmFacade.getParameterPanel());
-		addRightSide(modelTypePanel);
 		if(training)addRightSide(targetPathSelectionPanel);
 		
 		splitPane.setDividerLocation(0.5);

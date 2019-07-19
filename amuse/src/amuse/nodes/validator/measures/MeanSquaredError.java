@@ -132,9 +132,9 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			// Calculate the predicted value for this song (averaging among all partitions)
-			Double[] currentPredictedValue = new Double[numberOfCategories];
-			for(int j=0;j<numberOfCategories;j++) {
-				for(int category = 0; category < groundTruthRelationships.get(0).getLabels().length; category++){
+			double[] currentPredictedValue = new double[numberOfCategories];
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				for(int category = 0; category < numberOfCategories; category++){
 					currentPredictedValue[category] += predictedRelationships.get(i).getRelationships()[j][category];
 				}
 				

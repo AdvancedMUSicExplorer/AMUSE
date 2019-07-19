@@ -112,9 +112,9 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				
-				if(groundTruthRelationships.get(i).doubleValue() == 1.0 && predictedRelationships.get(i).getRelationships()[j][0].doubleValue() == 1.0 ||
-						groundTruthRelationships.get(i).doubleValue() == 0.0 && predictedRelationships.get(i).getRelationships()[j][0].doubleValue() == 0.0) {
+				int currentGroundTruthValue = groundTruthRelationships.get(i).doubleValue() >= 0.5 ? 1 : 0;
+				int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][0].doubleValue() >= 0.5 ? 1 : 0;
+				if(currentGroundTruthValue == currentPredictedValue) {
 					listOfCorrectlyPredictedPartitions.add(currentPartitionNumber);
 				}
 				currentPartitionNumber++;
@@ -140,7 +140,22 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-//		throw new NodeException(this.getClass().getName() + " is not yet implemented for multiclass classification in the current version");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+
+	/**
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureString[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
@@ -179,12 +194,12 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		
 		return list;
 	}
-
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
 		int currentPartitionNumber = 0;
 		
@@ -192,7 +207,9 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
 				boolean currentPartitionPredictedCorrectly = true;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
-					if(groundTruthRelationships.get(i).getRelationships()[j][category] != predictedRelationships.get(i).getRelationships()[j][category]) {
+					int currentGroundTruthValue = groundTruthRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
+					int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
+					if(currentGroundTruthValue != currentPredictedValue) {
 						currentPartitionPredictedCorrectly = false; break;
 					}
 				}
@@ -216,22 +233,6 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		list[0].setName("List of correctly predicted instances on partition level");
 		
 		return list;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
-	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " cannot be calculated for multilabel classification tasks");
 	}
 }
 

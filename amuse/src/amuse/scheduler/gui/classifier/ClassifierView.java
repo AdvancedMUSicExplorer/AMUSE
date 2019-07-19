@@ -120,9 +120,9 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		});
         
         viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+        addRightSide(modelTypePanel);
         addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
         addRightSide(trainingAlgorithmFacade.getParameterPanel());
-        addRightSide(modelTypePanel);
 
         targetPathSelectionPanel.add(selectAverageCalculation, "growx, wrap");
         targetPathSelectionPanel.add(new JLabel("Enter Filename for Result:"), "wrap");
@@ -139,7 +139,6 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         
 		trainingDescriptionPanel = new TrainingDescriptionPanel();
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
-		addRightSide(modelTypePanel);
 		addRightSide(targetPathSelectionPanel);
 		addRightSide(trainingDescriptionPanel);
 		splitPane.setDividerLocation(0.5);
