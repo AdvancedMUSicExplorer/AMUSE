@@ -844,8 +844,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				if (!classifierResultFile.canWrite()) {
 					throw new NodeException("Cannot save classification results");
 				}
-			if (!classifierResultFile.exists())
+			if (!classifierResultFile.exists()) {
+				classifierResultFile.getParentFile().mkdirs();
 				classifierResultFile.createNewFile();
+			}
 			
 			FileOutputStream values_to = new FileOutputStream(classifierResultFile);
 			DataOutputStream values_writer = new DataOutputStream(values_to);

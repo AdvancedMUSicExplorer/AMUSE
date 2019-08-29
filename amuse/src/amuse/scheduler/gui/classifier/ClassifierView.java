@@ -121,6 +121,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         
         viewLeft.add(processingHistoryPanel, "growx, span, wrap");
         addRightSide(modelTypePanel);
+        modelTypePanel.addModelTypeListener(trainingAlgorithmFacade);
         addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
         addRightSide(trainingAlgorithmFacade.getParameterPanel());
 

@@ -797,8 +797,10 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
 					AmuseLogger.write(ValidatorNodeScheduler.class.getClass().getName(), Level.WARN,"No output path given! The results will be saved at " + outputPath);
 				}
+			} else {
+				// create the folders
+				new File(outputPath).getParentFile().mkdirs();
 			}
-			
 			
 			// If no measure file is there, save header
 			boolean saveHeader = false;

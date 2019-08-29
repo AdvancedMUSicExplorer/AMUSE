@@ -72,7 +72,10 @@ public class FKNNAdapter extends AmuseTask implements TrainerInterface {
 		
 		// save the complete data since FKNN is not trained
 		try {
-			dataSet.saveToArffFile(new File(outputModel));
+			File modelFile = new File(outputModel);
+			// Create folders...
+	        modelFile.getParentFile().mkdirs();
+			dataSet.saveToArffFile(modelFile);
 			
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());

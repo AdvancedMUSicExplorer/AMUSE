@@ -72,10 +72,10 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute classificationAlgorithmIdAttribute;
 	private final NumericAttribute groundTruthCategoryIdAttribute;
 	private final StringAttribute attributesToPredictAttribute;
+	private final StringAttribute pathToInputModelAttribute;
 	private final NominalAttribute relationshipTypeAttribute;
 	private final NominalAttribute labelTypeAttribute;
 	private final NominalAttribute methodTypeAttribute;
-	private final StringAttribute pathToInputModelAttribute;
 	private final NumericAttribute mergeSongResultsAttribute;
 	private final StringAttribute outputResultAttribute;
 	private final StringAttribute trainingDescriptionAttribute;

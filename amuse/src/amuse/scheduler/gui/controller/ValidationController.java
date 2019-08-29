@@ -113,7 +113,7 @@ public class ValidationController extends AbstractController {
                 + file.getName());
         Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
         String validationMethodStr = selectedAlgorithm.getID() + "";
-        if (selectedAlgorithm.getCurrentParameterValues().length > 0) {
+        if (selectedAlgorithm.getCurrentParameterValues().length > 0 && selectedAlgorithm.getID() == 0) {
         	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
         	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
         	String[] modifiedParamteterValues = new String[currentParameterValues.length];
@@ -123,6 +123,8 @@ public class ValidationController extends AbstractController {
         		}
         	}
         	validationMethodStr += Arrays.toString(modifiedParamteterValues);
+        } else {
+        	validationMethodStr += selectedAlgorithm.getParameterStr();
         }
         MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
@@ -239,7 +241,7 @@ public class ValidationController extends AbstractController {
         ValidationConfiguration conf = null;
         Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
         String validationMethodStr = selectedAlgorithm.getID() + "";
-        if (selectedAlgorithm.getCurrentParameterValues().length > 0) {
+        if (selectedAlgorithm.getCurrentParameterValues().length > 0 && selectedAlgorithm.getID() == 0) {
         	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
         	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
         	String[] modifiedParamteterValues = new String[currentParameterValues.length];
@@ -249,6 +251,8 @@ public class ValidationController extends AbstractController {
         		}
         	}
         	validationMethodStr += Arrays.toString(modifiedParamteterValues);
+        } else {
+        	validationMethodStr += selectedAlgorithm.getParameterStr();
         }
         MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();

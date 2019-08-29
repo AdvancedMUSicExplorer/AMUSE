@@ -42,11 +42,28 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 	private final String[] expectedParameterDescription;
 	private final String[] currentParameterValues;
 	private final String category;
+	private final boolean supportsBinary;
+	private final boolean supportsContinuous;
+	private final boolean supportsMulticlass;
+	private final boolean supportsMultilabel;
+	private final boolean supportsSinglelabel;
+	private final boolean supportsSupervised;
+	private final boolean supportsUnsupervised;
+	private final boolean supportsRegression;
 	private final List<AlgorithmChangeListener> listeners = new ArrayList<AlgorithmChangeListener>();
 
 	public Algorithm(int id, String name, String description, String category, String expectedParameterNames,
 			String expectedParameters,
-			String defaultParameterValues, String expectedParameterDescription) {
+			String defaultParameterValues, String expectedParameterDescription,
+			boolean supportsBinary,
+			boolean supportsContinuous,
+			boolean supportsMulticlass,
+			boolean supportsMultilabel,
+			boolean supportsSinglelabel,
+			boolean supportsSupervised,
+			boolean supportsUnsupervised,
+			boolean supportsRegression
+			) {
 		this.id = id;
 		this.name = name;
 		this.description = description;
@@ -56,6 +73,15 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 		this.defaultParameterValues = scanParameters(defaultParameterValues);
 		this.expectedParameterDescription = scanNamesOrDescriptions(expectedParameterDescription);
 		this.currentParameterValues = scanParameters(defaultParameterValues);
+		this.supportsBinary = supportsBinary;
+		this.supportsContinuous = supportsContinuous;
+		this.supportsMulticlass = supportsMulticlass;
+		this.supportsMultilabel = supportsMultilabel;
+		this.supportsSinglelabel = supportsSinglelabel;
+		this.supportsSupervised = supportsSupervised;
+		this.supportsUnsupervised = supportsUnsupervised;
+		this.supportsRegression = supportsRegression;
+		
 	}
 
 	public Algorithm(Algorithm copy) {
@@ -68,6 +94,14 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 		this.defaultParameterValues = copy.defaultParameterValues;
 		this.expectedParameterDescription = copy.expectedParameterDescription;
 		this.currentParameterValues = copy.currentParameterValues.clone();
+		this.supportsBinary = copy.supportsBinary;
+		this.supportsContinuous = copy.supportsContinuous;
+		this.supportsMulticlass = copy.supportsMulticlass;
+		this.supportsMultilabel = copy.supportsMultilabel;
+		this.supportsSinglelabel = copy.supportsSinglelabel;
+		this.supportsSupervised = copy.supportsSupervised;
+		this.supportsUnsupervised = copy.supportsUnsupervised;
+		this.supportsRegression = copy.supportsRegression;
 	}
 
 	@Override
@@ -293,5 +327,37 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 			algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('_')) + "]";
 		}
 		return algorithmStr;
+	}
+	
+	public boolean supportsBinary() {
+		return supportsBinary;
+	}
+	
+	public boolean supportsContinuous() {
+		return supportsContinuous;
+	}
+	
+	public boolean supportsMulticlass() {
+		return supportsMulticlass;
+	}
+	
+	public boolean supportsMultilabel() {
+		return supportsMultilabel;
+	}
+	
+	public boolean supportsSinglelabel() {
+		return supportsSinglelabel;
+	}
+	
+	public boolean supportsSupervised() {
+		return supportsSupervised;
+	}
+	
+	public boolean supportsUnsupervised() {
+		return supportsUnsupervised;
+	}
+	
+	public boolean supportsRegression() {
+		return supportsRegression;
 	}
 }

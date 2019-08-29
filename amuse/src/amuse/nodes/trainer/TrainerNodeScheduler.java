@@ -989,7 +989,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		else {
 			String trainingDescription = ((TrainingConfiguration)this.taskConfiguration).getTrainingDescription();
 			if(!trainingDescription.equals("")) {
-				this.outputModel = new String(this.outputModel.substring(0, this.outputModel.indexOf(".mod")) + "_" + trainingDescription + ".mod");
+				if(this.outputModel.contains(".mod")) {
+					this.outputModel = new String(this.outputModel.substring(0, this.outputModel.indexOf(".mod")) + "_" + trainingDescription + ".mod");
+				} else {
+					this.outputModel = this.outputModel + "_" + trainingDescription + ".mod";
+				}
 			}
 		}
 		

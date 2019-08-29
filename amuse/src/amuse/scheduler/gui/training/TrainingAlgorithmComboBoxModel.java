@@ -64,15 +64,42 @@ public class TrainingAlgorithmComboBoxModel extends DefaultComboBoxModel {
 				.getDefaultParameterValuesAttribute();
 		StringAttribute paramDescAttr = algorithmTable
 				.getParameterDescriptionsAttribute();
+		
+		NumericAttribute supportsBinaryAttr = algorithmTable.getSupportsBinaryAttribute();
+		NumericAttribute supportsContinuousAttr = algorithmTable.getSupportsContinuousAttribute();
+		NumericAttribute supportsMulticlassAttr = algorithmTable.getSupportsMulticlassAttribute();
+		NumericAttribute supportsMultilabelAttr = algorithmTable.getSupportsMultilabelAttribute();
+		NumericAttribute supportsSinglelabelAttr = algorithmTable.getSupportsSinglelabelAttribute();
+		NumericAttribute supportsSupervisedAttr = algorithmTable.getSupportsSupervisedAttribute();
+		NumericAttribute supportsUnsupervisedAttr = algorithmTable.getSupportsUnsupervisedAttribute();
+		NumericAttribute supportsRegressionAttr = algorithmTable.getSupportsRegressionAttribute();
+		
 		// Create Model:
 		availableAlgorithms = new ArrayList<Algorithm>();
 		for (int i = 0; i < algorithmTable.getValueCount(); i++) {
+			boolean supportsBinary = supportsBinaryAttr.getValueAt(i) != 0;
+			boolean supportsContinuous = supportsContinuousAttr.getValueAt(i) != 0;
+			boolean supportsMulticlass = supportsMulticlassAttr.getValueAt(i) != 0;
+			boolean supportsMultilabel = supportsMultilabelAttr.getValueAt(i) != 0;
+			boolean supportsSinglelabel = supportsSinglelabelAttr.getValueAt(i) != 0;
+			boolean supportsSupervised = supportsSupervisedAttr.getValueAt(i) != 0;
+			boolean supportsUnsupervised = supportsUnsupervisedAttr.getValueAt(i) != 0;
+			boolean supportsRegression = supportsRegressionAttr.getValueAt(i) != 0;
+			
 			// Create ProcessingAlgorithm Object:
 			Algorithm al = new Algorithm(idAttr.getValueAt(
 					i).intValue(), nameAttr.getValueAt(i), descAttr
 					.getValueAt(i), categoryAttr.getValueAt(i),
 					exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i),
-					defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i));
+					defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i),
+					supportsBinary,
+					supportsContinuous,
+					supportsMulticlass,
+					supportsMultilabel,
+					supportsSinglelabel,
+					supportsSupervised,
+					supportsUnsupervised,
+					supportsRegression);
 			availableAlgorithms.add(al);
 		}
 		for (Algorithm al : availableAlgorithms) {

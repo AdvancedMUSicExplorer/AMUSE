@@ -31,6 +31,7 @@ import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.scheduler.gui.navigation.TitleUpdater;
+import amuse.scheduler.gui.views.TaskListener;
 
 import java.io.File;
 import java.util.List;
@@ -163,5 +164,20 @@ public interface WizardControllerInterface {
      * Loads the experiments from a file.
      */
 	public void loadTasks(File selectedFile);
+	
+	/*
+	 * Adds a task listener that listens to tasks being started and finished
+	 */
+	public void addTaskListener(TaskListener taskListener);
+	
+	/*
+	 * Notifies the task listeners of the start of a task
+	 */
+	public void notifyListenersOfStart(TaskConfiguration experiment);
+	
+	/*
+	 * Notifies the task listeners of the finishing of a task
+	 */
+	public void notifyListenersOfFinish(TaskConfiguration experiment);
 
 }

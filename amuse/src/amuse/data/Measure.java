@@ -40,12 +40,9 @@ public class Measure implements Serializable {
     private boolean extractPartitionLevel;
     private final String category;
     private final String measureClass;
-    private final String supportsBinary;
-    private final String supportsMultiClass;
-    private final String supportsFuzzy;
 
 
-    public Measure(int id, String name, String category, Double optimalValue, String measureClass, String supportsBinary, String supportsMultiClass, String supportsFuzzy) {
+    public Measure(int id, String name, String category, Double optimalValue, String measureClass) {
         this.id = id;
         this.name = name;
         this.optimalValue = optimalValue;
@@ -53,9 +50,6 @@ public class Measure implements Serializable {
         this.extractPartitionLevel = true;
         this.category = category;
         this.measureClass = measureClass;
-        this.supportsBinary = supportsBinary;
-        this.supportsFuzzy = supportsFuzzy;
-        this.supportsMultiClass = supportsMultiClass;
     }
 
     public int getID() {
@@ -92,17 +86,5 @@ public class Measure implements Serializable {
     
      public void setSongLevelSelected(boolean songLevel) {
         extractSongLevel = songLevel;
-    }
-
-    public String getSupportsBinary() {
-        return supportsBinary;
-    }
-
-    public String getSupportsFuzzy() {
-        return supportsFuzzy;
-    }
-
-    public String getSupportsMultiClass() {
-        return supportsMultiClass;
     }
 }

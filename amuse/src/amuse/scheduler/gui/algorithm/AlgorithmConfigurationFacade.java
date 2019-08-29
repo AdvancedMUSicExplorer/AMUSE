@@ -57,12 +57,16 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.util.AmuseLogger;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
+import amuse.scheduler.gui.training.ModelTypeListener;
 
 /**
  * @author Clemens Waeltken
  *
  */
-public class AlgorithmConfigurationFacade {
+public class AlgorithmConfigurationFacade implements ModelTypeListener {
 
 	List<Algorithm> availableAlgorithms = new ArrayList<Algorithm>();
 	Algorithm selectedAlgorithm;
@@ -171,7 +175,7 @@ public class AlgorithmConfigurationFacade {
 		comboBox.setModel(comboBoxModel);
 		addListenerToComboBox();
 		updateAlgorithmParameterView();
-		createMenu();
+		createMenu(RelationshipType.BINARY, LabelType.SINGLELABEL, MethodType.SUPERVISED);
 		algorithmButton.addActionListener(new ActionListener() {
 
 			@Override
@@ -264,6 +268,14 @@ public class AlgorithmConfigurationFacade {
 		StringAttribute exParamAttr = algorithmDataSet.getParameterDefinitionsAttribute();
 		StringAttribute defaultValsAttr = algorithmDataSet.getDefaultParameterValuesAttribute();
 		StringAttribute paramDescAttr = algorithmDataSet.getParameterDescriptionsAttribute();
+		NumericAttribute supportsBinaryAttr = algorithmDataSet.getSupportsBinaryAttribute();
+		NumericAttribute supportsContinuousAttr = algorithmDataSet.getSupportsContinuousAttribute();
+		NumericAttribute supportsMulticlassAttr = algorithmDataSet.getSupportsMulticlassAttribute();
+		NumericAttribute supportsMultilabelAttr = algorithmDataSet.getSupportsMultilabelAttribute();
+		NumericAttribute supportsSinglelabelAttr = algorithmDataSet.getSupportsSinglelabelAttribute();
+		NumericAttribute supportsSupervisedAttr = algorithmDataSet.getSupportsSupervisedAttribute();
+		NumericAttribute supportsUnsupervisedAttr = algorithmDataSet.getSupportsUnsupervisedAttribute();
+		NumericAttribute supportsRegressionAttr = algorithmDataSet.getSupportsRegressionAttribute();
 		// Create Model:
 		this.availableAlgorithms = new ArrayList<Algorithm>();
 		for (int i = 0; i < algorithmDataSet.getValueCount(); i++) {
@@ -274,10 +286,26 @@ public class AlgorithmConfigurationFacade {
 			} else {
 				category = "";
 			}
+			boolean supportsBinary = supportsBinaryAttr.getValueAt(i) != 0;
+			boolean supportsContinuous = supportsContinuousAttr.getValueAt(i) != 0;
+			boolean supportsMulticlass = supportsMulticlassAttr.getValueAt(i) != 0;
+			boolean supportsMultilabel = supportsMultilabelAttr.getValueAt(i) != 0;
+			boolean supportsSinglelabel = supportsSinglelabelAttr.getValueAt(i) != 0;
+			boolean supportsSupervised = supportsSupervisedAttr.getValueAt(i) != 0;
+			boolean supportsUnsupervised = supportsUnsupervisedAttr.getValueAt(i) != 0;
+			boolean supportsRegression = supportsRegressionAttr.getValueAt(i) != 0;
 			Algorithm al = new Algorithm(idAttr.getValueAt(
 					i).intValue(), nameAttr.getValueAt(i), descAttr.getValueAt(i), category,
 					exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i),
-					defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i));
+					defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i),
+					supportsBinary,
+					supportsContinuous,
+					supportsMulticlass,
+					supportsMultilabel,
+					supportsSinglelabel,
+					supportsSupervised,
+					supportsUnsupervised,
+					supportsRegression);
 			this.availableAlgorithms.add(al);
 		}
 
@@ -299,7 +327,7 @@ public class AlgorithmConfigurationFacade {
 		return (Algorithm) comboBox.getSelectedItem();
 	}
 
-	private void createMenu() {
+	private void createMenu(RelationshipType relationshipType, LabelType labelType, MethodType methodType) {
 		algorithmMenu = new JPopupMenu();
 		algorithmMenu.setInvoker(algorithmButton);
 		JMenuItem item;
@@ -355,6 +383,28 @@ public class AlgorithmConfigurationFacade {
 					item = new JMenuItem(al.getName());
 					item.addActionListener(new MenuAlgorithmAction(al));
 					item.setToolTipText(al.getDescription());
+					boolean supportsSettings = true;
+					
+					if(relationshipType == RelationshipType.BINARY && !al.supportsBinary()){
+						supportsSettings = false;
+					} else if(relationshipType == RelationshipType.CONTINUOUS && !al.supportsContinuous()) {
+						supportsSettings = false;
+					} else if(labelType == LabelType.SINGLELABEL && !al.supportsSinglelabel()) {
+						supportsSettings = false;
+					} else if(labelType == LabelType.MULTICLASS && !al.supportsMulticlass()) {
+						supportsSettings = false;
+					} else if(labelType == LabelType.MULTILABEL && !al.supportsMultilabel()) {
+						supportsSettings = false;
+					} else if(methodType == MethodType.SUPERVISED && !al.supportsSupervised()) {
+						supportsSettings = false;
+					} else if(methodType == MethodType.UNSUPERVISED && !al.supportsUnsupervised()) {
+						supportsSettings = false;
+					} else if(methodType == MethodType.REGRESSION && !al.supportsRegression()) {
+						supportsSettings = false;
+					}
+					
+					item.setEnabled(supportsSettings);
+					
 					if (categories.size() == 1) {
 						algorithmMenu.add(item);
 					} else {
@@ -420,6 +470,58 @@ public class AlgorithmConfigurationFacade {
 			comboBox.setSelectedItem(algorithm);
 			algorithmButton.setText(algorithm.getName());
 			algorithmMenu.setVisible(false);
+		}
+	}
+
+	@Override
+	public void updateModelType(RelationshipType relationshipType, LabelType labelType, MethodType methodType) {
+		createMenu(relationshipType, labelType, methodType);
+		Algorithm currentAlgorithm = (Algorithm)comboBox.getSelectedItem();
+		
+		boolean supportsSettings = true;
+		if(relationshipType == RelationshipType.BINARY && !currentAlgorithm.supportsBinary()){
+			supportsSettings = false;
+		} else if(relationshipType == RelationshipType.CONTINUOUS && !currentAlgorithm.supportsContinuous()) {
+			supportsSettings = false;
+		} else if(labelType == LabelType.SINGLELABEL && !currentAlgorithm.supportsSinglelabel()) {
+			supportsSettings = false;
+		} else if(labelType == LabelType.MULTICLASS && !currentAlgorithm.supportsMulticlass()) {
+			supportsSettings = false;
+		} else if(labelType == LabelType.MULTILABEL && !currentAlgorithm.supportsMultilabel()) {
+			supportsSettings = false;
+		} else if(methodType == MethodType.SUPERVISED && !currentAlgorithm.supportsSupervised()) {
+			supportsSettings = false;
+		} else if(methodType == MethodType.UNSUPERVISED && !currentAlgorithm.supportsUnsupervised()) {
+			supportsSettings = false;
+		} else if(methodType == MethodType.REGRESSION && !currentAlgorithm.supportsRegression()) {
+			supportsSettings = false;
+		}
+		
+		// If the current algorithm does not support the settings, find an algorithm that does.
+		if(!supportsSettings) {
+			for(Algorithm al : availableAlgorithms) {
+				if(relationshipType == RelationshipType.BINARY && !al.supportsBinary()){
+					continue;
+				} else if(relationshipType == RelationshipType.CONTINUOUS && !al.supportsContinuous()) {
+					continue;
+				} else if(labelType == LabelType.SINGLELABEL && !al.supportsSinglelabel()) {
+					continue;
+				} else if(labelType == LabelType.MULTICLASS && !al.supportsMulticlass()) {
+					continue;
+				} else if(labelType == LabelType.MULTILABEL && !al.supportsMultilabel()) {
+					continue;
+				} else if(methodType == MethodType.SUPERVISED && !al.supportsSupervised()) {
+					continue;
+				} else if(methodType == MethodType.UNSUPERVISED && !al.supportsUnsupervised()) {
+					continue;
+				} else if(methodType == MethodType.REGRESSION && !al.supportsRegression()) {
+					continue;
+				} else {
+					comboBox.setSelectedItem(al);
+					updateAlgrithmButtonText();
+					updateAlgorithmParameterView();
+				}
+			}
 		}
 	}
 }

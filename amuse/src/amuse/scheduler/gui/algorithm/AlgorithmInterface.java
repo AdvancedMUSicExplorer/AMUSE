@@ -58,4 +58,20 @@ public interface AlgorithmInterface{
 	 * 
 	 */
 	void resetDefaults();
+	
+	public boolean supportsBinary();
+	
+	public boolean supportsContinuous();
+	
+	public boolean supportsMulticlass();
+	
+	public boolean supportsMultilabel();
+	
+	public boolean supportsSinglelabel();
+	
+	public boolean supportsSupervised();
+	
+	public boolean supportsUnsupervised();
+	
+	public boolean supportsRegression();
 }

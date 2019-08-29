@@ -54,9 +54,6 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isContinuous()) {
-			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
-		}
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			// Calculate the predicted value for this song (averaging among all partitions)
@@ -66,18 +63,16 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
-			if(currentPredictedValue >= 0.5) {
-				currentPredictedValue = 1.0d;
-			} else {
-				currentPredictedValue = 0.0d;
+			//If the classification was not continuous, round the predicted values
+			if(!isContinuous()) {
+				if(currentPredictedValue >= 0.5) {
+					currentPredictedValue = 1.0d;
+				} else {
+					currentPredictedValue = 0.0d;
+				}
 			}
 			
 			Double currentGroundTruthValue = groundTruthRelationships.get(i);
-			if(currentGroundTruthValue >= 0.5) {
-				currentGroundTruthValue = 1.0d;
-			} else {
-				currentGroundTruthValue = 0.0d;
-			}
 			
 			// Calculate error
 			Double error = Math.abs(currentPredictedValue - currentGroundTruthValue);
@@ -99,20 +94,15 @@ public class Accuracy extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isContinuous()) {
-			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
-		}
-		int errorSum = 0;
+		double errorSum = 0;
 		int partitionNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			partitionNumber += predictedRelationships.get(i).getRelationships().length;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				if(predictedRelationships.get(i).getRelationships()[j][0].doubleValue() != groundTruthRelationships.get(i).doubleValue()) {
-					errorSum++;
-				}
+				errorSum += Math.abs(predictedRelationships.get(i).getRelationships()[j][0].doubleValue() - groundTruthRelationships.get(i).doubleValue());
 			}
 		}
-		int numberOfCorrectClassifications = partitionNumber - errorSum;
+		double numberOfCorrectClassifications = partitionNumber - errorSum;
 		Double accuracy = new Double(numberOfCorrectClassifications) * 1.0d / partitionNumber;
 		
 		// Prepare the result

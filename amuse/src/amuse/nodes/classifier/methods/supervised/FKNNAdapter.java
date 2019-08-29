@@ -203,7 +203,7 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 					
 					//make sure that no errors happened with too small distances (or something similar)
 					if(Double.isNaN(relationship)) {
-					throw new NodeException("Relationship is NaN");
+						throw new NodeException("Relationship is NaN");
 					}
 					
 					//add the correctValues of Relationship and PredictedCategory to the DataSet
@@ -249,7 +249,6 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 		}
 		
 		public int compareTo(Example e) {
-			//return this.distance - e.distance;//Warum nicht einfach so? - Weil das doubles sind!
 			if(this.distance - e.distance < 0.0) {
 				return -1;
 			} else if(this.distance - e.distance == 0.0) {

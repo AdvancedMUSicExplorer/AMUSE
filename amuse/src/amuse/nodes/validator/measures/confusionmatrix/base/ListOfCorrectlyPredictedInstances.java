@@ -50,9 +50,6 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isContinuous()) {
-			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
-		}
 		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
@@ -104,9 +101,6 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		if(isContinuous()) {
-			throw new NodeException(this.getClass().getName() + " can be calculated only for crisp classification tasks");
-		}
 		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
 		int currentPartitionNumber = 0;
 		

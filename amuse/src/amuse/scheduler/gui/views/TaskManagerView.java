@@ -51,6 +51,7 @@ import java.util.Vector;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -66,7 +67,7 @@ import net.miginfocom.swing.MigLayout;
  *
  * @author waeltken
  */
-public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton{
+public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton, TaskListener{
     private JTable tblTasks;
     private JScrollPane scpTaks;
     private JButton btnAddTask = new JButton("+");
@@ -80,6 +81,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     private ExperimentSetTable experimentTable = new ExperimentSetTable();
     private static TaskManagerView instance;
     private boolean isEditing = false;
+    private enum State {READY, IN_QUEUE, RUNNING, FINISHED};
 
     public static TaskManagerView getInstance() {
         if (instance == null) {
@@ -114,8 +116,10 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         btnSaveTasks.setEnabled(false);
         add(btnCheckTasks, "right");
         add(btnSaveTasks);
-	btnCheckTasks.setVisible(false);
-	btnSaveTasks.setVisible(false);
+        btnCheckTasks.setVisible(false);
+        btnSaveTasks.setVisible(false);
+		
+        wizard.addTaskListener(this);
     }
 
     private void showPopupMenu() {
@@ -225,10 +229,16 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     }
 
     private void startTasks() {
-		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.experiments);
+    	if(experimentTable.currentlyExperimentsRunning()) {
+    		JOptionPane.showMessageDialog(this,
+    			    "New tasks cannot be started while there are currently tasks running.",
+    			    "Unable to start tasks",
+    			    JOptionPane.WARNING_MESSAGE);
+    		return;
+    	}
+		List<TaskConfiguration> tasks = new ArrayList<TaskConfiguration>(experimentTable.getReadyExperiments());
+		experimentTable.setInQueue(tasks);
 		wizard.startTasks(tasks);
-		experimentTable.experiments = new ArrayList<TaskConfiguration>();
-		experimentTable.notifyListeners();
     }
 
     public void addExperiment(TaskConfiguration ex) {
@@ -244,7 +254,10 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     }
 
     private void doubleClickOnTable() {
-        editExperiment(experimentTable.getExperiment(tblTasks.getSelectedRow()));
+    	TaskConfiguration currentExperiment = experimentTable.getExperiment(tblTasks.getSelectedRow());
+    	if(experimentTable.isExperimentEditable(currentExperiment)) {
+    		editExperiment(currentExperiment);
+        }
     }
 
     private void editExperiment(TaskConfiguration experiment) {
@@ -269,19 +282,20 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     public class ExperimentSetTable implements TableModel{
 
         private List<TaskConfiguration> experiments = new Vector<TaskConfiguration>();
+        private List<State> states = new Vector<State>();
         private List<TableModelListener> listeners = new Vector<TableModelListener>();
 
-        public ExperimentSetTable() {
-        }
-
-
-        public void addExperiment(TaskConfiguration ex) {
+        public ExperimentSetTable() {}
+        
+		public void addExperiment(TaskConfiguration ex) {
             experiments.add(ex);
+            states.add(State.READY);
             notifyListenersOfAdd(experiments.indexOf(ex));
         }
 
         private void addExperiment(int row, TaskConfiguration ex) {
             experiments.add(row, ex);
+            states.add(State.READY);
             notifyListenersOfAdd(experiments.indexOf(ex));
         }
 
@@ -292,7 +306,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
         @Override
         public int getColumnCount() {
-            return 3;
+            return 4;
         }
 
         @Override
@@ -304,6 +318,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                     return "Type";
                 case 2:
                     return "Additional Information";
+                case 3:
+                	return "State";
                 default:
                     return "Default";
             }
@@ -329,6 +345,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                     return x.getType();
                 case 2:
                     return x.getDescription();
+                case 3:
+                	return states.get(rowIndex);
                 default:
                     return "Default";
             }
@@ -358,6 +376,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         private void remove(int index) {
             if (index >= 0 && index < experiments.size()) {
                 experiments.remove(index);
+                states.remove(index);
                 notifyListeners();
             }
         }
@@ -365,7 +384,9 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         private int moveDown(int index) {
             if (index >= 0 && index < experiments.size() - 1) {
                 TaskConfiguration ex = experiments.remove(index);
+                State state = states.remove(index);
                 experiments.add(++index, ex);
+                states.add(index, state);
                 notifyListeners();
                 notifyListenersOfAdd(index);
             }
@@ -375,7 +396,9 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         private int moveUp(int index) {
             if (index > 0 && index < experiments.size()) {
                 TaskConfiguration ex = experiments.remove(index);
+                State state = states.remove(index);
                 experiments.add(--index, ex);
+                states.add(index, state);
                 notifyListeners();
                 notifyListenersOfAdd(index);
             }
@@ -390,6 +413,67 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
         private TaskConfiguration getExperiment(int index) {
             return experiments.get(index);
+        }
+        
+        private void setInQueue(List<TaskConfiguration> tasks) {
+			for(TaskConfiguration task : tasks) {
+				setInQueue(task);
+			}
+		}
+        
+        private void setInQueue(TaskConfiguration task) {
+        	int index = experiments.indexOf(task);
+        	states.remove(index);
+        	states.add(index, State.IN_QUEUE);
+        	notifyListeners();
+        	notifyListenersOfAdd(index);
+        }
+        
+        private void setRunning(TaskConfiguration experiment) {
+        	int index = experiments.indexOf(experiment);
+        	states.remove(index);
+        	states.add(index, State.RUNNING);
+        	notifyListeners();
+        	notifyListenersOfAdd(index);
+        }
+        
+        private void setFinished(TaskConfiguration experiment) {
+        	int index = experiments.indexOf(experiment);
+        	states.remove(index);
+        	states.add(index, State.FINISHED);
+        	notifyListeners();
+        	notifyListenersOfAdd(index);
+        }
+        
+        private boolean isExperimentEditable(TaskConfiguration experiment) {
+        	boolean currentlyRunning = currentlyExperimentsRunning();
+        	
+        	int index = experiments.indexOf(experiment);
+        	return states.get(index).equals(State.READY) && !currentlyRunning;
+        }
+        
+        private boolean currentlyExperimentsRunning() {
+        	boolean currentlyRunning = false;
+        	for(State state : states) {
+        		if(state == State.RUNNING) {
+        			currentlyRunning = true;
+        			break;
+        		}
+        	}
+        	return currentlyRunning;
+        }
+        
+        private List<TaskConfiguration> getReadyExperiments() {
+        	
+        	List<TaskConfiguration> readyExperiments = new ArrayList<TaskConfiguration>();
+        	
+        	for(int i = 0; i < experiments.size(); i++) {
+        		if(states.get(i).equals(State.READY)) {
+        			readyExperiments.add(experiments.get(i));
+        		}
+        	}
+        	
+        	return readyExperiments;
         }
     }
 
@@ -456,5 +540,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         }
         File selectedFile = fc.getSelectedFile();
         wizard.loadTasks(selectedFile);
+	}
+	
+	public void experimentStarted(TaskConfiguration experiment) {
+		experimentTable.setRunning(experiment);
+	}
+	
+	public void experimentFinished(TaskConfiguration experiment) {
+		experimentTable.setFinished(experiment);
 	}
 }

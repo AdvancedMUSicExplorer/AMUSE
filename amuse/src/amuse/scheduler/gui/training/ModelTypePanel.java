@@ -6,6 +6,8 @@ import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -25,6 +27,7 @@ public class ModelTypePanel extends JPanel {
 	private JComboBox labelComboBox = new JComboBox();
 	private JComboBox methodComboBox = new JComboBox();
 	private TitledBorder title = new TitledBorder("Select Model Type");
+	private List<ModelTypeListener> listeners = new ArrayList<ModelTypeListener>();
 	
 	public ModelTypePanel() {
 		super(new MigLayout("fillx"));
@@ -39,14 +42,24 @@ public class ModelTypePanel extends JPanel {
 		DefaultComboBoxModel relationshipModel = new DefaultComboBoxModel(RelationshipType.values());
 		relationshipComboBox.setModel(relationshipModel);
 		relationshipComboBox.setSelectedItem(RelationshipType.BINARY);
+		relationshipComboBox.addActionListener(l -> {
+			notifyListeners();
+		});
 		
 		DefaultComboBoxModel labelModel = new DefaultComboBoxModel(LabelType.values());
 		labelComboBox.setModel(labelModel);
 		labelComboBox.setSelectedItem(LabelType.SINGLELABEL);
+		labelComboBox.addActionListener(l -> {
+			notifyListeners();
+		});
+		
 		
 		DefaultComboBoxModel methodModel = new DefaultComboBoxModel(new MethodType[] {MethodType.SUPERVISED});
 		methodComboBox.setModel(methodModel);
 		methodComboBox.setSelectedItem(MethodType.SUPERVISED);
+		methodComboBox.addActionListener(l -> {
+			notifyListeners();
+		});
 	}
 
 	public ModelType getModelType() {
@@ -69,5 +82,15 @@ public class ModelTypePanel extends JPanel {
 		relationshipComboBox.setSelectedItem(modelType.getRelationshipType());
 		labelComboBox.setSelectedItem(modelType.getLabelType());
 		methodComboBox.setSelectedItem(modelType.getMethodType());
+	}
+	
+	public void addModelTypeListener(ModelTypeListener modelTypeListener) {
+		listeners.add(modelTypeListener);
+	}
+	
+	private void notifyListeners() {
+		for(ModelTypeListener listener : listeners) {
+			listener.updateModelType((RelationshipType)relationshipComboBox.getSelectedItem(), (LabelType)labelComboBox.getSelectedItem(), (MethodType)methodComboBox.getSelectedItem());
+		}
 	}
 }

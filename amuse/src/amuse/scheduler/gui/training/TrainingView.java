@@ -103,6 +103,7 @@ public class TrainingView extends JPanel {
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
 		}
 		addRightSide(modelTypePanel);
+		modelTypePanel.addModelTypeListener(trainingAlgorithmFacade);
 		addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
 		addRightSide(trainingAlgorithmFacade.getParameterPanel());
 		
