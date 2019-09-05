@@ -129,20 +129,14 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
 		
-		double[] index = new double[recall.length];
-		
-		for(int i = 0; i < index.length; i++) {
-			index[i] = specificity[i].getValue() + recall[i].getValue() - 1;
-		}
+		double index = specificity[0].getValue() + recall[0].getValue() - 1;
 		
 		// Prepare the result
-		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[index.length];
-		for(int i = 0; i < index.length; i++) {
-			youdenxIndexMeasure[i] = new ValidationMeasureDouble(false);
-			youdenxIndexMeasure[i].setId(110);
-			youdenxIndexMeasure[i].setName("Youden's index on song level for category " + groundTruthRelationships.get(0).getLabels()[i]);
-			youdenxIndexMeasure[i].setValue(new Double(index[i]));
-		}
+		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[1];
+		youdenxIndexMeasure[0] = new ValidationMeasureDouble(false);
+		youdenxIndexMeasure[0].setId(110);
+		youdenxIndexMeasure[0].setName("Youden's index on song level");
+		youdenxIndexMeasure[0].setValue(new Double(index));
 		return youdenxIndexMeasure;
 	}
 
@@ -162,20 +156,14 @@ public class YoudensIndex extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
 		
-		double[] index = new double[recall.length];
-		
-		for(int i = 0; i < index.length; i++) {
-			index[i] = specificity[i].getValue() + recall[i].getValue() - 1;
-		}
-		
+		double index = specificity[0].getValue() + recall[0].getValue() - 1;
+			
 		// Prepare the result
-		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[index.length];
-		for(int i = 0; i < index.length; i++) {
-			youdenxIndexMeasure[i] = new ValidationMeasureDouble(false);
-			youdenxIndexMeasure[i].setId(110);
-			youdenxIndexMeasure[i].setName("Youden's index on partition level for category " + groundTruthRelationships.get(0).getLabels()[i]);
-			youdenxIndexMeasure[i].setValue(new Double(index[i]));
-		}
+		ValidationMeasureDouble[] youdenxIndexMeasure = new ValidationMeasureDouble[1];
+		youdenxIndexMeasure[0] = new ValidationMeasureDouble(false);
+		youdenxIndexMeasure[0].setId(110);
+		youdenxIndexMeasure[0].setName("Youden's index on partition level");
+		youdenxIndexMeasure[0].setValue(new Double(index));
 		return youdenxIndexMeasure;
 	}
 
