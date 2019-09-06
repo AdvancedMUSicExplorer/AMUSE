@@ -23,6 +23,7 @@
  */
 package amuse.data.io.attributes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,7 @@ import amuse.data.io.ArffDataSet;
  * @author Clemens Waeltken
  * @version $Id$
  */
-public abstract class Attribute implements AttributeInterface {
+public abstract class Attribute implements AttributeInterface, Serializable {
     private static double missingValue = Double.NaN;
 
     public static double missingValue() {

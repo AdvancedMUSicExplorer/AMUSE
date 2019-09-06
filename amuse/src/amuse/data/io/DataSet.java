@@ -25,6 +25,7 @@ package amuse.data.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -48,9 +49,12 @@ import com.rapidminer.tools.Ontology;
  * @author Igor Vatolkin
  * @version $Id$
  */
-public class DataSet extends DataSetAbstract {
+public class DataSet extends DataSetAbstract implements Serializable {
 
-    public DataSet(String name) {
+    /** For Serializable interface */
+	private static final long serialVersionUID = -653217284495680248L;
+
+	public DataSet(String name) {
 	this.name = name;
     }
 
