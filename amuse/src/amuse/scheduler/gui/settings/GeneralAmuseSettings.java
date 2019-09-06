@@ -39,6 +39,7 @@ import amuse.scheduler.gui.settings.panels.BooleanSelectionPanel;
 import amuse.scheduler.gui.settings.panels.ListSelectionPanel;
 import amuse.scheduler.gui.settings.panels.PathSelectionPanel;
 import amuse.scheduler.gui.settings.panels.SliderIntSelectionPanel;
+import amuse.scheduler.gui.settings.panels.TextFieldWithValidation;
 
 /**
  * @author Clemens Waeltken
@@ -76,8 +77,9 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		internalPanel = new JPanel(new MigLayout("fillx"));
 		internalPanel.setBorder(new TitledBorder("External Tools"));
 		internalPanel.setLayout(new BoxLayout(internalPanel, BoxLayout.Y_AXIS));
-		settings.add(new PathSelectionPanel("Java Executable:", KeysStringValue.JAVA_PATH));
-		settings.add(new PathSelectionPanel("MatLab Executable:", KeysStringValue.MATLAB_PATH));
+		settings.add(new PathSelectionPanel("Java Executable", KeysStringValue.JAVA_PATH));
+		settings.add(new PathSelectionPanel("MatLab Executable", KeysStringValue.MATLAB_PATH));
+		settings.add(new TextFieldWithValidation("Yale heap size in megabytes", KeysIntValue.YALE_HEAP_SIZE));
                 for (EditableAmuseSettingInterface singlePref : settings) {
 			internalPanel.add(singlePref.getPanel(), "wrap");
 			watchForChanges(singlePref);
