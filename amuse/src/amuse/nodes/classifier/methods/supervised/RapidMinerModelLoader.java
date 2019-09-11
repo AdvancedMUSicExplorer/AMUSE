@@ -92,9 +92,7 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 			Process process = new Process();
 			
 			// (1) Create ExampleSet from the ClassificationConfiguration
-			dataSetToClassify.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/crossValidationDataSetToClassify.arff"));
 			ExampleSet exampleSet = dataSetToClassify.convertToRapidMinerExampleSet();
-			new DataSet(exampleSet).saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/crossValidationExampleSetToClassify.arff"));
 			int numberOfAttributes = new DataSet(exampleSet).getAttributeCount();//Number of attributes before classification
 			
 			// (2) Load the model
@@ -122,7 +120,6 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 			exampleSet.getAttributes().getPredictedLabel().setName("PredictedCategory");
 			
 			DataSet exampleDataSet = new DataSet(exampleSet);
-			exampleDataSet.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/crossValidationClassifiedRapidMinerExampleSet.arff"));
 			DataSet resultDataSet = new DataSet("ClassificationSet");
 			
 			//read the numberOfCategories which is saved in the predicted labels
