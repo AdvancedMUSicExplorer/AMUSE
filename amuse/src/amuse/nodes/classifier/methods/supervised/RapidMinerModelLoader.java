@@ -157,6 +157,8 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 						resultDataSet.addAttribute(new NumericAttribute("Predicted_" + categoryNames[0], new ArrayList<Double>()));
 						for(int j=0;j<exampleDataSet.getValueCount();j++) {
 							String predictedLabel = exampleDataSet.getAttribute(i).getValueAt(j).toString();
+							//the predicted label starts with the NumberOfCategories which needs to be removed
+							predictedLabel = predictedLabel.substring(predictedLabel.indexOf("-")+1);
 							resultDataSet.getAttribute(i - labels.size()).addValue(predictedLabel.startsWith("NOT") ? 0.0 : 1.0);
 						}
 					}

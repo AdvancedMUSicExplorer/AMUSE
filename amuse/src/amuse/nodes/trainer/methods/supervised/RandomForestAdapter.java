@@ -109,7 +109,6 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 			processOutputPort.connectTo(modelLearnerInputPort);
 			
 			// Run the process
-			new DataSet(dataSet.convertToRapidMinerExampleSet()).saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/crossValidationTrainingRapidMinerExampleSet.arff"));
 			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());
