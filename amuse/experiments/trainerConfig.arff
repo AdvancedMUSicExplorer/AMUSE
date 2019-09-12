@@ -1,0 +1,33 @@
+% File table with trainer tasks
+
+@RELATION amuse_task
+
+% Description of processed feature configuration
+@ATTRIBUTE 'ProcessedFeaturesDescription' STRING
+% Classification algorithm ID
+@ATTRIBUTE 'AlgorithmId' STRING
+% Classification preprocessing algorithm ID (e.g. outlier removal);
+% Set to "-1" if not required
+@ATTRIBUTE 'PreprocessingAlgorithmId' STRING
+% Ground truth source
+@ATTRIBUTE 'GroundTruthSource' STRING
+% Ground truth source type
+@ATTRIBUTE 'GroundTruthSourceType' {'CATEGORY_ID', 'FILE_LIST', 'READY_INPUT'}
+% If READY_INPUT is used: indices of attributes that should be predicted
+% Otherwise: categories of the category file that should be predicted
+@ATTRIBUTE 'AttributesToPredict' STRING
+% Attributes of the READY_INPUT or the processed feature files that should be ignored
+@ATTRIBUTE 'AttributesToIgnore' STRING
+% Is the prediction binary or continuous?
+@ATTRIBUTE 'RelationshipType' {'BINARY', 'CONTINUOUS'}
+% Are the labels multiclass, multilabel or singlelabel?
+@ATTRIBUTE 'LabelType'  {'MULTICLASS', 'MULTILABEL', 'SINGLELABEL'}
+% Is the prediction supervised classification, unsupervised classification or regression?
+@ATTRIBUTE 'MethodType' {'SUPERVISED', 'UNSUPERVISED', 'REGRESSION'}
+% Optional training description that is added to the name of the model file
+@ATTRIBUTE 'TrainingDescription' STRING
+% Alternative path for saving of training model(s)
+% Set to "-1" if not required
+@ATTRIBUTE 'PathToOutputModel' STRING
+
+@DATA

@@ -1,0 +1,36 @@
+% File table with classifier tasks
+
+@RELATION amuse_task
+
+% List with music files for classification (source FILE_LIST) or id of a category file containing the music files (source CATEGORY_ID) or path to one file with ready input for classifier (source READY_INPUT)
+@ATTRIBUTE 'InputSource' STRING
+% Input source type
+@ATTRIBUTE 'InputSourceType' {'FILE_LIST','CATEGORY_ID', 'READY_INPUT'}
+% Attributes of the READY_INPUT	or the processed feature files that should be ignored
+@ATTRIBUTE 'AttributesToIgnore' STRING
+% Description of processed feature configuration -> used for calculation of path to model file (not needed if model is directly specified and READY_INPUT is used)
+@ATTRIBUTE 'ProcessedFeaturesDescription' STRING
+% Classification algorithm ID  -> used for calculation of path to model file
+@ATTRIBUTE 'AlgorithmId' STRING
+% Ground truth category ID -> used for calculation of path to model file (not needed if model is directly specified)
+@ATTRIBUTE 'GroundTruthCategoryId' NUMERIC
+% Categories of the category file that should be predicted -> used for calculation of path to model file (not needed if the model is directly specified)
+@ATTRIBUTE 'AttributesToPredict' STRING
+% Option to specify the model path directly
+% Set to "-1" if not required
+@ATTRIBUTE 'PathToInputModel' STRING
+% Is the prediction binary or continuous
+@ATTRIBUTE 'RelationshipType' {'BINARY','CONTINUOUS'}
+% Are the labels multiclass, multilabel or singlelabel?
+@ATTRIBUTE 'LabelType' {'MULTICLASS','MULTILABEL','SINGLELABEL'}
+% Is the prediction supervised classification, unsupervised classification or regression?
+@ATTRIBUTE 'MethodType' {'SUPERVISED','UNSUPERVISED','REGRESSION'}
+% If equal to 1, song relationship grade is averaged over all classified partitions;
+% If equal to 0, relationships for each partition are saved to output result
+@ATTRIBUTE 'MergeSongResults' NUMERIC
+% Path for classification result
+@ATTRIBUTE 'OutputResult' STRING
+% Description that was used for training -> used for calculation of path to model file (not needed if the model directly specified)
+@ATTRIBUTE 'TrainingDescription' STRING
+
+@DATA

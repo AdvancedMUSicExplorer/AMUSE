@@ -1,0 +1,15 @@
+% File table with processor tasks
+@REALATION amuse_task
+
+% List with music files
+@ATTRIBUTE FileList string
+@ATTRIBUTE FeatureList string
+@ATTRIBUTE ReductionSteps string
+@ATTRIBUTE Unit {samples,milliseconds}
+@ATTRIBUTE PartitionSize numeric
+@ATTRIBUTE PartitionOverlap numeric
+@ATTRIBUTE MatrixToVectorMethod string
+% Must not be set, only if required
+@ATTRIBUTE FeatureDescription string
+
+@DATA

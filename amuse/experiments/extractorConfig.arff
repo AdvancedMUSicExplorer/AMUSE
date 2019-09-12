@@ -1,0 +1,9 @@
+% File table with extractor tasks
+@RELATION amuse_task
+
+% List with music files
+@ATTRIBUTE MusicFileList STRING
+% Features to extract from the corresponding list
+@ATTRIBUTE FeatureTable STRING
+
+@DATA
