@@ -76,9 +76,10 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		internalPanel = new JPanel(new MigLayout("fillx"));
 		internalPanel.setBorder(new TitledBorder("External Tools"));
 		internalPanel.setLayout(new BoxLayout(internalPanel, BoxLayout.Y_AXIS));
-		settings.add(new PathSelectionPanel("Java Executable:", KeysStringValue.JAVA_PATH));
-		settings.add(new PathSelectionPanel("MatLab Executable:", KeysStringValue.MATLAB_PATH));
-                for (EditableAmuseSettingInterface singlePref : settings) {
+		settings.add(new PathSelectionPanel("Java Executable", KeysStringValue.JAVA_PATH));
+		settings.add(new PathSelectionPanel("MatLab Executable", KeysStringValue.MATLAB_PATH));
+        settings.add(new PathSelectionPanel("Python Executable", KeysStringValue.PYTHON_PATH));
+		for (EditableAmuseSettingInterface singlePref : settings) {
 			internalPanel.add(singlePref.getPanel(), "wrap");
 			watchForChanges(singlePref);
 		}
