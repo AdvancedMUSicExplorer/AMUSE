@@ -275,12 +275,12 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 					// same time window, proceed further!
 					while(currentReleaseEndTimeNumber < releaseEndTimes.length-1) {
 						currentReleaseEndTimeNumber++;
-						int windowOfNextReleaseEnd = new Double(Math.floor(onsetTimes[currentReleaseEndTimeNumber]*sampleRate/windowSize)).intValue();
+						int windowOfNextReleaseEnd = new Double(Math.floor(releaseEndTimes[currentReleaseEndTimeNumber]*sampleRate/windowSize)).intValue();
 						if(windowOfCurrentReleaseEnd != windowOfNextReleaseEnd) {
 							windowOfCurrentReleaseEnd = windowOfNextReleaseEnd;
 							break;
 						}
-						windowOfCurrentReleaseEnd = new Double(Math.floor(onsetTimes[currentReleaseEndTimeNumber]*sampleRate/windowSize)).intValue();
+						windowOfCurrentReleaseEnd = new Double(Math.floor(releaseEndTimes[currentReleaseEndTimeNumber]*sampleRate/windowSize)).intValue();
 					} 
 						
 					RWindowsFeature.getWindows().add(features.get(j).getWindows().get(k));
