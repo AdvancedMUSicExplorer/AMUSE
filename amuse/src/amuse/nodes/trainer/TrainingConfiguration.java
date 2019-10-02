@@ -37,6 +37,7 @@ import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
+import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
@@ -100,8 +101,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param groundTruthSourceType Describes the source type of ground truth
 	 * @param attributesToPredict the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
-	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
-	 * @param fuzzy should the classification be fuzzy?
+	 * @param modelType the type of the classification model
 	 * @param trainingDescription optional description of this experiment, that will be added to the name of the model
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
@@ -117,6 +117,44 @@ public class TrainingConfiguration extends TaskConfiguration {
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
 		this.trainingDescription = trainingDescription;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.pathToOutputModel = pathToOutputModel;
+	}
+
+	/**
+	 * Constructor that sets attributesToPredict, attributesToIgnore, modelType and outputPath to their default values.
+	 * Currently only used by FitnessEvaluator
+	 * 
+	 * @param processedFeaturesModelName Description of the processed features model
+ 	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
+	 * @param groundTruthSource Source with ground truth for model training. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready training input (prepared e.g. by a validator method)
+	 * - Ready input (as EditableDataSet)
+	 * @param groundTruthSourceType Describes the source type of ground truth
+	 * @param pathToOutputModel optional path to where the model should be saved 
+	 * (three possibilities are given above) 
+	 */
+	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
+			GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
+		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.algorithmDescription = algorithmDescription;
+		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
+		this.groundTruthSource = groundTruthSource;
+		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = new ArrayList<Integer>();
+		this.attributesToIgnore = new ArrayList<Integer>();
+		RelationshipType relationshipType = RelationshipType.BINARY;
+		LabelType labelType = LabelType.SINGLELABEL;
+		MethodType methodType = MethodType.SUPERVISED;
+		ModelType tmpModelType = null;
+		try {
+			tmpModelType = new ModelType(relationshipType, labelType, methodType);
+		} catch(Exception e) {}
+		this.modelType = tmpModelType;
+		this.trainingDescription = "";
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.pathToOutputModel = pathToOutputModel;

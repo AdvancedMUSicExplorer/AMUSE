@@ -41,6 +41,7 @@ import amuse.data.datasets.ValidatorConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
@@ -116,6 +117,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * - Path to the ready labeled input 
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth 
+	 * @param attributesToPredict attributes of the readyInput or categories of the category file that are to be predicted
+	 * @param attributesToIgnore attribute of the readyInput or the processed features that are to be ignored
+	 * @param modelType the type of the classification model
+	 * @param outPutPath path where the results are saved, set to -1 for the path to be automatically calculated
 	 */
 	public ValidationConfiguration(String validationAlgorithmDescription,
 			MeasureTable measures, 
@@ -143,6 +148,47 @@ public class ValidationConfiguration extends TaskConfiguration {
 		this.outputPath = outputPath;
 	}
 	
+	/**
+	 * Constructor that sets attributesToPredict, attributesToIgnore, modelType and outputPath to their default values.
+	 * Currently only used by FitnessEvaluator
+	 * 
+	 * @param validationAlgorithmDescription ID and parameters of validation method
+	 * @param measures Measure list, e.g. containing accuracy and precision
+	 * @param processedFeaturesModelName Description of methods used for feature processing
+	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
+ 	 * @param groundTruthSource Source with input to validate. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready labeled input 
+	 * - Ready input (as EditableDataSet)
+	 */
+	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, String processedFeaturesModelName, String classificationAlgorithmDescription,
+			DataSetInput inputToValidate, GroundTruthSourceType groundTruthSourceType) {
+		this.validationAlgorithmDescription = validationAlgorithmDescription;
+		this.measures = measures;
+		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
+		this.inputToValidate = inputToValidate;
+		this.groundTruthSourceType = groundTruthSourceType;
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
+		this.attributesToPredict = attributesToPredict;
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+		this.attributesToIgnore = attributesToIgnore;
+		RelationshipType relationshipType = RelationshipType.BINARY;
+		LabelType labelType = LabelType.SINGLELABEL;
+		MethodType methodType = MethodType.SUPERVISED;
+		ModelType tmpModelType = null;
+		try {
+			tmpModelType = new ModelType(relationshipType, labelType, methodType);
+		} catch(Exception e) {}
+		this.modelType = tmpModelType;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
+		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
+		this.outputPath = "-1";
+	}
+
 	/**
 	 * Returns an array of ValidationConfigurations from the given data set
 	 * @param validatorConfig Data set with configurations for one or more processing tasks
