@@ -24,23 +24,39 @@
 package amuse.scheduler.gui.training;
 
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.algorithm.Algorithm;
+
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.List;
+
 import javax.swing.JScrollPane;
 
 /**
  * @author Clemens Waeltken
  *
  */
-public class TrainingView {
+public class TrainingView extends JPanel {
 
+	private static final long serialVersionUID = 6467742990267146553L;
 	private JPanel viewLeft;
 	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
 	private JSplitPane splitPane = new JSplitPane();
@@ -48,14 +64,20 @@ public class TrainingView {
 	private ProcessingHistoryPanel processingHistoryPanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
+	private ModelTypePanel modelTypePanel = new ModelTypePanel();
+	private TrainingDescriptionPanel trainingDescriptionPanel = null;
 	private static final String trainingViewName = "Setup Training";
 	private static final String ToolTipSelectTrainingAlgorithm = "Select Algorithm to train with.";
+	private JPanel targetPathSelectionPanel = new JPanel(new MigLayout("fillx"));
+    private JButton btnSelectFolder = new JButton("Select File");
+    private JTextField txtTargetFilePath = new JTextField(30);
+    private TitledBorder pathSelectionTitle = new TitledBorder("Optional Output Path");
 
-	public TrainingView() {
-		this(trainingViewName);
+	public TrainingView(boolean training) {
+		this(trainingViewName, training);
 	}
 
-	public TrainingView(String leftTitle) {
+	public TrainingView(String leftTitle, boolean training) {
 		this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Training", new File("config" + File.separator + "classifierAlgorithmTable.arff"));
 		trainingAlgorithmFacade.setToolTip(ToolTipSelectTrainingAlgorithm);
 		this.groundTruthSelectionPanel = new GroundTruthSelectionPanel();
@@ -65,16 +87,38 @@ public class TrainingView {
 		splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
 		this.processingHistoryPanel = new ProcessingHistoryPanel();
 		viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
+		groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
+			setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID));
+		});
 		if (leftTitle.equals(trainingViewName)) {
 			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
 			preprocessingAlgorithmFacade.setUseEnableButton(true);
 			preprocessingAlgorithmFacade.setSelectedAlgorithm("-1");
 			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
-			addRightSide(preprocessingAlgorithmFacade.getPrameterPanel());
+			addRightSide(preprocessingAlgorithmFacade.getParameterPanel());
 		}
-		viewLeft.add(trainingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
-		addRightSide(trainingAlgorithmFacade.getPrameterPanel());
+		if(training) {
+			trainingDescriptionPanel = new TrainingDescriptionPanel();
+			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
+		}
+		addRightSide(modelTypePanel);
+		modelTypePanel.addModelTypeListener(trainingAlgorithmFacade);
+		addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
+		addRightSide(trainingAlgorithmFacade.getParameterPanel());
+		
+		if(training) {
+			targetPathSelectionPanel.add(new JLabel("Enter Filename for Output Model:"), "wrap");
+	        targetPathSelectionPanel.add(txtTargetFilePath, "growx");
+	        txtTargetFilePath.setText("");
+	        targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
+	        targetPathSelectionPanel.setBorder(pathSelectionTitle);
+	        btnSelectFolder.addActionListener(new SelectFolderListener());
+        }
+        
+		trainingDescriptionPanel = new TrainingDescriptionPanel();
+		if(training)addRightSide(targetPathSelectionPanel);
+		
 		splitPane.setDividerLocation(0.5);
 	}
 
@@ -88,7 +132,7 @@ public class TrainingView {
 	}
 
 	/**
-	 * @return
+	 * @return processingModelString
 	 */
 	public String getProcessingModelString() {
 		return processingHistoryPanel.getProcessingHistoryString();
@@ -119,12 +163,66 @@ public class TrainingView {
 		}
 	}
 	
+	private void setChildsEnabled(Component comp, boolean b) {
+		if (comp instanceof JComponent) {
+			for (Component c : ((JComponent) comp).getComponents()) {
+				c.setEnabled(b);
+				setChildsEnabled(c, b);
+			}
+		}
+	}
+	
+	private final class SelectFolderListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser(txtTargetFilePath.getText());
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(false);
+            if (fileChooser.showSaveDialog(targetPathSelectionPanel) == JFileChooser.APPROVE_OPTION) {
+                String absolutePath = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!absolutePath.endsWith(".mod")) {
+                    absolutePath = absolutePath + ".mod";
+                }
+                txtTargetFilePath.setText(absolutePath);
+            }
+        }
+    }
+	
 	public void setGroundTruthSourceType(GroundTruthSourceType type){
 		groundTruthSelectionPanel.setGroundTruthSourceType(type);
 	}
 	
 	public GroundTruthSourceType getGroundTruthSourceType(){
 		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
+	}
+	
+	public List<Integer> getAttributesToPredict(){
+		return groundTruthSelectionPanel.getAttributesToPredict();
+	}
+	
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		groundTruthSelectionPanel.setAttributesToPredict(attributesToPredict);
+	}
+	
+	public List<Integer> getAttributesToIgnore(){
+		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			return processingHistoryPanel.getAttributesToIgnore();
+		} else {
+			return groundTruthSelectionPanel.getAttributesToIgnore();
+		}
+	}
+	
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+		} else {
+			groundTruthSelectionPanel.setAttributesToIgnore(attributesToIgnore);
+		}
+	}
+	
+	public String getTrainingDescription() {
+		return trainingDescriptionPanel != null ? trainingDescriptionPanel.getTrainingDescription() : "";
 	}
 	
 	public String getGroundTruthSource(){
@@ -149,6 +247,26 @@ public class TrainingView {
 
 	public void setGroundTruthSource(String groundTruthSource) {
 		groundTruthSelectionPanel.setGroundTruthSource(groundTruthSource);
+	}
+
+	public void setTrainingDescription(String trainingDescription) {
+		trainingDescriptionPanel.setTrainingDescription(trainingDescription);
+	}
+
+	public void setModelType(ModelType modelType) {
+		modelTypePanel.setModelType(modelType);
+	}
+
+	public ModelType getModelType() {
+		return modelTypePanel.getModelType();
+	}
+
+	public String getPathToOutputModel() {
+		return txtTargetFilePath.getText();
+	}
+
+	public void setPathToOutputModel(String pathToOutputModel) {
+		txtTargetFilePath.setText(pathToOutputModel);
 	}
 
 }

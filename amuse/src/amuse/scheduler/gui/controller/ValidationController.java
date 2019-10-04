@@ -23,19 +23,29 @@
  */
 package amuse.scheduler.gui.controller;
 
-import amuse.data.GroundTruthSourceType;
-import amuse.data.MeasureTable;
-import amuse.data.io.DataSetAbstract;
-import amuse.data.io.DataSetException;
-import amuse.data.io.FileInput;
-import amuse.data.datasets.ValidatorConfigSet;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Level;
+
+import amuse.data.GroundTruthSourceType;
+import amuse.data.MeasureTable;
+import amuse.data.ModelType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.datasets.ValidatorConfigSet;
+import amuse.data.io.DataSetAbstract;
+import amuse.data.io.DataSetException;
+import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
@@ -49,8 +59,7 @@ import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
 import amuse.scheduler.gui.validation.MeasuresView;
 import amuse.scheduler.gui.validation.ValidationView;
-import java.util.Arrays;
-import javax.swing.JFileChooser;
+import amuse.util.AmuseLogger;
 
 /**
  * @author Clemens Waeltken
@@ -102,31 +111,45 @@ public class ValidationController extends AbstractController {
         /* Gather all necessary information and create variables */
         File measureTableFile = new File(file.getParent() + File.separator + "measureTables" + File.separator
                 + file.getName());
-        String parameterStr = "";
-        if (validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues().length > 0) {
-        	Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
+        Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
+        String validationMethodStr = selectedAlgorithm.getID() + "";
+        if (selectedAlgorithm.getCurrentParameterValues().length > 0 && selectedAlgorithm.getID() == 0) {
         	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
         	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
+        	String[] modifiedParamteterValues = new String[currentParameterValues.length];
         	for(int i = 0; i < currentParameterValues.length; i++){
         		if(allowedParameterStrings[i].equals("fof")){
-        			currentParameterValues[i] = "|" + currentParameterValues[i] + "|";
+        			modifiedParamteterValues[i] = "|" + currentParameterValues[i] + "|";
         		}
         	}
-            parameterStr = Arrays.toString(validationAlgorithmFacade.getSelectedAlgorithm().getCurrentParameterValues());
+        	validationMethodStr += Arrays.toString(modifiedParamteterValues);
+        } else {
+        	validationMethodStr += selectedAlgorithm.getParameterStr();
         }
-        String validationMethodId = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
         MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
+        String attributesToPredict = validationView.getAttributesToPredict().toString();
+        String attributesToIgnore = validationView.getAttributesToIgnore().toString();
+        String relationshipType = validationView.getModelType().getRelationshipType().toString();
+        String labelType = validationView.getModelType().getLabelType().toString();
+        String methodType = validationView.getModelType().getMethodType().toString();
+        String outputPath = validationView.getOuputPath();
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
-        		validationMethodId,
+        		validationMethodStr,
                 measureTableFile, 
                 processedFeatureDescription, 
                 groundTruthSource, 
                 groundTruthSourceType,
-                classificationAlgorithmId);
+                attributesToPredict,
+                attributesToIgnore,
+                relationshipType,
+                labelType,
+                methodType,
+                classificationAlgorithmId,
+                outputPath);
         // Create folders...
         measureTableFile.getParentFile().mkdirs();
         // Save Files and Features:
@@ -171,6 +194,42 @@ public class ValidationController extends AbstractController {
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             measuresView.loadSelection(new File(set.getMeasureListAttribute().getValueAt(0)));
             validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
+            
+            String attributesToPredictString = set.getAttributesToPredictAttribute().getValueAt(0).toString();
+    		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+    		String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+    		List<Integer> attributesToPredict = new ArrayList<Integer>();
+    		try {
+    			for(String str : attributesToPredictStringArray) {
+    				if(!str.equals("")) {
+    					attributesToPredict.add(Integer.parseInt(str));
+    				}
+    			}
+    		} catch(NumberFormatException e) {
+    		}
+    		validationView.setAttributesToPredict(attributesToPredict);
+    		
+    		String attributesToIgnoreString = set.getAttributesToIgnoreAttribute().getValueAt(0).toString();
+    		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+    		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+    		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+    		try {
+    			for(String str : attributesToIgnoreStringArray) {
+    				if(!str.equals("")) {
+    					attributesToIgnore.add(Integer.parseInt(str));
+    				}
+    			}
+    		} catch(NumberFormatException e) {
+    			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+    					"The attributes to ignore were not properly specified. All features will be used for training.");
+    			attributesToIgnore = new ArrayList<Integer>();
+    		}
+    		validationView.setAttributesToIgnore(attributesToIgnore);
+    		
+    		ModelType modelType = new ModelType(RelationshipType.valueOf(set.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(set.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(set.getMethodTypeAttribute().getValueAt(0)));
+    		validationView.setModelType(modelType);
+    		validationView.setOutputPath(set.getOutputPathAttribute().getValueAt(0).toString());
+            
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -180,19 +239,41 @@ public class ValidationController extends AbstractController {
     public ValidationConfiguration getExperimentConfiguration() {
         /* Gather all neccessary information and create variables */
         ValidationConfiguration conf = null;
-        String validationMethodStr = validationAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
+        Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
+        String validationMethodStr = selectedAlgorithm.getID() + "";
+        if (selectedAlgorithm.getCurrentParameterValues().length > 0 && selectedAlgorithm.getID() == 0) {
+        	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
+        	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
+        	String[] modifiedParamteterValues = new String[currentParameterValues.length];
+        	for(int i = 0; i < currentParameterValues.length; i++){
+        		if(allowedParameterStrings[i].equals("fof")){
+        			modifiedParamteterValues[i] = "|" + currentParameterValues[i] + "|";
+        		}
+        	}
+        	validationMethodStr += Arrays.toString(modifiedParamteterValues);
+        } else {
+        	validationMethodStr += selectedAlgorithm.getParameterStr();
+        }
         MeasureTable measureTable = measuresView.getMeasureTable();
         String processedFeatureDescription = validationView.getProcessingModelString();
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
+        List<Integer> attributesToPredict = validationView.getAttributesToPredict();
+        List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
+        String outputPath = validationView.getOuputPath();
+        ModelType modelType = validationView.getModelType();
         conf = new ValidationConfiguration(
         		validationMethodStr, 
         		measureTable,
                 processedFeatureDescription, 
                 classificationAlgorithmStr, 
                 groundTruthSource,
-                groundTruthSourceType);
+                groundTruthSourceType,
+                attributesToPredict,
+                attributesToIgnore,
+                modelType,
+                outputPath);
         return conf;
     }
 
@@ -325,6 +406,10 @@ public class ValidationController extends AbstractController {
             validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());
             validationView.setClassifierAlgorithm(valConf.getClassificationAlgorithmDescription());
             measuresView.loadSelection(valConf.getMeasures());
+            validationView.setAttributesToPredict(valConf.getAttributesToPredict());
+            validationView.setAttributesToIgnore(valConf.getAttributesToIgnore());
+            validationView.setModelType(valConf.getModelType());
+            validationView.setOutputPath(valConf.getOutputPath());
         }
     }
 }

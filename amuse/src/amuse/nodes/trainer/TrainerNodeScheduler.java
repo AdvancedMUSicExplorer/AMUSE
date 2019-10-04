@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -35,6 +36,9 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
@@ -42,12 +46,12 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
@@ -59,7 +63,7 @@ import amuse.util.AmuseLogger;
  * are used for the training of classification model. 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: TrainerNodeScheduler.java 245 2018-09-27 12:53:32Z frederik-h $
  */
 public class TrainerNodeScheduler extends NodeScheduler { 
 
@@ -146,25 +150,30 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		
 		
 		// Set the i/o files
-		pathToFileWithLabeledInstances = new String();		
+		pathToFileWithLabeledInstances = new String();	
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.FILE_LIST)) {
+			//The groundTruthSourceType is the path to the file with the labeled instances
 			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
-			if(this.outputModel.equals(new String("-1")))  {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Path to output model is not set!");
-				return;
+			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
+			if(this.categoryDescription.contains(File.separator)) {
+				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator) + 1);
 			}
-					
+			
 		} else if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.READY_INPUT)) {
 			pathToFileWithLabeledInstances = new String("-1"); // Input is already labeled!
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
-			if(this.outputModel.equals(new String("-1")))  {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Path to output model is not set!");
-				return;
+			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
+			if(this.categoryDescription.contains(File.separator)) {
+				this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separator) + 1);
 			}
 		} else {
+			
+			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
+			
+			//search for the file with the correct category id
 			DataSetAbstract categoryList = null;
 			try {
 				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
@@ -181,6 +190,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString() + 
 						"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
 					pathToFileWithLabeledInstances = categoryList.getAttribute("Path").getValueAt(i).toString();
+					
 					break;
 				}
 				i++;
@@ -300,14 +310,87 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	private void prepareTrainerInput() throws NodeException {
 		if(! (((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource() instanceof DataSetInput)) {
 			
+			//Check if the settings are supported
+			if(((TrainingConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
+				throw new NodeException("Currently only supervised classification is supported.");
+			}
+			
+			
 			DataSet labeledInputForTraining = null;
 			
-			// If the ground truth has been previously prepared (e.g. from validator), the input is ready! 
+			List<Integer> attributesToPredict = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict();
+			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
+			int numberOfCategories = attributesToPredict.size();
+			
+			//Check if the number of categories is correct
+			if(((TrainingConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
+				throw new NodeException("Single label classification is not possible for more than one category.");
+			}
+			if(numberOfCategories <= 0 ) {
+				throw new NodeException("No attributes to classify were given.");
+			}
+			
+			// If the ground truth has been previously prepared, the input is almost ready! 
 			if(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSourceType().
 					equals(GroundTruthSourceType.READY_INPUT)) {
 				try {
-					labeledInputForTraining = new DataSet(new File(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource().toString()),
-							"TrainingSet");
+					
+					DataSet completeInput = new DataSet(new File(((TrainingConfiguration)this.getConfiguration()).getGroundTruthSource().toString()));
+					
+						labeledInputForTraining = new DataSet("TrainingSet");
+					
+						//Aadd the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
+							if(!attributesToPredict.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+									AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
+								}
+								else {
+									labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
+								}
+							}
+						}
+					
+						//Add the id attribute
+						labeledInputForTraining.addAttribute(completeInput.getAttribute("Id"));
+					
+						//Add the attribute "NumberOfCategories"
+						//It marks the where the categories that are to be classified start and how many will follow
+						labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories", new ArrayList<Double>()));
+						for(int i = 0; i < completeInput.getValueCount(); i++) {
+							labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).addValue(new Double(numberOfCategories));
+						}
+					
+						//Add the category attributes
+						for(int i : attributesToPredict) {
+							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
+							//If the classification is not continuous, the values have to be rounded
+							if(((TrainingConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.BINARY && ((TrainingConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
+								for(int j = 0; j < completeInput.getAttribute(i).getValueCount(); j++) {
+									labeledInputForTraining.getAttribute(labeledInputForTraining.getAttributeCount() - 1).setValueAt(j, (double)completeInput.getAttribute(i).getValueAt(j) >= 0.5 ? 1.0 : 0.0);
+								}
+							}
+						}
+						//If the classification is multiclass only the highest relationship of each partition is 1
+						if(((TrainingConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
+							int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
+							for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
+								double max = 0;
+								int maxCategory = 0;
+								for(int category = 0; category < numberOfCategories; category++) {
+									double newValue = (double)labeledInputForTraining.getAttribute(positionOfFirstCategory + category).getValueAt(partition);
+									if(newValue > max) {
+										max = newValue;
+										maxCategory = category;
+									}
+								}
+								
+								for(int category = 0; category < numberOfCategories; category++) {
+									labeledInputForTraining.getAttribute(positionOfFirstCategory + category).setValueAt(partition, category == maxCategory ? 1.0 : 0.0);
+								}
+							}
+						}
+					
 				} catch (IOException e) {
 					throw new NodeException(e.getMessage());
 				}
@@ -408,26 +491,75 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
-						labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
-							new ArrayList<Double>()));
+						
+						//Also omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i)) {
+							labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
+									new ArrayList<Double>()));
+						}
+						
 					}
-					labeledInputForTraining.addAttribute(new NumericAttribute("Id",new ArrayList<Double>()));
-					labeledInputForTraining.addAttribute(new StringAttribute("Category",new ArrayList<String>()));
+					
+					//Add the id attribute
+					labeledInputForTraining.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
+					
+					//Add the attribute "NumberOfCategories"
+					//It marks where the categories that are to be classified start and how many will follow
+					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
+					//add the category attributes
+					for(int category : attributesToPredict) {
+						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+					}
+					
 					
 					// Create the labeled data
 					for(int i=0;i<classifierGroundTruthSet.getValueCount();i++) {
-						String label = classifierGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
-						Double confidence = new Double(classifierGroundTruthSet.getAttribute("Relationship").getValueAt(i).toString());
 						Integer end = new Double(classifierGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
-						
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
+								int currentAttribute = 0;
 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
-									Double val = inputInstance.value(j);
-									labeledInputForTraining.getAttribute(j).addValue(val);
+									
+									//Omit the attributes that are supposed to be ignored
+									if(!attributesToIgnore.contains(j)) {
+										Double val = inputInstance.value(j);
+										labeledInputForTraining.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
+									}
 								}
 								
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((TrainingConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
+									for(int category : attributesToPredict) {
+										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
+										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(((TrainingConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
+											labeledInputForTraining.getAttribute(label).addValue(confidence);
+										} else {
+											labeledInputForTraining.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
+										}
+									}
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
+								} else {
+									double maxConfidence = 0;
+									int positionOfMax = 0;
+									int currentPosition = 0;
+									for(int category : attributesToPredict) {
+										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(confidence > maxConfidence) {
+											maxConfidence = confidence;
+											positionOfMax = currentPosition;
+										}
+										currentPosition++;
+									}
+									int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
+									for(int category=0;category<numberOfCategories;category++) {
+										labeledInputForTraining.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
+									}
+								}
+								
+									
 								// Write the ID attribute (from what song the features are saved)
 								// IMPORTANT: --------------------------------------------------- 
 								// This attribute must not be used for classification model training! 
@@ -436,16 +568,13 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								Double id = new Double(classifierGroundTruthSet.getAttribute("Id").getValueAt(i).toString());
 								labeledInputForTraining.getAttribute("Id").addValue(id);
 								
-								// TODO Parameter?
-								if(confidence >= 0.5) {
-									labeledInputForTraining.getAttribute("Category").addValue(label);
-								} else {
-									//FIXME
-									//values_writer.writeBytes("PIANO");
-									labeledInputForTraining.getAttribute("Category").addValue("NOT_" + label);
-								}
+								
+								labeledInputForTraining.getAttribute("NumberOfCategories").addValue(new Double(numberOfCategories));
+								
+								
 								inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 							}
+						
 						} else {
 							// TODO Consider Vocals/Piano-Recognition-Scenario!
 							/*for (Enumeration attrs = classifierInputLoader.getStructure().enumerateAttributes() ; attrs.hasMoreElements() ;) {
@@ -670,12 +799,79 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			Attribute startScriptAttribute = classificationTrainerTableLoader.getStructure().attribute("StartScript");
 			Attribute inputBaseTrainingBatchAttribute = classificationTrainerTableLoader.getStructure().attribute("InputBaseTrainingBatch");
 			Attribute inputTrainingBatchAttribute = classificationTrainerTableLoader.getStructure().attribute("InputTrainingBatch");
+			Attribute supportsBinaryAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsBinary");
+			Attribute supportsContinuousAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsContinuous");
+			Attribute supportsMulticlassAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsMulticlass");
+			Attribute supportsMultilabelAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsMultilabel");
+			Attribute supportsSinglelabelAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsSinglelabel");
+			Attribute supportsSupervisedAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsSupervised");
+			Attribute supportsUnsupervisedAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsUnsupervised");
+			Attribute supportsRegressionAttribute = classificationTrainerTableLoader.getStructure().attribute("SupportsRegression");
 			while(currentInstance != null) {
 				Integer idOfCurrentAlgorithm = new Double(currentInstance.value(idAttribute)).intValue();
 				if(idOfCurrentAlgorithm.equals(requiredAlgorithm)) {
 					
 					// Configure the adapter class
 					try {
+						//check if the method supports the settings
+						boolean supportsBinary = new Double(currentInstance.value(supportsBinaryAttribute)) != 0;
+						boolean supportsContinuous = new Double(currentInstance.value(supportsContinuousAttribute)) != 0;
+						boolean supportsMulticlass = new Double(currentInstance.value(supportsMulticlassAttribute)) != 0;
+						boolean supportsMultilabel = new Double(currentInstance.value(supportsMultilabelAttribute)) != 0;
+						boolean supportsSinglelabel = new Double(currentInstance.value(supportsSinglelabelAttribute)) != 0;
+						boolean supportsSupervised = new Double(currentInstance.value(supportsSupervisedAttribute)) != 0;
+						boolean supportsUnsupervised = new Double(currentInstance.value(supportsUnsupervisedAttribute)) != 0;
+						boolean supportsRegression = new Double(currentInstance.value(supportsRegressionAttribute)) != 0;
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getRelationshipType()) {
+						case BINARY:
+							if(!supportsBinary) {
+								throw new NodeException("This method does not support binary relationships.");
+							}
+							break;
+						case CONTINUOUS:
+							if(!supportsContinuous) {
+								throw new NodeException("This method does not support continuous relationships.");
+							}
+							break;
+						}
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getLabelType()) {
+						case MULTICLASS:
+							if(!supportsMulticlass) {
+								throw new NodeException("This method does not support multiclass classification.");
+							}
+							break;
+						case MULTILABEL:
+							if(!supportsMultilabel) {
+								throw new NodeException("This method does not support multilabel classification.");
+							}
+							break;
+						case SINGLELABEL:
+							if(!supportsSinglelabel) {
+								throw new NodeException("This method does not support singlelabel classification.");
+							}
+							break;
+						}
+						
+						switch(((TrainingConfiguration)this.taskConfiguration).getMethodType()) {
+						case SUPERVISED:
+							if(!supportsSupervised) {
+								throw new NodeException("This method does not support supervised classification.");
+							}
+							break;
+						case UNSUPERVISED:
+							if(!supportsUnsupervised) {
+								throw new NodeException("This method does not support unsupervised classification.");
+							}
+							break;
+						case REGRESSION:
+							if(!supportsRegression) {
+								throw new NodeException("This method does not support regression.");
+							}
+							break;
+						}
+						
 						Class<?> adapter = Class.forName(currentInstance.stringValue(trainerAdapterClassAttribute));
 						this.ctad = (TrainerInterface)adapter.newInstance();
 						Properties trainerProperties = new Properties();
@@ -710,9 +906,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								"Instantiation failed for classification trainer class: " + currentInstance.stringValue(trainerAdapterClassAttribute));
 						System.exit(1);
 					} catch(NodeException e) {
-						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Setting of parameters failed for classification trainer class: " + e.getMessage());
-						System.exit(1);
+						throw new NodeException("Setting of parameters failed for classification trainer class: " + e.getMessage());
 					}
 					
 					algorithmFound = true;
@@ -746,16 +940,31 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		}
 		
 		// If the model(s) should be saved to the Amuse model database..
-		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) &&
-				((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
-			File folderForModels;
+		if( ! (((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource() instanceof FileInput) && 
+				(this.outputModel.equals("-1") || this.outputModel.equals(""))) {
 			
-			folderForModels = new File(
-				((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 
-				this.categoryDescription + File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
-				"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-				requiredParameters + File.separator + 
-				((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName());
+			String folderForModelsString = 
+					((TrainingConfiguration)this.taskConfiguration).getModelDatabase() + File.separator + 
+					this.categoryDescription + File.separator;
+			
+			//choose the path according to the categories that are classified;
+			DataSet groundTruthSource = ((DataSetInput)((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource()).getDataSet();
+			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict().size();
+			int firstCategoryPosition = groundTruthSource.getAttributeCount() - numberOfCategories;
+			for(int i = 0; i < numberOfCategories; i++) {
+				if(i != 0) {
+					folderForModelsString += "_";
+				}
+				folderForModelsString += groundTruthSource.getAttribute(firstCategoryPosition + i).getName();
+			}
+			
+			folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
+					"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
+					requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
+					((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName();
+			
+			File folderForModels = new File(folderForModelsString);
+			
 			
 			if(!folderForModels.exists()) {
 				if(!folderForModels.mkdirs()) {
@@ -764,8 +973,35 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					System.exit(1);
 				}
 			}
-			this.outputModel = new String(folderForModels + File.separator + "model.mod");
+			
+			String trainingDescription = ((TrainingConfiguration)this.taskConfiguration).getTrainingDescription();
+			if(trainingDescription.equals("")) {
+				this.outputModel = new String(folderForModels + File.separator + "model.mod");
+			} else {
+				this.outputModel = new String(folderForModels + File.separator + "model_" + trainingDescription + ".mod");
+			}
+			
+			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
+				AmuseLogger.write(this.getClass().getName(), Level.WARN, "No output path given! Model will be saved at " + outputModel);
+			}
+			
 		}
+		else {
+			String trainingDescription = ((TrainingConfiguration)this.taskConfiguration).getTrainingDescription();
+			if(!trainingDescription.equals("")) {
+				if(this.outputModel.contains(".mod")) {
+					this.outputModel = new String(this.outputModel.substring(0, this.outputModel.indexOf(".mod")) + "_" + trainingDescription + ".mod");
+				} else {
+					this.outputModel = this.outputModel + "_" + trainingDescription + ".mod";
+				}
+			}
+		}
+		
+		if(new File(this.outputModel).exists()) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The model file '" + this.outputModel + "' already exists and will be overwritten.");
+		}
+		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the classification training with " + 
 				((AmuseTask)this.ctad).getProperties().getProperty("name") + "...");
 		this.ctad.trainModel(this.outputModel);

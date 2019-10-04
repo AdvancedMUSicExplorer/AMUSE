@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * Higher positive and lower negative likelihood mean better performance on positive and negative classes.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: Likelihoods.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class Likelihoods extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -52,7 +52,9 @@ public class Likelihoods extends ClassificationQualityDoubleMeasureCalculator {
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -81,7 +83,9 @@ public class Likelihoods extends ClassificationQualityDoubleMeasureCalculator {
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -109,7 +113,7 @@ public class Likelihoods extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -117,9 +121,70 @@ public class Likelihoods extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double likelihoodPositive = recall[0].getValue() / (1 - specificity[0].getValue());
+		double likelihoodNegative = (1 - recall[0].getValue()) / specificity[0].getValue();
+		
+		// Prepare the result
+		ValidationMeasureDouble[] likelihoodsMeasure = new ValidationMeasureDouble[2];
+		likelihoodsMeasure[0] = new ValidationMeasureDouble();
+		likelihoodsMeasure[0].setId(111);
+		likelihoodsMeasure[0].setName("Positive likelihood on song level");
+		likelihoodsMeasure[0].setValue(new Double(likelihoodPositive));
+		likelihoodsMeasure[1] = new ValidationMeasureDouble();
+		likelihoodsMeasure[1].setId(111);
+		likelihoodsMeasure[1].setName("Negative likelihood on song level");
+		likelihoodsMeasure[1].setValue(new Double(likelihoodNegative));
+		return likelihoodsMeasure;
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double likelihoodPositive = recall[0].getValue() / (1 - specificity[0].getValue());
+		double likelihoodNegative = (1 - recall[0].getValue()) / specificity[0].getValue();
+		
+		// Prepare the result
+		ValidationMeasureDouble[] likelihoodsMeasure = new ValidationMeasureDouble[2];
+		likelihoodsMeasure[0] = new ValidationMeasureDouble();
+		likelihoodsMeasure[0].setId(111);
+		likelihoodsMeasure[0].setName("Positive likelihood on partition level");
+		likelihoodsMeasure[0].setValue(new Double(likelihoodPositive));
+		likelihoodsMeasure[1] = new ValidationMeasureDouble();
+		likelihoodsMeasure[1].setId(111);
+		likelihoodsMeasure[1].setName("Negative likelihood on partition level");
+		likelihoodsMeasure[1].setValue(new Double(likelihoodNegative));
+		return likelihoodsMeasure;
+	}
 }
 

@@ -50,9 +50,6 @@ public class FeatureTable implements Serializable {
     
     private final List<Feature> features = new ArrayList<Feature>();
     
-
-    
-    
     /**
      * Creates FeatureTable from existing featureTable.arff using only those with existing extractor ID.
      * @param featureTableFile - java.io.File object which contains featureTable stored as ".arff".

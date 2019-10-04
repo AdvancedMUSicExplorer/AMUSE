@@ -31,7 +31,7 @@ import amuse.interfaces.nodes.NodeException;
  * Methods which calculate data reduction measures implement this interface.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DataReductionMeasureCalculatorInterface.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public interface DataReductionMeasureCalculatorInterface extends MeasureCalculatorInterface {
 	

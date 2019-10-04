@@ -27,7 +27,7 @@ package amuse.nodes.validator.interfaces;
  * Methods which calculate data reduction measures should extend this class.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DataReductionMeasureCalculator.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public abstract class DataReductionMeasureCalculator implements DataReductionMeasureCalculatorInterface {
 	

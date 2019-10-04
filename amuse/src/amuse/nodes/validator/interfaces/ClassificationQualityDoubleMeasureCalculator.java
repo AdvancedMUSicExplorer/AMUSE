@@ -32,7 +32,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * Methods which calculate double measures based on classification results and ground truth information should extend this class.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassificationQualityDoubleMeasureCalculator.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public abstract class ClassificationQualityDoubleMeasureCalculator implements ClassificationQualityMeasureCalculatorInterface {
 	
@@ -41,6 +41,9 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	
 	/** True if this measure will be calculated on partition level */
 	private boolean calculateForPartitionLevel = false;
+	
+	/** True if this measure will be calculated in a fuzzy way */
+	private boolean continuous = false;
 
 	/*
 	 * (non-Javadoc)
@@ -48,6 +51,14 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 	 */
 	public boolean getSongLevel() {
 		return calculateForSongLevel;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#isFuzzy()
+	 */
+	public boolean isContinuous() {
+		return continuous;
 	}
 
 	/*
@@ -74,6 +85,14 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		this.calculateForPartitionLevel = forPartitionLevel;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#setFuzzy(boolean)
+	 */
+	public void setContinuous(boolean continuous) {
+		this.continuous = continuous;
+	}
+	
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMeasure(java.util.ArrayList, java.util.ArrayList)
 	 */
@@ -98,9 +117,13 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
 			return measureOnPartLev;
 		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[2];
-			measures[0] = measureOnSongLev[0];
-			measures[1] = measureOnPartLev[0];
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
 			return measures;
 		} else {
 			return null;
@@ -133,14 +156,52 @@ public abstract class ClassificationQualityDoubleMeasureCalculator implements Cl
 		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
 			return measureOnPartLev;
 		} else if(this.getSongLevel() && this.getPartitionLevel()) {
-			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[2];
-			measures[0] = measureOnSongLev[0];
-			measures[1] = measureOnPartLev[0];
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
 			return measures;
 		} else {
 			return null;
 		}
 	}
-
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasure(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships,
+			ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		ValidationMeasureDouble[] measureOnSongLev = null;
+		ValidationMeasureDouble[] measureOnPartLev = null;
+		
+		if(this.getSongLevel()) {
+			measureOnSongLev = (ValidationMeasureDouble[])calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+		} 
+		if(this.getPartitionLevel()) {
+			measureOnPartLev = (ValidationMeasureDouble[])calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+		}
+		
+		// Return the corresponding number of measure values
+		if(this.getSongLevel() && !this.getPartitionLevel()) {
+			return measureOnSongLev;
+		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
+			return measureOnPartLev;
+		} else if(this.getSongLevel() && this.getPartitionLevel()) {
+			ValidationMeasureDouble[] measures = new ValidationMeasureDouble[measureOnSongLev.length + measureOnPartLev.length];
+			for(int i = 0; i < measureOnSongLev.length; i++) {
+				measures[i] = measureOnSongLev[i];
+			}
+			for(int i = 0; i < measureOnPartLev.length; i++) {
+				measures[i + measureOnSongLev.length] = measureOnPartLev[i];
+			}
+			return measures;
+		} else {
+			return null;
+		}
+	}
 
 }

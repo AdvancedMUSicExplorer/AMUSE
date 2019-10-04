@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import amuse.data.MeasureTable;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
@@ -38,139 +41,247 @@ import amuse.nodes.validator.ValidationConfiguration;
 /**
  * This class represents a list of ValidationTasks as used in AMUSE. Serialisation to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id$
+ * @version $Id: ValidatorConfigSet.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
 	// Strings which describe ARFF attributes
-    private static final String strValidationMethodId = "ValidationMethodId";
-    private static final String strMeasureList = "MeasureList";
-    private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
-    private static final String strInputToValidate = "InputToValidate";
-    private static final String strGroundTruthSourceType = "GroundTruthSourceType";
-    private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
-    
+	private static final String strValidationMethodId = "ValidationMethodId";
+	private static final String strMeasureList = "MeasureList";
+	private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
+	private static final String strInputToValidate = "InputToValidate";
+	private static final String strGroundTruthSourceType = "GroundTruthSourceType";
+	private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
+	private static final String strAttributesToPredict = "AttributesToPredict";
+	private static final String strAttributesToIgnore  = "AttributesToIgnore";
+	private static final String strRelationshipType = "RelationshipType";
+	private static final String strLabelType = "LabelType";
+	private static final String strMethodType = "MethodType";
+	private static final String strOutputPath = "OutputPath";
+	
+
 	// ARFF attributes
 	private final StringAttribute validationMethodIdAttribute;
-    private final StringAttribute measureListAttribute;
-    private final StringAttribute processedFeatureDescriptionAttribute;
-    private final StringAttribute inputToValidateAttribute;
-    private final NominalAttribute groundTruthSourceTypeAttribute;
-    private final StringAttribute classificationAlgorithmIdAttribute;
-    
-    private String description = "";
+	private final StringAttribute measureListAttribute;
+	private final StringAttribute processedFeatureDescriptionAttribute;
+	private final StringAttribute inputToValidateAttribute;
+	private final NominalAttribute groundTruthSourceTypeAttribute;
+	private final StringAttribute classificationAlgorithmIdAttribute;
+	private final StringAttribute attributesToPredictAttribute;
+	private final StringAttribute attributesToIgnoreAttribute;
+	private final NominalAttribute relationshipTypeAttribute;
+	private final NominalAttribute labelTypeAttribute;
+	private final NominalAttribute methodTypeAttribute;
+	private final StringAttribute outputPathAttribute;
+	
 
-    /**
-     * Creates a new ValidatorConfigSet from a file. Validates if the given file contains a ValidatorConfigSet.
-     * @param file The file to load form.
-     * @throws java.io.IOException Thrown whenever given file does not represent a valid ValidatorConfigSet.
-     */
-    public ValidatorConfigSet(File file) throws IOException {
-        super(file);
-        // Check preconditions:
-        checkStringAttribute(strValidationMethodId);
-        checkStringAttribute(strMeasureList);
-        checkStringAttribute(strProcessedFeatureDescription);
-        checkStringAttribute(strInputToValidate);
-        checkNominalAttribute(strGroundTruthSourceType);
-        checkStringAttribute(strClassificationAlgorithmId);
-        validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
-        measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
-        processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
-        inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
-        groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
-        classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
-    }
+	private String description = "";
 
-    public ValidatorConfigSet(  String validationMethodId,
-                                File measureListFile,
-                                String processedFeatureDescription,
-                                String inputToValidate,
-                                String groundTruthSourceType,
-                                String classificationAlgorithmId) {
-        super("ValidatorConfig");
-        validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
-        measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
-        processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
-        inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
-        List <String> values = new ArrayList<String>();
-        values.add(groundTruthSourceType);
-        groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
-        classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
-        addAttribute(validationMethodIdAttribute);
-        addAttribute(measureListAttribute);
-        addAttribute(processedFeatureDescriptionAttribute);
-        addAttribute(inputToValidateAttribute); 
-        addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(classificationAlgorithmIdAttribute);
-    }
+	/**
+	 * Creates a new ValidatorConfigSet from a file. Validates if the given file contains a ValidatorConfigSet.
+	 * @param file The file to load form.
+	 * @throws java.io.IOException Thrown whenever given file does not represent a valid ValidatorConfigSet.
+	 */
+	public ValidatorConfigSet(File file) throws IOException {
+		super(file);
+		// Check preconditions:
+		checkStringAttribute(strValidationMethodId);
+		checkStringAttribute(strMeasureList);
+		checkStringAttribute(strProcessedFeatureDescription);
+		checkStringAttribute(strInputToValidate);
+		checkNominalAttribute(strGroundTruthSourceType);
+		checkStringAttribute(strClassificationAlgorithmId);
+		checkStringAttribute(strAttributesToPredict);
+		checkStringAttribute(strAttributesToIgnore);
+		checkNominalAttribute(strRelationshipType);
+		checkNominalAttribute(strLabelType);
+		checkNominalAttribute(strMethodType);
+		checkStringAttribute(strOutputPath);
+		
 
-    public ValidatorConfigSet(DataSetAbstract dataSet) {
-        super(dataSet.getName());
-        // Check preconditions:
-        dataSet.checkStringAttribute(strValidationMethodId);
-        dataSet.checkStringAttribute(strMeasureList);
-        dataSet.checkStringAttribute(strProcessedFeatureDescription);
-        dataSet.checkStringAttribute(strInputToValidate);
-        dataSet.checkNominalAttribute(strGroundTruthSourceType);
-        dataSet.checkStringAttribute(strClassificationAlgorithmId);
-        validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
-        measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
-        processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
-        inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
-        groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
-        classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
-        addAttribute(validationMethodIdAttribute);
-        addAttribute(measureListAttribute);
-        addAttribute(processedFeatureDescriptionAttribute);
-        addAttribute(inputToValidateAttribute);
-        addAttribute(groundTruthSourceTypeAttribute);
-        addAttribute(classificationAlgorithmIdAttribute);
-    }
+		validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
+		measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
+		processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
+		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
+		groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
+		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
+		attributesToPredictAttribute = (StringAttribute) this.getAttribute(strAttributesToPredict);
+		attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(strAttributesToIgnore);
+		relationshipTypeAttribute = (NominalAttribute) this.getAttribute(strRelationshipType);
+		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
+		methodTypeAttribute = (NominalAttribute) this.getAttribute(strMethodType);
+		outputPathAttribute = (StringAttribute) this.getAttribute(strOutputPath);
+		
+	}
 
-    public String getType() {
-        return "Validation";
-    }
+	public ValidatorConfigSet(String validationMethodId,
+			File measureListFile,
+			String processedFeatureDescription,
+			String inputToValidate,
+			String groundTruthSourceType,
+			String attributesToPredict,
+			String attributesToIgnore,
+			String relationshipType,
+			String labelType,
+			String methodType,
+			String classificationAlgorithmId,
+			String outputPath) {
+		super("ValidatorConfig");
+		validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
+		measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
+		processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
+		inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
+		List <String> values = new ArrayList<String>();
+		values.add(groundTruthSourceType);
+		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
 
-    public String getDescription() {
-        if (description.equals("")) {
-            int measures;
-            try {
-                measures = new MeasureTable(new File(measureListAttribute.getValueAt(0))).size();
-            } catch (IOException ex) {
-                description = "WARNING: Measure selection seems to be broken";
-                return description;
-            }
-            String input = groundTruthSourceTypeAttribute.getValueAt(0).toString();
-            description = "Input: " + input + " Generating " + measures + " measure(s)";
-        }
-        return description;
-    }
+		
+		attributesToPredictAttribute = StringAttribute.createFromString(strAttributesToPredict, attributesToPredict);
+		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
+		List<String> relationshipTypeValues = new ArrayList<String>();
+		List<String> labelTypeValues = new ArrayList<String>();
+		List<String> methodTypeValues = new ArrayList<String>();
+		for(RelationshipType type : RelationshipType.values()) {
+			relationshipTypeValues.add(type.toString());
+		}
+		for(LabelType type : LabelType.values()) {
+			labelTypeValues.add(type.toString());
+		}
+		for(MethodType type : MethodType.values()) {
+			methodTypeValues.add(type.toString());
+		}
+		List <String> relationshipTypes = new ArrayList<String>();
+		relationshipTypes.add(relationshipType);
+		List<String> labelTypes = new ArrayList<String>();
+		labelTypes.add(labelType);
+		List<String> methodTypes = new ArrayList<String>();
+		methodTypes.add(methodType);
+		relationshipTypeAttribute = new NominalAttribute(strRelationshipType, relationshipTypeValues, relationshipTypes);
+		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
+		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
+		classificationAlgorithmIdAttribute = StringAttribute.createFromString(strClassificationAlgorithmId, classificationAlgorithmId);
+		outputPathAttribute = StringAttribute.createFromString(strOutputPath, outputPath);
+		
+		addAttribute(validationMethodIdAttribute);
+		addAttribute(measureListAttribute);
+		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputToValidateAttribute); 
+		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(attributesToPredictAttribute);
+		addAttribute(attributesToIgnoreAttribute);
+		addAttribute(relationshipTypeAttribute);
+		addAttribute(labelTypeAttribute);
+		addAttribute(methodTypeAttribute);
+		addAttribute(classificationAlgorithmIdAttribute);
+		addAttribute(outputPathAttribute);
+	}
 
-    public StringAttribute getValidationMethodIdAttribute() {
-        return validationMethodIdAttribute;
-    }
+	public ValidatorConfigSet(DataSetAbstract dataSet) {
+		super(dataSet.getName());
+		// Check preconditions:
+		dataSet.checkStringAttribute(strValidationMethodId);
+		dataSet.checkStringAttribute(strMeasureList);
+		dataSet.checkStringAttribute(strProcessedFeatureDescription);
+		dataSet.checkStringAttribute(strInputToValidate);
+		dataSet.checkNominalAttribute(strGroundTruthSourceType);
+		dataSet.checkStringAttribute(strAttributesToPredict);
+		dataSet.checkStringAttribute(strAttributesToIgnore);
+		dataSet.checkNominalAttribute(strRelationshipType);
+		dataSet.checkNominalAttribute(strLabelType);
+		dataSet.checkNominalAttribute(strMethodType);
+		dataSet.checkStringAttribute(strClassificationAlgorithmId);
+		dataSet.checkStringAttribute(strOutputPath);
+		
+		validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
+		measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
+		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
+		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
+		groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
+		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
+		attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToIgnore);
+		relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(strRelationshipType);
+		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
+		methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(strMethodType);
+		outputPathAttribute = (StringAttribute) dataSet.getAttribute(strOutputPath);
 
-    public NominalAttribute getGroundTruthSourceAttribute() {
-        return groundTruthSourceTypeAttribute;
-    }
+		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
+		addAttribute(validationMethodIdAttribute);
+		addAttribute(measureListAttribute);
+		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputToValidateAttribute);
+		addAttribute(groundTruthSourceTypeAttribute);
+		addAttribute(attributesToPredictAttribute);
+		addAttribute(attributesToIgnoreAttribute);
+		addAttribute(relationshipTypeAttribute);
+		addAttribute(labelTypeAttribute);
+		addAttribute(methodTypeAttribute);
+		addAttribute(classificationAlgorithmIdAttribute);
+		addAttribute(outputPathAttribute);
+	}
 
-    public StringAttribute getClassificationAlgorithmIdAttribute() {
-        return classificationAlgorithmIdAttribute;
-    }
+	public String getType() {
+		return "Validation";
+	}
 
-    public StringAttribute getMeasureListAttribute() {
-        return measureListAttribute;
-    }
+	public String getDescription() {
+		if (description.equals("")) {
+			int measures;
+			try {
+				measures = new MeasureTable(new File(measureListAttribute.getValueAt(0))).size();
+			} catch (IOException ex) {
+				description = "WARNING: Measure selection seems to be broken";
+				return description;
+			}
+			String input = groundTruthSourceTypeAttribute.getValueAt(0).toString();
+			description = "Input: " + input + " Generating " + measures + " measure(s)";
+		}
+		return description;
+	}
 
-    @Override
-    public TaskConfiguration[] getTaskConfiguration() {
-    	try {
-    		return ValidationConfiguration.loadConfigurationsFromDataSet(this);
-    	} catch (IOException ex) {
-    		throw new RuntimeException(ex);
-    	}
-    }
+	public StringAttribute getValidationMethodIdAttribute() {
+		return validationMethodIdAttribute;
+	}
+
+	public NominalAttribute getGroundTruthSourceAttribute() {
+		return groundTruthSourceTypeAttribute;
+	}
+
+	public StringAttribute getAttributesToPredictAttribute() {
+		return attributesToPredictAttribute;
+	}
+
+	public StringAttribute getAttributesToIgnoreAttribute() {
+		return attributesToIgnoreAttribute;
+	}
+
+	public NominalAttribute getRelationshipTypeAttribute() {
+		return relationshipTypeAttribute;
+	}
+	
+	public NominalAttribute getLabelTypeAttribute() {
+		return labelTypeAttribute;
+	}
+	
+	public NominalAttribute getMethodTypeAttribute() {
+		return methodTypeAttribute;
+	}
+
+	public StringAttribute getClassificationAlgorithmIdAttribute() {
+		return classificationAlgorithmIdAttribute;
+	}
+
+	public StringAttribute getMeasureListAttribute() {
+		return measureListAttribute;
+	}
+
+	@Override
+	public TaskConfiguration[] getTaskConfiguration() {
+		try {
+			return ValidationConfiguration.loadConfigurationsFromDataSet(this);
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
 	/**
 	 * @return the processedFeatureDescriptionAttribute
@@ -178,13 +289,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	public StringAttribute getProcessedFeatureDescriptionAttribute() {
 		return processedFeatureDescriptionAttribute;
 	}
-	
+
 	private static List<String> getAllowedValues() {
-		 List<String> allowedValues = new ArrayList<String>();
-		 allowedValues.add("CATEGORY_ID");
-		 allowedValues.add("FILE_LIST");
-	     allowedValues.add("READY_INPUT");
-	     return allowedValues;
+		List<String> allowedValues = new ArrayList<String>();
+		allowedValues.add("CATEGORY_ID");
+		allowedValues.add("FILE_LIST");
+		allowedValues.add("READY_INPUT");
+		return allowedValues;
 	}
 
 	/**
@@ -192,5 +303,12 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	 */
 	public StringAttribute getInputToValidateAttribute() {
 		return inputToValidateAttribute;
+	}
+	
+	/**
+	 * @return the outputPathAttribute
+	 */
+	public StringAttribute getOutputPathAttribute() {
+		return outputPathAttribute;
 	}
 }

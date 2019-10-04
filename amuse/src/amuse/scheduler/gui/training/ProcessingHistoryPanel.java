@@ -25,9 +25,14 @@
 package amuse.scheduler.gui.training;
 
 import amuse.data.ProcessingHistory;
+import amuse.util.AmuseLogger;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -35,6 +40,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+
+import org.apache.log4j.Level;
+
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
@@ -49,6 +57,8 @@ public class ProcessingHistoryPanel extends JPanel {
     private JComboBox comboBox = new JComboBox();
     private JLabel textFieldLabel = new JLabel("Processing Steps:");
     private JTextField textField = new JTextField(10);
+    private JLabel attributesToIgnoreLabel = new JLabel("Attributes to ignore:");
+    private JTextField attributesToIgnoreTextField = new JTextField(10);
     private TitledBorder title = new TitledBorder("Select Processing Model");
 
     public ProcessingHistoryPanel () {
@@ -58,8 +68,10 @@ public class ProcessingHistoryPanel extends JPanel {
         this.add(comboBox, "pushx, wrap");
         this.add(textFieldLabel, "pushx, wrap");
         this.add(textField, "growx, wrap");
+        this.add(attributesToIgnoreLabel, "pushx, wrap");
+        this.add(attributesToIgnoreTextField, "growx, wrap");
         try {
-            DefaultComboBoxModel model = new DefaultComboBoxModel(ProcessingHistory.getHistoryList());
+			DefaultComboBoxModel model = new DefaultComboBoxModel(ProcessingHistory.getHistoryList());
             comboBox.setModel(model);
             Object item = model.getSelectedItem();
             if (item != null)
@@ -79,9 +91,36 @@ public class ProcessingHistoryPanel extends JPanel {
     public String getProcessingHistoryString() {
         return textField.getText();
     }
+    
+    public List<Integer> getAttributesToIgnore(){
+    	String attributesToIgnoreString = attributesToIgnoreTextField.getText();
+		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+		try {
+			for(String str : attributesToIgnoreStringArray) {
+				if(!str.equals("")) {
+					attributesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+		} catch(NumberFormatException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The attributes to ignore were not properly specified. All features will be used for training.");
+			attributesToIgnore = new ArrayList<Integer>();
+		}
+		return attributesToIgnore;
+    }
 
-    void setProcessingModelString(String value) {
+    public void setProcessingModelString(String value) {
 	textField.setText(value);
 	comboBox.setSelectedItem(value);
+    }
+    
+    public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+    	attributesToIgnoreTextField.setText(attributesToIgnore.toString());
+    }
+    
+    public JTextField getAttributesToIgnoreTextField() {
+    	return attributesToIgnoreTextField;
     }
 }

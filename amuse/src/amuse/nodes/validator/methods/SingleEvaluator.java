@@ -32,6 +32,8 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -54,7 +56,7 @@ import amuse.util.AmuseLogger;
  * Performs n-fold cross-validation
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: SingleEvaluator.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	
@@ -165,8 +167,11 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			cConf = new ClassificationConfiguration(
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputToValidate(),
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
+				new ArrayList<Integer>(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToPredict(),
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
 				0,
 				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(modelsToEvaluate.get(i).getAbsolutePath());
@@ -180,11 +185,16 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			try {
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
-					ValidationMeasure[] currMeas = null; 
+					ValidationMeasure[] currMeas = null;
+					Object test = this.measureCalculators.get(currentMeasure);
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
-						if(!((ValidatorNodeScheduler)this.getCorrespondingScheduler()).isMulticlass()) {
+						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
+						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
 								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
+						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTILABEL) {
+							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
+									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
 						} else {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
 									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
@@ -195,8 +205,10 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 					} else {
 						throw new NodeException("Unknown measure: " + this.measureCalculators.get(currentMeasure));
 					}
-					for(int k=0;k<currMeas.length;k++) {
-						measuresOfThisRun.add(currMeas[k]);
+					if(currMeas != null) {
+						for(int k=0;k<currMeas.length;k++) {
+							measuresOfThisRun.add(currMeas[k]);
+						}
 					}
 				}
 				measuresForEveryModel.add(measuresOfThisRun);

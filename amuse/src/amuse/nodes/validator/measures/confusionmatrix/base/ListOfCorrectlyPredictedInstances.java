@@ -27,15 +27,15 @@ import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
-import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ClassificationQualityStringMeasureCalculator;
+import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 import amuse.nodes.validator.interfaces.ValidationMeasureString;
 
 /**
  * Returns the list with correctly predicted instances
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ListOfCorrectlyPredictedInstances.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStringMeasureCalculator {
 
@@ -57,7 +57,7 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -106,9 +106,9 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				
-				if(groundTruthRelationships.get(i).doubleValue() == 1.0 && predictedRelationships.get(i).getRelationships()[j].doubleValue() == 1.0 ||
-						groundTruthRelationships.get(i).doubleValue() == 0.0 && predictedRelationships.get(i).getRelationships()[j].doubleValue() == 0.0) {
+				int currentGroundTruthValue = groundTruthRelationships.get(i).doubleValue() >= 0.5 ? 1 : 0;
+				int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][0].doubleValue() >= 0.5 ? 1 : 0;
+				if(currentGroundTruthValue == currentPredictedValue) {
 					listOfCorrectlyPredictedPartitions.add(currentPartitionNumber);
 				}
 				currentPartitionNumber++;
@@ -134,15 +134,38 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureString[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+
+	/**
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureString[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			
 			boolean currentSongPredictedCorrectly = true;
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				
-				if(!((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels()[j].equals(((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).getLabels()[j]) ||
-					!((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getRelationships()[j].equals(((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).getRelationships()[j])) {
+			double[] currentPredictedRelationships = new double[predictedRelationships.get(i).getLabels().length];
+			double[] currentGroundTruthRelationships = new double[groundTruthRelationships.get(i).getLabels().length];
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
+					currentPredictedRelationships[category] += predictedRelationships.get(i).getRelationships()[j][category];
+					currentGroundTruthRelationships[category] += groundTruthRelationships.get(i).getRelationships()[j][category];
+				}
+			}
+			for(int category=0;category<groundTruthRelationships.get(i).getLabels().length; category++) {
+				currentPredictedRelationships[category] = (currentPredictedRelationships[category] / predictedRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
+				currentGroundTruthRelationships[category] = (currentGroundTruthRelationships[category] / groundTruthRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
+				if(currentPredictedRelationships[category] != currentGroundTruthRelationships[category]) {
 					currentSongPredictedCorrectly = false; break;
 				}
 			}
@@ -165,20 +188,26 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		
 		return list;
 	}
-
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
 		int currentPartitionNumber = 0;
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				
-				if(((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels()[j].equals(((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).getLabels()[j]) &&
-						((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getRelationships()[j].equals(((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).getRelationships()[j])) {
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				boolean currentPartitionPredictedCorrectly = true;
+				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
+					int currentGroundTruthValue = groundTruthRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
+					int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
+					if(currentGroundTruthValue != currentPredictedValue) {
+						currentPartitionPredictedCorrectly = false; break;
+					}
+				}
+				if(currentPartitionPredictedCorrectly) {
 					listOfCorrectlyPredictedPartitions.add(currentPartitionNumber);
 				}
 				currentPartitionNumber++;
@@ -199,7 +228,5 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		
 		return list;
 	}
-
-
 }
 

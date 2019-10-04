@@ -27,7 +27,6 @@ import java.util.ArrayList;
 
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
-import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
@@ -36,7 +35,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * labeled and predicted relationships.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: MeanSquaredError.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -51,29 +50,13 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		
-		// Maximum possible error on the given ground truth
-		// E.g. if an instance has relationship 0.4, maximum classification error is 0.6 and
-		// maximum squared error is 0.36
-		double maxError = 0.0d;
-		for(int i=0;i<groundTruthRelationships.size();i++) {
-			double firstBoundary = groundTruthRelationships.get(i);
-			double secondBoundary = 1 - groundTruthRelationships.get(i);
-			if(firstBoundary >= secondBoundary) {
-				maxError += firstBoundary*firstBoundary;
-			} else {
-				maxError += secondBoundary*secondBoundary;
-			}
-		}
-		maxError /= groundTruthRelationships.size(); // Expected maximum error per song
-		
 		// Calculate MSE error
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
@@ -83,7 +66,6 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 			errorSum += error;
 		}
 		errorSum = errorSum / groundTruthRelationships.size();
-		errorSum = errorSum / maxError;
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
@@ -98,37 +80,22 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		// Maximum possible error on the given ground truth
-		// E.g. if an instance has relationship 0.4, maximum classification error is 0.6 and
-		// maximum squared error is 0.36
-		double maxError = 0.0d;
 		int overallPartitionNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			int currentPartitionNumber = predictedRelationships.get(i).getRelationships().length;
 			overallPartitionNumber += currentPartitionNumber;
-			double firstBoundary = groundTruthRelationships.get(i);
-			double secondBoundary = 1 - groundTruthRelationships.get(i);
-			double maxErrorForOnePartition;
-			if(firstBoundary >= secondBoundary) {
-				maxErrorForOnePartition = firstBoundary*firstBoundary;
-			} else {
-				maxErrorForOnePartition = secondBoundary*secondBoundary;
-			}
-			maxError += (maxErrorForOnePartition * currentPartitionNumber);
 		}
-		maxError /= overallPartitionNumber;
 		
 		// Calculate MSE error
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				Double error = (groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j]) * 
-					(groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j]);
+				Double error = (groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j][0]) * 
+					(groundTruthRelationships.get(i)-predictedRelationships.get(i).getRelationships()[j][0]);
 				errorSum += error;
 			}
 		}
 		errorSum = errorSum / overallPartitionNumber;
-		errorSum = errorSum / maxError;
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
@@ -143,27 +110,44 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/**
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
-		// Go through all songs
+		// Calculate MSE error
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			
-			// Calculate the error for the current song
-			double songError = 0.0d;
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
-						getLabels()[j];
-				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
-						getLabels()[j];
-				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
-					songError++;
+			// Calculate the predicted value for this song (averaging among all partitions)
+			double[] currentPredictedValue = new double[numberOfCategories];
+			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
+				for(int category = 0; category < numberOfCategories; category++){
+					currentPredictedValue[category] += predictedRelationships.get(i).getRelationships()[j][category];
 				}
+				
 			}
-			songError /= ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
-			
-			errorSum += (songError*songError);
+			// Calculate the error for the current song
+			Double error = 0.0;
+			for(int category = 0; category < numberOfCategories; category++) {
+				currentPredictedValue[category] /= predictedRelationships.get(i).getRelationships().length;
+				error += (groundTruthRelationships.get(i).getRelationships()[0][category] - currentPredictedValue[category]) * (groundTruthRelationships.get(i).getRelationships()[0][category] - currentPredictedValue[category]);
+			}
+			errorSum += error;
 		}
-		errorSum /= groundTruthRelationships.size();
+		errorSum = errorSum / groundTruthRelationships.size();
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
@@ -173,28 +157,32 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}
-
-	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
-		// Go through all partitions
-		double errorSum = 0.0d;
-		int partitionNumber =0;
+		int overallPartitionNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			partitionNumber += ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;
-			for(int j=0;j<((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).getLabels().length;j++) {
-				String currentPartitionGTLabel = ((MulticlassClassifiedSongPartitions)groundTruthRelationships.get(i)).
-						getLabels()[j];
-				String currentPartitionPredictedLabel = ((MulticlassClassifiedSongPartitions)predictedRelationships.get(i)).
-						getLabels()[j];
-				if(!currentPartitionGTLabel.equals(currentPartitionPredictedLabel)) {
-					errorSum++;
+			int currentPartitionNumber = predictedRelationships.get(i).getRelationships().length;
+			overallPartitionNumber += currentPartitionNumber;
+		}
+		
+		// Calculate MSE error
+		double errorSum = 0.0d;
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+				for(int category = 0; category < numberOfCategories; category++) {
+					Double error = (groundTruthRelationships.get(i).getRelationships()[j][category]-predictedRelationships.get(i).getRelationships()[j][category]) * 
+						(groundTruthRelationships.get(i).getRelationships()[j][category]-predictedRelationships.get(i).getRelationships()[j][category]);
+					errorSum += error;
 				}
 			}
 		}
-		errorSum /= partitionNumber;
+		errorSum = errorSum / overallPartitionNumber;
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
@@ -204,8 +192,5 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}
-
-
-
 }
 

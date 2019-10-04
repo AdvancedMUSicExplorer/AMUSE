@@ -287,7 +287,7 @@ public class AmuseMusicFileTreeView {
         }
         while (path.indexOf(File.separator) != -1) {
             donePath.append(path.substring(0, path.indexOf(File.separator) + 1));
-            Enumeration<FileMutableTreeNode> children = node.children();
+            Enumeration<FileMutableTreeNode> children = (Enumeration)node.children();
             File expectedFile = new File(donePath.toString());
             FileMutableTreeNode existingChild = null;
             while (children.hasMoreElements()) {
@@ -304,7 +304,7 @@ public class AmuseMusicFileTreeView {
             node = existingChild;
             path.delete(0, path.indexOf(File.separator) + 1);
         }
-        Enumeration<FileMutableTreeNode> children = node.children();
+        Enumeration<FileMutableTreeNode> children = (Enumeration)node.children();
         FileMutableTreeNode existingChild = null;
         File expectedFile = file;
         while (children.hasMoreElements()) {

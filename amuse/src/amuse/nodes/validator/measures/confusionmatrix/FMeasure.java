@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * F-Measure measure 
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: FMeasure.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class FMeasure extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -53,11 +53,13 @@ public class FMeasure extends ClassificationQualityDoubleMeasureCalculator {
 		// Get precision
 		Precision precisionCalculator = new Precision();
 		precisionCalculator.setSongLevel(true);
+		precisionCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble p = precisionCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get recall
 		Recall recallCalculator = new Recall();
 		recallCalculator.setSongLevel(true);
+		recallCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble r = recallCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		double fMeasure = 2 * p.getValue() * r.getValue() / (p.getValue() + r.getValue());
@@ -79,11 +81,13 @@ public class FMeasure extends ClassificationQualityDoubleMeasureCalculator {
 		// Get precision
 		Precision precisionCalculator = new Precision();
 		precisionCalculator.setPartitionLevel(true);
+		precisionCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble p = precisionCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get recall
 		Recall recallCalculator = new Recall();
 		recallCalculator.setPartitionLevel(true);
+		recallCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble r = recallCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		double fMeasure = 2 * p.getValue() * r.getValue() / (p.getValue() + r.getValue());
@@ -102,7 +106,7 @@ public class FMeasure extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -110,9 +114,65 @@ public class FMeasure extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		
+		// Get precision
+		Precision precisionCalculator = new Precision();
+		precisionCalculator.setSongLevel(true);
+		precisionCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble p = precisionCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships)[0];
+		
+		// Get recall
+		Recall recallCalculator = new Recall();
+		recallCalculator.setSongLevel(true);
+		recallCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble r = recallCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships)[0];
+		
+		double fMeasure = 2 * p.getValue() * r.getValue() / (p.getValue() + r.getValue());
+		
+		// Prepare the result
+		ValidationMeasureDouble[] fMeasureMeasure = new ValidationMeasureDouble[1];
+		fMeasureMeasure[0] = new ValidationMeasureDouble(false);
+		fMeasureMeasure[0].setId(108);
+		fMeasureMeasure[0].setName("F-measure on song level");
+		fMeasureMeasure[0].setValue(new Double(fMeasure));
+		return fMeasureMeasure;
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		// Get precision
+		Precision precisionCalculator = new Precision();
+		precisionCalculator.setPartitionLevel(true);
+		precisionCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble p = precisionCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships)[0];
+		
+		// Get recall
+		Recall recallCalculator = new Recall();
+		recallCalculator.setPartitionLevel(true);
+		recallCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble r = recallCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships)[0];
+		
+		double fMeasure = 2 * p.getValue() * r.getValue() / (p.getValue() + r.getValue());
+		
+		// Prepare the result
+		ValidationMeasureDouble[] fMeasureMeasure = new ValidationMeasureDouble[1];
+		fMeasureMeasure[0] = new ValidationMeasureDouble(false);
+		fMeasureMeasure[0].setId(108);
+		fMeasureMeasure[0].setName("F-measure on partition level");
+		fMeasureMeasure[0].setValue(new Double(fMeasure));
+		return fMeasureMeasure;
+	}
 }
 

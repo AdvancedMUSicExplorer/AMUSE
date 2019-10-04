@@ -55,11 +55,8 @@ public class MeasureTable implements List<Measure>, Serializable {
             String category = measureTableSet.getCategoryAttribute().getValueAt(i);
             Double optimalValue = measureTableSet.getOptimalValueAttribute().getValueAt(i);
             String measureClass = measureTableSet.getMeasureClassAttribute().getValueAt(i);
-            String supportsBinary = measureTableSet.getSupportsBinaryAttribute().getValueAt(i);
-            String supportsMultiClass = measureTableSet.getSupportsMultiClassAttribute().getValueAt(i);
-            String supportsFuzzy = measureTableSet.getSupportsFuzzyAttribute().getValueAt(i);
             if (!measureClass.equalsIgnoreCase("?")) {
-            	Measure newMeasure = new Measure(id, name, category, optimalValue, measureClass, supportsBinary, supportsMultiClass, supportsFuzzy);
+            	Measure newMeasure = new Measure(id, name, category, optimalValue, measureClass);
             	if(measureTableSet.getCalculateForSongs().getValueAt(i).equalsIgnoreCase(new String("false"))) {
             		newMeasure.setSongLevelSelected(false);
             	}
@@ -202,9 +199,6 @@ public class MeasureTable implements List<Measure>, Serializable {
         private static final String strName = "Name";
         private static final String strOptimalValue = "OptimalValue";
         private static final String strMeasureClass = "MeasureClass";
-        private static final String strSupportsBinary = "SupportsBinary";
-        private static final String strSupportsMulticlass = "SupportsMulticlass";
-        private static final String strSupportsFuzzy = "SupportsFuzzy";
         private static final String strCategory = "Category";
         private static final String strDataSetName = "Category";
         private String strCalculateForSongs = "CalculateForSongs";
@@ -216,9 +210,6 @@ public class MeasureTable implements List<Measure>, Serializable {
             checkStringAttribute(strName);
             checkNumericAttribute(strOptimalValue);
             checkStringAttribute(strMeasureClass);
-            checkStringAttribute(strSupportsBinary);
-            checkStringAttribute(strSupportsMulticlass);
-            checkStringAttribute(strSupportsFuzzy);
             checkNominalAttribute(strCategory);
             checkNominalAttribute(strCalculateForSongs);
             checkNominalAttribute(strCalculateForPartitions);
@@ -233,9 +224,6 @@ public class MeasureTable implements List<Measure>, Serializable {
             List<String> measureClasses = new ArrayList<String>();
             List<Boolean> calculateForSongs = new ArrayList<Boolean>();
             List<Boolean> calculateForPartitions = new ArrayList<Boolean>();
-            List<String> supportsBinary = new ArrayList<String>();
-            List<String> supportsMulticlass = new ArrayList<String>();
-            List<String> supportsFuzzy = new ArrayList<String>();
             for (Measure m: measures) {
                 ids.add((double)m.getID());
                 names.add(m.getName());
@@ -244,9 +232,6 @@ public class MeasureTable implements List<Measure>, Serializable {
                 measureClasses.add(m.getMeasureClass());
                 calculateForSongs.add(m.isSongLevelSelected());
                 calculateForPartitions.add(m.isPartitionLevelSelected());
-                supportsBinary.add(m.getSupportsBinary());
-                supportsMulticlass.add(m.getSupportsMultiClass());
-                supportsFuzzy.add(m.getSupportsFuzzy());
             }
             addAttribute(new NumericAttribute(strId, ids));
             addAttribute(new StringAttribute(strName, names));
@@ -255,9 +240,6 @@ public class MeasureTable implements List<Measure>, Serializable {
             addAttribute(new StringAttribute(strMeasureClass, measureClasses));
             addAttribute(NominalAttribute.createFromBooleans(strCalculateForSongs, calculateForSongs));
             addAttribute(NominalAttribute.createFromBooleans(strCalculateForPartitions, calculateForPartitions));
-            addAttribute(new StringAttribute(strSupportsBinary, supportsBinary));
-            addAttribute(new StringAttribute(strSupportsMulticlass, supportsMulticlass));
-            addAttribute(new StringAttribute(strSupportsFuzzy, supportsFuzzy));
         }
 
         private NumericAttribute getIdAttribute() {
@@ -286,18 +268,6 @@ public class MeasureTable implements List<Measure>, Serializable {
         
         private StringAttribute getMeasureClassAttribute() {
             return (StringAttribute) this.getAttribute(strMeasureClass);
-        }
-
-        private StringAttribute getSupportsBinaryAttribute() {
-            return (StringAttribute) this.getAttribute(strSupportsBinary);
-        }
-
-        private StringAttribute getSupportsMultiClassAttribute() {
-            return (StringAttribute) this.getAttribute(strSupportsMulticlass);
-        }
-
-        private StringAttribute getSupportsFuzzyAttribute() {
-            return (StringAttribute) this.getAttribute(strSupportsFuzzy);
         }
     }
 }

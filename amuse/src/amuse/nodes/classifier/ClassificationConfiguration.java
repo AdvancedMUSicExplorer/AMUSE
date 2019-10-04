@@ -30,13 +30,18 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
-import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.FileInput;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -45,7 +50,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassificationConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class ClassificationConfiguration extends TaskConfiguration {
 
@@ -55,13 +60,16 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Input source type for this configuration */
 	private final InputSourceType inputSourceType;
 	
+	/** Input attributes that are ignored. Is only used if the input source type is READY_INPUT */
+	private final List<Integer> attributesToIgnore;
+	
 	/** Input to classify */
 	private DataInputInterface inputToClassify;
 	
 	/** Defines the input source type. Can be either
 	 * - List with music files to classify
 	 * - Path to the ready classification input (prepared e.g. by a validator method) */
-	public enum InputSourceType {FILE_LIST, READY_INPUT};
+	public enum InputSourceType {FILE_LIST, CATEGORY_ID, READY_INPUT};
 	
 	/** Description of the processed features model */
 	private final String processedFeaturesModelName;
@@ -70,10 +78,14 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * (optionally with parameters listed in brackets) */
 	private final String algorithmDescription;
 	
-	/** Descriptor of the ground truth */
-	private final String groundTruthSource;
+	/** Id of the groundtrhuth category. Is not used if the concrete model path is known.*/
+	private final int groundTruthCategoryId;
 	
-	private final GroundTruthSourceType groundTruthSourceType;
+	/** Categories of the groundtruth that were used for training. Is not used if the concrete model path is known.*/
+	private final List<Integer> attributesToPredict;
+	
+	/** Type of the model that is used for classification*/
+	private final ModelType modelType;
 	
 	/** Flag if song relationship grade should be averaged over all partitions (="1") */
 	private final Integer mergeSongResults;
@@ -86,6 +98,9 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * Amuse model database!) */
 	private String pathToInputModel;
 	
+	/** Training Description to differentiate between different models */
+	private String trainingDescription;
+	
 	/** Folder to load the processed features from (default: Amuse processed feature database) */
 	private String processedFeatureDatabase;
 	
@@ -94,43 +109,73 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * Standard constructor
 	 * @param inputToClassify Input to classify
 	 * @param inputSourceType Defines the input source type
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
+	 * @param attributesToPredict the categories of the category file of the annotation database
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
-	public ClassificationConfiguration(DataInputInterface inputToClassify, InputSourceType inputSourceType, 
-			String processedFeaturesModelName, String algorithmDescription, Integer mergeSongResults,
+	public ClassificationConfiguration(
+			DataInputInterface inputToClassify,
+			InputSourceType inputSourceType,
+			List <Integer> attributesToIgnore,
+			String processedFeaturesModelName,
+			String algorithmDescription,
+			List<Integer> attributesToPredict,
+			ModelType modelType,
+			Integer mergeSongResults,
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
-		this.groundTruthSource = null;
-		this.groundTruthSourceType = null;
+		this.groundTruthCategoryId = -1;
 	}
 	
 	/**
 	 * Alternative constructor if the song list to classify is loaded by the category id
 	 * @param inputSourceType Defines the input source type
-	 * @param pathToInputSource Input for classification
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param inputSource Input for classification
 	 * @param processedFeaturesModelName Description of the processed features model
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
+	 * @param attributesToPredict the categories of the category file of the annotation database
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
 	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
-	public ClassificationConfiguration(InputSourceType inputSourceType, String pathToInputSource, String processedFeaturesModelName,
-			String algorithmDescription, String groundTruthSource, String groundTruthSourceType, Integer mergeSongResults,
-			String classificationOutput) {
+	public ClassificationConfiguration(
+			InputSourceType inputSourceType,
+			String inputSource,
+			List <Integer> attributesToIgnore,
+			String processedFeaturesModelName,
+			String algorithmDescription,
+			int groundTruthSource,
+			List<Integer> attributesToPredict,
+			ModelType modelType,
+			Integer mergeSongResults,
+			String classificationOutput,
+			String pathToInputModel,
+			String trainingDescription) throws IOException{
 		List<File> input;
 		List<Integer> ids = null;
-		if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
+		
+		if(inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
+			this.inputToClassify = new FileInput(inputSource);
+		} else if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
 			DataSetAbstract inputFileSet; 
 			try {
-				inputFileSet = new ArffDataSet(new File(pathToInputSource));
+				inputFileSet = new ArffDataSet(new File(inputSource));
 			} catch(IOException e) {
 				throw new RuntimeException("Could not create ClassificationConfiguration: " + e.getMessage());
 			}
@@ -140,20 +185,26 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				ids.add(new Double(inputFileSet.getAttribute("Id").getValueAt(j).toString()).intValue());
 				input.add(new File(inputFileSet.getAttribute("Path").getValueAt(j).toString()));
 			}
+			this.inputToClassify = new FileListInput(input,ids);
 			
 		} else {
 			input = new ArrayList<File>(1);
-			input.add(new File(pathToInputSource));
+			input.add(new File(inputSource));
+			this.inputToClassify = new FileListInput(input,ids);
 		}
 		this.inputSourceType = inputSourceType;
-		this.inputToClassify = new FileListInput(input,ids);
+		
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
-		this.groundTruthSource = groundTruthSource;
-		this.groundTruthSourceType = GroundTruthSourceType.valueOf(groundTruthSourceType);
+		this.groundTruthCategoryId = groundTruthSource;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
 		this.mergeSongResults = mergeSongResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.pathToInputModel = pathToInputModel;
+		this.trainingDescription = trainingDescription;
 	}
 
 	/**
@@ -166,22 +217,93 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<classifierConfig.getValueCount();i++) {
-			String currentInputFileList = classifierConfig.getInputFileListAttribute().getValueAt(i).toString();
+			String currentInputSource = classifierConfig.getInputSourceAttribute().getValueAt(i).toString();
 			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
-			String currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).toString();
-			String currentGroundTruthSourceType = classifierConfig.getGroundTruthSourceTypeAttribute().getValueAt(i);
+			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
+
+			String attributesToPredictString = classifierConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToPredictStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToPredict.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				throw new IOException("The attributes to classify were not properly specified.");
+			}
+			
+			String attributesToIgnoreString = classifierConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
+			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToIgnore = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToIgnoreStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToIgnore.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.WARN,
+						"The attributes to ignore were not properly specified. All features will be used for training.");
+				currentAttributesToIgnore = new ArrayList<Integer>();
+			}
+			
+			RelationshipType currentRelationshipType;
+			if(classifierConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(classifierConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
+			} else {
+				throw new IOException("The relationship type was not properly specified.");
+			}
+			
+			LabelType currentLabelType;
+			if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(classifierConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(classifierConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
+			
+			String currentPathToInputModel = classifierConfig.getPathToInputModelAttribute().getValueAt(i);
+			
+			
 			Integer currentMergeSongResults = (new Double(classifierConfig.getMergeSongResultsAttribute().getValueAt(i).toString())).intValue();
 			String currentOutputResult = classifierConfig.getOutputResultAttribute().getValueAt(i).toString();
 			InputSourceType ist;
 			if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
 				ist = InputSourceType.FILE_LIST;
+			} else if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))){
+				ist = InputSourceType.CATEGORY_ID;
 			} else {
 				ist = InputSourceType.READY_INPUT;
-			}	
+			}
+			
+			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
+			
 			// Create a classification task
-		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputFileList, currentProcessedFeaturesDescription, 
-		    		currentAlgorithmDescription, currentGroundTruthSource, currentGroundTruthSourceType, currentMergeSongResults, currentOutputResult));
+		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -224,12 +346,54 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	public String getAlgorithmDescription() {
 		return algorithmDescription;
 	}
-
+	
 	/**
-	 * @return the ground truth source
+	 * @return the groundTruthCategoryId
 	 */
-	public String getGroundTruthSource() {
-		return groundTruthSource;
+	public int getGroundTruthCategoryId() {
+		return groundTruthCategoryId;
+	}
+	
+	/**
+	 * @return the attributesToPredict
+	 */
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
+	}
+	
+	/**
+	 * @return the attributesToIgnore
+	 */
+	public List<Integer> getAttributesToIgnore(){
+		return attributesToIgnore;
+	}
+	
+	/**
+	 * @return the relationshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
+	}
+	
+	/**
+	 * @return return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+	
+	/**
+	 * @return return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
 	}
 
 	/**
@@ -251,6 +415,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public String getPathToInputModel() {
 		return pathToInputModel;
+	}
+	
+	/**
+	 * @return the trainingDescription
+	 */
+	public String getTrainingDescription() {
+		return trainingDescription;
 	}
 
 	/**
@@ -281,7 +452,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @see amuse.interfaces.nodes.TaskConfiguration#getDescription()
 	 */
 	public String getDescription() {
-        return new String("Ground Truth Source: " + groundTruthSource + " Output: " + classificationOutput);
+        return new String("Ground Truth Source: " + groundTruthCategoryId + " Output: " + classificationOutput);
 	}
 
 	/**
@@ -304,10 +475,5 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	public void setPathToInputModel(String pathToInputModel) {
 		this.pathToInputModel = pathToInputModel;
 	}
-
-	public GroundTruthSourceType getGroundTruthSourceType() {
-		return groundTruthSourceType;
-	}
-
 
 }

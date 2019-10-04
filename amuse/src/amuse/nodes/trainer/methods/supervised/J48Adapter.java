@@ -45,7 +45,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for J48. For further details of Yale see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: J48Adapter.java 197 2017-08-11 12:15:34Z frederik-h $
  */
 public class J48Adapter extends AmuseTask implements TrainerInterface {
 
@@ -81,9 +81,9 @@ public class J48Adapter extends AmuseTask implements TrainerInterface {
 	 * (non-Javadoc)
 	 * @see amuse.nodes.trainer.interfaces.TrainerInterface#trainModel(java.lang.String, java.lang.String, long)
 	 */
-	public void trainModel(String outputModel) throws NodeException {
+	public void trainModel(String outputModel) throws NodeException {		
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+
 		// Train the model and save it
 		try {
 			Process process = new Process();

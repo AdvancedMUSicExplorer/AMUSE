@@ -23,6 +23,22 @@
  */
 package amuse.scheduler.gui.controller;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import org.apache.log4j.Level;
+
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
@@ -38,24 +54,10 @@ import amuse.scheduler.Scheduler;
 import amuse.scheduler.gui.annotation.singlefile.AnnotationView;
 import amuse.scheduler.gui.navigation.TitleUpdater;
 import amuse.scheduler.gui.settings.JPanelSettings;
+import amuse.scheduler.gui.views.TaskListener;
 import amuse.scheduler.gui.views.TaskManagerView;
 import amuse.scheduler.gui.views.WizardView;
 import amuse.util.AmuseLogger;
-
-import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import org.apache.log4j.Level;
 
 
 /**
@@ -77,6 +79,7 @@ public final class WizardController implements WizardControllerInterface {
 	private OptimizationController optimizationController;
 	private SingleFileAnnotationController singleFileAnnotationController;
 	private MultipleFilesAnnotationController multipleFilesAnnotationController;
+	private List<TaskListener> taskListeners = new ArrayList<TaskListener>();
 	
 	private enum ControllerType {
 		CLASSIFICATION, FEATURE_EXTRACTION, OPTIMIZATION, FEATURE_PROCESSING, CLASSIFICATION_TRAINING, VALIDATION;
@@ -362,7 +365,9 @@ public final class WizardController implements WizardControllerInterface {
 			public void run() {
 				for (TaskConfiguration task : experiments) {
 					try {
+						notifyListenersOfStart(task);
 						scheduler.proceedTask(task);
+						notifyListenersOfFinish(task);
 					} catch (SchedulerException ex) {
 						throw new RuntimeException(ex);
 					}
@@ -484,6 +489,22 @@ public final class WizardController implements WizardControllerInterface {
 			AmuseLogger.write(this.getClass().getName(),
 					Level.ERROR,
 					"Failed to load the experiments.");
+		}
+	}
+	
+	public void addTaskListener(TaskListener taskListener) {
+		taskListeners.add(taskListener);
+	}
+	
+	public void notifyListenersOfStart(TaskConfiguration experiment) {
+		for(TaskListener listener : taskListeners) {
+			listener.experimentStarted(experiment);
+		}
+	}
+	
+	public void notifyListenersOfFinish(TaskConfiguration experiment) {
+		for(TaskListener listener : taskListeners) {
+			listener.experimentFinished(experiment);
 		}
 	}
 }

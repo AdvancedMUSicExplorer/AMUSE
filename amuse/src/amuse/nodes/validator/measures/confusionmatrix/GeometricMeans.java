@@ -36,7 +36,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * the distribution stays balanced.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: GeometricMeans.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class GeometricMeans extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -53,7 +53,9 @@ public class GeometricMeans extends ClassificationQualityDoubleMeasureCalculator
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnSongLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -77,7 +79,9 @@ public class GeometricMeans extends ClassificationQualityDoubleMeasureCalculator
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
 		
 		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
 		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
 		
 		ValidationMeasureDouble[] specificity = specificityCalculator.calculateOneClassMeasureOnPartitionLevel(
 				groundTruthRelationships, predictedRelationships);
@@ -100,7 +104,7 @@ public class GeometricMeans extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -108,9 +112,60 @@ public class GeometricMeans extends ClassificationQualityDoubleMeasureCalculator
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnSongLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double gm = Math.sqrt(recall[0].getValue() * specificity[0].getValue());
+		
+		// Prepare the result
+		ValidationMeasureDouble[] geometricMeansMeasure = new ValidationMeasureDouble[1];
+		geometricMeansMeasure[0] = new ValidationMeasureDouble(false);
+		geometricMeansMeasure[0].setId(113);
+		geometricMeansMeasure[0].setName("Geometric means on song level");
+		geometricMeansMeasure[0].setValue(new Double(gm));
+		return geometricMeansMeasure;
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		Specificity specificityCalculator = new Specificity();
+		specificityCalculator.setContinuous(isContinuous());
+		Recall recallCalculator = new Recall();
+		recallCalculator.setContinuous(isContinuous());
+		
+		ValidationMeasureDouble[] specificity = specificityCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		ValidationMeasureDouble[] recall = recallCalculator.calculateMultiLabelMeasureOnPartitionLevel(
+				groundTruthRelationships, predictedRelationships);
+		
+		double gm = Math.sqrt(recall[0].getValue() * specificity[0].getValue());
+		
+		// Prepare the result
+		ValidationMeasureDouble[] geometricMeansMeasure = new ValidationMeasureDouble[1];
+		geometricMeansMeasure[0] = new ValidationMeasureDouble(false);
+		geometricMeansMeasure[0].setId(113);
+		geometricMeansMeasure[0].setName("Geometric means on partition level");
+		geometricMeansMeasure[0].setValue(new Double(gm));
+		return geometricMeansMeasure;
+	}
 }
 

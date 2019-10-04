@@ -43,7 +43,8 @@ public enum KeysIntValue {
     SPLIT_SIZE_IN_KB,
     DOWNSAMPLING_TARGET_SIZE_IN_HZ,
     AUDIOSPECTRUM_WINDOWSIZE,
-    AUDIOSPECTRUM_HOPSIZE;
+    AUDIOSPECTRUM_HOPSIZE,
+    YALE_HEAP_SIZE;
 
     /**
      * This method is used to determin and get default values for any key.
@@ -65,6 +66,8 @@ public enum KeysIntValue {
             return 1024 * 20;
         case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
             return 1;
+        case YALE_HEAP_SIZE:
+        	return 200;
         default:
             AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
             return 0;
@@ -92,6 +95,8 @@ public enum KeysIntValue {
             return value >= 1;
         case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
             return (value == 0 || value == 1 || value == 2);
+        case YALE_HEAP_SIZE:
+        	return value >= 1;
         default:
             AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
             return true;
@@ -126,6 +131,7 @@ public enum KeysIntValue {
         map.put(DOWNSAMPLING_TARGET_SIZE_IN_HZ.toString(), "Target sampling rate of wave file. (0 = 44000Hz, 1 = 22050Hz, 2 = 11025HZ)");
 		map.put(AUDIOSPECTRUM_WINDOWSIZE.toString(), "Window size used for the calculation of the audiospectrum in the annotation editor. (0 = 256, 1 = 512, 2 = 1024)");
 		map.put(AUDIOSPECTRUM_HOPSIZE.toString(), "Hop size used for the calculation of the audiospectrum in the annotation editor. (0 = 256, 1 = 512, 2 = 1024)");
+		map.put(YALE_HEAP_SIZE.toString(), "eap size in megabytes for Yale feature extractor (should be increased for long music files)");
 		return map;
 	}
 

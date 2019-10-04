@@ -245,7 +245,7 @@ public class ProcessingMethodsListModel implements ListModel {
 		public ProcessingAlgorithm(int id, String name,
 				String description, String category, String expectedParameterNames,
 				String expectedParameters, String defaultParameterValues, String expectedParameterDescription) {
-			super(id, name, description, category, expectedParameterNames, expectedParameters, defaultParameterValues, expectedParameterDescription);
+			super(id, name, description, category, expectedParameterNames, expectedParameters, defaultParameterValues, expectedParameterDescription, true, true, true, true, true, true, true, true);
 		}
 
 		@Override

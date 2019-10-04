@@ -32,7 +32,7 @@ import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
  * Methods which calculate string measure based on classification results and ground truth information should extend this class.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ClassificationQualityStringMeasureCalculator.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public abstract class ClassificationQualityStringMeasureCalculator implements ClassificationQualityMeasureCalculatorInterface {
 	
@@ -41,6 +41,9 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	
 	/** True if this measure will be calculated on partition level */
 	private boolean calculateForPartitionLevel = false;
+	
+	/** True if this measure will be calculated in a fuzzy way */
+	private boolean fuzzy = false;
 
 	/*
 	 * (non-Javadoc)
@@ -48,6 +51,14 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 */
 	public boolean getSongLevel() {
 		return calculateForSongLevel;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#isFuzzy()
+	 */
+	public boolean isContinuous() {
+		return fuzzy;
 	}
 
 	/*
@@ -72,6 +83,14 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 */
 	public void setPartitionLevel(boolean forPartitionLevel) {
 		this.calculateForPartitionLevel = forPartitionLevel;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#setFuzzy(boolean)
+	 */
+	public void setContinuous(boolean fuzzy) {
+		this.fuzzy = fuzzy;
 	}
 	
 	/**
@@ -142,5 +161,39 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasure(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureString[] calculateMultiLabelMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, 
+			ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		if(groundTruthRelationships.size() != predictedRelationships.size()) {
+			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
+		}
+		
+		ValidationMeasureString[] measureOnSongLev = null;
+		ValidationMeasureString[] measureOnPartLev = null;
+		
+		if(this.getSongLevel()) {
+			measureOnSongLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+		} 
+		if(this.getPartitionLevel()) {
+			measureOnPartLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+		}
+		
+		// Return the corresponding number of measure values
+		if(this.getSongLevel() && !this.getPartitionLevel()) {
+			return measureOnSongLev;
+		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
+			return measureOnPartLev;
+		} else if(this.getSongLevel() && this.getPartitionLevel()) {
+			ValidationMeasureString[] measures = new ValidationMeasureString[2];
+			measures[0] = measureOnSongLev[0];
+			measures[1] = measureOnPartLev[0];
+			return measures;
+		} else {
+			return null;
+		}
+	}
 
 }

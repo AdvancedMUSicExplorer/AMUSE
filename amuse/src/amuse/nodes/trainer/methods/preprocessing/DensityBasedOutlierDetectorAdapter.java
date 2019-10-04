@@ -48,7 +48,7 @@ import com.rapidminer.tools.OperatorService;
  * Removes outliers with density-based method 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DensityBasedOutlierDetectorAdapter.java 200 2017-08-11 12:23:59Z frederik-h $
  */
 public class DensityBasedOutlierDetectorAdapter extends AmuseTask implements ClassificationPreprocessingInterface {
 

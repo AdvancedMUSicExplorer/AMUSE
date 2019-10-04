@@ -44,7 +44,7 @@ import com.rapidminer.operator.learner.bayes.NaiveBayes;
  * Adapter for Naive Bayes. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: NaiveBayesAdapter.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class NaiveBayesAdapter extends AmuseTask implements TrainerInterface {
 
@@ -73,7 +73,7 @@ public class NaiveBayesAdapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
 		// Train the model and save it
 		try {
 			Process process = new Process();

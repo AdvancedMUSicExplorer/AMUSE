@@ -36,13 +36,16 @@ import com.rapidminer.operator.io.ModelWriter;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.tools.OperatorService;
+
+import java.io.File;
+
 import com.rapidminer.Process;
 
 /**
  * Adapter for Random Forest. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: RandomForestAdapter.java 228 2018-02-23 14:15:08Z frederik-h $
  */
 public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 
@@ -80,9 +83,10 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
 		// Train the model and save it
 		try {
+			
 			Process process = new Process();
 			
 			// Train the model

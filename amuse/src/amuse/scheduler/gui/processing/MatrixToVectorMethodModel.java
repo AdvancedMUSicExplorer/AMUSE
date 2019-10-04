@@ -60,7 +60,7 @@ public class MatrixToVectorMethodModel implements ComboBoxModel {
         StringAttribute defaultValsAttr = matrixToVectorSet.getDefaultParameterValuesAttribute();
         StringAttribute paramDescAttr = matrixToVectorSet.getParameterDescriptionsAttribute();
         for (int i = 0; i < matrixToVectorSet.getValueCount(); i++) {
-            methods.add(new Algorithm(idAttr.getValueAt(i).intValue(), nameAttr.getValueAt(i), descAttr.getValueAt(i), "",exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i), defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i)));
+            methods.add(new Algorithm(idAttr.getValueAt(i).intValue(), nameAttr.getValueAt(i), descAttr.getValueAt(i), "",exParamNamesAttr.getValueAt(i), exParamAttr.getValueAt(i), defaultValsAttr.getValueAt(i), paramDescAttr.getValueAt(i), true, true, true, true, true, true, true, true));
         }
         if (methods.isEmpty()) {
             throw new IOException("Empty Processor Conversion Algorithm Table!");

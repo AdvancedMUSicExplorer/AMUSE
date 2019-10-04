@@ -34,7 +34,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  *  Number of true negatives
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: TrueNegatives.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -49,33 +49,28 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		int numberOfTrueNegatives = 0;
+		double numberOfTrueNegatives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
 			// Calculate the predicted value for this song (averaging among all partitions)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j];
+				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
-			if(currentPredictedValue >= 0.5) {
-				currentPredictedValue = 1.0d;
-			} else {
-				currentPredictedValue = 0.0d;
+			//If the classification was not continuous, round the predicted values
+			if(!isContinuous()) {
+				if(currentPredictedValue >= 0.5) {
+						currentPredictedValue = 1.0d;
+				} else {
+					currentPredictedValue = 0.0d;
+				}
 			}
 			
-			// Round the ground truth value to a binary value
 			Double currentGroundTruthValue = groundTruthRelationships.get(i);
-			if(currentGroundTruthValue >= 0.5) {
-				currentGroundTruthValue = 1.0d;
-			} else {
-				currentGroundTruthValue = 0.0d;
-			}
 			
-			if(currentGroundTruthValue.doubleValue() == 0.0 && currentPredictedValue.doubleValue() == 0.0) {
-				numberOfTrueNegatives++;
-			}
+			numberOfTrueNegatives += (1-currentGroundTruthValue.doubleValue()) * (1-currentPredictedValue.doubleValue());
 			
 		}
 		
@@ -92,13 +87,10 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		int numberOfTrueNegatives = 0;
+		double numberOfTrueNegatives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				if(groundTruthRelationships.get(i).doubleValue() == 0.0 && 
-						predictedRelationships.get(i).getRelationships()[j].doubleValue() == 0.0) {
-					numberOfTrueNegatives++;
-				}
+				numberOfTrueNegatives += (1-groundTruthRelationships.get(i).doubleValue()) * (1-predictedRelationships.get(i).getRelationships()[j][0].doubleValue());
 			}
 		}
 		
@@ -115,7 +107,7 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -123,9 +115,74 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		double[] numberOfTrueNegatives = new double[groundTruthRelationships.get(0).getLabels().length];
+		
+		for(int i = 0; i < groundTruthRelationships.size(); i++	) {
+			for(int category = 0; category < groundTruthRelationships.get(i).getLabels().length; category ++) {
+				// Calculate the predicted value for this song (averaging among all partitions)
+				Double currentPredictedValue = 0.0d;
+				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
+				}
+				currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
+				
+				//If the classification was not continuous, round the predicted values
+				if(!isContinuous()) {
+					if(currentPredictedValue >= 0.5) {
+						currentPredictedValue = 1.0d;
+					} else {
+						currentPredictedValue = 0.0d;
+					}
+				}
+				
+				Double currentGroundTruthValue = groundTruthRelationships.get(i).getRelationships()[0][category];
+				
+				numberOfTrueNegatives[category] += (1 - currentGroundTruthValue.doubleValue()) * (1 - currentPredictedValue.doubleValue());
+			}
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] trueNegativesMeasure = new ValidationMeasureDouble[numberOfTrueNegatives.length];
+		for(int i = 0; i < trueNegativesMeasure.length; i++) {
+			trueNegativesMeasure[i] = new ValidationMeasureDouble();
+			trueNegativesMeasure[i].setId(101);
+			trueNegativesMeasure[i].setName("Number of true negatives on song level for category " + groundTruthRelationships.get(0).getLabels()[i]);
+			trueNegativesMeasure[i].setValue(new Double(numberOfTrueNegatives[i]));
+		}
+		return trueNegativesMeasure;
+	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		double[] numberOfTrueNegatives = new double[groundTruthRelationships.get(0).getLabels().length];
+		for(int i=0;i<groundTruthRelationships.size();i++) {
+			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
+				for(int category = 0; category < numberOfTrueNegatives.length; category ++) {
+					numberOfTrueNegatives[category] += (1 - groundTruthRelationships.get(i).getRelationships()[j][category]) * (1 - predictedRelationships.get(i).getRelationships()[j][category]);
+				}
+			}
+		}
+		
+		// Prepare the result
+		ValidationMeasureDouble[] trueNegativesMeasure = new ValidationMeasureDouble[numberOfTrueNegatives.length];
+		for(int i = 0; i < numberOfTrueNegatives.length; i++) {
+			trueNegativesMeasure[i] = new ValidationMeasureDouble();
+			trueNegativesMeasure[i].setId(101);
+			trueNegativesMeasure[i].setName("Number of true negatives on partition level for cateogry " + groundTruthRelationships.get(0).getLabels()[i]);
+			trueNegativesMeasure[i].setValue(new Double(numberOfTrueNegatives[i]));
+		}
+		return trueNegativesMeasure;
+	}
 }
 

@@ -45,6 +45,10 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.FeatureTable;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
@@ -276,8 +280,11 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 					cConf = new ClassificationConfiguration(
 						new DataSetInput(featuresToClassify),
 						ClassificationConfiguration.InputSourceType.READY_INPUT,
+						new ArrayList<Integer>(),
 						processedFeaturesDescription, 
 						currentClassifierTok.nextToken(),
+						new ArrayList<Integer>(),
+						new ModelType(RelationshipType.BINARY, LabelType.SINGLELABEL, MethodType.SUPERVISED),
 						0,
 						this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 							
@@ -313,7 +320,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						} else if(currentPartitionStart >= currentFrameStart){
 							numberOfValuesInCurrentFrame++;
 							// Since all of the feature vectors have become the id 0..
-							sumOfPositivesInCurrentFrame += predictedFeatures.get(0).getRelationships()[i];
+							sumOfPositivesInCurrentFrame += predictedFeatures.get(0).getRelationships()[i][0];
 						}
 					}
 				} 

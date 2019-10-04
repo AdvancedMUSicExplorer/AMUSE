@@ -47,6 +47,14 @@ public class AlgorithmTableSet extends ArffDataSet {
     private final StringAttribute parameterDefinitionsAttribute;
     private final StringAttribute defaultParameterValuesAttribute;
     private final StringAttribute parameterDescriptionsAttribute;
+    private final NumericAttribute supportsBinaryAttribute;
+    private final NumericAttribute supportsContinuousAttribute;
+    private final NumericAttribute supportsMulticlassAttribute;
+    private final NumericAttribute supportsMultilabelAttribute;
+    private final NumericAttribute supportsSinglelabelAttribute;
+    private final NumericAttribute supportsSupervisedAttribute;
+    private final NumericAttribute supportsUnsupervisedAttribute;
+    private final NumericAttribute supportsRegressionAttribute;
 
     private static final String strID = "Id";
     private static final String strName = "Name";
@@ -56,6 +64,14 @@ public class AlgorithmTableSet extends ArffDataSet {
     private static final String strParameterDefinitions = "ParameterDefinitions";
     private static final String strDefaultParameterValues = "DefaultParameterValues";
     private static final String strParameterDescriptions = "ParameterDescriptions";
+    private static final String strSupportsBinary = "SupportsBinary";
+    private static final String strSupportsContinuous = "SupportsContinuous";
+    private static final String strSupportsMulticlass = "SupportsMulticlass";
+    private static final String strSupportsMultilabel = "SupportsMultilabel";
+    private static final String strSupportsSinglelabel = "SupportsSinglelabel";
+    private static final String strSupportsSupervised = "SupportsSupervised";
+    private static final String strSupportsUnsupervised = "SupportsUnsupervised";
+    private static final String strSupportsRegression = "SupportsRegression";
 
     /**
      * Creates a new FileTableSet from a file. Validates if the given file contains a FileTableSet.
@@ -79,6 +95,20 @@ public class AlgorithmTableSet extends ArffDataSet {
         checkStringAttribute(strParameterDefinitions);
         checkStringAttribute(strDefaultParameterValues);
         checkStringAttribute(strParameterDescriptions);
+        
+        boolean hasSupportAttributes = true;
+        try {
+        	checkNumericAttribute(strSupportsBinary);
+	        checkNumericAttribute(strSupportsContinuous);
+	        checkNumericAttribute(strSupportsMulticlass);
+	        checkNumericAttribute(strSupportsMultilabel);
+	        checkNumericAttribute(strSupportsSinglelabel);
+	        checkNumericAttribute(strSupportsSupervised);
+	        checkNumericAttribute(strSupportsUnsupervised);
+	        checkNumericAttribute(strSupportsRegression);
+        } catch (DataSetException e) {
+        	hasSupportAttributes = false;
+        }
         idAttribute = (NumericAttribute) this.getAttribute(strID);
         nameAttribute = (StringAttribute) this.getAttribute(strName);
         algorithmDescriptionAttribute = (StringAttribute) this.getAttribute(strAlgorithmDescription);
@@ -86,6 +116,32 @@ public class AlgorithmTableSet extends ArffDataSet {
         parameterDefinitionsAttribute = (StringAttribute) this.getAttribute(strParameterDefinitions);
         defaultParameterValuesAttribute = (StringAttribute) this.getAttribute(strDefaultParameterValues);
         parameterDescriptionsAttribute = (StringAttribute) this.getAttribute(strParameterDescriptions);
+        
+        // If there are no attributes, that tell us which settings the algorithms support (e.g. for preprocessing algorithms), all settings are supported
+        if(hasSupportAttributes) {
+	        supportsBinaryAttribute = (NumericAttribute) this.getAttribute(strSupportsBinary);
+	        supportsContinuousAttribute = (NumericAttribute) this.getAttribute(strSupportsContinuous);
+	        supportsMulticlassAttribute = (NumericAttribute) this.getAttribute(strSupportsMulticlass);
+	        supportsMultilabelAttribute = (NumericAttribute) this.getAttribute(strSupportsMultilabel);
+	        supportsSinglelabelAttribute = (NumericAttribute) this.getAttribute(strSupportsSinglelabel);
+	        supportsSupervisedAttribute = (NumericAttribute) this.getAttribute(strSupportsSupervised);
+	        supportsUnsupervisedAttribute = (NumericAttribute) this.getAttribute(strSupportsUnsupervised);
+	        supportsRegressionAttribute = (NumericAttribute) this.getAttribute(strSupportsRegression);
+        } else {
+        	int valueCount = idAttribute.getValueCount();
+        	Double[] values = new Double[valueCount];
+        	for(int i = 0; i < valueCount; i++) {
+        		values[i] = new Double(1);
+        	}
+        	supportsBinaryAttribute = new NumericAttribute(strSupportsBinary, values);
+        	supportsContinuousAttribute = new NumericAttribute(strSupportsContinuous, values);
+	        supportsMulticlassAttribute = new NumericAttribute(strSupportsMulticlass, values);
+	        supportsMultilabelAttribute = new NumericAttribute(strSupportsMultilabel, values);
+	        supportsSinglelabelAttribute = new NumericAttribute(strSupportsSinglelabel, values);
+	        supportsSupervisedAttribute = new NumericAttribute(strSupportsSupervised, values);
+	        supportsUnsupervisedAttribute = new NumericAttribute(strSupportsUnsupervised, values);
+	        supportsRegressionAttribute = new NumericAttribute(strSupportsRegression, values);
+        }
     }
 
     /**
@@ -146,5 +202,61 @@ public class AlgorithmTableSet extends ArffDataSet {
 		} else {
 			throw new DataSetException("This Algorithm Table does not have categories.");
 		}
+	}
+	
+	/**
+	 * @return the supportsBinaryAttribute
+	 */
+	public NumericAttribute getSupportsBinaryAttribute() {
+		return this.supportsBinaryAttribute;
+	}
+	
+	/**
+	 * @return the supportsContinuousAttribute
+	 */
+	public NumericAttribute getSupportsContinuousAttribute() {
+		return this.supportsContinuousAttribute;
+	}
+	
+	/**
+	 * @return the supportsMulticlassAttribute
+	 */
+	public NumericAttribute getSupportsMulticlassAttribute() {
+		return this.supportsMulticlassAttribute;
+	}
+	
+	/**
+	 * @return the supportsMultilabelAttribute
+	 */
+	public NumericAttribute getSupportsMultilabelAttribute() {
+		return this.supportsMultilabelAttribute;
+	}
+	
+	/**
+	 * @return the supportsSinglelabelAttribute
+	 */
+	public NumericAttribute getSupportsSinglelabelAttribute() {
+		return this.supportsSinglelabelAttribute;
+	}
+	
+	/**
+	 * @return the supportsSupervisedAttribute
+	 */
+	public NumericAttribute getSupportsSupervisedAttribute() {
+		return this.supportsSupervisedAttribute;
+	}
+	
+	/**
+	 * @return the supportsUnsupervisedAttribute
+	 */
+	public NumericAttribute getSupportsUnsupervisedAttribute() {
+		return this.supportsUnsupervisedAttribute;
+	}
+	
+	/**
+	 * @return the supportsRegressionAttribute
+	 */
+	public NumericAttribute getSupportsRegressionAttribute() {
+		return this.supportsRegressionAttribute;
 	}
 }

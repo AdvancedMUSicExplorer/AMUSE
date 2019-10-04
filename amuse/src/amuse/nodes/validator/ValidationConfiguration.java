@@ -23,11 +23,16 @@
  */ 
 package amuse.nodes.validator;
 
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.Measure;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Level;
 
@@ -36,6 +41,7 @@ import amuse.data.datasets.ValidatorConfigSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
@@ -47,7 +53,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification validation task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ValidationConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class ValidationConfiguration extends TaskConfiguration {
 
@@ -70,6 +76,16 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
+	/** The attributes of the ready input or the categories of the category file that are to be classified */
+	private final List<Integer> attributesToPredict;
+	
+	/** The attributes of the ready input or the processed features that are to be ignored*/
+	private final List<Integer> attributesToIgnore;
+	
+	/** The type of the model that is used for classification and training*/
+	private final ModelType modelType;
+	
+	
 	/** ID of classification algorithm from classifierTable.arff 
 	 * (optionally with parameters listed in brackets) */
 	private final String classificationAlgorithmDescription;
@@ -82,6 +98,9 @@ public class ValidationConfiguration extends TaskConfiguration {
 	
 	/** Folder to store the classification validation results (default: Amuse measure database) */
 	private String measureDatabase;
+	
+	/** Path to were the validation result should be saved. If it is empty or -1, the path is calculated automatically*/
+	private String outputPath;
 	
 	/** Calculated measures are stored here after the corresponding validation task has been successfully applied */
 	private ArrayList<ValidationMeasure> calculatedMeasures;
@@ -98,22 +117,78 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * - Path to the ready labeled input 
 	 * - Ready input (as EditableDataSet)
 	 * @param groundTruthSourceType Describes the source type of ground truth 
+	 * @param attributesToPredict attributes of the readyInput or categories of the category file that are to be predicted
+	 * @param attributesToIgnore attribute of the readyInput or the processed features that are to be ignored
+	 * @param modelType the type of the classification model
+	 * @param outPutPath path where the results are saved, set to -1 for the path to be automatically calculated
 	 */
-	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, 
-			String processedFeaturesModelName, String classificationAlgorithmDescription,
-			DataInputInterface inputToValidate, GroundTruthSourceType groundTruthSourceType) {
+	public ValidationConfiguration(String validationAlgorithmDescription,
+			MeasureTable measures, 
+			String processedFeaturesModelName,
+			String classificationAlgorithmDescription,
+			DataInputInterface inputToValidate,
+			GroundTruthSourceType groundTruthSourceType,
+			List<Integer> attributesToPredict,
+			List<Integer> attributesToIgnore,
+			ModelType modelType,
+			String outputPath) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
 		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
+		this.outputPath = outputPath;
 	}
 	
+	/**
+	 * Constructor that sets attributesToPredict, attributesToIgnore, modelType and outputPath to their default values.
+	 * Currently only used by FitnessEvaluator
+	 * 
+	 * @param validationAlgorithmDescription ID and parameters of validation method
+	 * @param measures Measure list, e.g. containing accuracy and precision
+	 * @param processedFeaturesModelName Description of methods used for feature processing
+	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
+ 	 * @param groundTruthSource Source with input to validate. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready labeled input 
+	 * - Ready input (as EditableDataSet)
+	 */
+	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, String processedFeaturesModelName, String classificationAlgorithmDescription,
+			DataSetInput inputToValidate, GroundTruthSourceType groundTruthSourceType) {
+		this.validationAlgorithmDescription = validationAlgorithmDescription;
+		this.measures = measures;
+		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
+		this.inputToValidate = inputToValidate;
+		this.groundTruthSourceType = groundTruthSourceType;
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
+		this.attributesToPredict = attributesToPredict;
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+		this.attributesToIgnore = attributesToIgnore;
+		RelationshipType relationshipType = RelationshipType.BINARY;
+		LabelType labelType = LabelType.SINGLELABEL;
+		MethodType methodType = MethodType.SUPERVISED;
+		ModelType tmpModelType = null;
+		try {
+			tmpModelType = new ModelType(relationshipType, labelType, methodType);
+		} catch(Exception e) {}
+		this.modelType = tmpModelType;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
+		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
+		this.outputPath = "-1";
+	}
+
 	/**
 	 * Returns an array of ValidationConfigurations from the given data set
 	 * @param validatorConfig Data set with configurations for one or more processing tasks
@@ -132,29 +207,85 @@ public class ValidationConfiguration extends TaskConfiguration {
 			GroundTruthSourceType gtst;
 			if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("CATEGORY_ID"))) {
 				gtst = GroundTruthSourceType.CATEGORY_ID;
-				
-				// Search for the category file
-				DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
-				for(int j=0;j<categoryList.getValueCount();j++) {
-					Integer id = new Double(categoryList.getAttribute("Id").getValueAt(j).toString()).intValue();
-					if(id.toString().equals(currentInputToValidate)) {
-						currentInputToValidate = id.toString();
-						break;
-					}
-				}
-			} else if(validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
+			} else if (validatorConfig.getGroundTruthSourceAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))){
 				gtst = GroundTruthSourceType.FILE_LIST;
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
 			
+			
+			String attributesToPredictString = validatorConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToPredictStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToPredict.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				throw new IOException("The attributes to classify were not properly specified.");
+			}
+			
+			String attributesToIgnoreString = validatorConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
+			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToIgnore = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToIgnoreStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToIgnore.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				AmuseLogger.write(ValidationConfiguration.class.getName(), Level.WARN,
+						"The attributes to ignore were not properly specified. All features will be used for training.");
+				currentAttributesToIgnore = new ArrayList<Integer>();
+			}
+			
+			RelationshipType currentRelationshipType;
+			if(validatorConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(validatorConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
+			} else {
+				throw new IOException("The relationship type was not properly specified.");
+			}
+			
+			LabelType currentLabelType;
+			if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(validatorConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(validatorConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
+			
 			// Load the measure table
 			MeasureTable currentMeasureTable = new MeasureTable(new File(currentMeasureList));
+			
+			String currentOutputPath = validatorConfig.getOutputPathAttribute().getValueAt(i);
 			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
 		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
-		    		gtst));
+		    		gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
 		}
@@ -205,6 +336,48 @@ public class ValidationConfiguration extends TaskConfiguration {
 		return classificationAlgorithmDescription;
 	}
 
+	/**
+	 * @return the attributesToPredict
+	 */
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
+	}
+	
+	/**
+	 * @return the attributesToIgnore
+	 */
+	public List<Integer> getAttributesToIgnore(){
+		return attributesToIgnore;
+	}
+	
+	/**
+	 * @return the relationshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
+	}
+	
+	/**
+	 * @return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+	
+	/**
+	 * @return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
+	}
+	
 	/**
 	 * Sets the path to folder to load the processed features from (default: Amuse processed feature database)
 	 * @param processedFeatureDatabase Path to folder
@@ -307,6 +480,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public void setCalculatedMeasures(ArrayList<ValidationMeasure> calculatedMeasures) {
 		this.calculatedMeasures = calculatedMeasures;
+	}
+	
+	/**
+	 * @return the outputPath
+	 */
+	public String getOutputPath() {
+		return outputPath;
 	}
 
 }

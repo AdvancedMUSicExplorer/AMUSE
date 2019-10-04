@@ -24,25 +24,43 @@
 package amuse.scheduler.gui.classifier;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 
 import net.miginfocom.swing.MigLayout;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.io.DataInputInterface;
+import amuse.data.io.DataSet;
+import amuse.data.io.DataSetAbstract;
+import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
+import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.controller.ClassifierController;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
+import amuse.scheduler.gui.training.ModelTypePanel;
+import amuse.scheduler.gui.training.ProcessingHistoryPanel;
+import amuse.scheduler.gui.training.TrainingDescriptionPanel;
 import amuse.scheduler.gui.training.TrainingView;
 import javax.swing.border.TitledBorder;
 
@@ -52,21 +70,61 @@ import javax.swing.border.TitledBorder;
  */
 public class ClassifierView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton {
 
+	private JPanel viewLeft;
+	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
+	private JSplitPane splitPane = new JSplitPane();
+	private ClassificationInputSelectionPanel inputSelectionPanel;
+	private ClassificationGroundTruthSelectionPanel groundTruthSelectionPanel;
+	private ProcessingHistoryPanel processingHistoryPanel;
+	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
+	private ModelTypePanel modelTypePanel = new ModelTypePanel();
+	private TrainingDescriptionPanel trainingDescriptionPanel = null;
     private JPanel targetPathSelectionPanel = new JPanel(new MigLayout("fillx"));
     private final ClassifierController classifierController;
     private JTextField txtTargetFilePath = new JTextField(30);
-    private TrainingView trainingView;
+//    private TrainingView trainingView;
     private JButton btnSelectFolder = new JButton("Select File");
     private JCheckBox selectAverageCalculation = new JCheckBox("Calculate average");
     private TitledBorder pathSelectionTitle = new TitledBorder("Additional Settings");
     private static final String toolTipCheckboxAverage = "Select to calculate song average category relationship over all song partitions";
-
+    
+    
     /**
      * @param classifierController
      * @param trainingAlgorithmModel
      */
     public ClassifierView(ClassifierController classifierController) {
         this.classifierController = classifierController;
+        this.trainingAlgorithmFacade = new AlgorithmConfigurationFacade("Classification", new File("config" + File.separator + "classifierAlgorithmTable.arff"));
+        this.trainingAlgorithmFacade.setToolTip("Select Algorithm to classify with.");
+        this.inputSelectionPanel = new ClassificationInputSelectionPanel();
+        this.groundTruthSelectionPanel = new ClassificationGroundTruthSelectionPanel();
+        viewLeft = new JPanel(new MigLayout("fillx"));
+        viewLeft.setBorder(new TitledBorder("Setup Classification"));
+        splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
+        splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
+        this.processingHistoryPanel = new ProcessingHistoryPanel();
+        this.inputSelectionPanel = new ClassificationInputSelectionPanel();
+        this.groundTruthSelectionPanel = new ClassificationGroundTruthSelectionPanel();
+        viewLeft.add(inputSelectionPanel, "growx, span, wrap");
+        viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
+        
+        inputSelectionPanel.getInputSourceTypeComboBox().addActionListener(e ->{
+        	setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
+        	processingHistoryPanel.getAttributesToIgnoreTextField().setEnabled(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
+        });
+        groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
+			setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
+		});
+        
+        viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+        addRightSide(modelTypePanel);
+        modelTypePanel.addModelTypeListener(trainingAlgorithmFacade);
+        addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
+        addRightSide(trainingAlgorithmFacade.getParameterPanel());
+
         targetPathSelectionPanel.add(selectAverageCalculation, "growx, wrap");
         targetPathSelectionPanel.add(new JLabel("Enter Filename for Result:"), "wrap");
         targetPathSelectionPanel.add(txtTargetFilePath, "growx");
@@ -77,20 +135,37 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         btnSelectFolder.addActionListener(new SelectFolderListener());
         // Add all elements:
         this.setLayout(new BorderLayout());
-        trainingView = new TrainingView("Setup Classification Model");
         selectAverageCalculation.setToolTipText(toolTipCheckboxAverage);
         selectAverageCalculation.setSelected(true);
-        trainingView.addLineInView(targetPathSelectionPanel);
-        this.add(trainingView.getView(), BorderLayout.CENTER);
+        
+		trainingDescriptionPanel = new TrainingDescriptionPanel();
+		addRightSide(trainingAlgorithmFacade.getParameterPanel());
+		addRightSide(targetPathSelectionPanel);
+		addRightSide(trainingDescriptionPanel);
+		splitPane.setDividerLocation(0.5);
     }
 
-    public String getSaveButtonText() {
+    public void addRightSide(JComponent comp) {
+		rightSide.add(comp, "grow, wrap");
+		splitPane.setDividerLocation(0.5);
+	}
+
+	public String getSaveButtonText() {
         return "Save";
     }
 
     public void saveButtonClicked() {
         classifierController.saveButtonClicked();
     }
+    
+    private void setChildsEnabled(Component comp, boolean b) {
+		if (comp instanceof JComponent) {
+			for (Component c : ((JComponent) comp).getComponents()) {
+				c.setEnabled(b);
+				setChildsEnabled(c, b);
+			}
+		}
+	}
 
     private final class SelectFolderListener implements ActionListener {
 
@@ -136,18 +211,18 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
     }
 
     /**
-     * @return
+     * @return processingModelString
      */
-    public String getProcessingModelStr() {
-        return trainingView.getProcessingModelString();
+    public String getProcessingModelString() {
+    	return processingHistoryPanel.getProcessingHistoryString();
     }
 
-    public void setProcessingModelStr(String value) {
-        trainingView.setProcessingModelString(value);
+    public void setProcessingModelString(String value) {
+    	processingHistoryPanel.setProcessingModelString(value);
     }
 
     /**
-     * @return
+     * @return targetFilePath
      */
     public String getTargetFilePath() {
         return txtTargetFilePath.getText();
@@ -169,27 +244,111 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         }
     }
 
-        public void setSelectedTrainingAlgorithm(String value) {
-        trainingView.setSelectedTrainingAlgorithm(value);
+    public void setSelectedTrainingAlgorithm(String value) {
+    	trainingAlgorithmFacade.setSelectedAlgorithm(value);
     }
 
     public String getSelectedTrainingAlgorithmStr() {
-        return trainingView.getSelectedTrainingAlgorithmStr();
+    	return trainingAlgorithmFacade.getSelectedAlgorithm().getIdAndParameterStr();
     }
 
-	public String getGroundTruthSource() {
-		return trainingView.getGroundTruthSource();
+	public int getGroundTruthCategoryId() {
+		return groundTruthSelectionPanel.getGroundTruthCategoryId();
 	}
 
-	public GroundTruthSourceType getGroundTruthSourceType() {
-		return trainingView.getGroundTruthSourceType();
-	}
-
-	public void setGroundTruthSource(String groundTruthSource) {
-		trainingView.setGroundTruthSource(groundTruthSource);
+	public void setGroundTruthCategoryId(int id) {
+		groundTruthSelectionPanel.setCategoryId(id);
 	}
 	
-	public void setGroundTruthSourceType(GroundTruthSourceType type){
-		trainingView.setGroundTruthSourceType(type);
+	public void setGroundTruthSourceType(String type){
+		groundTruthSelectionPanel.setGroundTruthSourceType(type);
+	}
+	
+	public List<Integer> getAttributesToIgnore(){
+		if(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
+			return inputSelectionPanel.getAttributesToIgnore();
+		} else {
+			return processingHistoryPanel.getAttributesToIgnore();
+		}
+	}
+	
+	public List<Integer> getAttributesToPredict(){
+		return groundTruthSelectionPanel.getAttributesToPredict();
+	}
+	
+	public ModelType getModelType() {
+		return modelTypePanel.getModelType();
+	}
+
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		groundTruthSelectionPanel.setAttributesToPredict(attributesToPredict);
+	}
+
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		if(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
+			inputSelectionPanel.setAttributesToIgnore(attributesToIgnore);
+		} else {
+			processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+		}
+	}
+
+	public void setModelType(ModelType modelType) {
+		modelTypePanel.setModelType(modelType);
+	}
+
+	public InputSourceType getInputSourceType() {
+		return inputSelectionPanel.getSelectedInputSourceType();
+	}
+
+	public String getTrainingDescription() {
+		return trainingDescriptionPanel.getTrainingDescription();
+	}
+
+	public void setInputToClassify(DataInputInterface inputToClassify) {
+		inputSelectionPanel.setInputToClassify(inputToClassify);
+	}
+
+	public void setInputSourceType(InputSourceType inputSourceType) {
+		inputSelectionPanel.setInputSourceType(inputSourceType);
+	}
+
+	public void setMergeSongResults(Integer mergeSongResults) {
+		selectAverageCalculation.setSelected(mergeSongResults == 1);
+	}
+
+	public void setOutputResult(String classificationOutput) {
+		txtTargetFilePath.setText(classificationOutput);
+	}
+
+	public void setTrainingDescription(String trainingDescription) {
+		trainingDescriptionPanel.setTrainingDescription(trainingDescription);
+	}
+
+	public JComponent getView() {
+		return splitPane;
+	}
+
+	public DataSetAbstract getInputToClassify() throws IOException {
+		return inputSelectionPanel.getInputToClassify();
+	}
+
+	public String getPathToInputModel() {
+		return groundTruthSelectionPanel.getPath();
+	}
+
+	public String getGroundTruthSourceType() {
+		return groundTruthSelectionPanel.getSelectedGroundTruthSourceType();
+	}
+
+	public void setPathToInputModel(String pathToInputModel) {
+		groundTruthSelectionPanel.setPath(pathToInputModel);
+	}
+
+	public String getReadyInputPath() {
+		return inputSelectionPanel.getReadyInputPath();
+	}
+	
+	public int getCategoryId() {
+		return inputSelectionPanel.getCategoryId();
 	}
 }

@@ -46,7 +46,7 @@ import com.rapidminer.tools.OperatorService;
  * Adapter for JMySVMLearner. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: SVMAdapter.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class SVMAdapter extends AmuseTask implements TrainerInterface {
 
@@ -115,7 +115,7 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 	 */
 	public void trainModel(String outputModel) throws NodeException {
 		DataSet dataSet = ((DataSetInput)((TrainingConfiguration)this.correspondingScheduler.getConfiguration()).getGroundTruthSource()).getDataSet();
-			
+		
 		// Train the model and save it
 		try {
 			Process process = new Process();

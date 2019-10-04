@@ -59,9 +59,9 @@ public class OptimizerView {
         rightPanel = new JPanel(new MigLayout("fillx"));
         panel.add(leftPanel, JSplitPane.LEFT);
         panel.add(rightPanel, JSplitPane.RIGHT);
-	categoryPanelLearning = new CategorySelectionPanel();
-	categoryPanelOptimizing = new CategorySelectionPanel();
-	categoryPanelTest = new CategorySelectionPanel();
+	categoryPanelLearning = new CategorySelectionPanel(false);
+	categoryPanelOptimizing = new CategorySelectionPanel(false);
+	categoryPanelTest = new CategorySelectionPanel(false);
         categoryPanelTest.setOptional(true);
         optimizierAlgorithm = new AlgorithmConfigurationFacade("Optimizer Algorithm", new File(AmusePreferences.getOptimizerAlgorithmTablePath()));
 	outputPanel = new JPanel(new MigLayout("fillx"));
@@ -75,7 +75,7 @@ public class OptimizerView {
 	leftPanel.add(categoryPanelTest, "growx, wrap");
         leftPanel.add(optimizierAlgorithm.getAlgorithmSelectionComboBox(), "growx, wrap");
 	leftPanel.add(outputPanel, "growx, wrap");
-        rightPanel.add(optimizierAlgorithm.getPrameterPanel(), "growx, wrap");
+        rightPanel.add(optimizierAlgorithm.getParameterPanel(), "growx, wrap");
     }
 
     public JComponent getView() {

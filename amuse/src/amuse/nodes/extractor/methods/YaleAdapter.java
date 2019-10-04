@@ -59,6 +59,8 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysIntValue;
 import amuse.util.AmuseLogger;
 import amuse.util.ExternalProcessBuilder;
 import java.io.InputStreamReader;
@@ -461,7 +463,8 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		// Start Yale
 		try {
 			List<String> javaProperties = new ArrayList<String>();
-			javaProperties.add("-Xmx2000m");
+			int heapSize = AmusePreferences.getInt(KeysIntValue.YALE_HEAP_SIZE);
+			javaProperties.add("-Xmx" + heapSize + "m");
 			List<String> libs = new ArrayList<String>();
 			String yaleHome = new File(properties.getProperty("extractorFolder")).getAbsolutePath();
 			String lib = yaleHome + File.separator + "lib" + File.separator;

@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
@@ -38,7 +41,7 @@ import amuse.nodes.trainer.TrainingConfiguration;
 /**
  * This class represents a Training Configuration as used in AMUSE. Serialization to ARFF is supported.
  * @author Clemens Waeltken
- * @version $Id$
+ * @version $Id: TrainingConfigSet.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class TrainingConfigSet extends AbstractArffExperimentSet {
 
@@ -48,6 +51,12 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
     private static final String groundTruthSourceStr = "GroundTruthSource";
     private static final String groundTruthSourceTypeStr = "GroundTruthSourceType";
+    private static final String attributesToPredictStr = "AttributesToPredict";
+    private static final String attributesToIgnoreStr  = "AttributesToIgnore";
+    private static final String relationshipTypeStr = "RelationshipType";
+    private static final String labelTypeStr = "LabelType";
+    private static final String methodTypeStr = "MethodType";
+    private static final String trainingDescriptionStr = "TrainingDescription";
     private static final String pathToOutputModelStr = "PathToOutputModel";
     
     // ARFF attributes
@@ -56,6 +65,12 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute preprocessingAlgorithmIdAttribute;
     private final StringAttribute groundTruthSourceAttribute;
     private final NominalAttribute groundTruthSourceTypeAttribute;
+    private final StringAttribute attributesToPredictAttribute;
+    private final StringAttribute attributesToIgnoreAttribute;
+    private final NominalAttribute relationshipTypeAttribute;
+    private final NominalAttribute labelTypeAttribute;
+    private final NominalAttribute methodTypeAttribute;
+    private final StringAttribute trainingDescriptionAttribute;
     private final StringAttribute pathToOutputModelAttribute;
 
     private static final String dataSetNameStr = "TrainerConfig";
@@ -74,13 +89,28 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(preprocessingAlgorithmIdStr);
         checkStringAttribute(groundTruthSourceStr);
         checkNominalAttribute(groundTruthSourceTypeStr);
+        
+        
+        checkStringAttribute(attributesToPredictStr);
+        checkStringAttribute(attributesToIgnoreStr);
+        checkNominalAttribute(relationshipTypeStr);
+        checkNominalAttribute(labelTypeStr);
+        checkNominalAttribute(methodTypeStr);
+        checkStringAttribute(trainingDescriptionStr);
+        
+        
         checkStringAttribute(pathToOutputModelStr);
-        processedFeatureDescriptionAttribute =
-                (StringAttribute) this.getAttribute(processedFeatureDescriptionStr);
+        processedFeatureDescriptionAttribute = (StringAttribute) this.getAttribute(processedFeatureDescriptionStr);
         algorithmIdAttribute = (StringAttribute) this.getAttribute(algorithmIdStr);
         preprocessingAlgorithmIdAttribute = (StringAttribute) this.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) this.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) this.getAttribute(groundTruthSourceTypeStr);
+        attributesToPredictAttribute = (StringAttribute) this.getAttribute(attributesToPredictStr);
+        attributesToIgnoreAttribute = (StringAttribute) this.getAttribute(attributesToIgnoreStr);
+        relationshipTypeAttribute = (NominalAttribute) this.getAttribute(relationshipTypeStr);
+        labelTypeAttribute = (NominalAttribute) this.getAttribute(labelTypeStr);
+        methodTypeAttribute = (NominalAttribute ) this.getAttribute(methodTypeStr);
+        trainingDescriptionAttribute = (StringAttribute) this.getAttribute(trainingDescriptionStr);
         pathToOutputModelAttribute = (StringAttribute) this.getAttribute(pathToOutputModelStr);
     }
 
@@ -97,6 +127,18 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         groundTruthList.add(trainingConfiguration.getGroundTruthSource().toString());
         List<String> groundTruthSourceList = new ArrayList<String>();
         groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
+        List<String> attributesToPredictList = new ArrayList<String>();
+        attributesToPredictList.add(trainingConfiguration.getAttributesToPredict().toString());
+        List<String> attributesToIgnoreList = new ArrayList<String>();
+        attributesToIgnoreList.add(trainingConfiguration.getAttributesToIgnore().toString());
+        List<String> relationshipTypeList = new ArrayList<String>();
+        relationshipTypeList.add(trainingConfiguration.getRelationshipType().toString());
+        List<String> labelTypeList = new ArrayList<String>();
+        labelTypeList.add(trainingConfiguration.getLabelType().toString());
+        List<String> methodTypeList = new ArrayList<String>();
+        methodTypeList.add(trainingConfiguration.getMethodType().toString());
+        List<String> trainingDescriptionList = new ArrayList<String>();
+        trainingDescriptionList.add(trainingConfiguration.getTrainingDescription());
         List<String> pathToOutputModel = new ArrayList<String>();
         String tmpPathToOutputModel = trainingConfiguration.getPathToOutputModel();
         if (tmpPathToOutputModel == null){
@@ -113,12 +155,42 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
             allowedValues.add(type.toString());
         }
         groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);
+        
+        attributesToPredictAttribute = new StringAttribute(attributesToPredictStr, attributesToPredictList);
+        attributesToIgnoreAttribute = new StringAttribute(attributesToIgnoreStr, attributesToIgnoreList);
+        
+        allowedValues = new ArrayList<String>();
+        for(RelationshipType type : RelationshipType.values()) {
+        	allowedValues.add(type.toString());
+        }
+        relationshipTypeAttribute = new NominalAttribute(relationshipTypeStr, allowedValues, relationshipTypeList);
+        
+        allowedValues = new ArrayList<String>();
+        for(LabelType type : LabelType.values()) {
+        	allowedValues.add(type.toString());
+        }
+        labelTypeAttribute = new NominalAttribute(labelTypeStr, allowedValues, labelTypeList);
+        
+        allowedValues = new ArrayList<String>();
+        for(MethodType type : MethodType.values()) {
+        	allowedValues.add(type.toString());
+        }
+        methodTypeAttribute = new NominalAttribute(methodTypeStr, allowedValues, methodTypeList);
+        
+        trainingDescriptionAttribute = new StringAttribute(trainingDescriptionStr, trainingDescriptionList);
+        
         pathToOutputModelAttribute = new StringAttribute(pathToOutputModelStr, pathToOutputModel);
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
+        addAttribute(attributesToPredictAttribute);
+        addAttribute(attributesToIgnoreAttribute);
+        addAttribute(relationshipTypeAttribute);
+        addAttribute(labelTypeAttribute);
+        addAttribute(methodTypeAttribute);
+        addAttribute(trainingDescriptionAttribute);
         addAttribute(pathToOutputModelAttribute);
     }
 
@@ -130,23 +202,39 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(preprocessingAlgorithmIdStr);
         dataSet.checkStringAttribute(groundTruthSourceStr);
         dataSet.checkNominalAttribute(groundTruthSourceTypeStr);
-        
+        dataSet.checkStringAttribute(attributesToPredictStr);
+        dataSet.checkStringAttribute(attributesToIgnoreStr);
+        dataSet.checkNominalAttribute(relationshipTypeStr);
+        dataSet.checkNominalAttribute(labelTypeStr);
+        dataSet.checkNominalAttribute(methodTypeStr);
+        dataSet.checkStringAttribute(trainingDescriptionStr);
         dataSet.checkStringAttribute(pathToOutputModelStr);
+        
         processedFeatureDescriptionAttribute =
                 (StringAttribute) dataSet.getAttribute(processedFeatureDescriptionStr);
         algorithmIdAttribute = (StringAttribute) dataSet.getAttribute(algorithmIdStr);
         preprocessingAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
         groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(groundTruthSourceTypeStr);
+        attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(attributesToPredictStr);
+        attributesToIgnoreAttribute = (StringAttribute) dataSet.getAttribute(attributesToIgnoreStr);
+        relationshipTypeAttribute = (NominalAttribute) dataSet.getAttribute(relationshipTypeStr);
+        labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(labelTypeStr);
+        methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(methodTypeStr);
+        trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(trainingDescriptionStr);
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
-        
-        
         
         addAttribute(processedFeatureDescriptionAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
         addAttribute(groundTruthSourceTypeAttribute);
+        addAttribute(attributesToPredictAttribute);
+        addAttribute(attributesToIgnoreAttribute);
+        addAttribute(relationshipTypeAttribute);
+        addAttribute(labelTypeAttribute);
+        addAttribute(methodTypeAttribute);
+        addAttribute(trainingDescriptionAttribute);
         addAttribute(pathToOutputModelAttribute);
     }
     
@@ -169,6 +257,30 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     public NominalAttribute getGroundTruthSourceTypeAttribute() {
         return groundTruthSourceTypeAttribute;
     }
+    
+    public StringAttribute getAttributesToPredictAttribute() {
+    	return attributesToPredictAttribute;
+    }
+    
+    public StringAttribute getAttributesToIgnoreAttribute() {
+    	return attributesToIgnoreAttribute;
+    }
+    
+    public NominalAttribute getRelationshipTypeAttribute() {
+    	return relationshipTypeAttribute;
+    }
+    
+    public NominalAttribute getLabelTypeAttribute() {
+    	return labelTypeAttribute;
+    }
+    
+    public NominalAttribute getMethodTypeAttribute() {
+    	return methodTypeAttribute;
+    }
+    
+    public StringAttribute getTrainingDescriptionAttribute() {
+    	return trainingDescriptionAttribute;
+    }
 
     public StringAttribute getPreprocessingAlgorithmIdAttribute() {
         return preprocessingAlgorithmIdAttribute;
@@ -190,10 +302,10 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 
     @Override
     public TaskConfiguration[] getTaskConfiguration() {
-	try {
-	    return TrainingConfiguration.loadConfigurationsFromDataSet(this);
-	} catch (IOException ex) {
-	    throw new RuntimeException(ex);
-	}
+		try {
+		    return TrainingConfiguration.loadConfigurationsFromDataSet(this);
+		} catch (IOException ex) {
+		    throw new RuntimeException(ex);
+		}
     }
 }

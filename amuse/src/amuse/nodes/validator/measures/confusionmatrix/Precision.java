@@ -36,7 +36,7 @@ import amuse.nodes.validator.measures.confusionmatrix.base.TruePositives;
  * Precision measure
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: Precision.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class Precision extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -55,11 +55,13 @@ public class Precision extends ClassificationQualityDoubleMeasureCalculator {
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
 		truePositivesCalculator.setSongLevel(true);
+		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble tp = truePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false positives
 		FalsePositives falsePositivesCalculator = new FalsePositives();
 		falsePositivesCalculator.setSongLevel(true);
+		falsePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble fp = falsePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		double precision = tp.getValue() / (tp.getValue() + fp.getValue());
@@ -81,11 +83,13 @@ public class Precision extends ClassificationQualityDoubleMeasureCalculator {
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
 		truePositivesCalculator.setPartitionLevel(true);
+		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble tp = truePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false positives
 		FalsePositives falsePositivesCalculator = new FalsePositives();
 		falsePositivesCalculator.setPartitionLevel(true);
+		falsePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble fp = falsePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		double precision = tp.getValue() / (tp.getValue() + fp.getValue());
@@ -103,7 +107,7 @@ public class Precision extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
@@ -111,9 +115,80 @@ public class Precision extends ClassificationQualityDoubleMeasureCalculator {
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
 	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		throw new NodeException(this.getClass().getName() + " can be calculated only for binary classification tasks");
+		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		// Get true positives
+		TruePositives truePositivesCalculator = new TruePositives();
+		truePositivesCalculator.setSongLevel(true);
+		truePositivesCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble[] tp = truePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
+		
+		// Get false positives
+		FalsePositives falsePositivesCalculator = new FalsePositives();
+		falsePositivesCalculator.setSongLevel(true);
+		falsePositivesCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble[] fp = falsePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
+		
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
+		
+		double enumerator = 0;
+		double denominator = 0;
+		for(int i = 0; i < numberOfCategories; i++) {
+			enumerator += tp[i].getValue();
+			denominator += tp[i].getValue() + fp[i].getValue();
+		}
+		double precision = enumerator / denominator;
+		
+		// Prepare the result
+		ValidationMeasureDouble[] precisionMeasure = new ValidationMeasureDouble[1];
+		precisionMeasure[0] = new ValidationMeasureDouble(false);
+		precisionMeasure[0].setId(105);
+		precisionMeasure[0].setName("Precision on song level");
+		precisionMeasure[0].setValue(new Double(precision));
+		return precisionMeasure;
 	}
 
 
+	/*
+	 * (non-Javadoc)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 */
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+		// Get true positives
+		TruePositives truePositivesCalculator = new TruePositives();
+		truePositivesCalculator.setPartitionLevel(true);
+		truePositivesCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble[] tp = truePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
+		
+		// Get false positives
+		FalsePositives falsePositivesCalculator = new FalsePositives();
+		falsePositivesCalculator.setPartitionLevel(true);
+		falsePositivesCalculator.setContinuous(isContinuous());
+		ValidationMeasureDouble[] fp = falsePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
+		
+		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
+		
+		double enumerator = 0;
+		double denominator = 0;
+		for(int i = 0; i < numberOfCategories; i++) {
+			enumerator += tp[i].getValue();
+			denominator += tp[i].getValue() + fp[i].getValue();
+		}
+		double precision = enumerator / denominator;
+		
+		// Prepare the result
+		ValidationMeasureDouble[] precisionMeasure = new ValidationMeasureDouble[1];
+		precisionMeasure[0] = new ValidationMeasureDouble(false);
+		precisionMeasure[0].setId(105);
+		precisionMeasure[0].setName("Precision on partition level");
+		precisionMeasure[0].setValue(new Double(precision));
+		return precisionMeasure;
+	}
 }
 

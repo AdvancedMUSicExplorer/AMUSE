@@ -31,11 +31,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import amuse.data.io.attributes.Attribute;
-import amuse.data.io.attributes.NominalAttribute;
-import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
-
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.table.AttributeFactory;
 import com.rapidminer.example.table.DoubleArrayDataRow;
@@ -43,11 +38,16 @@ import com.rapidminer.example.table.MemoryExampleTable;
 import com.rapidminer.example.table.NominalMapping;
 import com.rapidminer.tools.Ontology;
 
+import amuse.data.io.attributes.Attribute;
+import amuse.data.io.attributes.NominalAttribute;
+import amuse.data.io.attributes.NumericAttribute;
+import amuse.data.io.attributes.StringAttribute;
+
 /**
  * DataSet contains different attributes with values
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: DataSet.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class DataSet extends DataSetAbstract implements Serializable {
 
@@ -74,7 +74,6 @@ public class DataSet extends DataSetAbstract implements Serializable {
 	Object[] values = new Object[fileSet.getAttributeCount()];
 	int aCount = 0;
 	for (Attribute a : fileSet.attributes) {
-	    Attribute newAttr;
 	    if (a instanceof NumericAttribute) {
 		values[aCount] = new Double[fileSet.getValueCount()];
 	    } else if (a instanceof StringAttribute) {
@@ -186,7 +185,7 @@ public class DataSet extends DataSetAbstract implements Serializable {
      *
      * @return RapidMiner ExampleSet
      */
-    public ExampleSet convertToRapidMinerExampleSet() {
+    public ExampleSet convertToRapidMinerExampleSet() throws IOException{
 
 	NominalMapping mapping = null;
 	com.rapidminer.example.Attribute idAttribute = null;
@@ -194,16 +193,24 @@ public class DataSet extends DataSetAbstract implements Serializable {
 
 	// Create attribute list
 	List<com.rapidminer.example.Attribute> attributes = new LinkedList<com.rapidminer.example.Attribute>();
+	int numberOfCategories = 1;
 	for (int a = 0; a < getAttributeCount(); a++) {
 	    if (getAttribute(a).getName().equals("Id")) {
 		idAttribute = AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.INTEGER);
 		attributes.add(idAttribute);
-	    } else if (getAttribute(a).getName().equals("Category")) {
-		labelAttribute = AttributeFactory.createAttribute(getAttribute(
-			a).getName(), Ontology.NOMINAL);
-		attributes.add(labelAttribute);
-		mapping = attributes.get(attributes.size() - 1).getMapping();
-	    } else if (getAttribute(a) instanceof StringAttribute) {
+	    } 
+	    
+	    //The attribute "NumberOfCategories" marks the beginning of the categories that are to be classified.
+	    //It also tells us how many of these categories follow. It was added by the TraininerNodeScheduler or the ValidatorNodeScheduler
+	    else if (getAttribute(a).getName().equals("NumberOfCategories")) {
+	    	numberOfCategories = (int)((double)getAttribute(a).getValueAt(0));
+	    	labelAttribute = AttributeFactory.createAttribute("Category", Ontology.NOMINAL);
+	    	attributes.add(labelAttribute);
+	    	mapping = attributes.get(attributes.size() - 1).getMapping();
+	    	a += numberOfCategories;
+	    }
+	    
+	    else if (getAttribute(a) instanceof StringAttribute) {
 		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.NOMINAL));
 	    } else {
 		attributes.add(AttributeFactory.createAttribute(getAttribute(a).getName(), Ontology.REAL));
@@ -216,34 +223,39 @@ public class DataSet extends DataSetAbstract implements Serializable {
 	// Fill table with all time windows
 	for (int d = 0; d < getValueCount(); d++) {
 	    double[] data = new double[attributes.size()];
-	    // int currData = 0;
+	    //offSet between the RapidMiner attributes and the DataSet attributes (NumberOfAttributes + Category in the DataSet correspond to just  Category in the RapidMiner set)
+	    int offSet = 0;
 	    for (int a = 0; a < attributes.size(); a++) {
-		// System.out.println(attributes.get(a).getName());
-		if (attributes.get(a).getName().equals("Id")) {
-		    /*
-		     * System.out.println("id found");
-		     *
-		     * System.out.println(getAttribute(a).getValueAt(d));
-		     * System.
-		     * out.println(getAttribute(a).getValueAt(d).toString());
-		     */
-		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
-		    // data[a] =
-		    // attributes.get(a).getMapping().mapString(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		    // idAttribute.
-
-		} else if (getAttribute(a).getName().equals("Category")) {
-		    data[a] = mapping.mapString(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		} else if (getAttribute(a) instanceof StringAttribute) {
-		    data[a] = attributes.get(a).getMapping().mapString(
-			    getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		} else {
-		    data[a] = new Double(getAttribute(a).getValueAt(d).toString());
-		    // currData++;
-		}
+	    	// System.out.println(attributes.get(a).getName());
+	    	if (attributes.get(a).getName().equals("Id")) {
+	    		data[a] = new Double(getAttribute(a+offSet).getValueAt(d).toString());
+	    		
+	    	} else if (attributes.get(a).getName().equals("Category")) {
+	    		//If there is only one category. The label attribute gets the values "Category" and "NOT_Category"
+	    		//the number of categories is saved before the name
+	    		if(numberOfCategories == 1) {
+	    			data[a] = mapping.mapString(numberOfCategories + "-" + ((double)getAttribute(a+1).getValueAt(d) >= 0.5 ? "" : "NOT_") + getAttribute(a+1).getName());
+			    }
+	    		//Otherwise the label attribute gets the name of the category of the current partition as its name.
+	    		//the number of categories and the number of the current category is saved before the name
+	    		else {
+	    			for(int i = 0; i < numberOfCategories; i++) {
+	    				//add the name of the current category
+	    				if((double)getAttribute(a+1+i).getValueAt(d) == 1) {
+	    					data[a] = mapping.mapString(numberOfCategories + "-" +  i + "-" + getAttribute(a+1+i).getName());
+	    				}
+	    			}
+	    		}
+	    		//if there are are still attributes after the categories they have to be put at an offset in the array
+	    		//because the attribute "NumberOfCategories" and the relationships of the different categories correspond to only one index in the array
+	    		//that being the index of the label attribute
+			    offSet += numberOfCategories;
+			} else if (getAttribute(a+offSet) instanceof StringAttribute) {
+	    		data[a] = attributes.get(a).getMapping().mapString(
+			    getAttribute(a+offSet).getValueAt(d).toString());
+	    	} else {
+	    		data[a] = new Double(getAttribute(a+offSet).getValueAt(d).toString());
+	    	}
 	    }
 
 	    // Add data row

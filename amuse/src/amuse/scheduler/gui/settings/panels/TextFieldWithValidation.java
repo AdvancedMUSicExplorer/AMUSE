@@ -23,12 +23,12 @@
  */
 package amuse.scheduler.gui.settings.panels;
 
+import java.awt.BorderLayout;
+
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-
-import net.miginfocom.swing.MigLayout;
 
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysIntValue;
@@ -50,11 +50,11 @@ public class TextFieldWithValidation extends EditableAmuseSettingBody {
      * @param key
 	 */
 	public TextFieldWithValidation(String label, KeysIntValue key) {
-		this.label = new JLabel(label + ":");
+		this.label = new JLabel(label + ": ");
 		this.intKey = key;
-		panel.setLayout(new MigLayout());
-		panel.add(this.label);
-		panel.add(this.textField);
+		panel.setLayout(new BorderLayout());
+		panel.add(this.label, BorderLayout.WEST);
+		panel.add(this.textField, BorderLayout.CENTER);
 		textField.setText(AmusePreferences.getInt(intKey) + "");
 		setColorAndUpdate();
 		textField.addCaretListener(new CaretListener() {

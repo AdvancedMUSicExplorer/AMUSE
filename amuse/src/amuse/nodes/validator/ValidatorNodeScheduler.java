@@ -32,40 +32,43 @@ import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
 
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
-import amuse.nodes.classifier.interfaces.BinaryClassifiedSongPartitions;
+import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
-import amuse.nodes.classifier.interfaces.MulticlassClassifiedSongPartitions;
+import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
+import weka.core.Attribute;
+import weka.core.Instance;
+import weka.core.converters.ArffLoader;
 
 /**
  * ValidationNodeScheduler configures and runs the appropriate classifier validation method.
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ValidatorNodeScheduler.java 245 2018-09-27 12:53:32Z frederik-h $
  */
 public class ValidatorNodeScheduler extends NodeScheduler { 
 
@@ -80,8 +83,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	
 	/** Ground truth relationships for given songs*/
 	private ArrayList<ClassifiedSongPartitions> labeledSongRelationships = null;
-	
-	private boolean isMulticlass = false;
 	
 	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
@@ -177,16 +178,23 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 			return;
 		}
 		int i=0;
-		// TODO currently works only with category id
-		while(i < categoryList.getValueCount()) {
-			Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
-			if(id.toString().equals(
-					((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString())) {
-				this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString() + 
-					"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
-				break;
+		
+		if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
+			// Search for the category file
+			while(i < categoryList.getValueCount()) {
+				Integer id = new Double(categoryList.getAttribute("Id").getValueAt(i).toString()).intValue();
+				if(id.toString().equals(
+						((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString())) {
+					this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString() + 
+						"-" + categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+					break;
+				}
+				i++;
 			}
-			i++;
+		} else {
+			//set the category description according to the name of the input file
+			this.categoryDescription = ((ValidationConfiguration)this.taskConfiguration).getInputToValidate().toString();
+			this.categoryDescription = this.categoryDescription.substring(this.categoryDescription.lastIndexOf(File.separatorChar) + 1, this.categoryDescription.lastIndexOf('.'));
 		}
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Validator node scheduler for category " + 
@@ -379,17 +387,85 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private void prepareValidatorInput() throws NodeException {
 		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
 		
+		//check if the settings are supported
+		if(((ValidationConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
+			throw new NodeException("Currently only supervised classification is supported.");
+		}
+		
+		List<Integer> attributesToPredict = ((ValidationConfiguration)this.taskConfiguration).getAttributesToPredict();
+		List<Integer> attributesToIgnore = ((ValidationConfiguration)this.taskConfiguration).getAttributesToIgnore();
+		int numberOfCategories = attributesToPredict.size();
+		
+		//check if the number of categories is correct
+		if(((ValidationConfiguration)this.getConfiguration()).getLabelType() == LabelType.SINGLELABEL && numberOfCategories > 1) {
+			throw new NodeException("Single label classification is not possible for more than one category.");
+		}
+		if(numberOfCategories <= 0 ) {
+			throw new NodeException("No attributes to classify were given.");
+		}
+		
 		// If the validation set is not given as ready data set..
 		if(! (((ValidationConfiguration)this.getConfiguration()).getInputToValidate() instanceof DataSetInput)) {
 			
 			DataSet labeledInputForValidation = null;
 			try {
 			
-				// If the ground truth has been previously prepared, the input is ready! 
+				// If the ground truth has been previously prepared, the input is almost ready! 
 				if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().
 						equals(GroundTruthSourceType.READY_INPUT)) {
-					labeledInputForValidation = new DataSet(new File(((ValidationConfiguration)this.getConfiguration()).getInputToValidate().toString()),
-						"ValidationSet");
+					DataSet completeInput = new DataSet(new File(((ValidationConfiguration)this.getConfiguration()).getInputToValidate().toString()));
+					labeledInputForValidation = new DataSet("ValidationSet");
+					
+					//add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+					for(int i = 0; i < completeInput.getAttributeCount(); i++) {
+						if(!attributesToPredict.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
+							if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
+								AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "NumberOfCategories is not an allowed attribute name. The attribute will be ignored.");
+							}
+							else {
+								labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
+							}
+						}
+					}
+				
+					//add the id attribute
+					labeledInputForValidation.addAttribute(completeInput.getAttribute("Id"));
+				
+					//add the attribute "NumberOfCategories"
+					//it marks the where the categories that are to be classified start and how many will follow
+					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories", new ArrayList<Double>()));
+					for(int i = 0; i < completeInput.getValueCount(); i++) {
+						labeledInputForValidation.getAttribute(labeledInputForValidation.getAttributeCount() - 1).addValue(new Double(numberOfCategories));
+					}
+				
+					//add the category attributes
+					for(int i : attributesToPredict) {
+						labeledInputForValidation.addAttribute(completeInput.getAttribute(i));
+						//if the classification is not continuous, the values have to be rounded
+						if(((ValidationConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.CONTINUOUS && ((ValidationConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
+							for(int j = 0; j < completeInput.getAttribute(i).getValueCount(); j++) {
+								labeledInputForValidation.getAttribute(labeledInputForValidation.getAttributeCount() - 1).setValueAt(j, (double)completeInput.getAttribute(i).getValueAt(j) >= 0.5 ? 1.0 : 0.0);
+							}
+						}
+					}
+					//if the classification is multiclass only the highest relationship of each partition is 1
+					if(((ValidationConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
+						int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
+						for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
+							double max = 0;
+							int maxCategory = 0;
+							for(int category = 0; category < numberOfCategories; category++) {
+								double newValue = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(partition);
+								if(newValue > max) {
+									max = newValue;
+									maxCategory = category;
+								}
+							}
+							for(int category = 0; category < numberOfCategories; category++) {
+								labeledInputForValidation.getAttribute(category).setValueAt(positionOfFirstCategory + category, category == maxCategory ? 1.0 : 0.0);
+							}
+						}
+					}
 				} else {
 					labeledInputForValidation = new DataSet("ValidationSet");
 					
@@ -412,22 +488,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					}
 					groundTruthFile = new File(pathToCategoryFile);
 					DataSetAbstract validatorGroundTruthSet = new ArffDataSet(groundTruthFile);
-					
-					// Is the current classification result binary or multiclass?
-					String category = validatorGroundTruthSet.getAttribute("Category").getValueAt(0).toString();
-					if(category.startsWith("NOT")) {
-						category = category.substring(4,category.length());
-					}
-					for(int i=1;i<validatorGroundTruthSet.getAttribute("Category").getValueCount();i++) {
-						String currentCategory = validatorGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
-						if(currentCategory.startsWith("NOT")) {
-							currentCategory = currentCategory.substring(4,currentCategory.length());
-						}
-						if(!currentCategory.equals(category)) {
-							isMulticlass = true;
-							break;
-						}
-					}
 					
 					// Load the first classifier input for attributes information
 					String currentInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
@@ -464,32 +524,84 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
 					for(int i=0;i<validatorInputLoader.getStructure().numAttributes()-3;i++) {
-						labeledInputForValidation.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
-							new ArrayList<Double>()));
+						//also omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i)) {
+							labeledInputForValidation.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
+									new ArrayList<Double>()));
+						}
 					}
+					//Add the id attribute
 					labeledInputForValidation.addAttribute(new NumericAttribute("Id",new ArrayList<Double>()));
-					labeledInputForValidation.addAttribute(new StringAttribute("Category",new ArrayList<String>()));
+					//Add the "NumberOfCategories" attribute
+					//It marks the where the categories that are to be classified start and how many will follow
+					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
+					for(int category : attributesToPredict) {
+						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+					}
 					
 					// Create the labeled data
 					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
 						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
-						String label = validatorGroundTruthSet.getAttribute("Category").getValueAt(i).toString();
-						String[] labels = null; // If multiclass classification is done
-						Double confidence = new Double(validatorGroundTruthSet.getAttribute("Relationship").getValueAt(i).toString());
+						String[] labels = new String[numberOfCategories];
+						Double[] confidences = new Double[numberOfCategories];
 						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
 						String path = validatorGroundTruthSet.getAttribute("Path").getValueAt(i).toString();
 						
 						ArrayList<Double> partitionStarts = new ArrayList<Double>();
 						ArrayList<Double> partitionEnds = new ArrayList<Double>();
 						
+						int currentPosition = 0;
+						for(int category : attributesToPredict) {
+							labels[currentPosition] = validatorGroundTruthSet.getAttribute(5 + category).getName();
+							currentPosition++;
+						}
+						
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
+								int currentAttribute = 0;
 								for(int j=0;j<validatorInputLoader.getStructure().numAttributes()-3;j++) {
-									Double val = inputInstance.value(j);
-									labeledInputForValidation.getAttribute(j).addValue(val);
+									//omit the attributes that are supposed to be ignored
+									if(!attributesToIgnore.contains(j)) {
+										Double val = inputInstance.value(j);
+										labeledInputForValidation.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
+									}
 								}
-								
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
+									currentPosition = 0;
+									for(int category : attributesToPredict) {
+										String label = validatorGroundTruthSet.getAttribute(5 + category).getName();
+										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
+											labeledInputForValidation.getAttribute(label).addValue(confidence);
+											confidences[currentPosition] = confidence;
+										} else {
+											labeledInputForValidation.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
+											confidences[currentPosition] = confidence >= 0.5 ? 1.0 : 0.0;
+										}
+										currentPosition++;
+									}
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
+								} else {
+									double maxConfidence = 0;
+									int positionOfMax = 0;
+									currentPosition = 0;
+									for(int category : attributesToPredict) {
+										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(confidence > maxConfidence) {
+											maxConfidence = confidence;
+											positionOfMax = currentPosition;
+										}
+										currentPosition++;
+									}
+									int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
+									for(int category=0;category<numberOfCategories;category++) {
+										labeledInputForValidation.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
+										confidences[category] = category == positionOfMax ? 1.0 : 0.0;
+									}
+								}
 								// Write the ID attribute (from what song the features are saved)
 								// IMPORTANT: --------------------------------------------------- 
 								// This attribute must not be used for classification model training! 
@@ -498,19 +610,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								Double id = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString());
 								labeledInputForValidation.getAttribute("Id").addValue(id);
 								
-								// FIXME Must be saved directly!
-								if(!isMulticlass) {
-									if(confidence >= 0.5) {
-										labeledInputForValidation.getAttribute("Category").addValue(label);
-									} else {
-										labeledInputForValidation.getAttribute("Category").addValue("NOT_" + label);
-									}
-								} else {
-									labels = new String[partitionStarts.size()];
-									for(int j=0;j<partitionStarts.size();j++) {
-										labels[j] = validatorGroundTruthSet.getAttribute("Category").getValueAt(j).toString();
-									}
-								}
+								labeledInputForValidation.getAttribute("NumberOfCategories").addValue(new Double(numberOfCategories));
+								
 								double startPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("Start"));
 								double endPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("End"));
 								partitionStarts.add(startPosition);
@@ -522,27 +623,17 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							// Add descriptions of the partitions of the current song
 							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
 							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
-							Double[] relationships = new Double[partitionStarts.size()];
+							Double[][] relationships = new Double[partitionStarts.size()][numberOfCategories];
 							for(int l=0;l<partitionStarts.size();l++) {
 								partitionStartsAsArray[l] = partitionStarts.get(l);
 								partitionEndsAsArray[l] = partitionEnds.get(l);
-								if(confidence == 0.99) {
-									relationships[l] = 1d;
-								} else if(confidence == 0.01) {
-									relationships[l] = 0d;
-								} else {
-									relationships[l] = confidence;
+								for(int category=0;category<numberOfCategories;category++) {
+									relationships[l][category] = confidences[category];
 								}
 							} 
 							
-							ClassifiedSongPartitions newSongDesc = null;
-							if(!isMulticlass) {
-								newSongDesc = new BinaryClassifiedSongPartitions(path, 
-									songId, partitionStartsAsArray, partitionEndsAsArray, label, relationships);
-							} else {
-								newSongDesc = new MulticlassClassifiedSongPartitions(path, 
+							ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions(path, 
 										songId, partitionStartsAsArray, partitionEndsAsArray, labels, relationships);
-							}
 							labeledSongRelationships.add(newSongDesc);
 						} else {
 							// TODO Consider Vocals/Piano-Recognition-Scenario!
@@ -617,90 +708,76 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		
 		// Set the ground truth if the validation set is given as ready data set
 		if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().equals(GroundTruthSourceType.READY_INPUT)) {
-			amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
-					getInputToValidate()).getDataSet().getAttribute("Id");
-			amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
-					getInputToValidate()).getDataSet().getAttribute("Category");
+			DataSet labeledInputForValidation = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
+					getInputToValidate()).getDataSet();
+			amuse.data.io.attributes.Attribute idAttribute = labeledInputForValidation.getAttribute("Id");
+//			amuse.data.io.attributes.Attribute labelAttribute = ((DataSetInput)((ValidationConfiguration)this.getConfiguration()).
+//					getInputToValidate()).getDataSet().getAttribute("Category");
 				
-			// Is the current classification result binary or multiclass?
-			String category = labelAttribute.getValueAt(0).toString();
-			if(category.startsWith("NOT")) {
-				category = category.substring(4,category.length());
-			} else if(category.startsWith("'NOT")) {
-				category = "'" + category.substring(5,category.length());
-			}
-			for(int i=1;i<labelAttribute.getValueCount();i++) {
-				String currentCategory = labelAttribute.getValueAt(i).toString();
-				if(currentCategory.startsWith("NOT")) {
-					currentCategory = currentCategory.substring(4,currentCategory.length());
-				} else if(currentCategory.startsWith("'NOT")) {
-					currentCategory = "'" + currentCategory.substring(5,currentCategory.length());
-				}
-				if(!currentCategory.equals(category)) {
-					isMulticlass = true;
-					break;
-				}
-			}
+			
 			
 			Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
-			ArrayList<Double> relationships = new ArrayList<Double>();
-			ArrayList<String> labels = new ArrayList<String>();
-			for(int i=0;i<labelAttribute.getValueCount();i++) {
+			ArrayList<Double[]> relationships = new ArrayList<Double[]>();
+			String[] labels = new String[numberOfCategories];
+			int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
+			for(int category=0;category<numberOfCategories;category++) {
+				labels[category] = labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getName();
+			}
+			for(int i=0;i<idAttribute.getValueCount();i++) {
 				Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
 				
 				// New song is reached
 				if(!newSongId.equals(currentSongId)) {
-					Double[] relationshipsAsArray = new Double[relationships.size()];
+					Double[][] relationshipsAsArray = new Double[relationships.size()][numberOfCategories];
 					for(int k=0;k<relationships.size();k++) {
 						relationshipsAsArray[k] = relationships.get(k);
 					} 
 						
-					ClassifiedSongPartitions newSongDesc = null; 
-					if(!isMulticlass) {
-						newSongDesc = new BinaryClassifiedSongPartitions("", 
-							currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
-					} else {
-						String[] labelsAsArray = new String[labels.size()];
-						for(int k=0;k<labels.size();k++) {
-							labelsAsArray[k] = labels.get(k);
-						} 
-						newSongDesc = new MulticlassClassifiedSongPartitions("", 
-								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
-					}
+					ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions("", 
+								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
 					labeledSongRelationships.add(newSongDesc);
 					currentSongId = newSongId;
-					relationships = new ArrayList<Double>();
-					labels = new ArrayList<String>();
+					relationships = new ArrayList<Double[]>();
+					labels = new String[numberOfCategories];
 				} 
 						
-				if(!labelAttribute.getValueAt(i).toString().startsWith("NOT") && !labelAttribute.getValueAt(i).toString().startsWith("'NOT")) {
-					relationships.add(1d);
+				if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
+					Double[] currentRelationships = new Double[numberOfCategories];
+					for(int category=0;category<numberOfCategories;category++) {
+						double confidence = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(i);
+						if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
+							currentRelationships[category] = confidence;
+						} else {
+							currentRelationships[category] = confidence >= 0.5 ? 1.0 : 0.0;
+						}
+					}
+					relationships.add(currentRelationships);
 				} else {
-					relationships.add(0d);
-				}
-				if(isMulticlass) {
-					labels.add(labelAttribute.getValueAt(i).toString());
+					Double[] currentRelationships = new Double[numberOfCategories];
+					double maxConfidence = 0;
+					int positionOfMax = 0;
+					for(int category=0;category<numberOfCategories;category++) {
+						double confidence = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(i);
+						if(confidence > maxConfidence) {
+							maxConfidence = confidence;
+							positionOfMax = category;
+						}
+					}
+					for(int category=0;category<numberOfCategories;category++) {
+						currentRelationships[category] = category == positionOfMax ? 1.0 : 0.0;
+					}
+					relationships.add(currentRelationships);
 				}
 			}
 				
 			// For the last song
-			Double[] relationshipsAsArray = new Double[relationships.size()];
+			Double[][] relationshipsAsArray = new Double[relationships.size()][numberOfCategories];
 			for(int k=0;k<relationships.size();k++) {
 				relationshipsAsArray[k] = relationships.get(k);
 			} 
 			
-			ClassifiedSongPartitions newSongDesc = null; 
-			if(!isMulticlass) {
-				newSongDesc = new BinaryClassifiedSongPartitions("", 
-					currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], "", relationshipsAsArray);
-			} else {
-				String[] labelsAsArray = new String[labels.size()];
-				for(int k=0;k<labels.size();k++) {
-					labelsAsArray[k] = labels.get(k);
-				} 
-				newSongDesc = new MulticlassClassifiedSongPartitions("", 
-						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labelsAsArray, relationshipsAsArray);
-			}
+			ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions("", 
+						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
 			labeledSongRelationships.add(newSongDesc);
 		} 
 	}
@@ -711,8 +788,19 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	private void saveMeasuresToFile() throws NodeException {
 		try {
 			
-			// Check if the folder for measure file exists; if not create it
-			File folderForMeasures = createMeasureFolder();
+			String outputPath = ((ValidationConfiguration)this.taskConfiguration).getOutputPath();
+			//If the outputPath should be calculated automatically
+			if(outputPath.equals("-1") || outputPath.equals("")) {
+				// Check if the folder for measure file exists; if not create it
+				File folderForMeasures = createMeasureFolder();
+				outputPath = folderForMeasures + File.separator + "measures.arff";
+				if(((ValidationConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
+					AmuseLogger.write(ValidatorNodeScheduler.class.getClass().getName(), Level.WARN,"No output path given! The results will be saved at " + outputPath);
+				}
+			} else {
+				// create the folders
+				new File(outputPath).getParentFile().mkdirs();
+			}
 			
 			// If no measure file is there, save header
 			boolean saveHeader = false;
@@ -721,7 +809,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				saveHeader = true;
 			//}
 			//FileOutputStream values_to = new FileOutputStream(this.folderForMeasures + File.separator + "measures.arff",true);
-			FileOutputStream values_to = new FileOutputStream(folderForMeasures + File.separator + "measures.arff");
+			FileOutputStream values_to = new FileOutputStream(outputPath);
 			DataOutputStream values_writer = new DataOutputStream(values_to);
 			String sep = System.getProperty("line.separator");
 			
@@ -799,13 +887,26 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					}
 					
 					// Check if the folder for measure file exists; if not create it
-					folderForMeasures = new File(
+					String folderForMeasuresString = 
 							((ValidationConfiguration)taskConfiguration).getMeasureDatabase() + File.separator + 
 							categoryDescription + 
-							File.separator + classifierDescription + File.separator +
+							File.separator;
+					
+					String[] labels = labeledSongRelationships.get(0).getLabels();
+					
+					for(int i=0;i<labels.length;i++) {
+						if(i!=0) {
+							folderForMeasuresString += "_";
+						}
+						folderForMeasuresString += labels[i];
+					}
+					
+					folderForMeasuresString += File.separator + classifierDescription + "_" + ((ValidationConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator +
 							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +
 							validatorMethodId + 
-							"-" + ((AmuseTask)vmi).getProperties().getProperty("name"));
+							"-" + ((AmuseTask)vmi).getProperties().getProperty("name");
+					
+					folderForMeasures = new File(folderForMeasuresString);
 					if(!folderForMeasures.exists()) {
 						if(!folderForMeasures.mkdirs()) {
 							throw new NodeException("Could not create the folder for classifier evaluation measures: " + folderForMeasures);
@@ -840,7 +941,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	public ArrayList<Double> getLabeledAverageSongRelationships() {
 		ArrayList<Double> a = new ArrayList<Double>(labeledSongRelationships.size());
 		for(ClassifiedSongPartitions d : labeledSongRelationships) {
-			a.add(d.getMeanRelationship());
+			a.add(d.getMeanRelationship(0));
 		}
 		return a;
 	}
@@ -872,12 +973,4 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	public File getGroundTruthFile() {
 		return groundTruthFile;
 	}
-
-	/**
-	 * @return the isMulticlass
-	 */
-	public boolean isMulticlass() {
-		return isMulticlass;
-	}
-	
 }

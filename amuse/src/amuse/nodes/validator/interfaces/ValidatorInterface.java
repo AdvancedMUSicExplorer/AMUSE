@@ -32,7 +32,7 @@ import amuse.interfaces.nodes.NodeException;
  * Validation methods should implement this interface.
  *  
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: ValidatorInterface.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public interface ValidatorInterface {
 	

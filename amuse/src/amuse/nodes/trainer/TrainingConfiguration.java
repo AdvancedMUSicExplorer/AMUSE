@@ -26,12 +26,18 @@ package amuse.nodes.trainer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Level;
 
 import amuse.data.GroundTruthSourceType;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.data.io.DataInputInterface;
+import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
@@ -42,7 +48,7 @@ import amuse.util.AmuseLogger;
  * Describes the parameters for a classification training task 
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: TrainingConfiguration.java 243 2018-09-07 14:18:30Z frederik-h $
  */
 public class TrainingConfiguration extends TaskConfiguration {
 
@@ -65,6 +71,13 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Ground truth type for this configuration */
 	private final GroundTruthSourceType groundTruthSourceType;
 	
+	private final List<Integer> attributesToPredict;
+	private final List<Integer> attributesToIgnore;
+	private final ModelType modelType;
+	
+	private final String trainingDescription;
+	
+	
 	/** Alternative path for saving of training model(s) (e.g. an optimization task may train
 	 * different models and compare their performance; here it is not required to save them to
 	 * the central Amuse model database!) */
@@ -85,16 +98,63 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * - Path to the labeled file list or
 	 * - Path to the ready training input (prepared e.g. by a validator method)
 	 * - Ready input (as EditableDataSet)
-	 * @param groundTruthSourceType Describes the source type of ground truth 
+	 * @param groundTruthSourceType Describes the source type of ground truth
+	 * @param attributesToPredict the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param modelType the type of the classification model
+	 * @param trainingDescription optional description of this experiment, that will be added to the name of the model
+	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
 	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
-			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
 		this.processedFeaturesModelName = processedFeaturesModelName;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
 		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
+		this.trainingDescription = trainingDescription;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.pathToOutputModel = pathToOutputModel;
+	}
+
+	/**
+	 * Constructor that sets attributesToPredict, attributesToIgnore, modelType and outputPath to their default values.
+	 * Currently only used by FitnessEvaluator
+	 * 
+	 * @param processedFeaturesModelName Description of the processed features model
+ 	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
+	 * @param groundTruthSource Source with ground truth for model training. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready training input (prepared e.g. by a validator method)
+	 * - Ready input (as EditableDataSet)
+	 * @param groundTruthSourceType Describes the source type of ground truth
+	 * @param pathToOutputModel optional path to where the model should be saved 
+	 * (three possibilities are given above) 
+	 */
+	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
+			GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
+		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.algorithmDescription = algorithmDescription;
+		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
+		this.groundTruthSource = groundTruthSource;
+		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = new ArrayList<Integer>();
+		this.attributesToIgnore = new ArrayList<Integer>();
+		RelationshipType relationshipType = RelationshipType.BINARY;
+		LabelType labelType = LabelType.SINGLELABEL;
+		MethodType methodType = MethodType.SUPERVISED;
+		ModelType tmpModelType = null;
+		try {
+			tmpModelType = new ModelType(relationshipType, labelType, methodType);
+		} catch(Exception e) {}
+		this.modelType = tmpModelType;
+		this.trainingDescription = "";
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
 		this.pathToOutputModel = pathToOutputModel;
@@ -123,10 +183,78 @@ public class TrainingConfiguration extends TaskConfiguration {
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
+			
+			
+			String attributesToPredictString = trainingConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
+			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToPredict = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToPredictStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToPredict.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				throw new IOException("The categories for training were not properly specified.");
+			}
+			
+			String attributesToIgnoreString = trainingConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
+			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+			List<Integer> currentAttributesToIgnore = new ArrayList<Integer>();
+			try {
+				for(String str : attributesToIgnoreStringArray) {
+					if(!str.equals("")) {
+						currentAttributesToIgnore.add(Integer.parseInt(str));
+					}
+				}
+			} catch(NumberFormatException e) {
+				AmuseLogger.write(TrainingConfiguration.class.getName(), Level.WARN,
+						"The attributes to ignore were not properly specified. All features will be used for training.");
+				currentAttributesToIgnore = new ArrayList<Integer>();
+			}
+			
+			RelationshipType currentRelationshipType;
+			if(trainingConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("BINARY")) {
+				currentRelationshipType = RelationshipType.BINARY;
+			} else if(trainingConfig.getRelationshipTypeAttribute().getValueAt(i).toString().equals("CONTINUOUS")) {
+				currentRelationshipType = RelationshipType.CONTINUOUS;
+			} else {
+				throw new IOException("The relationship type was not properly specified.");
+			}
+			
+			LabelType currentLabelType;
+			if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTICLASS")) {
+				currentLabelType = LabelType.MULTICLASS;
+			} else if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("MULTILABEL")) {
+				currentLabelType = LabelType.MULTILABEL;
+			} else if(trainingConfig.getLabelTypeAttribute().getValueAt(i).toString().equals("SINGLELABEL")) {
+				currentLabelType = LabelType.SINGLELABEL;
+			} else {
+				throw new IOException("The label type was not properly specified.");
+			}
+			
+			MethodType currentMethodType;
+			if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("SUPERVISED")) {
+				currentMethodType = MethodType.SUPERVISED;
+			} else if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("UNSUPERVISED")) {
+				currentMethodType = MethodType.UNSUPERVISED;
+			} else if(trainingConfig.getMethodTypeAttribute().getValueAt(i).toString().equals("REGRESSION")) {
+				currentMethodType = MethodType.REGRESSION;
+			} else {
+				throw new IOException("The method type was not properly specified.");
+			}
+			
+			ModelType currentModelType = new ModelType(currentRelationshipType, currentLabelType, currentMethodType);
+			
+			String currentTrainingDescription = trainingConfig.getTrainingDescriptionAttribute().getValueAt(i).toString();
+			
+			
 				
 			// Create a training task
 			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
-		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentPathToOutputModel);
+		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
 			AmuseLogger.write(TrainingConfiguration.class.getName(), Level.DEBUG,  
@@ -186,6 +314,27 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public GroundTruthSourceType getGroundTruthSourceType() {
 		return groundTruthSourceType;
+	}
+	
+	/**
+	 * @return the attributesToPredict
+	 */
+	public List<Integer> getAttributesToPredict(){
+		return attributesToPredict;
+	}
+	
+	/**
+	 * @return the attributesToIgnore
+	 */
+	public List<Integer> getAttributesToIgnore(){
+		return attributesToIgnore;
+	}
+	
+	/**
+	 * @return the trainingDescription
+	 */
+	public String getTrainingDescription() {
+		return trainingDescription;
 	}
 
 	/**
@@ -259,7 +408,35 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, pathToOutputModel); 
+		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel); 
 		return conf;
+	}
+
+	/**
+	 * @return the relatioshipType
+	 */
+	public RelationshipType getRelationshipType() {
+		return modelType.getRelationshipType();
+	}
+
+	/**
+	 * @return the labelType
+	 */
+	public LabelType getLabelType() {
+		return modelType.getLabelType();
+	}
+
+	/**
+	 * @return the methodType
+	 */
+	public MethodType getMethodType() {
+		return modelType.getMethodType();
+	}
+	
+	/**
+	 * @return the modelType
+	 */
+	public ModelType getModelType() {
+		return modelType;
 	}
 }

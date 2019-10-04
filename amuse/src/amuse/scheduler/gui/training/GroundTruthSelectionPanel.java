@@ -1,44 +1,39 @@
 package amuse.scheduler.gui.training;
 
 import java.awt.CardLayout;
-import java.io.File;
+import java.util.List;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import amuse.data.GroundTruthSourceType;
-import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import net.miginfocom.swing.MigLayout;
 
 public class GroundTruthSelectionPanel extends JPanel {
 
 	private JComboBox<GroundTruthSourceType> groundTruthSourceTypeComboBox;
-	private PathSelectionPanel readyInputSelectionPanel;
-	private PathSelectionPanel fileListSelectionPanel;
+	private ReadyInputSelectionPanel readyInputSelectionPanel;
 	private CategorySelectionPanel categorySelectionPanel;
+	private FileListSelectionPanel fileListSelectionPanel;
 
 	public GroundTruthSelectionPanel() {
 		super(new MigLayout("fillx, wrap"));
 		this.setBorder(new TitledBorder("Select Ground Truth"));
 		
-		categorySelectionPanel = new CategorySelectionPanel();
-		readyInputSelectionPanel = new PathSelectionPanel("Select the Ready Input File");
-		fileListSelectionPanel = new PathSelectionPanel("Select the File List");
+		categorySelectionPanel = new CategorySelectionPanel(false);
+		fileListSelectionPanel = new FileListSelectionPanel();
+		readyInputSelectionPanel = new ReadyInputSelectionPanel("Select the Ready Input File", false);
 		
 		CardLayout cardLayout = new CardLayout();
 		JPanel cardLayoutPanel = new JPanel(cardLayout);
 
 		cardLayoutPanel.add(categorySelectionPanel, GroundTruthSourceType.CATEGORY_ID.toString());
-		cardLayoutPanel.add(readyInputSelectionPanel, GroundTruthSourceType.READY_INPUT.toString());
 		cardLayoutPanel.add(fileListSelectionPanel, GroundTruthSourceType.FILE_LIST.toString());
+		cardLayoutPanel.add(readyInputSelectionPanel, GroundTruthSourceType.READY_INPUT.toString());
 		
-		// TODO for future updates: Make every ground truth source type configurable (GroundTruthSourceType.values())
-		groundTruthSourceTypeComboBox = new JComboBox<GroundTruthSourceType>(new GroundTruthSourceType[]{GroundTruthSourceType.CATEGORY_ID});
+		groundTruthSourceTypeComboBox = new JComboBox<GroundTruthSourceType>(new GroundTruthSourceType[]{GroundTruthSourceType.CATEGORY_ID, GroundTruthSourceType.FILE_LIST, GroundTruthSourceType.READY_INPUT});
 		groundTruthSourceTypeComboBox.addActionListener(e -> {
 			cardLayout.show(cardLayoutPanel, groundTruthSourceTypeComboBox.getSelectedItem().toString());
 		});
@@ -50,49 +45,39 @@ public class GroundTruthSelectionPanel extends JPanel {
 		this.add(cardLayoutPanel, "pushx, growx");
 	}
 	
-	class PathSelectionPanel extends JPanel{
-		
-		private JTextField pathField;
-		
-		public PathSelectionPanel(String title) {
-			super(new MigLayout("fillx"));
-			pathField = new JTextField();
-			
-			JButton selectPathButton = new JButton("...");
-			selectPathButton.addActionListener(e ->{
-				JFileChooser fc = new SelectArffFileChooser("", new File(""));
-		        if (fc.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
-		            return;
-		        }
-		        pathField.setText(fc.getSelectedFile().toString());
-
-			});
-			this.setBorder(new TitledBorder(title));
-			
-			this.add(pathField, "split 2, growx, pushx");
-			this.add(selectPathButton, "");
-			
-		}
-		
-		public String getPath(){
-			return pathField.getText();
-		}
-
-		public void setSelectedPath(String path) {
-			pathField.setText(path);
-		}
-	}
-	
 	public String getSelectedGroundTruthSource(){
 		switch((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem()){
 		case CATEGORY_ID:
 			return categorySelectionPanel.getSelectedCategoryID() + "";
-		case FILE_LIST:
-			return fileListSelectionPanel.getPath();
 		case READY_INPUT:
 			return readyInputSelectionPanel.getPath();
+		case FILE_LIST:
+			return fileListSelectionPanel.getPath();
 		}
 		return null;
+	}
+	
+	public List<Integer> getAttributesToPredict(){
+		switch((GroundTruthSourceType) groundTruthSourceTypeComboBox.getSelectedItem()){
+		case CATEGORY_ID:
+			return categorySelectionPanel.getAttributesToPredict();
+		case READY_INPUT:
+			return readyInputSelectionPanel.getAttributesToPredict();
+		case FILE_LIST:
+			return fileListSelectionPanel.getAttributesToPredict();
+		}
+		return null;
+	}
+	
+	public void setAttributesToPredict(List<Integer> attributesToPredict) {
+		switch((GroundTruthSourceType)groundTruthSourceTypeComboBox.getSelectedItem()) {
+		case CATEGORY_ID:
+			categorySelectionPanel.setAttributesToPredict(attributesToPredict); break;
+		case READY_INPUT:
+			readyInputSelectionPanel.setAttributesToPredict(attributesToPredict); break;
+		case FILE_LIST:
+			fileListSelectionPanel.setAttributesToPredict(attributesToPredict); break;
+		}
 	}
 
 	public GroundTruthSourceType getSelectedGroundTruthSourceType() {
@@ -108,12 +93,24 @@ public class GroundTruthSelectionPanel extends JPanel {
 		case CATEGORY_ID:
 			categorySelectionPanel.setCategory(new Integer(groundTruthSource));
 			break;
-		case FILE_LIST:
-			fileListSelectionPanel.setSelectedPath(groundTruthSource);
-			break;
 		case READY_INPUT:
 			readyInputSelectionPanel.setSelectedPath(groundTruthSource);
 			break;
+		case FILE_LIST:
+			fileListSelectionPanel.setSelectedPath(groundTruthSource);
+			break;
 		}
+	}
+	
+	public JComboBox<GroundTruthSourceType> getGroundTruthSourceTypeComboBox(){
+		return groundTruthSourceTypeComboBox;
+	}
+	
+	public List<Integer> getAttributesToIgnore() {
+		return readyInputSelectionPanel.getAttributesToIgnore();
+	}
+	
+	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
+		readyInputSelectionPanel.setAttributesToIgnore(attributesToIgnore);
 	}
 }

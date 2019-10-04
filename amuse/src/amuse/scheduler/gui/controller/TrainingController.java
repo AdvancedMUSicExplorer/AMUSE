@@ -26,14 +26,22 @@ package amuse.scheduler.gui.controller;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Level;
+
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
+import amuse.data.ModelType;
+import amuse.data.ModelType.RelationshipType;
+import amuse.data.ModelType.LabelType;
+import amuse.data.ModelType.MethodType;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
@@ -46,6 +54,7 @@ import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
 import amuse.scheduler.gui.training.TrainingView;
+import amuse.util.AmuseLogger;
 
 /**
  * @author Clemens Waeltken
@@ -63,7 +72,7 @@ public class TrainingController extends AbstractController {
      */
     public TrainingController(WizardController wizardController) {
         this.wizardController = wizardController;
-        this.trainingView = new TrainingView();
+        this.trainingView = new TrainingView(true);
         view = new TrainingPanel(trainingView.getView());
 
     }
@@ -110,19 +119,63 @@ public class TrainingController extends AbstractController {
         trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
         trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
-
+        //TODO set attributesToPredict, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
+        
         String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
         if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
         	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
         }
-        else if(groundTruthSourceType.equals(GroundTruthSourceType.FILE_LIST)){
-        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
-        }
         else if(groundTruthSourceType.equals(GroundTruthSourceType.READY_INPUT.toString())){
         	trainingView.setGroundTruthSourceType(GroundTruthSourceType.READY_INPUT);
+        } else {
+        	trainingView.setGroundTruthSourceType(GroundTruthSourceType.FILE_LIST);
         }
         trainingView.setGroundTruthSource(ttSet.getGroundTruthSourceAttribute().getValueAt(0));
-    }
+        
+        String attributesToPredictString = ttSet.getAttributesToPredictAttribute().getValueAt(0).toString();
+		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
+		List<Integer> attributesToPredict = new ArrayList<Integer>();
+		try {
+			for(String str : attributesToPredictStringArray) {
+				if(!str.equals("")) {
+					attributesToPredict.add(Integer.parseInt(str));
+				}
+			}
+		} catch(NumberFormatException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The attributes to classify were not properly specified.");
+			attributesToPredict = new ArrayList<Integer>();
+		}
+		trainingView.setAttributesToPredict(attributesToPredict);
+		
+		String attributesToIgnoreString = ttSet.getAttributesToIgnoreAttribute().getValueAt(0).toString();
+		attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
+		String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
+		List<Integer> attributesToIgnore = new ArrayList<Integer>();
+		try {
+			for(String str : attributesToIgnoreStringArray) {
+				if(!str.equals("")) {
+					attributesToIgnore.add(Integer.parseInt(str));
+				}
+			}
+		} catch(NumberFormatException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,
+					"The attributes to ignore were not properly specified.");
+			attributesToIgnore = new ArrayList<Integer>();
+		}
+		trainingView.setAttributesToIgnore(attributesToIgnore);
+		
+		trainingView.setTrainingDescription(ttSet.getTrainingDescriptionAttribute().getValueAt(0).toString());
+		trainingView.setPathToOutputModel(ttSet.getPathToOutputModelAttribute().getValueAt(0).toString());
+		
+		try {
+			ModelType modelType = new ModelType(RelationshipType.valueOf(ttSet.getRelationshipTypeAttribute().getValueAt(0)), LabelType.valueOf(ttSet.getLabelTypeAttribute().getValueAt(0)), MethodType.valueOf(ttSet.getMethodTypeAttribute().getValueAt(0)));
+			trainingView.setModelType(modelType);
+		} catch(IOException e) {
+			showErr(e.getLocalizedMessage());
+		}
+	}
 
     private class TrainingPanel extends JPanel implements NextButtonUsable,
             HasCaption, HasSaveButton, HasLoadButton {
@@ -221,27 +274,31 @@ public class TrainingController extends AbstractController {
     }
 
     private TrainingConfiguration getTrainingConfiguration() {
-    	String folder = trainingView.getGroundTruthSource();
-    	if(trainingView.getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID){
-    		folder = folder.substring(folder.lastIndexOf(File.separatorChar) + 1, folder.lastIndexOf('.'));
-    	}
-    	String pathToOutputModel = AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
-    			+ File.separator
-    			+ folder
-    			+ File.separator
-    			+ trainingView.getSelectedTrainingAlgorithmStr()
-    			+ File.separator
-    			+ trainingView.getProcessingModelString()
-    			+ File.separator
-    			+ "model.mod";
-    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
+//    	String folder = trainingView.getGroundTruthSource();
+//    	if(trainingView.getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID){
+//    		folder = folder.substring(folder.lastIndexOf(File.separatorChar) + 1, folder.lastIndexOf('.'));
+//    	}
+//    	String pathToOutputModel = AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
+//    			+ File.separator
+//    			+ folder
+//    			+ File.separator
+//    			+ trainingView.getSelectedTrainingAlgorithmStr()
+//    			+ File.separator
+//    			+ trainingView.getProcessingModelString()
+//    			+ File.separator
+//    			+ "model.mod";
+//    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
     	TrainingConfiguration conf = new TrainingConfiguration(
     			trainingView.getProcessingModelString(),
     			trainingView.getSelectedTrainingAlgorithmStr(),
     			trainingView.getPreprocessingAlgorithmStr(), 
     			new FileInput(trainingView.getGroundTruthSource()),
     			trainingView.getGroundTruthSourceType(),
-    			pathToOutputModel); //TODO pathToOutputModel
+    			trainingView.getAttributesToPredict(),
+    			trainingView.getAttributesToIgnore(),
+    			trainingView.getModelType(),
+    			trainingView.getTrainingDescription(),
+    			trainingView.getPathToOutputModel());
         return conf;
     }
 
@@ -261,6 +318,11 @@ public class TrainingController extends AbstractController {
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
             trainingView.setGroundTruthSourceType(trainConf.getGroundTruthSourceType());
             trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());
+            trainingView.setAttributesToPredict(trainConf.getAttributesToPredict());
+            trainingView.setAttributesToIgnore(trainConf.getAttributesToIgnore());
+            trainingView.setModelType(((TrainingConfiguration) conf).getModelType());
+            trainingView.setTrainingDescription(trainConf.getTrainingDescription());
+            trainingView.setPathToOutputModel(trainConf.getPathToOutputModel());
         }
     }
 }

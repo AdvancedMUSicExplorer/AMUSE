@@ -38,7 +38,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
  * matrix entries.
  * 
  * @author Igor Vatolkin
- * @version $Id$
+ * @version $Id: FeatureVectorReductionRate.java 241 2018-07-26 12:35:24Z frederik-h $
  */
 public class FeatureVectorReductionRate extends DataReductionMeasureCalculator {
 
@@ -50,26 +50,28 @@ public class FeatureVectorReductionRate extends DataReductionMeasureCalculator {
 		long initalNumberOfFeatureMatrixEntries = 0;
 		long finalNumberOfFeatureVectorEntries = 0;
 		
-		try {
-			for(String f : usedProcessedFeatureFiles) {
-				BufferedReader reader = new BufferedReader(new FileReader(new File(f)));
-				String line = reader.readLine();
-				boolean initFound = false, finalFound = false;
-				while(line != null) {
-					if(line.startsWith("%initalNumberOfFeatureMatrixEntries")) {
-						initalNumberOfFeatureMatrixEntries += new Long(line.substring(line.indexOf("=")+1, line.length()));
-						initFound = true;
-					} else if(line.startsWith("%finalNumberOfFeatureVectorEntries")) {
-						finalNumberOfFeatureVectorEntries += new Long(line.substring(line.indexOf("=")+1, line.length()));
-						finalFound = true;
+		if(usedProcessedFeatureFiles != null) {
+			try {
+				for(String f : usedProcessedFeatureFiles) {
+					BufferedReader reader = new BufferedReader(new FileReader(new File(f)));
+					String line = reader.readLine();
+					boolean initFound = false, finalFound = false;
+					while(line != null) {
+						if(line.startsWith("%initalNumberOfFeatureMatrixEntries")) {
+							initalNumberOfFeatureMatrixEntries += new Long(line.substring(line.indexOf("=")+1, line.length()));
+							initFound = true;
+						} else if(line.startsWith("%finalNumberOfFeatureVectorEntries")) {
+							finalNumberOfFeatureVectorEntries += new Long(line.substring(line.indexOf("=")+1, line.length()));
+							finalFound = true;
+						}
+						if(initFound && finalFound) break;
+						line = reader.readLine();
 					}
-					if(initFound && finalFound) break;
-					line = reader.readLine();
+					reader.close();
 				}
-				reader.close();
+			} catch(IOException e) {
+				throw new NodeException("Could not load data from processed feature files: " + e.getMessage());
 			}
-		} catch(IOException e) {
-			throw new NodeException("Could not load data from processed feature files: " + e.getMessage());
 		}
 		
 		Double rate = new Double(finalNumberOfFeatureVectorEntries) / new Double(initalNumberOfFeatureMatrixEntries);
