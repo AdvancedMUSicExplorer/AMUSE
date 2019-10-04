@@ -2,6 +2,7 @@ package amuse.data.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -11,7 +12,10 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 
-public abstract class DataSetAbstract {
+public abstract class DataSetAbstract implements Serializable {
+
+	/** For Serializable interface */
+	private static final long serialVersionUID = -1042520685068994271L;
 
 	/** Short description of this data set */
 	protected String name = "";

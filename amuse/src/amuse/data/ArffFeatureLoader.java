@@ -71,7 +71,9 @@ public class ArffFeatureLoader {
 				} else if (line.toLowerCase().startsWith(new String("%sample_rate="))) {
 					sampleRate = new Integer(line.substring(13));
 				} else if(line.toLowerCase().startsWith(new String("@attribute"))) {
-					if(line.toLowerCase().startsWith(new String("@attribute windownumber"))) {
+					String lineTrimmed = line.replace("'", "");
+					lineTrimmed = lineTrimmed.replace("\"", "");
+					if(lineTrimmed.toLowerCase().startsWith(new String("@attribute windownumber"))) {
 						windowNumberAttributeExisting = true;
 					}
 					if(!nameFound) {

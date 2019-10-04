@@ -66,7 +66,7 @@ public class AmusePreferencesTest {
     @Test
     public void testGet() {
         System.out.println("get");
-        KeysStringValue key = KeysStringValue.METRIC_DATABASE;
+        KeysStringValue key = KeysStringValue.MEASURE_DATABASE;
         String expResult = "TestString";
         AmusePreferences.put(key, expResult);
         String result = AmusePreferences.get(key);
@@ -76,7 +76,7 @@ public class AmusePreferencesTest {
     @Test
     public void testPut() {
         System.out.println("put");
-        KeysStringValue key = KeysStringValue.METRIC_DATABASE;
+        KeysStringValue key = KeysStringValue.MEASURE_DATABASE;
         String value = "TestString2";
         AmusePreferences.put(key, value);
     }

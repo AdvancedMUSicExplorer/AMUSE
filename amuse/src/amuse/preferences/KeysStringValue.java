@@ -53,9 +53,10 @@ public enum KeysStringValue {
     GRID_SCRIPT_TRAINER, 
     GRID_SCRIPT_CLASSIFIER, 
     GRID_SCRIPT_VALIDATOR, 
-    GRID_SCRIPT_OPTIMIZER, 
+    GRID_SCRIPT_OPTIMIZER,
     JAVA_PATH, 
-    MATLAB_PATH;
+    MATLAB_PATH,
+    PYTHON_PATH;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -69,6 +70,8 @@ public enum KeysStringValue {
 	    	return "java";
 	    case MATLAB_PATH:
 	    	return "matlab";
+	    case PYTHON_PATH:
+	    	return "python3";
         default:
             //AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
         return getNoValue();
@@ -115,6 +118,8 @@ public enum KeysStringValue {
 	    case JAVA_PATH:
 		return true;
 	    case MATLAB_PATH:
+	    	return true;
+	    case PYTHON_PATH:
 		return true;
             default:
                 AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
@@ -170,6 +175,7 @@ public enum KeysStringValue {
 		map.put(GRID_SCRIPT_VALIDATOR.toString(), "Batch command to proceed validator task in grid:");
 		map.put(JAVA_PATH.toString(), "Path to your local java executable:");
 		map.put(MATLAB_PATH.toString(), "Path to your local Matlab executable:");
+		map.put(PYTHON_PATH.toString(), "Path to your local Python3 executable:");
 		return map;
 	}
 }

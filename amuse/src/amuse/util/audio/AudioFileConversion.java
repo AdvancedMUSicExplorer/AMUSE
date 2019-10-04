@@ -228,8 +228,13 @@ public class AudioFileConversion {
         BufferedInputStream tmpBis = null;
         File tempOutputFile = null;
         FileOutputStream tmpOutputStream = null;
-        if (waveFile.length() < splitSize) {
-            return 1;
+        
+        if (waveFile.length() < 1024 * splitSize) {
+        	
+        	// Also when the file is not splitted, processFile() expects that file ends with ".1"
+        	// (see the line with "while (index <= splitFileCount) {") 
+        	fileCopy(waveFile, getNextSplitFile(waveFile, part));
+        	return 1;
         }
         try {
             tempOutputFile = new File(waveFile.getParentFile().getAbsolutePath() + File.separator + ".tmp_" + waveFile.getName());
