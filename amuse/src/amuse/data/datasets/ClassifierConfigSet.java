@@ -228,12 +228,12 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToPredictAttribute);
+		addAttribute(pathToInputModelAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(outputResultAttribute);
-		addAttribute(pathToInputModelAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
 
@@ -294,12 +294,12 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToPredictAttribute);
+		addAttribute(pathToInputModelAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
 		addAttribute(mergeSongResultsAttribute);
 		addAttribute(outputResultAttribute);
-		addAttribute(pathToInputModelAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
 
