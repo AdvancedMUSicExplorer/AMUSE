@@ -153,7 +153,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		pathToFileWithLabeledInstances = new String();	
 		if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType().
 				equals(GroundTruthSourceType.FILE_LIST)) {
-			//The groundTruthSourceType is the path to the file with the labeled instances
+			//The groundTruthSource is the path to the file with the labeled instances
 			pathToFileWithLabeledInstances = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();
 			this.outputModel = ((TrainingConfiguration)this.taskConfiguration).getPathToOutputModel();
 			this.categoryDescription = ((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource().toString();

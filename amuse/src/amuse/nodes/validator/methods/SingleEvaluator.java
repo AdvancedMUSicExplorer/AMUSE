@@ -401,6 +401,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			}
 		} catch(IOException e) {
 			throw new NodeException(e.getMessage());
+		} catch(StringIndexOutOfBoundsException e) {
+			throw new NodeException("Model path does not contain category ID.");
 		}
 		
 		return listOfUsedProcessedFeatureFiles;

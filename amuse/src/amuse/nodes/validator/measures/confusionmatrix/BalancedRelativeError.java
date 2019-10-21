@@ -120,13 +120,6 @@ public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCal
 		
 		double bre = 0.5 * (fn.getValue()/(tp.getValue() + fn.getValue()) + fp.getValue()/(tn.getValue() + fp.getValue()));
 		
-		System.out.println("Partition Level, One Class");
-		System.out.println("TP = " + tp.getValue());
-		System.out.println("TN = " + tn.getValue());
-		System.out.println("FP = " + fp.getValue());
-		System.out.println("FN = " + fn.getValue());
-		System.out.println("BRE = " + bre);
-		
 		// Prepare the result
 		ValidationMeasureDouble[] breMeasure = new ValidationMeasureDouble[1];
 		breMeasure[0] = new ValidationMeasureDouble(false);
