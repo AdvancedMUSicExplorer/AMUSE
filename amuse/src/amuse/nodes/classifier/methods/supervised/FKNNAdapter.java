@@ -89,9 +89,6 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 			
 			DataSet trainingDataSet = new DataSet(new File(pathToModelFile));
 			
-			dataSetToClassify.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/DataSetToClassify.arff"));
-			trainingDataSet.saveToArffFile(new File("/home/ginsel/Schreibtisch/WHF/TrainingDataSet.arff"));
-			
 			int numberOfCategories = ((Double)trainingDataSet.getAttribute("NumberOfCategories").getValueAt(0)).intValue();
 			((ClassifierNodeScheduler)this.correspondingScheduler).setNumberOfCategories(numberOfCategories);
 			int positionOfFirstCategory = trainingDataSet.getAttributeCount() - numberOfCategories;
@@ -228,7 +225,6 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 							relationships[category] = relationships[category] >= 0.5 ? 1.0 : 0.0;
 						}
 						dataSetToClassify.getAttribute(dataSetToClassify.getAttributeCount() - numberOfCategories + category).addValue(relationships[category]);
-//						System.out.println(relationships[category]);
 					}
 				}
 			}
