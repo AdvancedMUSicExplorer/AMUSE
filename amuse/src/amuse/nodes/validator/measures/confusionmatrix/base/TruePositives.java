@@ -60,8 +60,6 @@ public class TruePositives extends ClassificationQualityDoubleMeasureCalculator 
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
 			
-			System.out.println("PredictedValue = " + currentPredictedValue);
-			
 			//If the classification was not continuous, round the predicted values
 			if(!isContinuous()) {
 				if(currentPredictedValue >= 0.5) {
@@ -71,15 +69,7 @@ public class TruePositives extends ClassificationQualityDoubleMeasureCalculator 
 				}
 			}
 			
-			System.out.println("Rounded Predicted Value = " + currentPredictedValue);
-			
 			Double currentGroundTruthValue = groundTruthRelationships.get(i);
-			
-			System.out.println("GroundTruth Value = " + currentGroundTruthValue);
-			
-			System.out.println("True Positive = " + currentGroundTruthValue.doubleValue() * currentPredictedValue.doubleValue());
-			
-			System.out.println();
 			
 			numberOfTruePositives += currentGroundTruthValue.doubleValue() * currentPredictedValue.doubleValue();
 			
