@@ -37,8 +37,8 @@ import amuse.nodes.validator.measures.confusionmatrix.base.TruePositives;
 /**
  * Precision measure
  *  
- * @author Igor Vatolkin
- * @version $Id: Precision.java 243 2018-09-07 14:18:30Z frederik-h $
+ * @author Philipp Ginsel
+ * @version $Id: Precision.java 243 2019-10-14 14:18:30Z frederik-h $
  */
 public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCalculator {
 
@@ -80,6 +80,13 @@ public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCal
 		
 		double bre = 0.5 * (fn.getValue()/(tp.getValue() + fn.getValue()) + fp.getValue()/(tn.getValue() + fp.getValue()));
 		
+		System.out.println("Song Level, One Class");
+		System.out.println("TP = " + tp.getValue());
+		System.out.println("TN = " + tn.getValue());
+		System.out.println("FP = " + fp.getValue());
+		System.out.println("FN = " + fn.getValue());
+		System.out.println("BRE = " + bre);
+		
 		// Prepare the result
 		ValidationMeasureDouble[] breMeasure = new ValidationMeasureDouble[1];
 		breMeasure[0] = new ValidationMeasureDouble(false);
@@ -119,6 +126,13 @@ public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCal
 		ValidationMeasureDouble fn = falseNegativesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		double bre = 0.5 * (fn.getValue()/(tp.getValue() + fn.getValue()) + fp.getValue()/(tn.getValue() + fp.getValue()));
+		
+		System.out.println("Partition Level, One Class");
+		System.out.println("TP = " + tp.getValue());
+		System.out.println("TN = " + tn.getValue());
+		System.out.println("FP = " + fp.getValue());
+		System.out.println("FN = " + fn.getValue());
+		System.out.println("BRE = " + bre);
 		
 		// Prepare the result
 		ValidationMeasureDouble[] breMeasure = new ValidationMeasureDouble[1];
@@ -189,6 +203,13 @@ public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCal
 		
 		double bre = 0.5 * (fnSum / (tpSum + fnSum) + fpSum / (tnSum + fpSum));
 		
+		System.out.println("SongLevel, Multilabel");
+		System.out.println("TP = " + tpSum);
+		System.out.println("TN = " + tnSum);
+		System.out.println("FP = " + fpSum);
+		System.out.println("FN = " + fnSum);
+		System.out.println("BRE = " + bre);
+		
 		// Prepare the result
 		ValidationMeasureDouble[] breMeasure = new ValidationMeasureDouble[1];
 		breMeasure[0] = new ValidationMeasureDouble(false);
@@ -243,6 +264,13 @@ public class BalancedRelativeError extends ClassificationQualityDoubleMeasureCal
 		}
 		
 		double bre = 0.5 * (fnSum / (tpSum + fnSum) + fpSum / (tnSum + fpSum));
+		
+		System.out.println("Partition Level, Multilabel");
+		System.out.println("TP = " + tpSum);
+		System.out.println("TN = " + tnSum);
+		System.out.println("FP = " + fpSum);
+		System.out.println("FN = " + fnSum);
+		System.out.println("BRE = " + bre);
 		
 		// Prepare the result
 		ValidationMeasureDouble[] breMeasure = new ValidationMeasureDouble[1];

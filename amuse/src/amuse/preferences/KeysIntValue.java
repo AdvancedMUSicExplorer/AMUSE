@@ -67,7 +67,7 @@ public enum KeysIntValue {
         case DOWNSAMPLING_TARGET_SIZE_IN_HZ:
             return 1;
         case YALE_HEAP_SIZE:
-        	return 200;
+        	return 2000;
         default:
             AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no default value set!");
             return 0;
