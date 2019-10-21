@@ -339,8 +339,13 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			String pathToModel = new String(this.pathToModelFile);
 			pathToModel = pathToModel.substring(
 					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase().length()+1,pathToModel.length());
+			
+			try {
 			pathToModel = pathToModel.substring(0,pathToModel.indexOf("-"));
 			categoryIdForTrainingSet = new Integer(pathToModel);
+			} catch(Exception e) {
+				throw new NodeException("Model path does not contain category ID.");
+			}
 			
 			// Load the file list with training tracks
 			String categoryForTraining = new String();
@@ -401,8 +406,6 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			}
 		} catch(IOException e) {
 			throw new NodeException(e.getMessage());
-		} catch(StringIndexOutOfBoundsException e) {
-			throw new NodeException("Model path does not contain category ID.");
 		}
 		
 		return listOfUsedProcessedFeatureFiles;
