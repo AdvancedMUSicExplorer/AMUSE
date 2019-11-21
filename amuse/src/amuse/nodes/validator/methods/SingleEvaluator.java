@@ -341,8 +341,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase().length()+1,pathToModel.length());
 			
 			try {
-			pathToModel = pathToModel.substring(0,pathToModel.indexOf("-"));
-			categoryIdForTrainingSet = new Integer(pathToModel);
+				pathToModel = pathToModel.substring(0,pathToModel.indexOf("-"));
+				categoryIdForTrainingSet = new Integer(pathToModel);
 			} catch(Exception e) {
 				throw new NodeException("Model path does not contain category ID.");
 			}
