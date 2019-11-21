@@ -110,13 +110,17 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
         
         inputSelectionPanel.getInputSourceTypeComboBox().addActionListener(e ->{
-        	setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
-					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
-        	processingHistoryPanel.getAttributesToIgnoreTextField().setEnabled(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
+        	setChildsEnabled(processingHistoryPanel,
+        			groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) ||
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
+        	processingHistoryPanel.getAttributesToIgnoreTextField().setEnabled(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) || inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
         });
         groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
-			setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
-					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST));
+        	setChildsEnabled(processingHistoryPanel,
+        			groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) ||
+					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
 		});
         
         viewLeft.add(processingHistoryPanel, "growx, span, wrap");
