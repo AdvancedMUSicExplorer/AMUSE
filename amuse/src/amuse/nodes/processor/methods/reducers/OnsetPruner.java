@@ -157,9 +157,12 @@ public class OnsetPruner extends AmuseTask implements DimensionProcessorInterfac
 			// Calculate the path to onset file
 			String relativeName = new String();
 			if(currentOnsetFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentOnsetFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentOnsetFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentOnsetFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {

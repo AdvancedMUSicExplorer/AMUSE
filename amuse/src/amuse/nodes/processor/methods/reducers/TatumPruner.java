@@ -157,9 +157,12 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 			// Calculate the path to tatum file
 			String relativeName = new String();
 			if(currentTatumFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentTatumFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentTatumFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentTatumFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {

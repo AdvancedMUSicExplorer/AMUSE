@@ -198,9 +198,12 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip 
 				// Calculate the paths
 				String relativeName = new String();
 				if(currentMusicFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-					relativeName = currentMusicFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+					relativeName = currentMusicFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 				} else {
 					relativeName = currentMusicFile;
+				}
+				if(relativeName.charAt(0) == File.separatorChar) {
+					relativeName = relativeName.substring(1);
 				}
 				relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 				if(relativeName.lastIndexOf(File.separator) != -1) {

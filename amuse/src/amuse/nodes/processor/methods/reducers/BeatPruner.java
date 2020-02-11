@@ -157,9 +157,12 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 			// Calculate the path to onset file
 			String relativeName = new String();
 			if(currentBeatFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentBeatFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentBeatFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentBeatFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {

@@ -281,9 +281,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			// Calculate the path to feature files
 			String relativeName = new String();
 			if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {
@@ -614,9 +617,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		String destinationFile = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
 		String relativeName = new String();
 		if(destinationFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-			relativeName = destinationFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+			relativeName = destinationFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 		} else {
 			relativeName = destinationFile;
+		}
+		if(relativeName.charAt(0) == File.separatorChar) {
+			relativeName = relativeName.substring(1);
 		}
 		relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 		String featureDesc = new String("");
@@ -907,9 +913,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			// Calculate the path to file with time events
 			String relativeName = new String();
 			if(currentTimeEventFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentTimeEventFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {

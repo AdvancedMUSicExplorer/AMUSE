@@ -341,9 +341,12 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 			// Calculate the path to file with time events
 			String relativeName = new String();
 			if(currentTimeEventFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentTimeEventFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {
@@ -393,9 +396,12 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 			// Calculate the path to onset file
 			String relativeName = new String();
 			if(currentRMSFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentRMSFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length()+1);
+				relativeName = currentRMSFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 			} else {
 				relativeName = currentRMSFile;
+			}
+			if(relativeName.charAt(0) == File.separatorChar) {
+				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf("/") != -1) {
