@@ -104,9 +104,10 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 <amuseEnableFeature id="220" dimensions="66">
 	<text>
 	  % Compute strengths of CRP cooccurrences (1st dim: (CRP1+CRP2)/2; 2nd dim: (CRP1+CRP3)/2 etc.)
-	  co = zeros(length(f_CRP),66);
+	  tw = length(f_CRP(1,:)); % Number of time windows
+      co = zeros(tw,66);
 	  curr_index = 1;
-	  for i=1:length(f_CRP) % Go through time windows
+	  for i=1:tw % Go through time windows
 	      for j=1:length(f_CRP(:,1)) % Go through chroma dimensions
 	          for k=j+1:length(f_CRP(:,1)) % Go through chroma dimensions
 		      co(i,curr_index) = (f_CRP(j,i) + f_CRP(k,i))/2;
