@@ -2,7 +2,7 @@
 |AMUSE framework (Advanced MUsic Explorer)|
 |-----------------------------------------|
 
-Copyright 2006-2017 by code authors
+Copyright 2006-2020 by code authors
 
 Created at TU Dortmund, Chair of Algorithm Engineering
 (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
