@@ -47,7 +47,8 @@ public enum KeysBooleanValue {
     USE_GRID_PROCESSOR,
     USE_GRID_VALIDATOR,
     USE_GRID_OPTIMIZER,
-    MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM;
+    MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM,
+    LOAD_CATEGORY_TABLE_LOCALLY;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -69,6 +70,8 @@ public enum KeysBooleanValue {
                 return true;
             case SPLIT_WAVE:
                 return true;
+            case LOAD_CATEGORY_TABLE_LOCALLY:
+            	return false;
             default:
                 AmuseLogger.write(this.getClass().getName(), Level.DEBUG,
                         this.toString() + ": no default value set!");
@@ -107,6 +110,7 @@ public enum KeysBooleanValue {
 		map.put(USE_GRID_VALIDATOR.toString(), "TRUE to use grid for validation:");
 		map.put(USE_GRID_OPTIMIZER.toString(), "TRUE to use grid for optimization:");
 		map.put(MARK_CURRENT_TIME_IN_ANNOTATION_AUDIOSPECTRUM.toString(), "TRUE to display a beam on the audio spectrum in the annotation editor that tracks the time:");
+		map.put(LOAD_CATEGORY_TABLE_LOCALLY.toString(), "TRUE to load multiple track annotation table from AMUSE local folder (may be required for the reduction of traffic in grid systems):");
 		return map;
 	}
 }
