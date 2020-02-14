@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -43,6 +43,7 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.optimizer.interfaces.OptimizerInterface;
+import amuse.nodes.optimizer.methods.es.evaluation.interfaces.EvaluationInterface;
 import amuse.nodes.optimizer.methods.es.operators.crossover.interfaces.CrossoverInterface;
 import amuse.nodes.optimizer.methods.es.operators.mutation.interfaces.MutationInterface;
 import amuse.nodes.optimizer.methods.es.operators.selection.CommaSelection;
@@ -109,7 +110,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	public int currentSuccessCounter; // TODO replace by successHistory: currently IntegerMutation may set this
 	// counter to zero after x (e.g. 5) iterations; if other mutations do this after y (e.g. 10) iterations, it is not counted properly! Also check the update for SMS-EMOA!!
 	ESLogger esLogger;
-	private FitnessEvaluator fitnessEvalualor;
+	private EvaluationInterface fitnessEvaluator;
 	
 	/*
 	 * (non-Javadoc)
@@ -553,6 +554,17 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			}
 		}
 		
+		// Set the evaluation
+		Node eval = esConfiguration.getESParameterByName("Evaluation");
+		String evalString = eval.getAttributes().getNamedItem("classValue").getNodeValue();
+		try {
+			Class<?> evaluationClass = Class.forName(evalString);
+			fitnessEvaluator = (EvaluationInterface)evaluationClass.newInstance();
+			fitnessEvaluator.initialize(this, isIndependentTestSetUsed);
+		} catch (Exception e) {
+			throw new NodeException("Could not set up evaluation: " + e.getMessage());
+		}
+		
 		// Set the VNS operators (variable neighborhood search)
 		vnsMap = new HashMap<String,List<MutationInterface>>();
 		NodeList vnsNodes = esConfiguration.getESParameterByName("List with VNS operators").getChildNodes();
@@ -636,7 +648,6 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			}
 			population[i] = ind;
 		}
-		fitnessEvalualor = new FitnessEvaluator(this, isIndependentTestSetUsed);
 		
 		if(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom().
 				equals("-1")) {
@@ -889,8 +900,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	/**
 	 * @return the fitnessEvalualor
 	 */
-	public FitnessEvaluator getFitnessEvalualor() {
-		return fitnessEvalualor;
+	public EvaluationInterface getFitnessEvalualor() {
+		return fitnessEvaluator;
 	}
 
 }

@@ -21,7 +21,7 @@
  * 
  * Creation date: 28.01.2010
  */
-package amuse.nodes.optimizer.methods.es;
+package amuse.nodes.optimizer.methods.es.evaluation;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +46,9 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.optimizer.OptimizationConfiguration;
+import amuse.nodes.optimizer.methods.es.ESIndividual;
+import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
+import amuse.nodes.optimizer.methods.es.evaluation.interfaces.EvaluationInterface;
 import amuse.nodes.optimizer.methods.es.parameters.processing.SelectedFeatures;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.processor.ProcessorNodeScheduler;
@@ -66,7 +69,7 @@ import amuse.util.FileOperations;
  * @author Igor Vatolkin
  * @version $Id$
  */
-public class FitnessEvaluator {
+public class MultipleTrackClassification implements EvaluationInterface {
 
 	//  Parameters from ESConfiguration which are used for decision which AMUSE tasks must be started 
 	boolean isFeatureExtractionRequired = false;
@@ -94,7 +97,7 @@ public class FitnessEvaluator {
 	 * @param individual ES individual
 	 * @param isEvaluatedOnIndependentTestSet Will the optimization process be evaluated additionally on the independent test set?
 	 */
-	public FitnessEvaluator(EvolutionaryStrategy strategy, boolean isEvaluatedOnIndependentTestSet) {
+	public void initialize(EvolutionaryStrategy strategy, boolean isEvaluatedOnIndependentTestSet) {
 		
 		// Nodes: <FE> for feature extraction, <FP> for feature processing, <C> for classification
 		NodeList amuseTasksToOptimize = strategy.getConfiguration().getParametersToOptimize().getChildNodes();
@@ -398,7 +401,7 @@ public class FitnessEvaluator {
 					}
 				}
 					
-				AmuseLogger.write(FitnessEvaluator.class.getName(), Level.DEBUG, "Starting processing...");
+				AmuseLogger.write(MultipleTrackClassification.class.getName(), Level.DEBUG, "Starting processing...");
 					
 				ProcessorNodeScheduler ps = new ProcessorNodeScheduler(individual.getCorrespondingES().
 					getCorrespondingScheduler().getHomeFolder() + File.separator + "input" +File.separator + "task_" +
