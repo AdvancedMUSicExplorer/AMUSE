@@ -23,12 +23,13 @@
  */
 package amuse.nodes.optimizer.methods.es.parameters.processing;
 
+import java.util.Random;
+
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import amuse.nodes.optimizer.methods.es.ESConfiguration;
 import amuse.nodes.optimizer.methods.es.representation.BinaryVector;
-import weka.core.Debug.Random;
 
 /**
  * Corresponding AMUSE task: feature processing
