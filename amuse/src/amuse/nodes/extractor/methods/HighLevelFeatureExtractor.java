@@ -47,6 +47,7 @@ import org.w3c.dom.NodeList;
 
 import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
+import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.FeatureTable;
@@ -57,7 +58,6 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
 import amuse.preferences.AmusePreferences;

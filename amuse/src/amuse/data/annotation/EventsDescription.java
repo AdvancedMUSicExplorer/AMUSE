@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -19,17 +19,17 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 22.07.2009
+ * Creation date: 15.02.2020
  */
-package amuse.nodes.classifier.interfaces;
+package amuse.data.annotation;
 
 /**
  * This class describes the partitions from the given song
  * 
  * @author Igor Vatolkin
- * @version $Id: SongPartitionsDescription.java 197 2017-08-11 12:15:34Z frederik-h $
+ * @version $Id $
  */
-public class SongPartitionsDescription {
+public class EventsDescription {
 	
 	/** Path to the song */
 	final String pathToMusicSong;
@@ -37,28 +37,18 @@ public class SongPartitionsDescription {
 	/** Id of the song */
 	final int songId;
 	
-	/** Starts of the partitions in ms */
-	final Double[] startMs;
-	
-	/** Ends of the partitions in ms */
-	final Double[] endMs;
+	/** Event positions in ms */
+	final Double[] eventMs;
 	
     /**
 	 * Constructor
 	 * @param pathToMusicSong Path to the song
-	 * @param startMs Starts of the partitions in ms
-	 * @param endMs Ends of the partitions in ms
+	 * @param eventMs Positions of the events in ms
 	 */
-	public SongPartitionsDescription(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs) {
-		if(startMs.length != endMs.length) {
-			throw new RuntimeException("Could not instantiate SongPartitionsDescription: the number of " +
-					"partition starts (" + startMs.length + ") is not equal to the number of partition ends (" + 
-					endMs.length + ")");
-		}
+	public EventsDescription(String pathToMusicSong, int songId, Double[] eventMs) {
 		this.pathToMusicSong = pathToMusicSong;
 		this.songId = songId;
-		this.startMs = startMs;
-		this.endMs = endMs;
+		this.eventMs = eventMs;
 	}
 
 	/**
@@ -69,17 +59,10 @@ public class SongPartitionsDescription {
 	}
 
 	/**
-	 * @return the startMs
+	 * @return the eventMs
 	 */
-	public Double[] getStartMs() {
-		return startMs;
-	}
-
-	/**
-	 * @return the endMs
-	 */
-	public Double[] getEndMs() {
-		return endMs;
+	public Double[] getEventMs() {
+		return eventMs;
 	}
 
 	/**

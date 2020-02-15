@@ -25,8 +25,8 @@ package amuse.nodes.validator.interfaces;
 
 import java.util.ArrayList;
 
+import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 
 /**
  * Methods which calculate measures based on classification results and ground truth information

@@ -26,8 +26,8 @@ package amuse.nodes.validator.measures.confusionmatrix.base;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 

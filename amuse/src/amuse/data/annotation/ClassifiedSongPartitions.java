@@ -21,7 +21,7 @@
  * 
  * Creation date: 22.07.2009
  */
-package amuse.nodes.classifier.interfaces;
+package amuse.data.annotation;
 
 /**
  * This class saves the results of a classification task

@@ -25,8 +25,8 @@ package amuse.nodes.validator.measures.correlation;
 
 import java.util.ArrayList;
 
+import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.classifier.interfaces.ClassifiedSongPartitions;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 
