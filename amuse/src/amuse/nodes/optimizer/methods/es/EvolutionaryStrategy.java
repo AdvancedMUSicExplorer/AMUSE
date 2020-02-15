@@ -555,7 +555,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		}
 		
 		// Set the evaluation
-		Node eval = esConfiguration.getESParameterByName("Evaluation");
+		Node eval = esConfiguration.getConstantParameterByName("Fitness estimation class");
 		String evalString = eval.getAttributes().getNamedItem("classValue").getNodeValue();
 		try {
 			Class<?> evaluationClass = Class.forName(evalString);
