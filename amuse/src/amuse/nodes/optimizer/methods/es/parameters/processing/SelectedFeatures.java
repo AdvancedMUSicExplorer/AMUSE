@@ -23,17 +23,12 @@
  */
 package amuse.nodes.optimizer.methods.es.parameters.processing;
 
-import java.io.File;
-
-import org.apache.log4j.Level;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import weka.core.Debug.Random;
-import amuse.data.FeatureTable;
 import amuse.nodes.optimizer.methods.es.ESConfiguration;
 import amuse.nodes.optimizer.methods.es.representation.BinaryVector;
-import amuse.util.AmuseLogger;
+import weka.core.Debug.Random;
 
 /**
  * Corresponding AMUSE task: feature processing
@@ -84,42 +79,25 @@ public class SelectedFeatures extends BinaryVector {
 			rand = new Random();
 		}
 			
-		// Load the feature table for the estimation of original raw feature number
-		Node featureTableNode = esConfiguration.getConstantParameterByName("Feature table");
-		FeatureTable ft = new FeatureTable(new File(featureTableNode.getAttributes().getNamedItem("fileValue").getNodeValue()));
-			
 		// Load the 
-		// (1) factor parameter (maximum number of features proceeded to classification is
-		// factor * number of initial raw features. E.g. if the processing uses GMM1, for each feature
-		// a mean value and deviation in a partition are calculated and the factor 2 is enough. If
-		// additionally a derivation calculator is applied once during the processing, the factor must 
-		// be here 4 etc.
+		// (1) feature number
 		// (2) initial feature rate
-		int factor = 0;
+		int featureNumber = 0;
 		double initFeatureRate = 0.5;
 		Node selectedFeaturesNode = esConfiguration.getOptimizationParameterByName("Selected features");
 		NodeList parameters = selectedFeaturesNode.getChildNodes();
 		for(int i=0;i<parameters.getLength();i++) {
 			if(parameters.item(i).getNodeType() == Node.ELEMENT_NODE && parameters.item(i).getNodeName().equals("optimizationParameter")) {
-				if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Maximum factor of generated features " +
-						"related to initial raw feature set")) {
-					factor = new Integer(parameters.item(i).getAttributes().getNamedItem("intValue").getNodeValue());
+				if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Feature number")) {
+					featureNumber = new Integer(parameters.item(i).getAttributes().getNamedItem("intValue").getNodeValue());
 				} else if(parameters.item(i).getAttributes().getNamedItem("name").getNodeValue().equals("Initial rate of selected features")) {
 					initFeatureRate = new Double(parameters.item(i).getAttributes().getNamedItem("doubleValue").getNodeValue());
 				}
 			}
 		}
 			
-		if(factor == 0) {
-			AmuseLogger.write(SelectedFeatures.class.getName(), Level.WARN, "Maximum factor of generated features parameter was not found" +
-					" and will be set to 2 (default value)");
-			factor = 1;
-		}
-			
 		// Create an array with appropriate number of features dimensions which will be later switched on/off by ES
-		vector = new Boolean[ft.getDimensionsCount() * factor];
-		// DEBUG Set the constant feature number
-		//vector = new Boolean[1068];
+		vector = new Boolean[featureNumber];
 		for(int i=0;i<vector.length;i++) {
 			// DEBUG Switch all features on!
 			//vector[i] = true;
