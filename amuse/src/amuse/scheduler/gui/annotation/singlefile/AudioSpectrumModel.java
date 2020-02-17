@@ -57,8 +57,6 @@ public class AudioSpectrumModel {
 					+ File.separator 
 					+ "config" 
 					+ File.separator 
-					+ "node" 
-					+ File.separator 
 					+ "annotation" 
 					+ File.separator 
 					+ "temp.wav";

@@ -1556,3 +1556,9 @@
 10:33:59,728 60919 [Thread-3] DEBUG amuse.util.FileOperations - Deleting: /home/ginsel/workspace/amuse/config/node/processor/input/task_1
 10:33:59,728 60919 [Thread-3] DEBUG amuse.util.FileOperations - Deleting: /home/ginsel/workspace/amuse/config/node/processor/input/task_1
 10:34:00,263 61454 [Thread-2] INFO  amuse.scheduler.taskstarters.FeatureProcessingStarter - 1/1 feature processing jobs finished sucessfully!
+13:07:26,032 0    [main] INFO  class amuse.preferences.AmusePreferences - Using the environment variable 'AMUSEHOME'
+13:07:26,313 281  [main] INFO  amuse.scheduler.Scheduler - Scheduler started...
+13:07:36,749 10717 [AWT-EventQueue-0] DEBUG amuse.util.FileOperations - Deleting: /home/ginsel/workspace_git/amuse/config/node/annotation/temp.wav
+13:08:29,656 0    [main] INFO  class amuse.preferences.AmusePreferences - Using the environment variable 'AMUSEHOME'
+13:08:29,863 207  [main] INFO  amuse.scheduler.Scheduler - Scheduler started...
+13:08:45,037 15381 [AWT-EventQueue-0] DEBUG amuse.util.FileOperations - Deleting: /home/ginsel/workspace_git/amuse/config/annotation/temp.wav
