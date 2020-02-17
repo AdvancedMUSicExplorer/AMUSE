@@ -134,6 +134,11 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 	 */
 	private void performEvaluation() throws NodeException {
 		
+		// Check if the model path is specified
+		if(pathToModelFile.equals("")) {
+			throw new NodeException("No model specified.");
+		}
+		
 		// List of all models to evaluate
 		ArrayList<File> modelsToEvaluate = new ArrayList<File>();
 		File modelFile = new File(pathToModelFile);
@@ -337,14 +342,18 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			
 			// Get the id for training category
 			String pathToModel = new String(this.pathToModelFile);
-			pathToModel = pathToModel.substring(
-					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase().length()+1,pathToModel.length());
-			
-			try {
-				pathToModel = pathToModel.substring(0,pathToModel.indexOf("-"));
-				categoryIdForTrainingSet = new Integer(pathToModel);
-			} catch(Exception e) {
-				throw new NodeException("Model path does not contain category ID.");
+			if(pathToModel.startsWith(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase())) {
+				pathToModel = pathToModel.substring(
+						((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase().length()+1,pathToModel.length());
+				
+				try {
+					pathToModel = pathToModel.substring(0,pathToModel.indexOf("-"));
+					categoryIdForTrainingSet = new Integer(pathToModel);
+				} catch(Exception e) {
+					throw new NodeException("Model path does not contain category ID.");
+				}
+			} else {
+				throw new NodeException("Model is not located in the Model Database.");
 			}
 			
 			// Load the file list with training tracks
