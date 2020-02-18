@@ -140,6 +140,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		} catch (NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 					"Could not proceed validation task: " + e.getMessage());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
+			this.fireEvent(new NodeEvent(NodeEvent.VALIDATION_FAILED, this));
 		}
 	}
 	
