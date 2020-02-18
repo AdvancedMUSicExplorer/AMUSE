@@ -1,0 +1,15 @@
+% Table with installed tools
+@RELATION tools
+
+% Unique tool ID
+@ATTRIBUTE Id NUMERIC
+% Tool name
+@ATTRIBUTE Name STRING
+% Installed version description
+@ATTRIBUTE VersionDescription STRING
+% Corresponding folder in plugin installation folder
+@ATTRIBUTE Folder STRING
+
+@DATA
+4, "Librosa", -1, "Librosa"
+

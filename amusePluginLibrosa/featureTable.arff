@@ -1,0 +1,23 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)
+@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC
+
+@DATA
+262, "Mel spectrum", 8, 2048, 128, WindowedNumeric

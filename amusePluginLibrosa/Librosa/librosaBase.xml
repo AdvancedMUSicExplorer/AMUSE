@@ -1,0 +1,58 @@
+<amuseLibrosaScript>
+<text>
+import os
+import sys
+import librosa
+
+if __name__ == '__main__':
+    
+    if len(sys.argv) == 3: 
+        print ("music file: " + sys.argv[1])
+        print ("output folder: " + sys.argv[2])
+        
+        musicFile = sys.argv[1]
+        outputFolder = sys.argv[2]
+        samplingRate = 22050
+        y, sr = librosa.load(musicFile, sr=samplingRate)
+        assert sr == samplingRate, "Samplingrate is not " + str(samplingRate)
+</text>
+<amuseEnableFeature id="262" dimensions="128">
+	<text>
+        n_fft = 2048
+        n_mels = 128
+        minfreq = 0
+        maxfreq = 16000
+        hop_length = 2048
+        featureName = "Mel Spectrum"
+        
+        
+        features = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=n_fft, n_mels=n_mels, hop_length=hop_length)
+        
+        if not os.path.exists(outputFolder):
+            os.makedirs(outputFolder)
+        
+        # Save the feature file
+        file = open(outputFolder + os.sep + musicFile[musicFile.rfind(os.sep):len(musicFile)-4] + "_262.arff", "w")
+        file.write("@RELATION 'Music feature'\n")
+        file.write("%rows = " + str(n_mels) + "\n")
+        file.write("%columns = " + str(len(features[0])) + "\n")
+        file.write("%sample_rate = " + str(samplingRate) + "\n")
+        file.write("%window_size = " + str(n_fft) + "\n\n")
+
+        for i in range(0, len(features)):
+            file.write("@ATTRIBUTE '" + featureName + " " + str(i+1) + "' NUMERIC\n")
+        file.write("@ATTRIBUTE WindowNumber NUMERIC\n")
+        file.write("\n@DATA\n")
+        for i in range(0, len(features[0])):
+            for j in range(0, len(features)):
+                file.write(str(features[j][i]) + ",")
+            file.write(str(i+1) + "\n")
+        file.close()
+	</text>
+</amuseEnableFeature>          
+<text>
+    else:
+        print("Not enough parameters used!!!")
+        sys.exit()
+</text>
+</amuseLibrosaScript>
