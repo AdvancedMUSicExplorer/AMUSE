@@ -80,16 +80,18 @@ public class CategorySelectionPanel extends JPanel {
 	
 	private void updateCheckBoxes() {
 		removeCheckBoxes();
-		String path = model.selected.fileName;
-		try {
-			DataSet dataSet = new DataSet(new File(path));	
-			for(int i=5;i<dataSet.getAttributeCount();i++) {
-				JCheckBox categoryCheckBox = new JCheckBox(dataSet.getAttribute(i).getName());
-				checkBoxes.add(categoryCheckBox);
-				this.add(categoryCheckBox, "pushx, gap rel, wrap");
+		if(model.selected != null) {
+			String path = model.selected.fileName;
+			try {
+				DataSet dataSet = new DataSet(new File(path));	
+				for(int i=5;i<dataSet.getAttributeCount();i++) {
+					JCheckBox categoryCheckBox = new JCheckBox(dataSet.getAttribute(i).getName());
+					checkBoxes.add(categoryCheckBox);
+					this.add(categoryCheckBox, "pushx, gap rel, wrap");
+				}
+			} catch(IOException ex){
+				JOptionPane.showMessageDialog(this, "Unable to load Categories: \""+ ex.getLocalizedMessage() + "\"", "Unable To Load Categories!", JOptionPane.ERROR_MESSAGE);
 			}
-		} catch(IOException exception){
-			
 		}
 		this.revalidate();
 	}
