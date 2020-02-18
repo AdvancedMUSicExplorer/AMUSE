@@ -16,7 +16,7 @@ if __name__ == '__main__':
         y, sr = librosa.load(musicFile, sr=samplingRate)
         assert sr == samplingRate, "Samplingrate is not " + str(samplingRate)
 </text>
-<amuseEnableFeature id="262" dimensions="128">
+<amuseEnableFeature id="263" dimensions="128">
 	<text>
         n_fft = 2048
         n_mels = 128
@@ -32,7 +32,7 @@ if __name__ == '__main__':
             os.makedirs(outputFolder)
         
         # Save the feature file
-        file = open(outputFolder + os.sep + musicFile[musicFile.rfind(os.sep):len(musicFile)-4] + "_262.arff", "w")
+        file = open(outputFolder + os.sep + musicFile[musicFile.rfind(os.sep):len(musicFile)-4] + "_263.arff", "w")
         file.write("@RELATION 'Music feature'\n")
         file.write("%rows = " + str(n_mels) + "\n")
         file.write("%columns = " + str(len(features[0])) + "\n")
