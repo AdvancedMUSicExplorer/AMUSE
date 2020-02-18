@@ -58,6 +58,10 @@
 <extractFeature id="258" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.NumberOfChordChangesIn10Seconds</extractFeature>
 </amuseEnableFeature>
 
+<amuseEnableFeature id="262" dimensions="20">
+<extractFeature id="262" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.ChordVector</extractFeature>
+</amuseEnableFeature>
+
 <amuseEnableFeature id="259" dimensions="3">
 <extractFeature id="259" source="vamp_nnls-chroma_chordino_simplechord.csv">amuse.nodes.extractor.methods.nnlsderived.FrequentChordSharesBasedOnChordDuration</extractFeature>
 </amuseEnableFeature>
