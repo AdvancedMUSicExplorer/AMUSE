@@ -132,10 +132,10 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
 			jobType = "optimization";
 		}
 		if(numErrors == 0){
-			AmuseLogger.write(this.getClass().getName(),Level.INFO, errorDescriptionsList.size() + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished sucessfully!");
+			AmuseLogger.write(this.getClass().getName(),Level.INFO, errorDescriptionsList.size() + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished successfully!");
 		}
 		else{
-			AmuseLogger.write(this.getClass().getName(),Level.ERROR, (errorDescriptionsList.size() - numErrors) + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished sucessfully!");
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR, (errorDescriptionsList.size() - numErrors) + "/" + errorDescriptionsList.size() + " " + jobType + " jobs finished successfully!");
 			AmuseLogger.write(this.getClass().getName(),Level.ERROR, "Error occured while processing the following files:" + errorText);
 
 		}

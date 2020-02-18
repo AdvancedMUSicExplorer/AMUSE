@@ -35,3 +35,4 @@
 259, "Shares of the most frequent 20, 40 and 60 percents of chords with regard to their duration", 7, 220500, 3, WindowedNumeric
 260, "Interval strengths estimated from 10 highest semitone peaks", 7, 2048, 12, WindowedNumeric
 261, "Interval strengths estimated from the semitone peaks above 3/4 of the maximum peak", 7, 2048, 12, WindowedNumeric
+262, "Chord Vector", 7, 512, 20, WindowedNumeric

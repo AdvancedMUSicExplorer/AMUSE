@@ -156,7 +156,7 @@ public class FileOperations {
     /**
      * Use this method to delete a single file or empty folder.
      * @param f the file to delte.
-     * @return true if delete sucessfull.
+     * @return true if delete successful.
      */
     public static boolean delete(File f) {
 	return delete(f, defaultLevel);
@@ -165,7 +165,7 @@ public class FileOperations {
     /**
      * Use this method to delete a single file or empty folder.
      * @param f the file to delte.
-     * @return true if delete sucessfull.
+     * @return true if delete successful.
      */
     public static boolean delete(File f, Level l) {
     	log(l, "Deleting: " + f.getAbsolutePath());
