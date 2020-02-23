@@ -486,7 +486,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
 					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
-					classifierInputLoader.setFile(new File(currentInputFile));
+					File processedFeatureFile = new File(currentInputFile);
+					if(!processedFeatureFile.exists()) {
+						throw new NodeException("The processed feature file does not exist.");
+					}
+					classifierInputLoader.setFile(processedFeatureFile);
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
