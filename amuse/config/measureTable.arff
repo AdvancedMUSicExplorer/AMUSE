@@ -10,7 +10,7 @@
 % Measure name
 @ATTRIBUTE Name STRING
 % Measure category
-@ATTRIBUTE Category {"Data reduction", "Standard measures", "Confusion matrix", "Recall and specificity combinations", "Correlation-based measures", "Measured error", "Song list", "?"}
+@ATTRIBUTE Category {"Data reduction", "Standard measures", "Confusion matrix", "Recall and specificity combinations", "Correlation-based measures", "Measured error", "Song list", "Events", "?"}
 % Optimal value (e.g. 0 if this measure should be minimized)
 @ATTRIBUTE OptimalValue NUMERIC
 % Class for measure calculation
@@ -57,3 +57,11 @@
 300, "Standard correlation coefficient", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.StandardCorrelationCoefficient, true, true
 301, "Spearman's Rho", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.SpearmansRhoRankCorrelation, true, true
 302, "Kendal's Tau", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.KendallsTauRankCorrelation, true, false
+
+% Measures for event prediction
+400, "True positives", "Events", -1, amuse.nodes.validator.measures.events.base.TruePositives, true, false
+402, "False positives", "Events", -1, amuse.nodes.validator.measures.events.base.FalsePositives, true, false
+403, "False negatives", "Events", -1, amuse.nodes.validator.measures.events.base.FalseNegatives, true, false
+405, "Precision", "Events", 1.0, amuse.nodes.validator.measures.events.Precision, true, false
+406, "Recall", "Events", 1.0, amuse.nodes.validator.measures.events.Recall, true, false
+408, "F-measure", "Events", 1.0, amuse.nodes.validator.measures.events.FMeasure, true, false
