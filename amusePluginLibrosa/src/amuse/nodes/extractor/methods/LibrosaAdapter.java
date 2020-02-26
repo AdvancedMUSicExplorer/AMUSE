@@ -239,7 +239,6 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 			commands.add(folder.getAbsolutePath());
 			ExternalProcessBuilder librosa = new ExternalProcessBuilder(commands);
 			librosa.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
-			librosa.setEnv("LD_LIBRARY_PATH", AmusePreferences.get(KeysStringValue.LD_LIBRARY_PATH));
 			Process pc = librosa.start();
 
 			pc.waitFor();

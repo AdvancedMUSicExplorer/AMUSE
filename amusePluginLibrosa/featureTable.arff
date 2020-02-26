@@ -16,8 +16,11 @@
 @ATTRIBUTE WindowSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
-% Indicates if the Attribute is suitable for Feature Matrix Processing. (1 = True, 0 = False)
-@ATTRIBUTE IsSuitableForFeatureMatrixProcessing NUMERIC
+% Type of feature:
+%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length
+%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time
+%   Event: feature marks events as points in time, but has no duration or value
+@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
 263, "Mel spectrum", 8, 2048, 128, WindowedNumeric
