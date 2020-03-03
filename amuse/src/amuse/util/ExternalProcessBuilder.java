@@ -1,7 +1,7 @@
 /**
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  *
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  *
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>)
@@ -61,6 +61,13 @@ public class ExternalProcessBuilder {
      */
     public ExternalProcessBuilder(String... command) {
         this(Arrays.asList(command));
+    }
+    
+    /**
+     * Shows logs of the started process in AMUSE console
+     */
+    public void redirectOutputToAMUSE() {
+    	pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
     }
 
     public static ExternalProcessBuilder buildJavaProcess(List<String> javaProperties, List<String> classPath, List<String> command) {
