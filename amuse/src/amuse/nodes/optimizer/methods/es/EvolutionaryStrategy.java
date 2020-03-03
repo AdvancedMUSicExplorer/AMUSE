@@ -331,6 +331,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Generation: " + currentGeneration + 
 					" Evaluation: " + currentEvaluation);
 		}
+		fitnessEvaluator.close();
 		esLogger.close();
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "ES optimization finished");
 	}
