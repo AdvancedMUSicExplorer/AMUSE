@@ -931,6 +931,11 @@ public class MultipleTrackClassification implements EvaluationInterface {
 		return data;
 	}
 
+	@Override
+	public void close() throws NodeException {
+		// Do nothing
+	}
+
 }
 
 

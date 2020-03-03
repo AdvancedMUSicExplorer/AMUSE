@@ -41,7 +41,7 @@ public interface EvaluationInterface {
 	 * @param individual ES individual
 	 * @param isEvaluatedOnIndependentTestSet Will the optimization process be evaluated additionally on the independent test set?
 	 */
-	public void initialize(EvolutionaryStrategy strategy, boolean isEvaluatedOnIndependentTestSet);
+	public void initialize(EvolutionaryStrategy strategy, boolean isEvaluatedOnIndependentTestSet) throws NodeException;
 	
 	/**
 	 * Performs the calculation of fitness value of the given ES individual
@@ -50,5 +50,10 @@ public interface EvaluationInterface {
 	 * @return Array with fitness value(s): the 1st one is used for single-objective optimization
 	 */
 	public ValidationMeasureDouble[] getFitness(ESIndividual individual, boolean isEvaluatedOnIndependentTestSet) throws NodeException;
+
+	/**
+	 * Closes all routines necessary for evaluation (e.g., stopping external tools)
+	 */
+	public void close() throws NodeException;
 
 }
