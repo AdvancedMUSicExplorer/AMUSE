@@ -96,18 +96,30 @@ public class SelectedFeatures extends BinaryVector {
 				}
 			}
 		}
+		
+		// Set initial feature rate randomly
+		if(initFeatureRate == 0) {
+			initFeatureRate = rand.nextDouble();
+		}
 			
 		// Create an array with appropriate number of features dimensions which will be later switched on/off by ES
 		vector = new Boolean[featureNumber];
+		int numberOfSelectedFeatures = 0;
 		for(int i=0;i<vector.length;i++) {
 			// DEBUG Switch all features on!
 			//vector[i] = true;
 			double toss = rand.nextDouble();
 			if(toss < initFeatureRate) {
 				vector[i] = true;
+				numberOfSelectedFeatures++;
 			} else {
 				vector[i] = false;
 			}
+		}
+		
+		// Check that at least one feature is selected
+		if(numberOfSelectedFeatures == 0) {
+			vector[rand.nextInt(vector.length)] = true;
 		}
 		
 		return vector;
