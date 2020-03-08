@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -98,6 +99,16 @@ public class ClassificationStarter extends AmuseTaskStarter {
 	   	    	// Create parameter line
 				String parameterString = new String();
 				parameterString = new Long(this.jobCounter).toString();
+				
+				// Update the counter of batch jobs
+				try {
+					FileOutputStream values_toTest = new FileOutputStream(new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt"));
+					DataOutputStream values_writerTest = new DataOutputStream(values_toTest);
+					values_writerTest.writeBytes(new Long(jobCounter+1).toString());
+					values_toTest.close();
+				} catch (Exception e) {
+					throw new SchedulerException("Could not update job counter during proceeding a script to the grid: " + e.getMessage());
+				}
 		
 				// Proceed script to grid
 				Process process;

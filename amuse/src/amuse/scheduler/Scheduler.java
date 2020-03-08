@@ -23,8 +23,10 @@ package amuse.scheduler;
 
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -81,6 +83,23 @@ public class Scheduler implements Runnable {
 	/** Scheduler private constructor */
 	private Scheduler() {
 		this.jobCounter = 0l;
+		try {
+			File jobCounterFile = new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt");
+			if(!jobCounterFile.exists()) {
+				FileOutputStream values_toTest = new FileOutputStream(jobCounterFile);
+				DataOutputStream values_writerTest = new DataOutputStream(values_toTest);
+				values_writerTest.writeBytes("0");
+				values_toTest.close();
+			}
+			FileReader inputReader = new FileReader(jobCounterFile);
+			BufferedReader bufferedInputReader = new BufferedReader(inputReader);
+			String line =  new String();
+			line = bufferedInputReader.readLine();
+			this.jobCounter = new Integer(line);
+			inputReader.close();
+		} catch(Exception e) {
+			AmuseLogger.write(schedulerInstance.getClass().getName(),Level.ERROR,"Could not load the number of batch jobs: " + e.getMessage());
+		}
 		try {
 			PluginLoader.loadPlugins(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins"));
 		} catch(SchedulerException e) {
