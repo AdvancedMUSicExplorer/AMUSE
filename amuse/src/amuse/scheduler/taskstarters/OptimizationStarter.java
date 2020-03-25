@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.taskstarters;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -98,6 +99,16 @@ public class OptimizationStarter extends AmuseTaskStarter {
 	   	    	// Create parameter line
 				String parameterString = new String();
 				parameterString = new Long(this.jobCounter).toString();
+				
+				// Update the counter of batch jobs
+				try {
+					FileOutputStream values_toTest = new FileOutputStream(new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt"));
+					DataOutputStream values_writerTest = new DataOutputStream(values_toTest);
+					values_writerTest.writeBytes(new Long(jobCounter+1).toString());
+					values_toTest.close();
+				} catch (Exception e) {
+					throw new SchedulerException("Could not update job counter during proceeding a script to the grid: " + e.getMessage());
+				}
 		
 				// Proceed script to grid
 				Process process;
@@ -109,18 +120,25 @@ public class OptimizationStarter extends AmuseTaskStarter {
 		
 				// Wait till the job is proceeded to grid (otherwise "too many open files" exception may occur)
 				try {
-				    process.waitFor();
+				    process.waitFor(); 
 		
 					// DEBUG Show the runtime outputs
-					String s = null; 
+					/*String s = null; 
 					java.io.BufferedReader stdInput = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
  			        java.io.BufferedReader stdError = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()));
 					System.out.println("Here is the standard output of the command:\n"); 
 					while ((s = stdInput.readLine()) != null) { System.out.println(s); } 
 					System.out.println("Here is the standard error of the command (if any):\n"); 
-					while ((s = stdError.readLine()) != null) { System.out.println(s); }
+					while ((s = stdError.readLine()) != null) { System.out.println(s); }*/
 				} catch (Exception e) {
 				    throw new SchedulerException("Problems at proceeding of jobs to grid: " + e.getMessage());
+				}
+				// TODO
+				try {
+					System.out.println("Waiting 60 seconds...");
+					Thread.sleep(60000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 	   	    } 
 			

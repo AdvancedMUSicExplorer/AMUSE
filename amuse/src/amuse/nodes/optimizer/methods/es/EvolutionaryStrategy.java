@@ -23,7 +23,9 @@
  */
 package amuse.nodes.optimizer.methods.es;
 
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,6 +57,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
+import amuse.util.FileOperations;
 
 /**
  * Evolutionary Strategy (ES) algorithm
@@ -71,9 +74,18 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	public int popSize = 0;
 	public int offspringPopSize = 0;
 	public int generationLimit = -1;
+	public long startTime; // The experiment start
+	public long runTime; // Maximal runtime
 	int evaluationLimit = -1;
 	public boolean isIndependentTestSetUsed = false;
 	int loggingInterval = 1;
+	long loggingDelay = -1;
+	StringBuffer delayedLog = null; // If logging should be done only each loggingDelay ms
+	long lastLogTime = -1;
+	boolean logLocally = false; 
+	File targetLog = null;
+	String logFile = null;
+	boolean logLastGeneration = false;
 	boolean logGeneration = true;
 	boolean logEvaluation = true;
 	boolean logPopulationRepresentations = false;
@@ -84,6 +96,8 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	boolean logOffspringPopulationFitnessOnTestSet = false;
 	// FIXME Incompatible for MOO! Must be removed since measure optimization direction is now saved in measure!
 	public boolean isMinimizingFitness = true; // As a default, measure values (fitness) are minimized by optimization
+	public String optimizationCategoryId = null;
+	public boolean runTimeLimitAchieved = false; // From the old log
 	
 	/** ES populations */
 	public ESIndividual[] population;
@@ -124,24 +138,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		if(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom().
 				equals("-1")) {
 			
-			// Set the optimization category id (if n-fold optimization is used, it is equal to learning category)
-			String trainingInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
-					getConfiguration()).getTrainingInput();
-			Integer categoryTrainingId = (trainingInput.contains("[") ? new Double(trainingInput.substring(0,trainingInput.indexOf("["))).intValue() :
-				new Double(trainingInput).intValue());
-			String optimizationInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
-					getConfiguration()).getOptimizationInput();
-			String optimizationCategoryId = null;
-			if(optimizationInput.contains("[")) {
-				optimizationCategoryId = optimizationInput.substring(0,optimizationInput.indexOf("["));
-			} else {
-				if(new Integer(optimizationInput) >= 0) {
-					optimizationCategoryId = optimizationInput;
-				} else {
-					optimizationCategoryId = categoryTrainingId.toString();
-				}
-			}
-			File folderForResults = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + File.separator + 
+			File folderForResults = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + "/" + 
 					optimizationCategoryId + File.separator + 
 					((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getDestinationFolder());
 			if(!folderForResults.exists()) {
@@ -158,17 +155,45 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 					if(newLog.createNewFile()) {
 						logCreated = true;
 					}
+					// Local logging is useful for experiments in batch systems using scratch folders
+					if(logLocally) {
+						logCreated = false;
+						targetLog = newLog;
+						
+						// Create a folder for local optimization log
+						File folder = new File(this.correspondingScheduler.getHomeFolder() + "/input/task_" + 
+								this.correspondingScheduler.getTaskId());
+						if(!folder.exists() && !folder.mkdirs()) {
+							throw new NodeException("Could not create temp folder for local optimization log: " + 
+									folder.toString());
+						}
+						
+						newLog = new File(folder.getAbsolutePath() + "/optimization" + Calendar.getInstance().getTimeInMillis() + ".log");
+						if(newLog.createNewFile()) {
+							logCreated = true;
+						}
+					}
 				} catch(IOException e) {
 					throw new NodeException("Could not create log file '" + newLog.getAbsolutePath() + 
 							"': " + e.getMessage());
 				}
 			}
 			esLogger = new ESLogger(newLog);
+			logFile = newLog.getAbsolutePath();
 		} else { // ..or continue writing to older log from previous experiment 
-			esLogger = new ESLogger(new File(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom()));
+			if(logLocally) {
+				throw new NodeException("Does not support local logging AND loading of an older log at the same time!");
+			}
+			// FIXME old esLogger = new ESLogger(new File(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom()));
+			File pathToLogFile = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + "/" + optimizationCategoryId + 
+					"/" + ((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getDestinationFolder() + 
+					"/optimization_" + ((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom() + 
+					"_-1.arff");
+			esLogger = new ESLogger(pathToLogFile);
 		}
 			
 		// Calculate the population fitness values for the first time
+		// TODO getContinueOldExperimentFrom is currently not supported
 		for(int i=0;i<popSize;i++) {
 			populationFitnessValues[i] = population[i].getFitness();
 			if(isIndependentTestSetUsed) {
@@ -330,9 +355,33 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Generation: " + currentGeneration + 
 					" Evaluation: " + currentEvaluation);
+			
+			// Check if the runtime exit condition is fulfilled
+			if(Calendar.getInstance().getTimeInMillis() - startTime > runTime) {
+				runTimeLimitAchieved = true;
+				AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Runtime limit achieved. Current runtime: " + 
+						(Calendar.getInstance().getTimeInMillis() - startTime) + " Limit: " + runTime); 
+				break;
+			}
 		}
 		fitnessEvaluator.close();
+		if(loggingDelay != -1) {
+			esLogger.logString(delayedLog.toString());
+		}
 		esLogger.close();
+		
+		if(logLocally) {
+			try {
+				FileOperations.copy(new File(logFile), targetLog);
+			} catch (IOException e) {
+				throw new NodeException("Could not copy the local log: " + e.getMessage());
+			}
+		}
+		
+		if(logLastGeneration) {
+			outputLastGenerationLog();
+		}
+		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "ES optimization finished");
 	}
 
@@ -430,7 +479,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	 * (non-Javadoc)
 	 * @see amuse.interfaces.nodes.methods.AmuseTaskInterface#setParameters(java.lang.String)
 	 */
-	public void setParameters(String parameterString) throws NodeException {
+	public void setParameters(String parameterString) throws NodeException { 
 		esConfiguration = new ESConfiguration(parameterString);
 		isIndependentTestSetUsed = (!((OptimizationConfiguration)this.correspondingScheduler.getConfiguration()).
 				getTestInput().equals("-1")) ? true : false;
@@ -604,15 +653,29 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		}
 		
 		// Set the exit conditions
-		// TODO set runtime limit; handle the situations if not all limits are set (e.g. only runtime)
 		generationLimit = new Integer(esConfiguration.getESParameterByName("Number of generations").
 				getAttributes().getNamedItem("intValue").getNodeValue());
 		evaluationLimit = new Integer(esConfiguration.getESParameterByName("Number of evaluations").
+				getAttributes().getNamedItem("intValue").getNodeValue());
+		startTime = Calendar.getInstance().getTimeInMillis();
+		runTime = new Long(esConfiguration.getESParameterByName("Runtime in milliseconds").
 				getAttributes().getNamedItem("intValue").getNodeValue());
 		
 		// Set the logging parameters
 		loggingInterval = new Integer(esConfiguration.getOutputParameterByName("Logging interval").
 				getAttributes().getNamedItem("intValue").getNodeValue());
+		if(esConfiguration.getOutputParameterByName("Logging delay") != null) {
+			loggingDelay = new Long(esConfiguration.getOutputParameterByName("Logging delay").
+					getAttributes().getNamedItem("intValue").getNodeValue());
+		}
+		if(esConfiguration.getOutputParameterByName("Local logging") != null) {
+			logLocally = new Boolean(esConfiguration.getOutputParameterByName("Local logging").
+					getAttributes().getNamedItem("booleanValue").getNodeValue());
+		}
+		if(esConfiguration.getOutputParameterByName("Log the last generation") != null) {
+			logLastGeneration = new Boolean(esConfiguration.getOutputParameterByName("Log the last generation").
+					getAttributes().getNamedItem("booleanValue").getNodeValue());
+		}
 		logGeneration = new Boolean(esConfiguration.getOutputParameterByName("Generation number").
 				getAttributes().getNamedItem("booleanValue").getNodeValue());
 		logEvaluation = new Boolean(esConfiguration.getOutputParameterByName("Evaluation number").
@@ -636,6 +699,24 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 	 * @see amuse.interfaces.nodes.methods.AmuseTaskInterface#initialize()
 	 */
 	public void initialize() throws NodeException {
+		
+		// Set the optimization category id (if n-fold optimization is used, it is equal to learning category)
+		String trainingInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
+				getConfiguration()).getTrainingInput();
+		Integer categoryTrainingId = (trainingInput.contains("[") ? new Double(trainingInput.substring(0,trainingInput.indexOf("["))).intValue() :
+			new Double(trainingInput).intValue());
+		String optimizationInput = ((OptimizationConfiguration)this.getCorrespondingScheduler().
+				getConfiguration()).getOptimizationInput();
+		//String optimizationCategoryId = null;
+		if(optimizationInput.contains("[")) {
+			optimizationCategoryId = optimizationInput.substring(0,optimizationInput.indexOf("["));
+		} else {
+			if(new Integer(optimizationInput) >= 0) {
+				optimizationCategoryId = optimizationInput;
+			} else {
+				optimizationCategoryId = categoryTrainingId.toString();
+			}
+		}
 		
 		// Create population
 		for(int i=0;i<popSize;i++) {
@@ -786,7 +867,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		// TODO E.g. expected step size can be also output.
 		// However the for-loop is required to search if any IntegerMutation is there..
 		// FIXME
-		esLogger.logString("@ATTRIBUTE 'Self-adaptation factor' NUMERIC");
+		//esLogger.logString("@ATTRIBUTE 'Self-adaptation factor' NUMERIC");
 		esLogger.logString("@ATTRIBUTE 'Time' NUMERIC");
 			
 		// Output the current population fitness values
@@ -795,6 +876,12 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		}
 		
 		esLogger.logString(esLogger.sep + "@DATA");
+		
+		// For delayed logs
+		if(loggingDelay != -1) {
+			delayedLog = new StringBuffer();
+			lastLogTime = Calendar.getInstance().getTimeInMillis();
+		}
 	}
 	
 	/**
@@ -867,9 +954,9 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			// However the for-loop is required to search if any IntegerMutation is there..
 			// FIXME
 			// Go through each representation
-			List<MutationInterface> mutationsToProceed = mutationMap.get(offspringPopulation[0].getRepresentationList().get(0).getClass().getName());
+			/*List<MutationInterface> mutationsToProceed = mutationMap.get(offspringPopulation[0].getRepresentationList().get(0).getClass().getName());
 			MutationInterface m = mutationsToProceed.get(0);
-			outputBuffer.append(((amuse.nodes.optimizer.methods.es.operators.mutation.RandomBitFlip)m).selfAdaptationFactor + ",");
+			outputBuffer.append(((amuse.nodes.optimizer.methods.es.operators.mutation.RandomBitFlip)m).selfAdaptationFactor + ",");*/
 			
 			// FIXME
 			outputBuffer.append(Calendar.getInstance().getTimeInMillis() + ",");
@@ -880,7 +967,85 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			}
 			
 			// Write to the log file
-			esLogger.logString(outputBuffer.deleteCharAt(outputBuffer.length()-1).toString());
+			if(loggingDelay == -1) {
+				esLogger.logString(outputBuffer.deleteCharAt(outputBuffer.length()-1).toString());
+			} else {
+				if((Calendar.getInstance().getTimeInMillis() - lastLogTime) > loggingDelay) {
+					esLogger.logString(delayedLog.toString() + outputBuffer.deleteCharAt(outputBuffer.length()-1).toString());
+					lastLogTime = Calendar.getInstance().getTimeInMillis();
+					delayedLog = new StringBuffer();
+				} else {
+					delayedLog.append(outputBuffer.deleteCharAt(outputBuffer.length()-1).toString() + System.getProperty("line.separator"));
+				}
+			}
+		}
+	}
+	
+	public void outputLastGenerationLog() throws NodeException {
+		FileOutputStream values_to;
+
+		String lastLog = null;
+		if(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom().
+				equals("-1")) {
+			if(!logLocally) {
+				lastLog = logFile.substring(0,logFile.length()-5) + "_lastLog.arff";
+			} else {
+				lastLog = targetLog.getAbsolutePath().substring(0,targetLog.getAbsolutePath().length()-5) + "_lastLog.arff";
+			}
+			try {
+				values_to = new FileOutputStream(new File(lastLog),true);
+				DataOutputStream values_writer = new DataOutputStream(values_to);
+				
+				// Output the population data
+				for(int i=0;i<popSize;i++) {
+					
+					// Output the current population representations
+					for(int j=0;j<population[i].getRepresentationList().size();j++) {
+						values_writer.writeBytes(population[i].getRepresentationList().get(j).toString() + System.getProperty("line.separator"));
+					}
+				}
+				// FIXME log also candidate solution if the run is to be continued!
+				if(runTimeLimitAchieved) {
+					// Output the current population representations
+					for(int j=0;j<offspringPopulation[0].getRepresentationList().size();j++) {
+						values_writer.writeBytes(offspringPopulation[0].getRepresentationList().get(j).toString() + System.getProperty("line.separator"));
+					}
+				}
+				values_writer.close();
+			} catch (Exception e) {
+				throw new NodeException("Could not log the results: " + e.getMessage());
+			}
+		} else {
+			File pathToLogFile = new File(AmusePreferences.get(KeysStringValue.OPTIMIZATION_DATABASE) + "/" + optimizationCategoryId + 
+					"/" + ((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getDestinationFolder() + 
+					"/optimization_" + ((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom() + 
+					"_-1.arff");
+			File pathToRepFile = new File(pathToLogFile.getAbsoluteFile().toString().substring(0,
+					pathToLogFile.getAbsoluteFile().toString().length()-5) + "_lastLog.arff");
+			try {
+				values_to = new FileOutputStream(pathToRepFile,false);
+				DataOutputStream values_writer = new DataOutputStream(values_to);
+				
+				// Output the population data
+				for(int i=0;i<popSize;i++) {
+				
+					// Output the current population representations
+					for(int j=0;j<population[i].getRepresentationList().size();j++) {
+						values_writer.writeBytes(population[i].getRepresentationList().get(j).toString() + System.getProperty("line.separator"));
+					}
+				}
+				// FIXME log also candidate solution if the run is to be continued!!! 
+				if(runTimeLimitAchieved) {
+					
+					// Output the current population representations
+					for(int j=0;j<offspringPopulation[0].getRepresentationList().size();j++) {
+						values_writer.writeBytes(offspringPopulation[0].getRepresentationList().get(j).toString() + System.getProperty("line.separator"));
+					}
+				}
+				values_writer.close();
+			} catch (Exception e) {
+				throw new NodeException("Could not log the results: " + e.getMessage());
+			}
 		}
 	}
 	
