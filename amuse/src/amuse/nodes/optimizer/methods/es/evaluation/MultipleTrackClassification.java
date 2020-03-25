@@ -37,6 +37,7 @@ import weka.core.converters.ArffLoader;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
@@ -454,6 +455,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				// Start n-fold validation (the optimization category must be set to "-n")
 				vConf = new ValidationConfiguration("1[" + categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]",measureTable, 
 						processedModel, 
+						InputFeatureType.PROCESSED_FEATURES,
+						-1,
+						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						new DataSetInput(optimizationDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
@@ -497,7 +501,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 			
 				TrainingConfiguration tConf = new TrainingConfiguration(
-						processedModel, 
+						processedModel, InputFeatureType.PROCESSED_FEATURES, 0, 0,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
@@ -537,6 +541,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
+						InputFeatureType.PROCESSED_FEATURES,
+						-1,
+						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						new DataSetInput(testDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
@@ -580,7 +587,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 			trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 	
 			
-			TrainingConfiguration tConf = new TrainingConfiguration(processedModel, 
+			TrainingConfiguration tConf = new TrainingConfiguration(processedModel, InputFeatureType.PROCESSED_FEATURES, 0, 0,
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 						getAttributes().getNamedItem("stringValue").getNodeValue(), 
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
@@ -633,12 +640,18 @@ public class MultipleTrackClassification implements EvaluationInterface {
 			if(!isEvaluatedOnIndependentTestSet) {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
+						InputFeatureType.PROCESSED_FEATURES,
+						-1,
+						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						new DataSetInput(optimizationDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);
 			} else {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
+						InputFeatureType.PROCESSED_FEATURES,
+						-1,
+						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						new DataSetInput(testDataWithOnlySelectedFeatures), GroundTruthSourceType.READY_INPUT);

@@ -2,8 +2,14 @@
 
 @RELATION amuse_task
 
-% Description of processed feature configuration
-@ATTRIBUTE 'ProcessedFeaturesDescription' STRING
+% Description of input features (feature table or processing description, depending on InputFeaturesType)
+@ATTRIBUTE 'InputFeatures' STRING
+% Type of input features for classification
+@ATTRIBUTE 'InputFeatureType' {'RAW_FEATURES', 'PROCESSED_FEATURES'}
+% Size of classification window in milliseconds
+@ATTRIBUTE 'ClassificationWindowSize' NUMERIC
+% Size of classification window overlap in milliseconds
+@ATTRIBUTE 'ClassificationWindowOverlap' NUMERIC
 % Classification algorithm ID
 @ATTRIBUTE 'AlgorithmId' STRING
 % Classification preprocessing algorithm ID (e.g. outlier removal);

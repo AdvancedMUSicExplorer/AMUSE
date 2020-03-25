@@ -112,8 +112,8 @@ public class ProcessingHistoryPanel extends JPanel {
     }
 
     public void setProcessingModelString(String value) {
-	textField.setText(value);
-	comboBox.setSelectedItem(value);
+		textField.setText(value);
+		comboBox.setSelectedItem(value);
     }
     
     public void setAttributesToIgnore(List<Integer> attributesToIgnore) {

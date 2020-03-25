@@ -80,6 +80,23 @@ public class FeatureTable implements Serializable {
     }
     
     /**
+     * Creates FeatureTable from a list of features
+     * @param features
+     */
+    public FeatureTable(List<Feature> features) {
+    	for(Feature feature : features) {
+    		this.features.add(feature);
+    	}
+    }
+    
+    /**
+     * Constructor that creates empty FeatureTable
+     */
+    public FeatureTable() {
+		// Do nothing
+	}
+
+	/**
      * This methods removes every feature, that has the attribute is not suitable for feature matrix processing.
      */
     public void removeUnsuitableForFeatureMatrixProcessing(){

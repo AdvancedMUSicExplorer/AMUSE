@@ -37,7 +37,10 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 
+import amuse.data.Feature;
+import amuse.data.FileTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.ModelType.RelationshipType;
@@ -53,7 +56,10 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
+import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
@@ -87,6 +93,13 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
 	File groundTruthFile = null;
+
+	/**
+	 * Number of values per extraction window.
+	 * Used for raw features so that classification training methods can assemble 
+	 * the feature vectors back to matrices.
+	 */
+	private int numberOfValuesPerWindow;
 	
 	/**
 	 * Constructor
@@ -201,7 +214,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Validator node scheduler for category " + 
 				this.categoryDescription + " and processing configuration " + 
-				((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + " started");
+				((ValidationConfiguration)this.taskConfiguration).getInputFeaturesDescription() + " started");
 				
 		// -------------------------------------
 		// (II): Prepare the data for validation
@@ -225,7 +238,9 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		// (IV): Load the list of processed feature files for data reduction measures
 		// -------------------------------------------------------------------------
 		try {
-			listOfAllProcessedFiles = this.vmi.calculateListOfUsedProcessedFeatureFiles();
+			if(((ValidationConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES) {
+				listOfAllProcessedFiles = this.vmi.calculateListOfUsedProcessedFeatureFiles();
+			}
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.WARN,  
 					"Data reduction data from processed feature files is not available: " + e.getMessage()); 
@@ -468,7 +483,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							}
 						}
 					}
-				} else {
+				} else if(((ValidationConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES){
 					labeledInputForValidation = new DataSet("ValidationSet");
 					
 					// Load the ground truth
@@ -503,7 +518,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf("."))
 							+ "_" 
-							+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((ValidationConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					else{
 						currentInputFile = 
@@ -515,7 +530,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf(".")) 
 							+ "_" 
-							+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((ValidationConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 					ArffLoader validatorInputLoader = new ArffLoader();
@@ -663,7 +678,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
 										newInputFile.lastIndexOf("."))
 								+ "_" 
-								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((ValidationConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 						}
 						else{
 							newInputFile = 
@@ -675,7 +690,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
 										newInputFile.lastIndexOf(".")) 
 								+ "_" 
-								+ ((ValidationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((ValidationConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 						}
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
@@ -699,7 +714,188 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							break;
 						}
 					}
-				} 
+				} else {
+					// load the raw features
+					labeledInputForValidation = new DataSet("TrainingSet");
+					// Load the ground truth
+					String pathToCategoryFile = ((FileInput)((ValidationConfiguration)this.getConfiguration()).getInputToValidate()).toString();
+					if(((ValidationConfiguration)this.getConfiguration()).getGroundTruthSourceType().equals(
+							GroundTruthSourceType.CATEGORY_ID)) {
+						
+						// Search for the category file
+						Integer categoryId = new Integer(((FileInput)((ValidationConfiguration)this.getConfiguration()).
+								getInputToValidate()).toString());
+						DataSetAbstract categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
+						for(int i=0;i<categoryList.getValueCount();i++) {
+							Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
+							if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {
+								pathToCategoryFile = new String(categoryList.getAttribute("Path").getValueAt(i).toString());
+								break;
+							}
+						}
+					}
+					groundTruthFile = new File(pathToCategoryFile);
+					DataSetAbstract validatorGroundTruthSet = new ArffDataSet(groundTruthFile);
+					
+					// load the first classifier input for attributes information
+					String currentInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
+					
+					List<Feature> features = getHarmonizedFeatures(currentInputFile);
+					
+					// find out how many values per window were used
+					for(int i = 0; i < features.size(); i++) {
+						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
+							numberOfValuesPerWindow = i+1;
+						}
+					}
+					
+					// create the attributes
+					// and save the numberOfValuesPerWindow
+					for(int i = 0; i < features.size(); i++) {
+						//Omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i%numberOfValuesPerWindow)) {
+							labeledInputForValidation.addAttribute(new NumericAttribute(features.get(i).getHistoryAsString(), new ArrayList<Double>()));
+						}
+					}
+					
+					//Add the id attribute
+					labeledInputForValidation.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
+					
+					//Add the attribute "NumberOfCategories"
+					//It marks where the categories that are to be classified start and how many will follow
+					labeledInputForValidation.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
+					//add the category attributes
+					for(int category : attributesToPredict) {
+						labeledInputForValidation.addAttribute(new NumericAttribute(validatorGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+					}
+					
+					int partSize = ((ValidationConfiguration)this.getConfiguration()).getClassificationWindowSize();
+					int partStep = partSize - ((ValidationConfiguration)this.getConfiguration()).getClassificationWindowOverlap();
+					
+					// Create the labeled data
+					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
+						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
+						String[] labels = new String[numberOfCategories];
+						Double[] confidences = new Double[numberOfCategories];
+						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
+						String path = validatorGroundTruthSet.getAttribute("Path").getValueAt(i).toString();
+						
+						ArrayList<Double> partitionStarts = new ArrayList<Double>();
+						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						
+						int currentPosition = 0;
+						for(int category : attributesToPredict) {
+							labels[currentPosition] = validatorGroundTruthSet.getAttribute(5 + category).getName();
+							currentPosition++;
+						}
+						
+						// If the complete song should be read
+						if(end == -1) {
+							
+							// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
+							int numberOfMaxPartitions = features.get(0).getValues().size();
+							for(int j=1;j<features.size();j++) {
+								if(features.get(j).getValues().size() < numberOfMaxPartitions) {
+									numberOfMaxPartitions = features.get(j).getValues().size();
+								}
+							}
+							if((numberOfMaxPartitions * (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+									((ValidationConfiguration)this.taskConfiguration).getClassificationWindowOverlap())) > 360000) {
+								numberOfMaxPartitions = 360000 / (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+										((ValidationConfiguration)this.taskConfiguration).getClassificationWindowOverlap());
+								AmuseLogger.write(this.getClass().getName(), Level.WARN, 
+						   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
+						   				" to " + numberOfMaxPartitions);
+							}
+							
+							for(int j = 0; j < numberOfMaxPartitions; j++) {
+								double startPosition = j*partStep;
+								double endPosition = j*partStep+partSize;
+								partitionStarts.add(startPosition);
+								partitionEnds.add(endPosition);
+								int currentAttribute = 0;
+								for(int k = 0; k < features.size(); k++) {
+									// Omit the attributes that are supposed to be ignored
+									if(!attributesToIgnore.contains(k%numberOfValuesPerWindow)) {
+										Double val = features.get(k).getValues().get(j)[0];
+										labeledInputForValidation.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
+									}
+								}
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((ValidationConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
+									currentPosition = 0;
+									for(int category : attributesToPredict) {
+										String label = validatorGroundTruthSet.getAttribute(5 + category).getName();
+										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(((ValidationConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
+											labeledInputForValidation.getAttribute(label).addValue(confidence);
+											confidences[currentPosition] = confidence;
+										} else {
+											labeledInputForValidation.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
+											confidences[currentPosition] = confidence >= 0.5 ? 1.0 : 0.0;
+										}
+										currentPosition++;
+									}
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
+								} else {
+									double maxConfidence = 0;
+									int positionOfMax = 0;
+									currentPosition = 0;
+									for(int category : attributesToPredict) {
+										Double confidence = new Double(validatorGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(confidence > maxConfidence) {
+											maxConfidence = confidence;
+											positionOfMax = currentPosition;
+										}
+										currentPosition++;
+									}
+									int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
+									for(int category=0;category<numberOfCategories;category++) {
+										labeledInputForValidation.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
+										confidences[category] = category == positionOfMax ? 1.0 : 0.0;
+									}
+								}
+								
+									
+								// Write the ID attribute (from what song the features are saved)
+								// IMPORTANT: --------------------------------------------------- 
+								// This attribute must not be used for classification model training! 
+								// If any new classification algorithms are integrated into AMUSE, they must
+								// handle this properly!!!
+								Double id = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString());
+								labeledInputForValidation.getAttribute("Id").addValue(id);
+								
+								
+								labeledInputForValidation.getAttribute("NumberOfCategories").addValue(new Double(numberOfCategories));								
+							}
+							// Add descriptions of the partitions of the current song
+							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
+							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+							Double[][] relationships = new Double[partitionStarts.size()][numberOfCategories];
+							for(int l=0;l<partitionStarts.size();l++) {
+								partitionStartsAsArray[l] = partitionStarts.get(l);
+								partitionEndsAsArray[l] = partitionEnds.get(l);
+								for(int category=0;category<numberOfCategories;category++) {
+									relationships[l][category] = confidences[category];
+								}
+							} 
+							
+							ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions(path, 
+										songId, partitionStartsAsArray, partitionEndsAsArray, labels, relationships);
+							labeledSongRelationships.add(newSongDesc);
+						} else {
+							// TODO Consider Vocals/Piano-Recognition-Scenario!
+						}
+						// Go to the next description
+						String newInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
+						// Go to the next music file?
+						if(!newInputFile.equals(currentInputFile)) {
+							currentInputFile = newInputFile;
+							features = getHarmonizedFeatures(currentInputFile);
+						}
+					}
+				}
 			} catch(IOException e) {
 				throw new NodeException(e.getMessage());
 			}
@@ -782,6 +978,34 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
 			labeledSongRelationships.add(newSongDesc);
 		} 
+	}
+	
+	/**
+	 * Harmonizes the raw features using the ProcessorNodeScheduler
+	 * @param currentInputFile
+	 * @return the harmonized features
+	 * @throws NodeException
+	 */
+	private List<Feature> getHarmonizedFeatures(String currentInputFile) throws NodeException {
+		List<File> currentInputFileList = new ArrayList<File>();
+		currentInputFileList.add(new File(currentInputFile));
+		
+		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
+				((ValidationConfiguration)this.getConfiguration()).getInputFeatureList(),
+				"",
+				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
+				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowOverlap(),
+				"6",
+				"");
+		
+		ProcessorNodeScheduler processorNodeScheduler = new ProcessorNodeScheduler(this.nodeHome + File.separator + "input" + File.separator + "task_" + 
+				this.jobId + File.separator + "processor");
+		
+		// proceed raw feature processing
+		processorNodeScheduler.proceedTask(this.nodeHome, this.jobId, pConf, false);
+		
+		// return the processed features
+		return processorNodeScheduler.getProcessedFeatures();
 	}
 
 	/**
@@ -903,8 +1127,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						folderForMeasuresString += labels[i];
 					}
 					
+					String inputFeaturesDescription = ((ValidationConfiguration)taskConfiguration).getInputFeaturesDescription();
+					if(((ValidationConfiguration)taskConfiguration).getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+						if(inputFeaturesDescription.contains(File.separator) && inputFeaturesDescription.contains(".")) {
+							inputFeaturesDescription = inputFeaturesDescription.substring(inputFeaturesDescription.lastIndexOf(File.separator) + 1, inputFeaturesDescription.lastIndexOf('.'));
+						}
+						inputFeaturesDescription = "RAW_FEATURES_" + inputFeaturesDescription;
+					}
 					folderForMeasuresString += File.separator + classifierDescription + "_" + ((ValidationConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((ValidationConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator +
-							((ValidationConfiguration)taskConfiguration).getProcessedFeaturesModelName() + File.separator +
+							inputFeaturesDescription + File.separator +
 							validatorMethodId + 
 							"-" + ((AmuseTask)vmi).getProperties().getProperty("name");
 					
@@ -974,5 +1205,12 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	 */
 	public File getGroundTruthFile() {
 		return groundTruthFile;
+	}
+	
+	/**
+	 * @return the numberOfValuesPerWindow
+	 */
+	public int getNumberOfValuesPerWindow() {
+		return numberOfValuesPerWindow;
 	}
 }

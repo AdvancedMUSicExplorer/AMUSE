@@ -8,8 +8,14 @@
 @ATTRIBUTE 'InputSourceType' {'FILE_LIST','CATEGORY_ID', 'READY_INPUT'}
 % Attributes of the READY_INPUT	or the processed feature files that should be ignored
 @ATTRIBUTE 'AttributesToIgnore' STRING
-% Description of processed feature configuration -> used for calculation of path to model file (not needed if model is directly specified and READY_INPUT is used)
-@ATTRIBUTE 'ProcessedFeaturesDescription' STRING
+% Description of input features (feature table or processing description, depending on InputFeaturesType)
+@ATTRIBUTE 'InputFeatures' STRING
+% Type of input features for classification
+@ATTRIBUTE 'InputFeatureType' {'RAW_FEATURES', 'PROCESSED_FEATURES'}
+% Size of classification window in milliseconds
+@ATTRIBUTE 'ClassificationWindowSize' NUMERIC
+% Size of classification window overlap in milliseconds
+@ATTRIBUTE 'ClassificationWindowOverlap' NUMERIC
 % Classification algorithm ID  -> used for calculation of path to model file
 @ATTRIBUTE 'AlgorithmId' STRING
 % Ground truth category ID -> used for calculation of path to model file (not needed if model is directly specified)

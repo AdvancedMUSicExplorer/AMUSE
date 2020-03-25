@@ -152,6 +152,10 @@ public class FeatureTableController implements ActionListener {
             JOptionPane.showMessageDialog(view.getView(), "This file does not contain a FeatureList!", "Error Loading FeatureList", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    public void setSelectedFeatures(FeatureTable selectedFeatures) {
+    	loadFeatureTableSelection(selectedFeatures);
+    }
 
     private void loadFeatureTableSelection(DataSetAbstract set) {
             List<Integer> ids = new ArrayList<Integer>(set.getValueCount());

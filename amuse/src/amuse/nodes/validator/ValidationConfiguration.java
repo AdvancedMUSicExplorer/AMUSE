@@ -27,7 +27,10 @@ import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.Feature;
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.Measure;
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +69,17 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Measure list, e.g. containing accuracy and precision */
 	private final MeasureTable measures;
 	
-	/** Description of methods used for feature processing for the search of 
-	 * according features in processed features DB */
-	private final String processedFeaturesModelName;
+	/** Description of input features (feature table or processing description, depending on InputFeaturesType) */
+	private final String inputFeaturesDescription;
+	
+	/** Type of input features for classfication */
+	private final InputFeatureType inputFeatureType;
+	
+	/** Size of classification window in milliseconds */
+	private final Integer classificationWindowSize;
+	
+	/** Size of classification window overlap in milliseconds */
+	private final Integer classificationWindowOverlap;
 	
 	/** Input to validate */
 	private DataInputInterface inputToValidate;
@@ -105,11 +116,20 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Calculated measures are stored here after the corresponding validation task has been successfully applied */
 	private ArrayList<ValidationMeasure> calculatedMeasures;
 	
+	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
+	private final FeatureTable inputFeatureList;
+	
+	/** Number of feature dimensions per time window. Is only used with raw features */
+	private Integer numberOfFeatureDimensions;
+	
 	/**
 	 * Standard constructor
 	 * @param validationAlgorithmDescription ID and parameters of validation method
 	 * @param measures Measure list, e.g. containing accuracy and precision
-	 * @param processedFeaturesModelName Description of methods used for feature processing
+	 * @param inputFeatures Description of methods used for feature processing
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -124,7 +144,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public ValidationConfiguration(String validationAlgorithmDescription,
 			MeasureTable measures, 
-			String processedFeaturesModelName,
+			String inputFeatures,
+			InputFeatureType inputFeatureType,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
 			String classificationAlgorithmDescription,
 			DataInputInterface inputToValidate,
 			GroundTruthSourceType groundTruthSourceType,
@@ -134,7 +157,75 @@ public class ValidationConfiguration extends TaskConfiguration {
 			String outputPath) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
+		this.inputToValidate = inputToValidate;
+		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.measureDatabase = AmusePreferences.get(KeysStringValue.MEASURE_DATABASE);
+		this.calculatedMeasures = new ArrayList<ValidationMeasure>();
+		this.outputPath = outputPath;
+	}
+	
+	/**
+	 * Constructor where the input features are given as a FeatureTable (only used for raw input features)
+	 * @param validationAlgorithmDescription ID and parameters of validation method
+	 * @param measures Measure list, e.g. containing accuracy and precision
+	 * @param inputFeatures Description of methods used for feature processing
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
+	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
+ 	 * @param groundTruthSource Source with input to validate. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready labeled input 
+	 * - Ready input (as EditableDataSet)
+	 * @param groundTruthSourceType Describes the source type of ground truth 
+	 * @param attributesToPredict attributes of the readyInput or categories of the category file that are to be predicted
+	 * @param attributesToIgnore attribute of the readyInput or the processed features that are to be ignored
+	 * @param modelType the type of the classification model
+	 * @param outPutPath path where the results are saved, set to -1 for the path to be automatically calculated
+	 */
+	public ValidationConfiguration(String validationAlgorithmDescription,
+			MeasureTable measures, 
+			FeatureTable inputFeatures,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
+			String classificationAlgorithmDescription,
+			DataInputInterface inputToValidate,
+			GroundTruthSourceType groundTruthSourceType,
+			List<Integer> attributesToPredict,
+			List<Integer> attributesToIgnore,
+			ModelType modelType,
+			String outputPath) {
+		this.validationAlgorithmDescription = validationAlgorithmDescription;
+		this.measures = measures;
+		this.inputFeatureList = inputFeatures;
+		this.inputFeatureType = InputFeatureType.RAW_FEATURES;
+		List<Feature> features = inputFeatures.getFeatures();
+		String description = "";
+		if(!features.isEmpty()) {
+			description += features.get(0).getId();
+		}
+		for(int i = 1; i < features.size(); i++) {
+			description += "_" + features.get(i).getId();
+		}
+		this.inputFeaturesDescription = description;
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
@@ -154,7 +245,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * 
 	 * @param validationAlgorithmDescription ID and parameters of validation method
 	 * @param measures Measure list, e.g. containing accuracy and precision
-	 * @param processedFeaturesModelName Description of methods used for feature processing
+	 * @param inputFeatures Description of methods used for feature processing
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -162,11 +256,26 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * - Path to the ready labeled input 
 	 * - Ready input (as EditableDataSet)
 	 */
-	public ValidationConfiguration(String validationAlgorithmDescription, MeasureTable measures, String processedFeaturesModelName, String classificationAlgorithmDescription,
-			DataSetInput inputToValidate, GroundTruthSourceType groundTruthSourceType) {
+	public ValidationConfiguration(String validationAlgorithmDescription,
+			MeasureTable measures,
+			String inputFeatures,
+			InputFeatureType inputFeatureType,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
+			String classificationAlgorithmDescription,
+			DataSetInput inputToValidate,
+			GroundTruthSourceType groundTruthSourceType) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
@@ -201,7 +310,15 @@ public class ValidationConfiguration extends TaskConfiguration {
 	    for(int i=0;i<validatorConfig.getValueCount();i++) {
 			String currentValidationMethodId = validatorConfig.getValidationMethodIdAttribute().getValueAt(i).toString();
 			String currentMeasureList = validatorConfig.getMeasureListAttribute().getValueAt(i).toString();
-			String currentProcessedFeaturesModelName = validatorConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentInputFeatureDescription = validatorConfig.getInputFeaturesAttribute().getValueAt(i).toString();
+			InputFeatureType currentInputFeatureType;
+			if(validatorConfig.getInputFeatureTypeAttribute().getValueAt(i).toString().equals(new String("RAW_FEATURES"))) {
+				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
+			} else {
+				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Integer currentClassificationWindowSize = validatorConfig.getClassificationWindowSizeAttribute().getValueAt(i).intValue();
+			Integer currentClassificationWindowOverlap = validatorConfig.getClassificationWindowOverlapAttribute().getValueAt(i).intValue();
 			String currentClassificationAlgorithmDescription = validatorConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentInputToValidate = validatorConfig.getInputToValidateAttribute().getValueAt(i).toString();
 			GroundTruthSourceType gtst;
@@ -212,8 +329,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 			} else {
 				gtst = GroundTruthSourceType.READY_INPUT;
 			}
-			
-			
 			String attributesToPredictString = validatorConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
 			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
@@ -227,7 +342,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 			} catch(NumberFormatException e) {
 				throw new IOException("The attributes to classify were not properly specified.");
 			}
-			
 			String attributesToIgnoreString = validatorConfig.getAttributesToIgnoreAttribute().getValueAt(i).toString();
 			attributesToIgnoreString = attributesToIgnoreString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] attributesToIgnoreStringArray = attributesToIgnoreString.split("\\s*,\\s*");
@@ -284,7 +398,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
-		    		currentProcessedFeaturesModelName, currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
+		    		currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowOverlap,
+		    		currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
 		    		gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
 					currentInputToValidate.toString() + " loaded");
@@ -325,8 +440,29 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/**
 	 * @return the processedFeaturesModelName
 	 */
-	public String getProcessedFeaturesModelName() {
-		return processedFeaturesModelName;
+	public String getInputFeaturesDescription() {
+		return inputFeaturesDescription;
+	}
+	
+	/**
+	 * @return the inputFeatureType
+	 */
+	public InputFeatureType getInputFeatureType() {
+		return inputFeatureType;
+	}
+	
+	/**
+	 * @return the classificationWindowSize
+	 */
+	public Integer getClassificationWindowSize() {
+		return classificationWindowSize;
+	}
+	
+	/**
+	 * @return the classificationWindowOverlap
+	 */
+	public Integer getClassificationWindowOverlap() {
+		return classificationWindowOverlap;
 	}
 
 	/**
@@ -488,5 +624,22 @@ public class ValidationConfiguration extends TaskConfiguration {
 	public String getOutputPath() {
 		return outputPath;
 	}
+	
+	/**
+	 * @param numberOfFeatureDimensions
+	 */
+	public void setNumberOfFeatureDimensions(int numberOfFeatureDimensions) {
+		this.numberOfFeatureDimensions = numberOfFeatureDimensions;
+	}
+	
+	/**
+	 * @return the numberOfFeatureDimensions
+	 */
+	public Integer getNumberOfFeatureDimensions() {
+		return numberOfFeatureDimensions;
+	}
 
+	public FeatureTable getInputFeatureList() {
+		return inputFeatureList;
+	}
 }

@@ -46,6 +46,7 @@ import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
@@ -55,9 +56,11 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.controller.ClassifierController;
+import amuse.data.InputFeatureType;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
+import amuse.scheduler.gui.training.InputFeaturePanel;
 import amuse.scheduler.gui.training.ModelTypePanel;
 import amuse.scheduler.gui.training.ProcessingHistoryPanel;
 import amuse.scheduler.gui.training.TrainingDescriptionPanel;
@@ -75,7 +78,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	private JSplitPane splitPane = new JSplitPane();
 	private ClassificationInputSelectionPanel inputSelectionPanel;
 	private ClassificationGroundTruthSelectionPanel groundTruthSelectionPanel;
-	private ProcessingHistoryPanel processingHistoryPanel;
+	private InputFeaturePanel inputFeaturePanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private ModelTypePanel modelTypePanel = new ModelTypePanel();
 	private TrainingDescriptionPanel trainingDescriptionPanel = null;
@@ -103,27 +106,27 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         viewLeft.setBorder(new TitledBorder("Setup Classification"));
         splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
         splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
-        this.processingHistoryPanel = new ProcessingHistoryPanel();
+        this.inputFeaturePanel = new InputFeaturePanel();
         this.inputSelectionPanel = new ClassificationInputSelectionPanel();
         this.groundTruthSelectionPanel = new ClassificationGroundTruthSelectionPanel();
         viewLeft.add(inputSelectionPanel, "growx, span, wrap");
         viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
         
         inputSelectionPanel.getInputSourceTypeComboBox().addActionListener(e ->{
-        	setChildsEnabled(processingHistoryPanel,
+        	setChildsEnabled(inputFeaturePanel,
         			groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
 					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) ||
 					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
-        	processingHistoryPanel.getAttributesToIgnoreTextField().setEnabled(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) || inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
+        	inputFeaturePanel.getAttributesToIgnoreTextField().setEnabled(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) || inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
         });
         groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
-        	setChildsEnabled(processingHistoryPanel,
+        	setChildsEnabled(inputFeaturePanel,
         			groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals("CATEGORY_ID") || 
 					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.FILE_LIST) ||
 					inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.CATEGORY_ID));
 		});
         
-        viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+        viewLeft.add(inputFeaturePanel, "growx, span, wrap");
         addRightSide(modelTypePanel);
         modelTypePanel.addModelTypeListener(trainingAlgorithmFacade);
         addRightSide(trainingAlgorithmFacade.getAlgorithmSelectionComboBox());
@@ -218,11 +221,11 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
      * @return processingModelString
      */
     public String getProcessingModelString() {
-    	return processingHistoryPanel.getProcessingHistoryString();
+    	return inputFeaturePanel.getProcessingHistoryString();
     }
 
     public void setProcessingModelString(String value) {
-    	processingHistoryPanel.setProcessingModelString(value);
+    	inputFeaturePanel.setProcessingModelString(value);
     }
 
     /**
@@ -272,7 +275,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		if(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
 			return inputSelectionPanel.getAttributesToIgnore();
 		} else {
-			return processingHistoryPanel.getAttributesToIgnore();
+			return inputFeaturePanel.getAttributesToIgnore();
 		}
 	}
 	
@@ -292,7 +295,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		if(inputSelectionPanel.getSelectedInputSourceType().equals(InputSourceType.READY_INPUT)) {
 			inputSelectionPanel.setAttributesToIgnore(attributesToIgnore);
 		} else {
-			processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+			inputFeaturePanel.setAttributesToIgnore(attributesToIgnore);
 		}
 	}
 
@@ -355,4 +358,37 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 	public int getCategoryId() {
 		return inputSelectionPanel.getCategoryId();
 	}
+
+	public InputFeatureType getInputFeatureType() {
+		return inputFeaturePanel.getInputFeatureType();
+	}
+
+	public Integer getClassificationWindowSize() {
+		return inputFeaturePanel.getClassificationWindowSize();
+	}
+
+	public Integer getClassificationWindowOverlap() {
+		return inputFeaturePanel.getClassificationWindowOverlap();
+	}
+
+	public FeatureTable getInputFeatures() {
+		return inputFeaturePanel.getInputFeatures();
+	}
+
+	public void setInputFeatureType(InputFeatureType inputFeatureType) {
+		inputFeaturePanel.setInputFeatureType(inputFeatureType);
+	}
+
+	public void setInputFeatures(FeatureTable inputFeatureList) {
+		inputFeaturePanel.setInputFeatures(inputFeatureList);
+	}
+
+	public void setClassificationWindowSize(Integer classificationWindowSize) {
+		inputFeaturePanel.setClassificationWindowSize(classificationWindowSize);
+	}
+
+	public void setClassificationWindowOverlap(Integer classificationWindowOverlap) {
+		inputFeaturePanel.setClassificationWindowOverlap(classificationWindowOverlap);
+	}
+
 }

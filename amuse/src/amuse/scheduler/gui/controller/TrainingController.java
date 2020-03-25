@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Level;
@@ -42,7 +43,9 @@ import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -93,7 +96,38 @@ public class TrainingController extends AbstractController {
             }
         }
         try {
-            new TrainingConfigSet(getTrainingConfiguration()).saveToArffFile(file);
+        	String inputFeatureDescription;
+            File featureListFile = null;
+            if(trainingView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+            	featureListFile = new File(file.getParent() + File.separator + "featurelists" + File.separator + file.getName());
+            	inputFeatureDescription = featureListFile.getAbsolutePath();
+            } else {
+            	inputFeatureDescription = trainingView.getProcessingModelString();
+            }
+        	TrainingConfiguration conf = new TrainingConfiguration(
+	    			inputFeatureDescription,
+	    			trainingView.getInputFeatureType(),
+	    			trainingView.getClassificaitonWindowSize(),
+	    			trainingView.getClassificationWindowOverlap(),
+	    			trainingView.getSelectedTrainingAlgorithmStr(),
+	    			trainingView.getPreprocessingAlgorithmStr(), 
+	    			new FileInput(trainingView.getGroundTruthSource()),
+	    			trainingView.getGroundTruthSourceType(),
+	    			trainingView.getAttributesToPredict(),
+	    			trainingView.getAttributesToIgnore(),
+	    			trainingView.getModelType(),
+	    			trainingView.getTrainingDescription(),
+	    			trainingView.getPathToOutputModel());
+            TrainingConfigSet dataSet = new TrainingConfigSet(conf);
+            
+            // if the input features are given as raw features a feature list must be saved
+            if(trainingView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+            	// Create folders...
+            	featureListFile.getParentFile().mkdirs();
+            	FeatureTable inputFeatures = trainingView.getInputFeatures();
+            	inputFeatures.getAccordingDataSet().saveToArffFile(featureListFile);
+            }
+            dataSet.saveToArffFile(file);
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -117,7 +151,20 @@ public class TrainingController extends AbstractController {
 
     private void setTrainingConfiguration(TrainingConfigSet ttSet) {
         trainingView.setSelectedTrainingAlgorithm(ttSet.getAlgorithmIdAttribute().getValueAt(0));
-        trainingView.setProcessingModelString(ttSet.getProcessedFeatureDescriptionAttribute().getValueAt(0));
+        
+        String inputFeatureType = ttSet.getInputFeatureTypeAttribute().getValueAt(0);
+        if(inputFeatureType.equals(InputFeatureType.RAW_FEATURES.toString())) {
+        	trainingView.setInputFeatureType(InputFeatureType.RAW_FEATURES);
+        	FeatureTable inputFeatures = new FeatureTable(new File(ttSet.getInputFeatureAttribute().getValueAt(0)));
+        	trainingView.setInputFeatures(inputFeatures);
+        	trainingView.setClassificationWindowSize(ttSet.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
+        	trainingView.setClassificationWindowOverlap(ttSet.getClassificationWindowOverlapAttribute().getValueAt(0).intValue());
+        } else {
+        	trainingView.setInputFeatureType(InputFeatureType.PROCESSED_FEATURES);
+        	trainingView.setProcessingModelString(ttSet.getInputFeatureAttribute().getValueAt(0));
+        }
+        
+        trainingView.setProcessingModelString(ttSet.getInputFeatureAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
         //TODO set attributesToPredict, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
         
@@ -227,7 +274,16 @@ public class TrainingController extends AbstractController {
         }
 
         public void addTraining() {
-            taskManager.addExperiment(getExperimentConfiguration());
+        	TrainingConfiguration tConf = getExperimentConfiguration();
+        	if(tConf.getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES || tConf.getInputFeatureList().size() > 0) {
+        		taskManager.addExperiment(tConf);
+            } else {
+            	JOptionPane.showMessageDialog(
+                        getView(),
+                        "Please select at least one input feature for training!",
+                        "Unable to add training task",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
 
         @Override
@@ -288,17 +344,37 @@ public class TrainingController extends AbstractController {
 //    			+ File.separator
 //    			+ "model.mod";
 //    	pathToOutputModel = pathToOutputModel.replaceAll(File.separator + "+", File.separator);
-    	TrainingConfiguration conf = new TrainingConfiguration(
-    			trainingView.getProcessingModelString(),
-    			trainingView.getSelectedTrainingAlgorithmStr(),
-    			trainingView.getPreprocessingAlgorithmStr(), 
-    			new FileInput(trainingView.getGroundTruthSource()),
-    			trainingView.getGroundTruthSourceType(),
-    			trainingView.getAttributesToPredict(),
-    			trainingView.getAttributesToIgnore(),
-    			trainingView.getModelType(),
-    			trainingView.getTrainingDescription(),
-    			trainingView.getPathToOutputModel());
+    	TrainingConfiguration conf;
+    	if(trainingView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+	    	conf = new TrainingConfiguration(
+	    			trainingView.getInputFeatures(),
+	    			trainingView.getClassificaitonWindowSize(),
+	    			trainingView.getClassificationWindowOverlap(),
+	    			trainingView.getSelectedTrainingAlgorithmStr(),
+	    			trainingView.getPreprocessingAlgorithmStr(), 
+	    			new FileInput(trainingView.getGroundTruthSource()),
+	    			trainingView.getGroundTruthSourceType(),
+	    			trainingView.getAttributesToPredict(),
+	    			trainingView.getAttributesToIgnore(),
+	    			trainingView.getModelType(),
+	    			trainingView.getTrainingDescription(),
+	    			trainingView.getPathToOutputModel());
+    	} else {
+    		conf = new TrainingConfiguration(
+	    			trainingView.getProcessingModelString(),
+	    			trainingView.getInputFeatureType(),
+	    			trainingView.getClassificaitonWindowSize(),
+	    			trainingView.getClassificationWindowOverlap(),
+	    			trainingView.getSelectedTrainingAlgorithmStr(),
+	    			trainingView.getPreprocessingAlgorithmStr(), 
+	    			new FileInput(trainingView.getGroundTruthSource()),
+	    			trainingView.getGroundTruthSourceType(),
+	    			trainingView.getAttributesToPredict(),
+	    			trainingView.getAttributesToIgnore(),
+	    			trainingView.getModelType(),
+	    			trainingView.getTrainingDescription(),
+	    			trainingView.getPathToOutputModel());
+    	}
         return conf;
     }
 
@@ -314,7 +390,7 @@ public class TrainingController extends AbstractController {
         if (conf instanceof TrainingConfiguration) {
             TrainingConfiguration trainConf = (TrainingConfiguration) conf;
             trainingView.setSelectedTrainingAlgorithm(trainConf.getAlgorithmDescription());
-            trainingView.setProcessingModelString(trainConf.getProcessedFeaturesModelName());
+            trainingView.setProcessingModelString(trainConf.getInputFeaturesDescription());
             trainingView.setPreprocessingAlgorithm(trainConf.getPreprocessingAlgorithmDescription());
             trainingView.setGroundTruthSourceType(trainConf.getGroundTruthSourceType());
             trainingView.setGroundTruthSource(trainConf.getGroundTruthSource().toString());

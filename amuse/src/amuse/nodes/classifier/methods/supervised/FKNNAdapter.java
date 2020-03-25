@@ -32,6 +32,7 @@ import org.apache.log4j.Level;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.io.DataSet;
+import amuse.data.io.DataSetException;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.NodeException;
@@ -115,7 +116,11 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 						classifyValue = (Double)dataSetToClassify.getAttribute(n).getValueAt(partitionToClassify);
 						trainValue = (Double)trainingDataSet.getAttribute(n).getValueAt(trainingPartition);
 						if(Double.isNaN(classifyValue)){
-							AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in Song " + dataSetToClassify.getAttribute("Id").getValueAt(partitionToClassify));
+							try {
+								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in song " + dataSetToClassify.getAttribute("Id").getValueAt(partitionToClassify));
+							} catch(DataSetException e) {
+								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in an input song");
+							}
 							nanClassify = true;
 							break;
 						}

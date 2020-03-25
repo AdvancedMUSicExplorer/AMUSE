@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
@@ -35,6 +36,7 @@ import amuse.data.ModelType.RelationshipType;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
+import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 
@@ -48,7 +50,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	// Strings which describe ARFF attributes
 	private static final String strValidationMethodId = "ValidationMethodId";
 	private static final String strMeasureList = "MeasureList";
-	private static final String strProcessedFeatureDescription = "ProcessedFeaturesDescription";
+	private static final String strInputFeatures = "InputFeatures";
+	private static final String strInputFeatureType = "InputFeatureType";
+	private static final String strClassificationWindowSize = "ClassificationWindowSize";
+	private static final String strClassificationWindowOverlap = "ClassificationWindowOverlap";
 	private static final String strInputToValidate = "InputToValidate";
 	private static final String strGroundTruthSourceType = "GroundTruthSourceType";
 	private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
@@ -63,7 +68,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	// ARFF attributes
 	private final StringAttribute validationMethodIdAttribute;
 	private final StringAttribute measureListAttribute;
-	private final StringAttribute processedFeatureDescriptionAttribute;
+	private final StringAttribute inputFeaturesAttribute;
+	private final NominalAttribute inputFeatureTypeAttribute;
+	private final NumericAttribute classificationWindowOverlapAttribute;
+	private final NumericAttribute classificationWindowSizeAttribute;
 	private final StringAttribute inputToValidateAttribute;
 	private final NominalAttribute groundTruthSourceTypeAttribute;
 	private final StringAttribute classificationAlgorithmIdAttribute;
@@ -87,7 +95,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		// Check preconditions:
 		checkStringAttribute(strValidationMethodId);
 		checkStringAttribute(strMeasureList);
-		checkStringAttribute(strProcessedFeatureDescription);
+		checkStringAttribute(strInputFeatures);
+		checkNominalAttribute(strInputFeatureType);
+		checkNumericAttribute(strClassificationWindowOverlap);
+		checkNumericAttribute(strClassificationWindowSize);
 		checkStringAttribute(strInputToValidate);
 		checkNominalAttribute(strGroundTruthSourceType);
 		checkStringAttribute(strClassificationAlgorithmId);
@@ -101,7 +112,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
 		validationMethodIdAttribute = (StringAttribute) getAttribute(strValidationMethodId);
 		measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
-		processedFeatureDescriptionAttribute = (StringAttribute) getAttribute(strProcessedFeatureDescription);
+		inputFeaturesAttribute = (StringAttribute) getAttribute(strInputFeatures);
+		inputFeatureTypeAttribute = (NominalAttribute) getAttribute(strInputFeatureType);
+		classificationWindowSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowSize);
+		classificationWindowOverlapAttribute = (NumericAttribute) getAttribute(strClassificationWindowOverlap);
 		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
@@ -116,7 +130,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 
 	public ValidatorConfigSet(String validationMethodId,
 			File measureListFile,
-			String processedFeatureDescription,
+			String inputFeatures,
+			String inputFeatureType,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
 			String inputToValidate,
 			String groundTruthSourceType,
 			String attributesToPredict,
@@ -129,13 +146,20 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		super("ValidatorConfig");
 		validationMethodIdAttribute = StringAttribute.createFromString(strValidationMethodId, validationMethodId);
 		measureListAttribute = StringAttribute.createFromString(strMeasureList, measureListFile.getAbsolutePath());
-		processedFeatureDescriptionAttribute = StringAttribute.createFromString(strProcessedFeatureDescription, processedFeatureDescription);
+		inputFeaturesAttribute = StringAttribute.createFromString(strInputFeatures, inputFeatures);
+		List<String> inputFeatureTypeValues = new ArrayList<String>();
+		for(InputFeatureType type : InputFeatureType.values()) {
+			inputFeatureTypeValues.add(type.toString());
+		}
+		List<String> inputFeatureTypes = new ArrayList<String>();
+		inputFeatureTypes.add(inputFeatureType);
+		inputFeatureTypeAttribute = new NominalAttribute(strInputFeatureType, inputFeatureTypeValues, inputFeatureTypes);
 		inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
+		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowSize, classificationWindowSize);
+		classificationWindowOverlapAttribute = NumericAttribute.createFromDouble(strClassificationWindowOverlap, classificationWindowOverlap);
 		List <String> values = new ArrayList<String>();
 		values.add(groundTruthSourceType);
 		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
-
-		
 		attributesToPredictAttribute = StringAttribute.createFromString(strAttributesToPredict, attributesToPredict);
 		attributesToIgnoreAttribute = StringAttribute.createFromString(strAttributesToIgnore, attributesToIgnore);
 		List<String> relationshipTypeValues = new ArrayList<String>();
@@ -164,7 +188,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		
 		addAttribute(validationMethodIdAttribute);
 		addAttribute(measureListAttribute);
-		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputFeaturesAttribute);
+		addAttribute(inputFeatureTypeAttribute);
+		addAttribute(classificationWindowSizeAttribute);
+		addAttribute(classificationWindowOverlapAttribute);
 		addAttribute(inputToValidateAttribute); 
 		addAttribute(groundTruthSourceTypeAttribute);
 		addAttribute(attributesToPredictAttribute);
@@ -181,7 +208,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		// Check preconditions:
 		dataSet.checkStringAttribute(strValidationMethodId);
 		dataSet.checkStringAttribute(strMeasureList);
-		dataSet.checkStringAttribute(strProcessedFeatureDescription);
+		dataSet.checkStringAttribute(strInputFeatures);
+		dataSet.checkNominalAttribute(strInputFeatureType);
+		dataSet.checkNumericAttribute(strClassificationWindowSize);
+		dataSet.checkNumericAttribute(strClassificationWindowOverlap);
 		dataSet.checkStringAttribute(strInputToValidate);
 		dataSet.checkNominalAttribute(strGroundTruthSourceType);
 		dataSet.checkStringAttribute(strAttributesToPredict);
@@ -194,7 +224,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		
 		validationMethodIdAttribute = (StringAttribute) dataSet.getAttribute(strValidationMethodId);
 		measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
-		processedFeatureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strProcessedFeatureDescription);
+		inputFeaturesAttribute = (StringAttribute) dataSet.getAttribute(strInputFeatures);
+		inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputFeatureType);
+		classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowSize);
+		classificationWindowOverlapAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowOverlap);
 		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
 		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
@@ -207,7 +240,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strClassificationAlgorithmId);
 		addAttribute(validationMethodIdAttribute);
 		addAttribute(measureListAttribute);
-		addAttribute(processedFeatureDescriptionAttribute);
+		addAttribute(inputFeaturesAttribute);
+		addAttribute(inputFeatureTypeAttribute);
+		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowSizeAttribute);
 		addAttribute(inputToValidateAttribute);
 		addAttribute(groundTruthSourceTypeAttribute);
 		addAttribute(attributesToPredictAttribute);
@@ -284,10 +320,22 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	}
 
 	/**
-	 * @return the processedFeatureDescriptionAttribute
+	 * @return the inputFeatures
 	 */
-	public StringAttribute getProcessedFeatureDescriptionAttribute() {
-		return processedFeatureDescriptionAttribute;
+	public StringAttribute getInputFeaturesAttribute() {
+		return inputFeaturesAttribute;
+	}
+	
+	public NominalAttribute getInputFeatureTypeAttribute() {
+		return inputFeatureTypeAttribute;
+	}
+	
+	public NumericAttribute getClassificationWindowSizeAttribute() {
+		return classificationWindowSizeAttribute;
+	}
+	
+	public NumericAttribute getClassificationWindowOverlapAttribute() {
+		return classificationWindowOverlapAttribute;
 	}
 
 	private static List<String> getAllowedValues() {

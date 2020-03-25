@@ -38,7 +38,12 @@ import org.apache.log4j.Level;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.Feature;
+import amuse.data.FileTable;
+import amuse.data.InputFeatureType;
+import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.ModelType.RelationshipType;
 import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.data.annotation.SongPartitionsDescription;
 import amuse.data.io.ArffDataSet;
@@ -55,6 +60,8 @@ import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
+import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -83,6 +90,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	
 	//** Number of categories that are classified */
 	private int numberOfCategories;
+	
+	/**
+	 * Number of values per extraction window.
+	 * Used for raw features so that classification training methods can assemble 
+	 * the feature vectors back to matrices.
+	 */
+	private int numberOfValuesPerWindow;
 	
 	/**
 	 * Constructor
@@ -390,9 +404,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					}						
 					descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
 					
-				} 
-				
-				else {
+				} else if(((ClassificationConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES) {
 					
 
 					inputForClassification = new DataSet("ClassificationSet");
@@ -434,7 +446,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf("."))
 							+ "_" 
-							+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((ClassificationConfiguration)this.taskConfiguration).getInputFeatures() + ".arff";
 					}
 					else{
 						currentInputFile = 
@@ -446,7 +458,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf(".")) 
 							+ "_" 
-							+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((ClassificationConfiguration)this.taskConfiguration).getInputFeatures() + ".arff";
 					}
 					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 					
@@ -484,7 +496,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 										currentInputFile.lastIndexOf("."))
 								+ "_" 
-								+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((ClassificationConfiguration)this.taskConfiguration).getInputFeatures() + ".arff";
 						}
 						else{
 							currentInputFile = 
@@ -496,7 +508,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 								+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 										currentInputFile.lastIndexOf(".")) 
 								+ "_" 
-								+ ((ClassificationConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((ClassificationConfiguration)this.taskConfiguration).getInputFeatures() + ".arff";
 						}
 						currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 						
@@ -539,7 +551,114 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						descriptionOfClassifierInput.add(new SongPartitionsDescription(currentInputSong,currentInputSongId,
 								partitionStartsAsArray,partitionEndsAsArray));
 					}
-				} 
+				} else {
+					// load the raw features
+					inputForClassification = new DataSet("ClassificationSet");
+					// Load the classifier description
+					DataInputInterface inputToClassify = ((ClassificationConfiguration)this.taskConfiguration).getInputToClassify();
+					
+					if(((ClassificationConfiguration)this.taskConfiguration).getInputSourceType() == ClassificationConfiguration.InputSourceType.CATEGORY_ID) {
+						// Search for the category file
+						Integer categoryId = new Integer(inputToClassify.toString());
+						for(int i=0;i<categoryList.getValueCount();i++) {
+							Double currentCategoryId = new Double(categoryList.getAttribute("Id").getValueAt(i).toString());
+							if(new Integer(currentCategoryId.intValue()).equals(categoryId)) {
+								String inputPath = new String(categoryList.getAttribute("Path").getValueAt(i).toString());
+								DataSetAbstract inputFileSet = new ArffDataSet(new File(inputPath));
+								List<Integer> ids = new ArrayList<Integer>(inputFileSet.getValueCount());
+								List<File> input = new ArrayList<File>(inputFileSet.getValueCount());
+								for(int j=0;j<inputFileSet.getValueCount();j++) {
+									ids.add(new Double(inputFileSet.getAttribute("Id").getValueAt(j).toString()).intValue());
+									input.add(new File(inputFileSet.getAttribute("Path").getValueAt(j).toString()));
+								}
+								inputToClassify = new FileListInput(input, ids);
+								break;
+							}
+						}
+					}
+					
+					// load the first classifier input for attributes information
+					String currentInputFile = ((FileListInput)inputToClassify).
+							getInputFiles().get(0).toString();
+					
+					List<Feature> features = getHarmonizedFeatures(currentInputFile);
+					
+					// find out how many values per window were used
+					for(int i = 0; i < features.size(); i++) {
+						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
+							numberOfValuesPerWindow = i+1;
+						}
+					}
+					
+					// create the attributes
+					// and save the numberOfValuesPerWindow
+					for(int i = 0; i < features.size(); i++) {
+						//Omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i%numberOfValuesPerWindow)) {
+							inputForClassification.addAttribute(new NumericAttribute(features.get(i).getHistoryAsString(), new ArrayList<Double>()));
+						}
+					}
+					
+					int partSize = ((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowSize();
+					int partStep = partSize - ((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowOverlap();
+							
+					// Create the labeled data
+					for(int i=0;i<((FileListInput)inputToClassify).getInputFiles().size();i++) {
+						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(i).toString();
+						ArrayList<Double> partitionStarts = new ArrayList<Double>();
+						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						// load the next features
+						if(i != 0) {
+							features = getHarmonizedFeatures(currentInputFile);
+						}
+						// Save the name of music file for later conversion of classification output
+						String currentInputSong = new String(currentInputFile);
+						
+						// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
+						int numberOfMaxPartitions = features.get(0).getValues().size();
+						for(int j=1;j<features.size();j++) {
+							if(features.get(j).getValues().size() < numberOfMaxPartitions) {
+								numberOfMaxPartitions = features.get(j).getValues().size();
+							}
+						}
+						if((numberOfMaxPartitions * (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+								((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowOverlap())) > 360000) {
+							numberOfMaxPartitions = 360000 / (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+									((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowOverlap());
+							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
+					   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
+					   				" to " + numberOfMaxPartitions);
+						}
+						
+						for(int j = 0; j < numberOfMaxPartitions; j++) {
+							double startPosition = j*partStep;
+							double endPosition = j*partStep+partSize;
+							partitionStarts.add(startPosition);
+							partitionEnds.add(endPosition);
+							int currentAttribute = 0;
+							for(int k = 0; k < features.size(); k++) {
+								// Omit the attributes that are supposed to be ignored
+								if(!attributesToIgnore.contains(k%numberOfValuesPerWindow)) {
+									Double val = features.get(k).getValues().get(j)[0];
+									inputForClassification.getAttribute(currentAttribute).addValue(val);
+									currentAttribute++;
+								}
+							}
+						}
+						
+						// Add descriptions of the partitions of the current song
+						Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
+						Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+						for(int l=0;l<partitionStarts.size();l++) {
+							partitionStartsAsArray[l] = partitionStarts.get(l);
+							partitionEndsAsArray[l] = partitionEnds.get(l);
+						}
+						int currentInputSongId = ((FileListInput)inputToClassify).getInputFileIds().get(i);
+						descriptionOfClassifierInput.add(new SongPartitionsDescription(currentInputSong,currentInputSongId,
+								partitionStartsAsArray,partitionEndsAsArray));
+						
+					}
+				}
 			} catch(IOException e) {
 				throw new NodeException(e.getMessage());
 			}
@@ -577,6 +696,34 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				descriptionOfClassifierInput.add(newSongDesc);
 			} 
 		}
+	}
+	
+	/**
+	 * Harmonizes the raw features using the ProcessorNodeScheduler
+	 * @param currentInputFile
+	 * @return the harmonized features
+	 * @throws NodeException
+	 */
+	private List<Feature> getHarmonizedFeatures(String currentInputFile) throws NodeException {
+		List<File> currentInputFileList = new ArrayList<File>();
+		currentInputFileList.add(new File(currentInputFile));
+		
+		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
+				((ClassificationConfiguration)this.getConfiguration()).getInputFeatureList(),
+				"",
+				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
+				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowOverlap(),
+				"6",
+				"");
+		
+		ProcessorNodeScheduler processorNodeScheduler = new ProcessorNodeScheduler(this.nodeHome + File.separator + "input" + File.separator + "task_" + 
+				this.jobId + File.separator + "processor");
+		
+		// proceed raw feature processing
+		processorNodeScheduler.proceedTask(this.nodeHome, this.jobId, pConf, false);
+		
+		// return the processed features
+		return processorNodeScheduler.getProcessedFeatures();
 	}
 	
 	/**
@@ -761,6 +908,14 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			if(((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel() == null
 					|| ((ClassificationConfiguration)this.taskConfiguration).getPathToInputModel().equals(new String("-1"))) {
 				
+				String inputFeaturesDescription = ((ClassificationConfiguration)taskConfiguration).getInputFeatures();
+				
+				if(((ClassificationConfiguration)taskConfiguration).getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+					if(inputFeaturesDescription.contains(File.separator) && inputFeaturesDescription.contains(".")) {
+						inputFeaturesDescription = inputFeaturesDescription.substring(inputFeaturesDescription.lastIndexOf(File.separator) + 1, inputFeaturesDescription.lastIndexOf('.'));
+					}
+					inputFeaturesDescription = "RAW_FEATURES_" + inputFeaturesDescription;
+				}
 				File folderForModels = new File(AmusePreferences.get(KeysStringValue.MODEL_DATABASE)
 						+ File.separator
 						+ this.categoryDescription
@@ -773,7 +928,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						+ ((ClassificationConfiguration)this.taskConfiguration).getLabelType().toString() + "_"
 						+ ((ClassificationConfiguration)this.taskConfiguration).getMethodType().toString()
 						+ File.separator
-						+ ((ClassificationConfiguration)taskConfiguration).getProcessedFeaturesModelName());
+						+ inputFeaturesDescription);
 				
 				String trainingDescription = ((ClassificationConfiguration)this.taskConfiguration).getTrainingDescription();
 				if(trainingDescription.equals("")) {
@@ -931,6 +1086,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	
 	public void setNumberOfCategories(int numberOfCategories) {
 		this.numberOfCategories = numberOfCategories;
+	}
+	
+	/**
+	 * @return the numberOfValuesPerWindow
+	 */
+	public int getNumberOfValuesPerWindow() {
+		return numberOfValuesPerWindow;
 	}
 }
 

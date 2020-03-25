@@ -35,7 +35,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
@@ -166,5 +168,37 @@ public class ValidationView {
 
 	public void setOutputPath(String outputPath) {
 		txtTargetFilePath.setText(outputPath);
+	}
+
+	public InputFeatureType getInputFeatureType() {
+		return trainingView.getInputFeatureType();
+	}
+
+	public Integer getClassificationWindowSize() {
+		return trainingView.getClassificaitonWindowSize();
+	}
+
+	public Integer getClassificationWindowOverlap() {
+		return trainingView.getClassificationWindowOverlap();
+	}
+
+	public FeatureTable getInputFeatures() {
+		return trainingView.getInputFeatures();
+	}
+
+	public void setInputFeatureType(InputFeatureType inputFeatureType) {
+		trainingView.setInputFeatureType(inputFeatureType);
+	}
+
+	public void setInputFeatures(FeatureTable inputFeatureList) {
+		trainingView.setInputFeatures(inputFeatureList);
+	}
+
+	public void setClassificationWindowSize(Integer classificationWindowSize) {
+		trainingView.setClassificationWindowSize(classificationWindowSize);
+	}
+
+	public void setClassificationWindowOverlap(Integer classificationWindowOverlap) {
+		trainingView.setClassificationWindowOverlap(classificationWindowOverlap);
 	}
 }

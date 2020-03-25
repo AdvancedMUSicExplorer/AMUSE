@@ -30,8 +30,11 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import amuse.data.FeatureTable;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
 import amuse.data.datasets.ClassifierConfigSet;
 import amuse.data.io.DataSetAbstract;
@@ -75,7 +78,7 @@ public class ClassifierController extends AbstractController {
             return;
         }
         /* Gather all neccessary information and create variables */
-        String inputSource = "";
+        String inputSource;
         File musicFilesFile = null;
         if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
         	musicFilesFile = new File(file.getParent() + File.separator + "filelists" + File.separator + file.getName());
@@ -86,7 +89,18 @@ public class ClassifierController extends AbstractController {
         	inputSource = Integer.toString(classifierView.getCategoryId());
         }
         String inputSourceType = classifierView.getInputSourceType().toString();
-        String processedFeatureDescription = classifierView.getProcessingModelString();
+        
+        String inputFeatureDescription;
+        File featureListFile = null;
+        if(classifierView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+        	featureListFile = new File(file.getParent() + File.separator + "featurelists" + File.separator + file.getName());
+        	inputFeatureDescription = featureListFile.getAbsolutePath();
+        } else {
+        	inputFeatureDescription = classifierView.getProcessingModelString();
+        }
+        String inputFeatureType = classifierView.getInputFeatureType().toString();
+        Integer classificationWindowSize = classifierView.getClassificationWindowSize();
+        Integer classificationWindowOverlap = classifierView.getClassificationWindowOverlap();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
         int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
         int mergeSongResults = 1;
@@ -102,21 +116,25 @@ public class ClassifierController extends AbstractController {
         String trainingDescription = classifierView.getTrainingDescription();
         String pathToInputModel = classifierView.getPathToInputModel();
         
-        ClassifierConfigSet dataSet = new ClassifierConfigSet(
-        		inputSource, 
-        		inputSourceType,
-        		attributesToIgnore,
-        		processedFeatureDescription, 
-        		algorithmId, 
-        		groundTruthCategoryId,
-        		attributesToPredict,
-        		relationshipType,
-        		labelType,
-        		methodType,
-        		mergeSongResults,
-        		outputResultPath,
-        		pathToInputModel,
-        		trainingDescription);
+        ClassifierConfigSet dataSet;
+        dataSet = new ClassifierConfigSet(
+	        		inputSource, 
+	        		inputSourceType,
+	        		attributesToIgnore,
+	        		inputFeatureDescription, 
+	        		inputFeatureType,
+	        		classificationWindowSize,
+	        		classificationWindowOverlap,
+	        		algorithmId, 
+	        		groundTruthCategoryId,
+	        		attributesToPredict,
+	        		relationshipType,
+	        		labelType,
+	        		methodType,
+	        		mergeSongResults,
+	        		outputResultPath,
+	        		pathToInputModel,
+	        		trainingDescription);
         
         //if the input is given as files a file list must be saved
         if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
@@ -133,6 +151,18 @@ public class ClassifierController extends AbstractController {
 	        } catch(IOException ex) {
 	        	showErr(ex.getLocalizedMessage());
 	        }
+        }
+        
+        // if the input features are given as raw features a feature list must be saved
+        if(classifierView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+        	// Create folders...
+        	featureListFile.getParentFile().mkdirs();
+        	FeatureTable inputFeatures = classifierView.getInputFeatures();
+        	try {
+        		inputFeatures.getAccordingDataSet().saveToArffFile(featureListFile);
+        	} catch(IOException ex) {
+        		showErr(ex.getLocalizedMessage());
+        	}
         }
 	        
         // Save Files and Features:
@@ -165,8 +195,16 @@ public class ClassifierController extends AbstractController {
     }
 
     private void setConfiguration(ClassificationConfiguration conf) {
+    	InputFeatureType inputFeatureType = conf.getInputFeatureType();
+    	classifierView.setInputFeatureType(inputFeatureType);
+        if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+        	classifierView.setInputFeatures(conf.getInputFeatureList());
+        	classifierView.setClassificationWindowSize(conf.getClassificationWindowSize());
+        	classifierView.setClassificationWindowOverlap(conf.getClassificationWindowOverlap());
+        } else {
+        	classifierView.setProcessingModelString(conf.getInputFeatures());
+        }
     	classifierView.setInputSourceType(conf.getInputSourceType());
-        classifierView.setProcessingModelString(conf.getProcessedFeaturesModelName());
         classifierView.setSelectedTrainingAlgorithm(conf.getAlgorithmDescription());
         classifierView.setGroundTruthCategoryId(conf.getGroundTruthCategoryId());
         classifierView.setAverageCalculationSelected(conf.getMergeSongResults());
@@ -195,7 +233,7 @@ public class ClassifierController extends AbstractController {
         /* Gather all neccessary information and create variables */
         ClassificationConfiguration conf = null;
         try {
-        	String inputSource = "";
+        	String inputSource;
         	File musicFilesFile = null;
         	if(classifierView.getInputSourceType() == InputSourceType.FILE_LIST) {
 	            musicFilesFile = File.createTempFile("FileTable", "arff");
@@ -207,7 +245,9 @@ public class ClassifierController extends AbstractController {
             	inputSource = Integer.toString(classifierView.getCategoryId());
             }
             String inputSourceType = classifierView.getInputSourceType().toString();
-            String processedFeatureDescription = classifierView.getProcessingModelString();
+            InputFeatureType inputFeatureType = classifierView.getInputFeatureType();
+            Integer classificationWindowSize = classifierView.getClassificationWindowSize();
+            Integer classificationWindowOverlap = classifierView.getClassificationWindowOverlap();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
             int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
             List<Integer> attributesToPredict = classifierView.getAttributesToPredict();
@@ -229,20 +269,44 @@ public class ClassifierController extends AbstractController {
 	            inputToClassify.saveToArffFile(musicFilesFile);
             }
             
-            // Save Files and Features:
-            conf = new ClassificationConfiguration(
-            		InputSourceType.valueOf(inputSourceType),
-            		inputSource,
-            		attributesToIgnore,
-            		processedFeatureDescription, 
-            		algorithmStr, 
-            		groundTruthCategoryId,
-            		attributesToPredict,
-            		modelType,
-            		mergeSongResults, 
-            		outputResultPath,
-            		pathToInputModel,
-            		trainingDescription);
+            if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+            	FeatureTable inputFeatures = classifierView.getInputFeatures();
+            	// Save Files and Features:
+	            conf = new ClassificationConfiguration(
+	            		InputSourceType.valueOf(inputSourceType),
+	            		inputSource,
+	            		attributesToIgnore,
+	            		inputFeatures, 
+	            		classificationWindowSize,
+	            		classificationWindowOverlap,
+	            		algorithmStr, 
+	            		groundTruthCategoryId,
+	            		attributesToPredict,
+	            		modelType,
+	            		mergeSongResults, 
+	            		outputResultPath,
+	            		pathToInputModel,
+	            		trainingDescription);
+            } else {
+            	String processedFeatureDescription = classifierView.getProcessingModelString();
+	            // Save Files and Features:
+	            conf = new ClassificationConfiguration(
+	            		InputSourceType.valueOf(inputSourceType),
+	            		inputSource,
+	            		attributesToIgnore,
+	            		processedFeatureDescription, 
+	            		inputFeatureType,
+	            		classificationWindowSize,
+	            		classificationWindowOverlap,
+	            		algorithmStr, 
+	            		groundTruthCategoryId,
+	            		attributesToPredict,
+	            		modelType,
+	            		mergeSongResults, 
+	            		outputResultPath,
+	            		pathToInputModel,
+	            		trainingDescription);
+            }
         } catch (IOException ex) {
             showErr(ex.getLocalizedMessage());
         }
@@ -306,7 +370,16 @@ public class ClassifierController extends AbstractController {
         }
 
         public void addTraining() {
-            taskManager.addExperiment(getExperimentConfiguration());
+        	ClassificationConfiguration conf = getExperimentConfiguration();
+        	if(conf.getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES || conf.getInputFeatureList().size() > 0) {
+        		taskManager.addExperiment(conf);
+            } else {
+            	JOptionPane.showMessageDialog(
+                        getView(),
+                        "Please select at least one input feature for classification!",
+                        "Unable to add training task",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
 
         @Override

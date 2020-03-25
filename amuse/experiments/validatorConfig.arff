@@ -6,8 +6,14 @@
 @ATTRIBUTE 'ValidationMethodId' STRING
 % Path to file with measure list, e.g. containing accuracy and precision
 @ATTRIBUTE 'MeasureList' STRING
-% Description of methods used for feature processing for the search of according features in processed features DB
-@ATTRIBUTE 'ProcessedFeaturesDescription' STRING
+% Description of input features (feature table or processing description, depending on InputFeaturesType)
+@ATTRIBUTE 'InputFeatures' STRING
+% Type of input features for classification
+@ATTRIBUTE 'InputFeatureType' {'RAW_FEATURES', 'PROCESSED_FEATURES'}
+% Size of classification window in milliseconds
+@ATTRIBUTE 'ClassificationWindowSize' NUMERIC
+% Size of classification window overlap in milliseconds
+@ATTRIBUTE 'ClassificationWindowOverlap' NUMERIC
 % Input to validate
 @ATTRIBUTE 'InputToValidate' STRING
 % Ground truth source type
@@ -28,3 +34,5 @@
 % Alternative path for saving of measures
 % Set to "-1" if not required
 @ATTRIBUTE 'OutputPath' STRING
+
+@DATA

@@ -39,7 +39,12 @@ import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
+import amuse.data.ArffFeatureLoader;
+import amuse.data.Feature;
+import amuse.data.FeatureTable;
+import amuse.data.FileTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -52,6 +57,8 @@ import amuse.interfaces.nodes.NodeScheduler;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
+import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
@@ -80,6 +87,13 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	
 	/** Path to the output model(s) */
 	private String outputModel = null;
+	
+	/**
+	 * Number of values per extraction window.
+	 * Used for raw features so that classification training methods can assemble 
+	 * the feature vectors back to matrices.
+	 */
+	private int numberOfValuesPerWindow;
 	
 	/**
 	 * Constructor
@@ -339,7 +353,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 						labeledInputForTraining = new DataSet("TrainingSet");
 					
-						//Aadd the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
+						//Add the attributes (except for attributes that are to be ignored and attributes that should be classified and the Id
 						for(int i = 0; i < completeInput.getAttributeCount(); i++) {
 							if(!attributesToPredict.contains(i) && !attributesToIgnore.contains(i) && !completeInput.getAttribute(i).getName().equals("Id")) {
 								if(completeInput.getAttribute(i).getName().equals("NumberOfCategories")) {
@@ -394,7 +408,8 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				} catch (IOException e) {
 					throw new NodeException(e.getMessage());
 				}
-			} else {
+			} else if (((TrainingConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES){
+				// load the processed features
 				
 				// Set the i/o files
 				/*String pathToFileWithLabeledInstances = new String();
@@ -462,7 +477,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf("."))
 							+ "_" 
-							+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					else{
 						String processedFeatureDatabase = ((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase();
@@ -479,7 +494,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
 									currentInputFile.lastIndexOf(".")) 
 							+ "_" 
-							+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+							+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 					
@@ -605,7 +620,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
 										newInputFile.lastIndexOf("."))
 								+ "_" 
-								+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 						}
 						else{
 							newInputFile = 
@@ -617,7 +632,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 								+ newInputFile.substring(newInputFile.lastIndexOf(File.separator) + 1,
 										newInputFile.lastIndexOf(".")) 
 								+ "_" 
-								+ ((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName() + ".arff";
+								+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 						}
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
@@ -631,7 +646,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							classifierInputLoader.setFile(new File(currentInputFile));
 						} 
 						
-						// Load the next input vector
+						// Load the next input vector//Also omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i)) {
+							labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
+									new ArrayList<Double>()));
+						}
 						inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 						
 						// If the input vector and its description do not match 
@@ -647,6 +666,135 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					e.printStackTrace();
 					throw new NodeException(e.getMessage());
 				}
+			} else {
+				// load the raw features
+				try {
+					labeledInputForTraining = new DataSet("TrainingSet");
+					// Load the classifier description
+					DataSetAbstract classifierGroundTruthSet = new ArffDataSet(new File(pathToFileWithLabeledInstances));
+					
+					// load the first classifier input for attributes information
+					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
+					
+					List<Feature> features = getHarmonizedFeatures(currentInputFile);
+					
+					// find out how many values per window were used
+					for(int i = 0; i < features.size(); i++) {
+						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
+							numberOfValuesPerWindow = i+1;
+						}
+					}
+					
+					// create the attributes
+					// and save the numberOfValuesPerWindow
+					for(int i = 0; i < features.size(); i++) {
+						//Omit the attributes that are supposed to be ignored
+						if(!attributesToIgnore.contains(i%numberOfValuesPerWindow)) {
+							labeledInputForTraining.addAttribute(new NumericAttribute(features.get(i).getHistoryAsString(), new ArrayList<Double>()));
+						}
+					}
+					
+					//Add the id attribute
+					labeledInputForTraining.addAttribute(new NumericAttribute("Id", new ArrayList<Double>()));
+					
+					//Add the attribute "NumberOfCategories"
+					//It marks where the categories that are to be classified start and how many will follow
+					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
+					//add the category attributes
+					for(int category : attributesToPredict) {
+						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+					}
+					
+					// Create the labeled data
+					for(int i=0;i<classifierGroundTruthSet.getValueCount();i++) {
+						Integer end = new Double(classifierGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
+						// If the complete song should be read
+						if(end == -1) {
+							
+							// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
+							int numberOfMaxPartitions = features.get(0).getValues().size();
+							for(int j=1;j<features.size();j++) {
+								if(features.get(j).getValues().size() < numberOfMaxPartitions) {
+									numberOfMaxPartitions = features.get(j).getValues().size();
+								}
+							}
+							if((numberOfMaxPartitions * (((TrainingConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+									((TrainingConfiguration)this.taskConfiguration).getClassificationWindowOverlap())) > 360000) {
+								numberOfMaxPartitions = 360000 / (((TrainingConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+										((TrainingConfiguration)this.taskConfiguration).getClassificationWindowOverlap());
+								AmuseLogger.write(this.getClass().getName(), Level.WARN, 
+						   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
+						   				" to " + numberOfMaxPartitions);
+							}
+							
+							for(int j = 0; j < numberOfMaxPartitions; j++) {
+								int currentAttribute = 0;
+								for(int k = 0; k < features.size(); k++) {
+									// Omit the attributes that are supposed to be ignored
+									if(!attributesToIgnore.contains(k%numberOfValuesPerWindow)) {
+										Double val = features.get(k).getValues().get(j)[0];
+										labeledInputForTraining.getAttribute(currentAttribute).addValue(val);
+										currentAttribute++;
+									}
+								}
+								//If the classification is mutlilabel or singlelabel the confidences are added and rounded if the relationships are binary
+								if(((TrainingConfiguration)this.getConfiguration()).getLabelType() != LabelType.MULTICLASS) {
+									for(int category : attributesToPredict) {
+										String label = classifierGroundTruthSet.getAttribute(5 + category).getName();
+										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(((TrainingConfiguration)this.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS) {
+											labeledInputForTraining.getAttribute(label).addValue(confidence);
+										} else {
+											labeledInputForTraining.getAttribute(label).addValue(confidence >= 0.5 ? 1.0 : 0.0);
+										}
+									}
+									//If the classification is multiclass only the relationship of the class with the highest confidence is 1
+								} else {
+									double maxConfidence = 0;
+									int positionOfMax = 0;
+									int currentPosition = 0;
+									for(int category : attributesToPredict) {
+										Double confidence = new Double(classifierGroundTruthSet.getAttribute(5 + category).getValueAt(i).toString());
+										if(confidence > maxConfidence) {
+											maxConfidence = confidence;
+											positionOfMax = currentPosition;
+										}
+										currentPosition++;
+									}
+									int positionOfFirstCategory = labeledInputForTraining.getAttributeCount() - numberOfCategories;
+									for(int category=0;category<numberOfCategories;category++) {
+										labeledInputForTraining.getAttribute(positionOfFirstCategory + category).addValue(category == positionOfMax ? 1.0 : 0.0);
+									}
+								}
+								
+									
+								// Write the ID attribute (from what song the features are saved)
+								// IMPORTANT: --------------------------------------------------- 
+								// This attribute must not be used for classification model training! 
+								// If any new classification algorithms are integrated into AMUSE, they must
+								// handle this properly!!!
+								Double id = new Double(classifierGroundTruthSet.getAttribute("Id").getValueAt(i).toString());
+								labeledInputForTraining.getAttribute("Id").addValue(id);
+								
+								
+								labeledInputForTraining.getAttribute("NumberOfCategories").addValue(new Double(numberOfCategories));
+							}
+						} else {
+							// TODO Consider Vocals/Piano-Recognition-Scenario!
+						}
+						// Go to the next description
+						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
+						// Go to the next music file?
+						if(!newInputFile.equals(currentInputFile)) {
+							currentInputFile = newInputFile;
+							features = getHarmonizedFeatures(currentInputFile);
+						}
+					}
+					
+				} catch(IOException e) {
+					e.printStackTrace();
+					throw new NodeException(e.getMessage());
+				}
 			}
 			
 			// Replace the ground truth source by the data set input loaded into memory
@@ -654,6 +802,34 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		}
 	}
 	
+	/**
+	 * Harmonizes the raw features using the ProcessorNodeScheduler
+	 * @param currentInputFile
+	 * @return the harmonized features
+	 * @throws NodeException
+	 */
+	private List<Feature> getHarmonizedFeatures(String currentInputFile) throws NodeException {
+		List<File> currentInputFileList = new ArrayList<File>();
+		currentInputFileList.add(new File(currentInputFile));
+		
+		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
+				((TrainingConfiguration)this.getConfiguration()).getInputFeatureList(),
+				"",
+				((TrainingConfiguration)this.getConfiguration()).getClassificationWindowSize(),
+				((TrainingConfiguration)this.getConfiguration()).getClassificationWindowOverlap(),
+				"6",
+				"");
+		
+		ProcessorNodeScheduler processorNodeScheduler = new ProcessorNodeScheduler(this.nodeHome + File.separator + "input" + File.separator + "task_" + 
+				this.jobId + File.separator + "processor");
+		
+		// proceed raw feature processing
+		processorNodeScheduler.proceedTask(this.nodeHome, this.jobId, pConf, false);
+		
+		// return the processed features
+		return processorNodeScheduler.getProcessedFeatures();
+	}
+
 	/**
 	 * Run data preprocessing (e.g. outlier removal) before classification. This is not 
 	 * feature processing since all classification data must exist for preprocessing
@@ -962,10 +1138,22 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				folderForModelsString += groundTruthSource.getAttribute(firstCategoryPosition + i).getName();
 			}
 			
-			folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
-					"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-					requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
-					((TrainingConfiguration)this.taskConfiguration).getProcessedFeaturesModelName();
+			if(((TrainingConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+				String inputFeatureDescription = ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription();
+				if(inputFeatureDescription.contains(File.separator) && inputFeatureDescription.contains(".")) {
+					inputFeatureDescription = inputFeatureDescription.substring(inputFeatureDescription.lastIndexOf(File.separator) + 1, inputFeatureDescription.lastIndexOf("."));
+				}
+				inputFeatureDescription = "RAW_FEATURES_" + inputFeatureDescription;
+				folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
+						"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
+						requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
+						inputFeatureDescription;
+			} else {
+				folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
+						"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
+						requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
+						((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription();
+			}
 			
 			File folderForModels = new File(folderForModelsString);
 			
@@ -985,7 +1173,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				this.outputModel = new String(folderForModels + File.separator + "model_" + trainingDescription + ".mod");
 			}
 			
-			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID) {
+			if(((TrainingConfiguration)this.taskConfiguration).getGroundTruthSourceType() != GroundTruthSourceType.CATEGORY_ID || ((TrainingConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
 				AmuseLogger.write(this.getClass().getName(), Level.WARN, "No output path given! Model will be saved at " + outputModel);
 			}
 			
@@ -1010,5 +1198,12 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				((AmuseTask)this.ctad).getProperties().getProperty("name") + "...");
 		this.ctad.trainModel(this.outputModel);
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..classification training finished!");
+	}
+	
+	/**
+	 * @return the numberOfValuesPerWindow
+	 */
+	public int getNumberOfValuesPerWindow() {
+		return numberOfValuesPerWindow;
 	}
 }

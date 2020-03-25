@@ -51,6 +51,7 @@ import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.FeatureTable;
+import amuse.data.InputFeatureType;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.attributes.NumericAttribute;
@@ -282,6 +283,9 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						ClassificationConfiguration.InputSourceType.READY_INPUT,
 						new ArrayList<Integer>(),
 						processedFeaturesDescription, 
+						InputFeatureType.PROCESSED_FEATURES,
+						-1,
+						-1,
 						currentClassifierTok.nextToken(),
 						new ArrayList<Integer>(),
 						new ModelType(RelationshipType.BINARY, LabelType.SINGLELABEL, MethodType.SUPERVISED),

@@ -30,6 +30,9 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import amuse.data.Feature;
+import amuse.data.FeatureTable;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
@@ -72,7 +75,16 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	public enum InputSourceType {FILE_LIST, CATEGORY_ID, READY_INPUT};
 	
 	/** Description of the processed features model */
-	private final String processedFeaturesModelName;
+	private final String inputFeaturesDescription;
+	
+	/** Type of input features for classfication */
+	private final InputFeatureType inputFeatureType;
+	
+	/** Size of classification window in milliseconds */
+	private final Integer classificationWindowSize;
+	
+	/** Size of classification window overlap in milliseconds */
+	private final Integer classificationWindowOverlap;
 	
 	/** Id of classification algorithm from classifierTable.arff 
 	 * (optionally with parameters listed in brackets) */
@@ -104,13 +116,19 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Folder to load the processed features from (default: Amuse processed feature database) */
 	private String processedFeatureDatabase;
 	
+	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
+	private final FeatureTable inputFeatureList;
+	
 
 	/**
 	 * Standard constructor
 	 * @param inputToClassify Input to classify
 	 * @param inputSourceType Defines the input source type
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
-	 * @param processedFeaturesModelName Description of the processed features model
+	 * @param inputFeatures Description of the input features
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
@@ -122,7 +140,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			DataInputInterface inputToClassify,
 			InputSourceType inputSourceType,
 			List <Integer> attributesToIgnore,
-			String processedFeaturesModelName,
+			String inputFeatures,
+			InputFeatureType inputFeatureType,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
 			String algorithmDescription,
 			List<Integer> attributesToPredict,
 			ModelType modelType,
@@ -130,7 +151,15 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.algorithmDescription = algorithmDescription;
 		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
@@ -141,11 +170,14 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * Alternative constructor if the song list to classify is loaded by the category id
+	 * Alternative constructor if the song list to classify is loaded by the category id or path to filelist
 	 * @param inputSourceType Defines the input source type
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param inputSource Input for classification
-	 * @param processedFeaturesModelName Description of the processed features model
+	 * @param inputFeatures Description of the input features
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
 	 * @param attributesToPredict the categories of the category file of the annotation database
@@ -158,7 +190,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			InputSourceType inputSourceType,
 			String inputSource,
 			List <Integer> attributesToIgnore,
-			String processedFeaturesModelName,
+			String inputFeatures,
+			InputFeatureType inputFeatureType,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
 			String algorithmDescription,
 			int groundTruthSource,
 			List<Integer> attributesToPredict,
@@ -193,8 +228,99 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputToClassify = new FileListInput(input,ids);
 		}
 		this.inputSourceType = inputSourceType;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.algorithmDescription = algorithmDescription;
+		this.groundTruthCategoryId = groundTruthSource;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
+		this.mergeSongResults = mergeSongResults;
+		this.classificationOutput = classificationOutput;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.pathToInputModel = pathToInputModel;
+		this.trainingDescription = trainingDescription;
+	}
+
+	/**
+	 * Alternative constructor if the song list to classify is loaded by the category id or path to filelist
+	 * input features are given as FeatureTalbe (only used for raw input features)
+	 * @param inputSourceType Defines the input source type
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param inputSource Input for classification
+	 * @param inputFeatures Description of the input features
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
+	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
+	 * @param groundTruthSource Id of the music category
+	 * @param attributesToPredict the categories of the category file of the annotation database
+	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
+	 * @param fuzzy should the classification be fuzzy?
+	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
+	 * @param classificationOutput Destination for classification output
+	 */
+	public ClassificationConfiguration(
+			InputSourceType inputSourceType,
+			String inputSource,
+			List <Integer> attributesToIgnore,
+			FeatureTable inputFeatures,
+			Integer classificationWindowSize,
+			Integer classificationWindowOverlap,
+			String algorithmDescription,
+			int groundTruthSource,
+			List<Integer> attributesToPredict,
+			ModelType modelType,
+			Integer mergeSongResults,
+			String classificationOutput,
+			String pathToInputModel,
+			String trainingDescription) throws IOException{
+		List<File> input;
+		List<Integer> ids = null;
 		
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		if(inputSourceType.equals(InputSourceType.CATEGORY_ID)) {
+			this.inputToClassify = new FileInput(inputSource);
+		} else if(inputSourceType.equals(InputSourceType.FILE_LIST)) {
+			DataSetAbstract inputFileSet; 
+			try {
+				inputFileSet = new ArffDataSet(new File(inputSource));
+			} catch(IOException e) {
+				throw new RuntimeException("Could not create ClassificationConfiguration: " + e.getMessage());
+			}
+			ids = new ArrayList<Integer>(inputFileSet.getValueCount());
+			input = new ArrayList<File>(inputFileSet.getValueCount());
+			for(int j=0;j<inputFileSet.getValueCount();j++) {
+				ids.add(new Double(inputFileSet.getAttribute("Id").getValueAt(j).toString()).intValue());
+				input.add(new File(inputFileSet.getAttribute("Path").getValueAt(j).toString()));
+			}
+			this.inputToClassify = new FileListInput(input,ids);
+			
+		} else {
+			input = new ArrayList<File>(1);
+			input.add(new File(inputSource));
+			this.inputToClassify = new FileListInput(input,ids);
+		}
+		this.inputSourceType = inputSourceType;
+		this.inputFeatureType = InputFeatureType.RAW_FEATURES;
+		this.inputFeatureList = inputFeatures;
+		List<Feature> features = inputFeatures.getFeatures();
+		String description = "";
+		if(!features.isEmpty()) {
+			description += features.get(0).getId();
+		}
+		for(int i = 1; i < features.size(); i++) {
+			description += "_" + features.get(i).getId();
+		}
+		this.inputFeaturesDescription = description;
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthCategoryId = groundTruthSource;
 		this.attributesToPredict = attributesToPredict;
@@ -218,10 +344,17 @@ public class ClassificationConfiguration extends TaskConfiguration {
    		// Proceed music file lists one by one
 	    for(int i=0;i<classifierConfig.getValueCount();i++) {
 			String currentInputSource = classifierConfig.getInputSourceAttribute().getValueAt(i).toString();
-			String currentProcessedFeaturesDescription = classifierConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentInputFeatureDescription = classifierConfig.getInputFeaturesAttribute().getValueAt(i).toString();
+			InputFeatureType currentInputFeatureType;
+			if(classifierConfig.getInputFeatureTypeAttribute().getValueAt(i).toString().equals(new String("RAW_FEATURES"))){
+				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
+			} else {
+				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Integer currentClassificationWindowSize = new Double(classifierConfig.getClassificationWindowSizeAttribute().getValueAt(i)).intValue();
+			Integer currentClassificationWindowOverlap = new Double(classifierConfig.getClassificationWindowOverlapAttribute().getValueAt(i)).intValue();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
-
 			String attributesToPredictString = classifierConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
 			attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
 			String[] attributesToPredictStringArray = attributesToPredictString.split("\\s*,\\s*");
@@ -248,7 +381,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				}
 			} catch(NumberFormatException e) {
 				AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.WARN,
-						"The attributes to ignore were not properly specified. All features will be used for training.");
+						"The attributes to ignore were not properly specified. All features will be used for classification.");
 				currentAttributesToIgnore = new ArrayList<Integer>();
 			}
 			
@@ -302,7 +435,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
 			
 			// Create a classification task
-		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentProcessedFeaturesDescription, 
+		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowOverlap,
 		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
@@ -336,8 +469,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/**
 	 * @return the processedFeaturesModelName
 	 */
-	public String getProcessedFeaturesModelName() {
-		return processedFeaturesModelName;
+	public String getInputFeatures() {
+		return inputFeaturesDescription;
 	}
 
 	/**
@@ -474,6 +607,31 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public void setPathToInputModel(String pathToInputModel) {
 		this.pathToInputModel = pathToInputModel;
+	}
+	
+	/**
+	 * @return the inputFeatureType
+	 */
+	public InputFeatureType getInputFeatureType() {
+		return inputFeatureType;
+	}
+	
+	/**
+	 * @return the classificationWindowSize
+	 */
+	public Integer getClassificationWindowSize() {
+		return classificationWindowSize;
+	}
+	
+	/**
+	 * @return the classificationWindowOverlap
+	 */
+	public Integer getClassificationWindowOverlap()	{
+		return classificationWindowOverlap;
+	}
+
+	public FeatureTable getInputFeatureList() {
+		return inputFeatureList;
 	}
 
 }

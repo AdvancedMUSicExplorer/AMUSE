@@ -30,7 +30,10 @@ import java.util.List;
 
 import org.apache.log4j.Level;
 
+import amuse.data.Feature;
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.ModelType.LabelType;
@@ -55,8 +58,17 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** For Serializable interface */
 	private static final long serialVersionUID = 4335790625923084158L;
 	
-	/** Description of the processed features model */
-	private final String processedFeaturesModelName;
+	/** Description of input features (feature table or processing description, depending on InputFeaturesType) */
+	private final String inputFeaturesDescription;
+	
+	/** Type of input features for classfication */
+	private final InputFeatureType inputFeatureType;
+	
+	/** Size of classification window in milliseconds */
+	private final Integer classificationWindowSize;
+	
+	/** Size of classification window overlap in milliseconds */
+	private final Integer classificationWindowOverlap;
 	
 	/** Id of classification algorithm from classificatorTable.arff 
 	 * (optionally with parameters listed in brackets) */
@@ -89,9 +101,18 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Folder to store the classification model(s) (default: Amuse model database) */
 	private String modelDatabase;
 	
+	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
+	private final FeatureTable inputFeatureList;
+	
+	/** Number of feature dimensions per time window. Is only used with raw features */
+	private Integer numberOfFeatureDimensions;
+	
 	/**
 	 * Standard constructor
-	 * @param processedFeaturesModelName Description of the processed features model
+	 * @param inputFeatures Description of the input features
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
  	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
 	 * @param groundTruthSource Source with ground truth for model training. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -106,9 +127,65 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
-	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription,
+	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowOverlap, String algorithmDescription, String preprocessingAlgorithmDescription,
 			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.algorithmDescription = algorithmDescription;
+		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
+		this.groundTruthSource = groundTruthSource;
+		this.groundTruthSourceType = groundTruthSourceType;
+		this.attributesToPredict = attributesToPredict;
+		this.attributesToIgnore = attributesToIgnore;
+		this.modelType = modelType;
+		this.trainingDescription = trainingDescription;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+		this.modelDatabase = AmusePreferences.get(KeysStringValue.MODEL_DATABASE);
+		this.pathToOutputModel = pathToOutputModel;
+	}
+	
+	/**
+	 * Constructor where the inputFeatures are given as a FeatureTable (featureType is RAW_FEATURES)
+	 * 
+	 * @param inputFeatures Description of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
+ 	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
+	 * @param groundTruthSource Source with ground truth for model training. Can be either
+	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
+	 * - Path to the labeled file list or
+	 * - Path to the ready training input (prepared e.g. by a validator method)
+	 * - Ready input (as EditableDataSet)
+	 * @param groundTruthSourceType Describes the source type of ground truth
+	 * @param attributesToPredict the categories of the category file of the annotationdatabase or the attributes of the ready input that should be predicted
+	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
+	 * @param modelType the type of the classification model
+	 * @param trainingDescription optional description of this experiment, that will be added to the name of the model
+	 * @param pathToOutputModel optional path to where the model should be saved 
+	 * (three possibilities are given above) 
+	 */
+	public TrainingConfiguration(FeatureTable inputFeatures, Integer classificationWindowSize, Integer classificationWindowOverlap, String algorithmDescription, String preprocessingAlgorithmDescription,
+			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
+		List<Feature> features = inputFeatures.getFeatures();
+		String description = "";
+		if(!features.isEmpty()) {
+			description += features.get(0).getId();
+		}
+		for(int i = 1; i < features.size(); i++) {
+			description += "_" + features.get(i).getId();
+		}
+		this.inputFeaturesDescription = description;
+		this.inputFeatureList = inputFeatures;
+		this.inputFeatureType = InputFeatureType.RAW_FEATURES;
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
@@ -126,7 +203,10 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Constructor that sets attributesToPredict, attributesToIgnore, modelType and outputPath to their default values.
 	 * Currently only used by FitnessEvaluator
 	 * 
-	 * @param processedFeaturesModelName Description of the processed features model
+	 * @param inputFeatures Description of the input features
+	 * @param inputFeatureType type of the input features
+	 * @param classificationWindowSize size of the classification windows
+	 * @param classificationWindowOverlap overlap of the classification windows
  	 * @param algorithmDescription ID of classification algorithm from classificationTrainerTable.arff
 	 * @param groundTruthSource Source with ground truth for model training. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -137,9 +217,17 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
-	public TrainingConfiguration(String processedFeaturesModelName, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
+	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowOverlap, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
 			GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
-		this.processedFeaturesModelName = processedFeaturesModelName;
+		this.inputFeaturesDescription = inputFeatures;
+		this.inputFeatureType = inputFeatureType;
+		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.classificationWindowSize = classificationWindowSize;
+		this.classificationWindowOverlap = classificationWindowOverlap;
 		this.algorithmDescription = algorithmDescription;
 		this.preprocessingAlgorithmDescription = preprocessingAlgorithmDescription;
 		this.groundTruthSource = groundTruthSource;
@@ -170,7 +258,15 @@ public class TrainingConfiguration extends TaskConfiguration {
 		
    		// Proceed music file lists one by one
 	    for(int i=0;i<trainingConfig.getValueCount();i++) {
-			String currentProcessedFeaturesModelName = trainingConfig.getProcessedFeatureDescriptionAttribute().getValueAt(i).toString();
+			String currentInputFeatures = trainingConfig.getInputFeatureAttribute().getValueAt(i).toString();
+			InputFeatureType currentInputFeatureType;
+			if(trainingConfig.getInputFeatureTypeAttribute().getValueAt(i).toString().equals(new String("RAW_FEATURES"))) {
+				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
+			} else {
+				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Integer currentClassificationWindowSize = trainingConfig.getClassificationWindowSizeAttribute().getValueAt(i).intValue();
+			Integer currentClassificationWindowOverlap = trainingConfig.getClassificationWindowOverlapAttribute().getValueAt(i).intValue();
 			String currentAlgorithmDescription = trainingConfig.getAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentPreprocessingAlgorithmDescription = trainingConfig.getPreprocessingAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentGroundTruthSource = trainingConfig.getGroundTruthSourceAttribute().getValueAt(i).toString();
@@ -253,7 +349,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 			
 				
 			// Create a training task
-			TrainingConfiguration trConfig = new TrainingConfiguration(currentProcessedFeaturesModelName, currentAlgorithmDescription,
+			TrainingConfiguration trConfig = new TrainingConfiguration(currentInputFeatures, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowOverlap, currentAlgorithmDescription,
 		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
@@ -284,8 +380,8 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/**
 	 * @return the processedFeaturesModelName
 	 */
-	public String getProcessedFeaturesModelName() {
-		return processedFeaturesModelName;
+	public String getInputFeaturesDescription() {
+		return inputFeaturesDescription;
 	}
 
 	/**
@@ -408,7 +504,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * Creates a copy of this configuration
 	 */
 	public TrainingConfiguration clone(){
-		TrainingConfiguration conf = new TrainingConfiguration(processedFeaturesModelName, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel); 
+		TrainingConfiguration conf;
+		if(inputFeatureType == InputFeatureType.PROCESSED_FEATURES) {
+				conf = new TrainingConfiguration(inputFeaturesDescription, inputFeatureType, classificationWindowSize, classificationWindowOverlap, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
+		} else {
+			conf = new TrainingConfiguration(inputFeatureList, classificationWindowSize, classificationWindowOverlap, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
+		}
 		return conf;
 	}
 
@@ -438,5 +539,47 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public ModelType getModelType() {
 		return modelType;
+	}
+
+	/**
+	 * @return the inputFeatureType
+	 */
+	public InputFeatureType getInputFeatureType() {
+		return inputFeatureType;
+	}
+
+	/**
+	 * @return the classificationWindowSize
+	 */
+	public Integer getClassificationWindowSize() {
+		return classificationWindowSize;
+	}
+
+	/**
+	 * @return the classificationWindowOverlap
+	 */
+	public Integer getClassificationWindowOverlap() {
+		return classificationWindowOverlap;
+	}
+	
+	/**
+	 * @return the inputFeatureList
+	 */
+	public FeatureTable getInputFeatureList() {
+		return inputFeatureList;
+	}
+	
+	/**
+	 * @param numberOfFeatureDimensions
+	 */
+	public void setNumberOfFeatureDimensions(int numberOfFeatureDimensions) {
+		this.numberOfFeatureDimensions = numberOfFeatureDimensions;
+	}
+	
+	/**
+	 * @return the numberOfFeatureDimensions
+	 */
+	public Integer getNumberOfFeatureDimensions() {
+		return numberOfFeatureDimensions;
 	}
 }

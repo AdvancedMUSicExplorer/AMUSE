@@ -35,6 +35,7 @@ import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -173,7 +174,10 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputToValidate(),
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
 				new ArrayList<Integer>(),
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
+				InputFeatureType.PROCESSED_FEATURES,
+				-1,
+				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getAttributesToPredict(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
@@ -387,7 +391,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				String pathToFile = musicFile.substring(0,musicFile.lastIndexOf(File.separator));
 				musicFile = 
 						((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase() + pathToFile + File.separator +
-						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() +
+						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription() +
 						".arff";
 				listOfUsedProcessedFeatureFiles.add(musicFile);
 				currentInstance = inputDescriptionLoader.getNextInstance(inputDescriptionLoader.getStructure());
@@ -408,7 +412,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				String pathToFile = musicFile.substring(0,musicFile.lastIndexOf(File.separator));
 				musicFile = 
 					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase() + pathToFile + File.separator +
-						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() +
+						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription() +
 						".arff";
 				listOfUsedProcessedFeatureFiles.add(musicFile);
 				currentInstance = inputDescriptionLoader.getNextInstance(inputDescriptionLoader.getStructure());

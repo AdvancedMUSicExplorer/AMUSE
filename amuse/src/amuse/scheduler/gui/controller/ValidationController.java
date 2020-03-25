@@ -32,11 +32,14 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Level;
 
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.data.ModelType;
 import amuse.data.ModelType.LabelType;
@@ -127,7 +130,18 @@ public class ValidationController extends AbstractController {
         	validationMethodStr += selectedAlgorithm.getParameterStr();
         }
         MeasureTable measureTable = measuresView.getMeasureTable();
-        String processedFeatureDescription = validationView.getProcessingModelString();
+        
+        String inputFeatureDescription;
+        File featureListFile = null;
+        if(validationView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+        	featureListFile = new File(file.getParent() + File.separator + "featurelists" + File.separator + file.getName());
+        	inputFeatureDescription = featureListFile.getAbsolutePath();
+        } else {
+        	inputFeatureDescription = validationView.getProcessingModelString();
+        }
+        String inputFeatureType = validationView.getInputFeatureType().toString();
+        Integer classificationWindowSize = validationView.getClassificationWindowSize();
+        Integer classificationWindowOverlap = validationView.getClassificationWindowOverlap();
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
@@ -140,7 +154,10 @@ public class ValidationController extends AbstractController {
         ValidatorConfigSet dataSet = new ValidatorConfigSet(
         		validationMethodStr,
                 measureTableFile, 
-                processedFeatureDescription, 
+                inputFeatureDescription, 
+                inputFeatureType,
+                classificationWindowSize,
+                classificationWindowOverlap,
                 groundTruthSource, 
                 groundTruthSourceType,
                 attributesToPredict,
@@ -150,6 +167,19 @@ public class ValidationController extends AbstractController {
                 methodType,
                 classificationAlgorithmId,
                 outputPath);
+        
+        // if the input features are given as raw features a feature list must be saved
+        if(validationView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
+        	// Create folders...
+        	featureListFile.getParentFile().mkdirs();
+        	FeatureTable inputFeatures = validationView.getInputFeatures();
+        	try {
+        		inputFeatures.getAccordingDataSet().saveToArffFile(featureListFile);
+        	} catch(IOException ex) {
+        		showErr(ex.getLocalizedMessage());
+        	}
+        }
+        
         // Create folders...
         measureTableFile.getParentFile().mkdirs();
         // Save Files and Features:
@@ -193,7 +223,18 @@ public class ValidationController extends AbstractController {
         	validationView.setGroundTruthSource(set.getInputToValidateAttribute().getValueAt(0));
             validationView.setClassifierAlgorithm(set.getClassificationAlgorithmIdAttribute().getValueAt(0));
             measuresView.loadSelection(new File(set.getMeasureListAttribute().getValueAt(0)));
-            validationView.setProcessingModelString(set.getProcessedFeatureDescriptionAttribute().getValueAt(0));
+            
+            String inputFeatureType = set.getInputFeatureTypeAttribute().getValueAt(0);
+            if(inputFeatureType.equals(InputFeatureType.RAW_FEATURES.toString())) {
+            	validationView.setInputFeatureType(InputFeatureType.RAW_FEATURES);
+            	FeatureTable inputFeatures = new FeatureTable(new File(set.getInputFeaturesAttribute().getValueAt(0)));
+            	validationView.setInputFeatures(inputFeatures);
+            	validationView.setClassificationWindowSize(set.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
+            	validationView.setClassificationWindowOverlap(set.getClassificationWindowOverlapAttribute().getValueAt(0).intValue());
+            } else {
+            	validationView.setInputFeatureType(InputFeatureType.PROCESSED_FEATURES);
+            	validationView.setProcessingModelString(set.getInputFeaturesAttribute().getValueAt(0));
+            }
             
             String attributesToPredictString = set.getAttributesToPredictAttribute().getValueAt(0).toString();
     		attributesToPredictString = attributesToPredictString.replaceAll("\\[", "").replaceAll("\\]", "");
@@ -255,7 +296,9 @@ public class ValidationController extends AbstractController {
         	validationMethodStr += selectedAlgorithm.getParameterStr();
         }
         MeasureTable measureTable = measuresView.getMeasureTable();
-        String processedFeatureDescription = validationView.getProcessingModelString();
+        InputFeatureType inputFeatureType = validationView.getInputFeatureType();
+        Integer classificationWindowSize = validationView.getClassificationWindowSize();
+        Integer classificationWindowOverlap = validationView.getClassificationWindowOverlap();
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
@@ -263,17 +306,38 @@ public class ValidationController extends AbstractController {
         List<Integer> attributesToIgnore = validationView.getAttributesToIgnore();
         String outputPath = validationView.getOuputPath();
         ModelType modelType = validationView.getModelType();
-        conf = new ValidationConfiguration(
-        		validationMethodStr, 
-        		measureTable,
-                processedFeatureDescription, 
-                classificationAlgorithmStr, 
-                groundTruthSource,
-                groundTruthSourceType,
-                attributesToPredict,
-                attributesToIgnore,
-                modelType,
-                outputPath);
+        if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+        	FeatureTable inputFeatures = validationView.getInputFeatures();
+        	conf = new ValidationConfiguration(
+	        		validationMethodStr, 
+	        		measureTable,
+	                inputFeatures, 
+	                classificationWindowSize,
+	                classificationWindowOverlap,
+	                classificationAlgorithmStr, 
+	                groundTruthSource,
+	                groundTruthSourceType,
+	                attributesToPredict,
+	                attributesToIgnore,
+	                modelType,
+	                outputPath);
+        } else {
+        	String processedFeatureDescription = validationView.getProcessingModelString();
+	        conf = new ValidationConfiguration(
+	        		validationMethodStr, 
+	        		measureTable,
+	                processedFeatureDescription, 
+	                inputFeatureType,
+	                classificationWindowSize,
+	                classificationWindowOverlap,
+	                classificationAlgorithmStr, 
+	                groundTruthSource,
+	                groundTruthSourceType,
+	                attributesToPredict,
+	                attributesToIgnore,
+	                modelType,
+	                outputPath);
+        }
         return conf;
     }
 
@@ -387,7 +451,16 @@ public class ValidationController extends AbstractController {
      *
      */
     public void addValidation() {
-        taskManager.addExperiment(getExperimentConfiguration());
+    	ValidationConfiguration conf = getExperimentConfiguration();
+    	if(conf.getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES || conf.getInputFeatureList().size() > 0) {
+    		taskManager.addExperiment(conf);
+        } else {
+        	JOptionPane.showMessageDialog(
+                    getView(),
+                    "Please select at least one input feature for validation!",
+                    "Unable to add training task",
+                    JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     /*
@@ -401,6 +474,15 @@ public class ValidationController extends AbstractController {
     public void loadTask(TaskConfiguration conf) {
         if (conf instanceof ValidationConfiguration) {
             ValidationConfiguration valConf = (ValidationConfiguration) conf;
+            InputFeatureType inputFeatureType = valConf.getInputFeatureType();
+        	validationView.setInputFeatureType(inputFeatureType);
+            if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
+            	validationView.setInputFeatures(valConf.getInputFeatureList());
+            	validationView.setClassificationWindowSize(valConf.getClassificationWindowSize());
+            	validationView.setClassificationWindowOverlap(valConf.getClassificationWindowOverlap());
+            } else {
+            	validationView.setProcessingModelString(valConf.getInputFeaturesDescription());
+            }
             validationAlgorithmFacade.setSelectedAlgorithm(valConf.getValidationAlgorithmDescription());
             validationView.setGroundTruthSourceType(valConf.getGroundTruthSourceType());
             validationView.setGroundTruthSource(((FileInput)valConf.getInputToValidate()).toString());

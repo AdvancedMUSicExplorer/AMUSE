@@ -37,6 +37,7 @@ import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.RelationshipType;
 import amuse.data.annotation.ClassifiedSongPartitions;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetInput;
@@ -158,7 +159,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelDatabase()
 							+ File.separator + ((ValidatorNodeScheduler)this.correspondingScheduler).getCategoryDescription() + 
 							File.separator + classifierDescription + File.separator + 
-							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + File.separator + 
+							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription() + File.separator + 
 							((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getValidationAlgorithmDescription() +
 							"-" + properties.getProperty("name"));
 					if(!this.folderForModels.exists()) {
@@ -322,7 +323,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			// Train the model
 			// TODO Classification preprocessing is not currently supported!
 			TrainingConfiguration tConf = new TrainingConfiguration(
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
+				InputFeatureType.PROCESSED_FEATURES,
+				-1,
+				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				"-1",
 				new DataSetInput(trainingSet),
@@ -341,7 +345,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				new DataSetInput(validationSet),
 				ClassificationConfiguration.InputSourceType.READY_INPUT,
 				new ArrayList<Integer>(),
-				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName(), 
+				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
+				InputFeatureType.PROCESSED_FEATURES,
+				-1,
+				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
 				new ArrayList<Integer>(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
@@ -483,7 +490,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				String pathToFile = musicFile.substring(0,musicFile.lastIndexOf(File.separator));
 				musicFile = 
 					((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase() + pathToFile + File.separator + 
-						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeaturesModelName() + 
+						absoluteName + File.separator + absoluteName + "_" + ((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription() + 
 						".arff";
 				listOfUsedProcessedFeatureFiles.add(musicFile);
 				currentInstance = inputDescriptionLoader.getNextInstance(inputDescriptionLoader.getStructure());

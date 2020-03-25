@@ -87,6 +87,9 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	private long initialNumberOfFeatureMatrixEntries = 0;
 	private long finalNumberOfFeatureMatrixEntries = 0;
 	
+	/** Saves the processed features if they are not saved in the database */
+	private List<Feature> processedFeatures;
+	
 	/**
 	 * Constructor
 	 */
@@ -128,7 +131,16 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	 * (non-Javadoc)
 	 * @see amuse.interfaces.nodes.NodeSchedulerInterface#proceedTask(java.lang.String, long, amuse.interfaces.nodes.TaskConfiguration)
 	 */
-	public void proceedTask(String nodeHome, long jobId, TaskConfiguration processingConfiguration) {
+	@Override
+	public void proceedTask(String nodeHome, long jobId, TaskConfiguration taskConfiguration) {
+		proceedTask(nodeHome, jobId, taskConfiguration, true);
+	}
+	
+	/**
+	 * Proceeds the processing task
+	 * @param saveToFile If true, the processing results are saved to the processed features database 
+	 */
+	public void proceedTask(String nodeHome, long jobId, TaskConfiguration processingConfiguration, boolean saveToFile) {
 		
 		// ---------------------------------------
 		// (I): Configure processor node scheduler
@@ -197,7 +209,11 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// (V) Save the processed features to feature database
 		// ---------------------------------------------------
 		try {
-			this.saveProcessedFeaturesToDatabase(rawFeatures);
+			if(saveToFile) {
+				this.saveProcessedFeaturesToDatabase(rawFeatures);
+			} else {
+				this.processedFeatures = rawFeatures;
+			}
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 					"Problem(s) occured during saving of processed features to database: " + e.getMessage());
@@ -221,7 +237,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.interfaces.nodes.NodeSchedulerInterface#proceedTask(java.lang.String[])
@@ -704,7 +720,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					numberOfMaxPartitions = features.get(j).getValues().size();
 				}
 			}
-			System.out.println("N: " + numberOfMaxPartitions);
 			if((numberOfMaxPartitions * (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
 					((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap())) > 360000) {
 				numberOfMaxPartitions = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
@@ -726,7 +741,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			}
 			
 			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize();
-			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap();
+			double stepSize = partSize - ((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap();
 			
 			// Save the data
 			for(int i=0;i<numberOfMaxPartitions;i++) {
@@ -951,6 +966,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		return eventTimes;
 	}
-
-
+	
+	public List<Feature> getProcessedFeatures(){
+		return this.processedFeatures;
+	}
+	
+	
 }

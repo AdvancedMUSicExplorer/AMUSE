@@ -23,7 +23,9 @@
  */
 package amuse.scheduler.gui.training;
 
+import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
+import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -61,7 +63,7 @@ public class TrainingView extends JPanel {
 	private JPanel rightSide = new JPanel(new MigLayout("ins 0, fillx"));
 	private JSplitPane splitPane = new JSplitPane();
 	private GroundTruthSelectionPanel groundTruthSelectionPanel;
-	private ProcessingHistoryPanel processingHistoryPanel;
+	private InputFeaturePanel inputFeaturePanel;
 	private AlgorithmConfigurationFacade trainingAlgorithmFacade;
 	private AlgorithmConfigurationFacade preprocessingAlgorithmFacade = null;
 	private ModelTypePanel modelTypePanel = new ModelTypePanel();
@@ -85,10 +87,10 @@ public class TrainingView extends JPanel {
 		viewLeft.setBorder(new TitledBorder(leftTitle));
 		splitPane.add(new JScrollPane(viewLeft), JSplitPane.LEFT);
 		splitPane.add(new JScrollPane(rightSide), JSplitPane.RIGHT);
-		this.processingHistoryPanel = new ProcessingHistoryPanel();
+		this.inputFeaturePanel = new InputFeaturePanel();
 		viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
 		groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
-			setChildsEnabled(processingHistoryPanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID));
+			setChildsEnabled(inputFeaturePanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID));
 		});
 		if (leftTitle.equals(trainingViewName)) {
 			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
@@ -97,7 +99,7 @@ public class TrainingView extends JPanel {
 			viewLeft.add(preprocessingAlgorithmFacade.getAlgorithmSelectionComboBox(), "growx, span, wrap");
 			addRightSide(preprocessingAlgorithmFacade.getParameterPanel());
 		}
-		viewLeft.add(processingHistoryPanel, "growx, span, wrap");
+		viewLeft.add(inputFeaturePanel, "growx, span, wrap");
 		if(training) {
 			trainingDescriptionPanel = new TrainingDescriptionPanel();
 			viewLeft.add(trainingDescriptionPanel, "growx, span, wrap");
@@ -135,7 +137,7 @@ public class TrainingView extends JPanel {
 	 * @return processingModelString
 	 */
 	public String getProcessingModelString() {
-		return processingHistoryPanel.getProcessingHistoryString();
+		return inputFeaturePanel.getProcessingHistoryString();
 	}
 
 	/**
@@ -207,7 +209,7 @@ public class TrainingView extends JPanel {
 	
 	public List<Integer> getAttributesToIgnore(){
 		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
-			return processingHistoryPanel.getAttributesToIgnore();
+			return inputFeaturePanel.getAttributesToIgnore();
 		} else {
 			return groundTruthSelectionPanel.getAttributesToIgnore();
 		}
@@ -215,7 +217,7 @@ public class TrainingView extends JPanel {
 	
 	public void setAttributesToIgnore(List<Integer> attributesToIgnore) {
 		if(groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID)) {
-			processingHistoryPanel.setAttributesToIgnore(attributesToIgnore);
+			inputFeaturePanel.setAttributesToIgnore(attributesToIgnore);
 		} else {
 			groundTruthSelectionPanel.setAttributesToIgnore(attributesToIgnore);
 		}
@@ -230,7 +232,7 @@ public class TrainingView extends JPanel {
 	}
 		
 	public void setProcessingModelString(String value) {
-		processingHistoryPanel.setProcessingModelString(value);
+		inputFeaturePanel.setProcessingModelString(value);
 	}
 
 	public void setPreprocessingAlgorithm(String value) {
@@ -267,6 +269,38 @@ public class TrainingView extends JPanel {
 
 	public void setPathToOutputModel(String pathToOutputModel) {
 		txtTargetFilePath.setText(pathToOutputModel);
+	}
+
+	public FeatureTable getInputFeatures() {
+		return inputFeaturePanel.getInputFeatures();
+	}
+
+	public Integer getClassificaitonWindowSize() {
+		return inputFeaturePanel.getClassificationWindowSize();
+	}
+	
+	public Integer getClassificationWindowOverlap() {
+		return inputFeaturePanel.getClassificationWindowOverlap();
+	}
+
+	public InputFeatureType getInputFeatureType() {
+		return inputFeaturePanel.getInputFeatureType();
+	}
+
+	public void setInputFeatureType(InputFeatureType inputFeatureType) {
+		inputFeaturePanel.setInputFeatureType(inputFeatureType);
+	}
+
+	public void setInputFeatures(FeatureTable inputFeatures) {
+		inputFeaturePanel.setInputFeatures(inputFeatures);
+	}
+
+	public void setClassificationWindowSize(Integer size) {
+		inputFeaturePanel.setClassificationWindowSize(size);
+	}
+
+	public void setClassificationWindowOverlap(Integer overlap) {
+		inputFeaturePanel.setClassificationWindowOverlap(overlap);
 	}
 
 }
