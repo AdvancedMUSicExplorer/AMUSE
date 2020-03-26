@@ -93,7 +93,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	 * Used for raw features so that classification training methods can assemble 
 	 * the feature vectors back to matrices.
 	 */
-	private int numberOfValuesPerWindow;
+	private int numberOfValuesPerWindow = -1;
 	
 	/**
 	 * Constructor

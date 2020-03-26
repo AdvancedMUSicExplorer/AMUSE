@@ -119,9 +119,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
 	private final FeatureTable inputFeatureList;
 	
-	/** Number of feature dimensions per time window. Is only used with raw features */
-	private Integer numberOfFeatureDimensions;
-	
 	/**
 	 * Standard constructor
 	 * @param validationAlgorithmDescription ID and parameters of validation method
@@ -157,12 +154,21 @@ public class ValidationConfiguration extends TaskConfiguration {
 			String outputPath) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
@@ -267,12 +273,21 @@ public class ValidationConfiguration extends TaskConfiguration {
 			GroundTruthSourceType groundTruthSourceType) {
 		this.validationAlgorithmDescription = validationAlgorithmDescription;
 		this.measures = measures;
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
@@ -623,20 +638,6 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public String getOutputPath() {
 		return outputPath;
-	}
-	
-	/**
-	 * @param numberOfFeatureDimensions
-	 */
-	public void setNumberOfFeatureDimensions(int numberOfFeatureDimensions) {
-		this.numberOfFeatureDimensions = numberOfFeatureDimensions;
-	}
-	
-	/**
-	 * @return the numberOfFeatureDimensions
-	 */
-	public Integer getNumberOfFeatureDimensions() {
-		return numberOfFeatureDimensions;
 	}
 
 	public FeatureTable getInputFeatureList() {

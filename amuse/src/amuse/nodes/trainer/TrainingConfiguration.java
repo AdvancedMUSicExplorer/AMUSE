@@ -104,9 +104,6 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
 	private final FeatureTable inputFeatureList;
 	
-	/** Number of feature dimensions per time window. Is only used with raw features */
-	private Integer numberOfFeatureDimensions;
-	
 	/**
 	 * Standard constructor
 	 * @param inputFeatures Description of the input features
@@ -129,12 +126,21 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowOverlap, String algorithmDescription, String preprocessingAlgorithmDescription,
 			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
@@ -219,12 +225,21 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowOverlap, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
 			GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
@@ -567,19 +582,5 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public FeatureTable getInputFeatureList() {
 		return inputFeatureList;
-	}
-	
-	/**
-	 * @param numberOfFeatureDimensions
-	 */
-	public void setNumberOfFeatureDimensions(int numberOfFeatureDimensions) {
-		this.numberOfFeatureDimensions = numberOfFeatureDimensions;
-	}
-	
-	/**
-	 * @return the numberOfFeatureDimensions
-	 */
-	public Integer getNumberOfFeatureDimensions() {
-		return numberOfFeatureDimensions;
 	}
 }

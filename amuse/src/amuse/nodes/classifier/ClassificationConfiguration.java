@@ -151,12 +151,21 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
@@ -228,12 +237,21 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputToClassify = new FileListInput(input,ids);
 		}
 		this.inputSourceType = inputSourceType;
-		this.inputFeaturesDescription = inputFeatures;
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
 			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+			List<Feature> features = inputFeatureList.getFeatures();
+			String description = "";
+			if(!features.isEmpty()) {
+				description += features.get(0).getId();
+			}
+			for(int i = 1; i < features.size(); i++) {
+				description += "_" + features.get(i).getId();
+			}
+			this.inputFeaturesDescription = description;
 		} else {
 			this.inputFeatureList = null;
+			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowOverlap = classificationWindowOverlap;
