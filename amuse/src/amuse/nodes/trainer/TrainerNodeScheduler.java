@@ -646,11 +646,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							classifierInputLoader.setFile(new File(currentInputFile));
 						} 
 						
-						// Load the next input vector//Also omit the attributes that are supposed to be ignored
-						if(!attributesToIgnore.contains(i)) {
-							labeledInputForTraining.addAttribute(new NumericAttribute(inputInstance.attribute(i).name(),
-									new ArrayList<Double>()));
-						}
+						// Load the next input vector
 						inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 						
 						// If the input vector and its description do not match 

@@ -86,8 +86,7 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 		boolean fuzzy = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS;
 		boolean multiclass = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTICLASS;
 		
-		try {	
-			
+		try {
 			DataSet trainingDataSet = new DataSet(new File(pathToModelFile));
 			
 			int numberOfCategories = ((Double)trainingDataSet.getAttribute("NumberOfCategories").getValueAt(0)).intValue();
@@ -233,7 +232,6 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 					}
 				}
 			}
-			
 		} catch(Exception e) {
 			throw new NodeException("Error classifying data: " + e.getMessage());
 		}
