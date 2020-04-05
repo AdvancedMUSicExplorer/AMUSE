@@ -61,6 +61,9 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Description of input features (feature table or processing description, depending on InputFeaturesType) */
 	private final String inputFeaturesDescription;
 	
+	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
+	private final FeatureTable inputFeatureList;
+	
 	/** Type of input features for classfication */
 	private final InputFeatureType inputFeatureType;
 	
@@ -101,8 +104,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Folder to store the classification model(s) (default: Amuse model database) */
 	private String modelDatabase;
 	
-	/** List with raw input features (if the InputFeatureType RAW_FEATURES is used) */
-	private final FeatureTable inputFeatureList;
+	/**
+	 * Number of values per extraction window.
+	 * Used for raw features so that classification training methods can assemble 
+	 * the feature vectors back to matrices.
+	 */
+	private int numberOfValuesPerWindow = -1;
 	
 	/**
 	 * Standard constructor
@@ -582,5 +589,19 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 */
 	public FeatureTable getInputFeatureList() {
 		return inputFeatureList;
+	}
+	
+	/**
+	 * @param windowSize the numberOfValuesPerWindow
+	 */
+	public void setNumberOfValuesPerWindow(int windowSize) {
+		this.numberOfValuesPerWindow = windowSize;
+	}
+	
+	 /**
+	  * @return the numberOfValuesPerWindow
+	  */
+	public int getNumberOfValuesPerWindow() {
+		return this.numberOfValuesPerWindow;
 	}
 }

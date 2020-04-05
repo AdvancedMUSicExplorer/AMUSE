@@ -92,13 +92,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	private int numberOfCategories;
 	
 	/**
-	 * Number of values per extraction window.
-	 * Used for raw features so that classification training methods can assemble 
-	 * the feature vectors back to matrices.
-	 */
-	private int numberOfValuesPerWindow = -1;
-	
-	/**
 	 * Constructor
 	 */
 	public ClassifierNodeScheduler(String folderForResults) throws NodeException {
@@ -583,12 +576,15 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
+					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
 					for(int i = 0; i < features.size(); i++) {
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
 							numberOfValuesPerWindow = i+1;
+							break;
 						}
 					}
+					((ClassificationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -1086,13 +1082,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	
 	public void setNumberOfCategories(int numberOfCategories) {
 		this.numberOfCategories = numberOfCategories;
-	}
-	
-	/**
-	 * @return the numberOfValuesPerWindow
-	 */
-	public int getNumberOfValuesPerWindow() {
-		return numberOfValuesPerWindow;
 	}
 }
 

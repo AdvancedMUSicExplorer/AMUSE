@@ -89,13 +89,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	private String outputModel = null;
 	
 	/**
-	 * Number of values per extraction window.
-	 * Used for raw features so that classification training methods can assemble 
-	 * the feature vectors back to matrices.
-	 */
-	private int numberOfValuesPerWindow = -1;
-	
-	/**
 	 * Constructor
 	 */
 	public TrainerNodeScheduler(String folderForResults) throws NodeException {
@@ -674,12 +667,15 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
+					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
 					for(int i = 0; i < features.size(); i++) {
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
 							numberOfValuesPerWindow = i+1;
+							break;
 						}
 					}
+					((TrainingConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -1194,12 +1190,5 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				((AmuseTask)this.ctad).getProperties().getProperty("name") + "...");
 		this.ctad.trainModel(this.outputModel);
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..classification training finished!");
-	}
-	
-	/**
-	 * @return the numberOfValuesPerWindow
-	 */
-	public int getNumberOfValuesPerWindow() {
-		return numberOfValuesPerWindow;
 	}
 }

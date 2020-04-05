@@ -93,13 +93,6 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
 	File groundTruthFile = null;
-
-	/**
-	 * Number of values per extraction window.
-	 * Used for raw features so that classification training methods can assemble 
-	 * the feature vectors back to matrices.
-	 */
-	private int numberOfValuesPerWindow = -1;
 	
 	/**
 	 * Constructor
@@ -742,12 +735,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
+					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
 					for(int i = 0; i < features.size(); i++) {
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
 							numberOfValuesPerWindow = i+1;
+							break;
 						}
 					}
+					((ValidationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -1199,18 +1195,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	public ArrayList<String> getListOfAllProcessedFiles() {
 		return listOfAllProcessedFiles;
 	}
-
+	
 	/**
 	 * @return the groundTruthFile
 	 */
 	public File getGroundTruthFile() {
 		return groundTruthFile;
-	}
-	
-	/**
-	 * @return the numberOfValuesPerWindow
-	 */
-	public int getNumberOfValuesPerWindow() {
-		return numberOfValuesPerWindow;
 	}
 }

@@ -126,86 +126,70 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     }
 
 
-    public TrainingConfigSet(TrainingConfiguration trainingConfiguration) {
-        super(dataSetNameStr);
-        List<String> inputFeatures = new ArrayList<String>();
-        inputFeatures.add(trainingConfiguration.getInputFeaturesDescription());
-        List<String> inputFeatureTypes = new ArrayList<String>();
-        inputFeatureTypes.add(trainingConfiguration.getInputFeatureType().toString());
-        List<Double> classificationWindowSizes = new ArrayList<Double>();
-        classificationWindowSizes.add((double)trainingConfiguration.getClassificationWindowSize());
-        List<Double> classificationWindowOverlaps = new ArrayList<Double>();
-        classificationWindowOverlaps.add((double)trainingConfiguration.getClassificationWindowOverlap());
-        List<String> algorithmStr = new ArrayList<String>();
-        algorithmStr.add(trainingConfiguration.getAlgorithmDescription());
-        List<String> preprocessingStr = new ArrayList<String>();
-        preprocessingStr.add(trainingConfiguration.getPreprocessingAlgorithmDescription());
-        List<String> groundTruthList = new ArrayList<String>();
-        groundTruthList.add(trainingConfiguration.getGroundTruthSource().toString());
-        List<String> groundTruthSourceList = new ArrayList<String>();
-        groundTruthSourceList.add(trainingConfiguration.getGroundTruthSourceType().toString());
-        List<String> attributesToPredictList = new ArrayList<String>();
-        attributesToPredictList.add(trainingConfiguration.getAttributesToPredict().toString());
-        List<String> attributesToIgnoreList = new ArrayList<String>();
-        attributesToIgnoreList.add(trainingConfiguration.getAttributesToIgnore().toString());
-        List<String> relationshipTypeList = new ArrayList<String>();
-        relationshipTypeList.add(trainingConfiguration.getRelationshipType().toString());
-        List<String> labelTypeList = new ArrayList<String>();
-        labelTypeList.add(trainingConfiguration.getLabelType().toString());
-        List<String> methodTypeList = new ArrayList<String>();
-        methodTypeList.add(trainingConfiguration.getMethodType().toString());
-        List<String> trainingDescriptionList = new ArrayList<String>();
-        trainingDescriptionList.add(trainingConfiguration.getTrainingDescription());
-        List<String> pathToOutputModel = new ArrayList<String>();
-        String tmpPathToOutputModel = trainingConfiguration.getPathToOutputModel();
-        if (tmpPathToOutputModel == null){
-        	tmpPathToOutputModel = "";
-        }
-        pathToOutputModel.add(tmpPathToOutputModel);
-
-        inputFeaturesAttribute = new StringAttribute(inputFeaturesStr, inputFeatures);
-        List<String> allowedValues = new ArrayList<String>();
-        for(InputFeatureType type : InputFeatureType.values()) {
-        	allowedValues.add(type.toString());
-        }
-        inputFeatureTypeAttribute = new NominalAttribute(inputFeatureTypeStr, allowedValues, inputFeatureTypes);
-        classificationWindowSizeAttribute = new NumericAttribute(classificationWindowSizeStr, classificationWindowSizes);
-        classificationWindowOverlapAttribute = new NumericAttribute(classificationWindowOverlapStr, classificationWindowOverlaps);
-        algorithmIdAttribute = new StringAttribute(algorithmIdStr, algorithmStr);
-        preprocessingAlgorithmIdAttribute = new StringAttribute(preprocessingAlgorithmIdStr, preprocessingStr);
-        groundTruthSourceAttribute = new StringAttribute(groundTruthSourceStr, groundTruthList);
-        allowedValues = new ArrayList<String>();
-        for (GroundTruthSourceType type : GroundTruthSourceType.values()) {
-            allowedValues.add(type.toString());
-        }
-        groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr,allowedValues, groundTruthSourceList);
-        
-        attributesToPredictAttribute = new StringAttribute(attributesToPredictStr, attributesToPredictList);
-        attributesToIgnoreAttribute = new StringAttribute(attributesToIgnoreStr, attributesToIgnoreList);
-        
-        allowedValues = new ArrayList<String>();
-        for(RelationshipType type : RelationshipType.values()) {
-        	allowedValues.add(type.toString());
-        }
-        relationshipTypeAttribute = new NominalAttribute(relationshipTypeStr, allowedValues, relationshipTypeList);
-        
-        allowedValues = new ArrayList<String>();
-        for(LabelType type : LabelType.values()) {
-        	allowedValues.add(type.toString());
-        }
-        labelTypeAttribute = new NominalAttribute(labelTypeStr, allowedValues, labelTypeList);
-        
-        allowedValues = new ArrayList<String>();
-        for(MethodType type : MethodType.values()) {
-        	allowedValues.add(type.toString());
-        }
-        methodTypeAttribute = new NominalAttribute(methodTypeStr, allowedValues, methodTypeList);
-        
-        trainingDescriptionAttribute = new StringAttribute(trainingDescriptionStr, trainingDescriptionList);
-        
-        pathToOutputModelAttribute = new StringAttribute(pathToOutputModelStr, pathToOutputModel);
-        addAttribute(inputFeaturesAttribute);
-        addAttribute(inputFeatureTypeAttribute);
+    public TrainingConfigSet(String inputFeatures,
+    		String inputFeatureType,
+    		int classificationWindowSize,
+    		int classificationWindowOverlap,
+    		String algorithmId,
+    		String preprocessingAlgorithmId,
+    		String groundTruthSource,
+    		String groundTruthSourceType,
+    		String attributesToPredict,
+    		String attributesToIgnore,
+    		String relationshipType,
+    		String labelType,
+    		String methodType,
+    		String trainingDescription,
+    		String pathToOutputModel){
+    	super(dataSetNameStr);
+    	inputFeaturesAttribute = StringAttribute.createFromString(inputFeaturesStr, inputFeatures);
+    	List<String> inputFeatureTypeValues = new ArrayList<String>();
+		for(InputFeatureType type : InputFeatureType.values()) {
+			inputFeatureTypeValues.add(type.toString());
+		}
+		List<String> inputFeatureTypes = new ArrayList<String>();
+		inputFeatureTypes.add(inputFeatureType);
+		inputFeatureTypeAttribute = new NominalAttribute(inputFeatureTypeStr, inputFeatureTypeValues, inputFeatureTypes);
+		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(classificationWindowSizeStr, classificationWindowSize);
+		classificationWindowOverlapAttribute = NumericAttribute.createFromDouble(classificationWindowOverlapStr, classificationWindowOverlap);
+		algorithmIdAttribute = StringAttribute.createFromString(algorithmIdStr, algorithmId);
+		preprocessingAlgorithmIdAttribute = StringAttribute.createFromString(preprocessingAlgorithmIdStr, preprocessingAlgorithmId);
+		groundTruthSourceAttribute = StringAttribute.createFromString(groundTruthSourceStr, groundTruthSource);
+		List<String> groundTruthSourceTypeValues = new ArrayList<String>();
+		for(GroundTruthSourceType type : GroundTruthSourceType.values()) {
+			groundTruthSourceTypeValues.add(type.toString());
+		}
+		List<String> groundTruthSourceTypes = new ArrayList<String>();
+		groundTruthSourceTypes.add(groundTruthSourceType);
+		groundTruthSourceTypeAttribute = new NominalAttribute(groundTruthSourceTypeStr, groundTruthSourceTypeValues, groundTruthSourceTypes);
+		attributesToPredictAttribute = StringAttribute.createFromString(attributesToPredictStr, attributesToPredict);
+		attributesToIgnoreAttribute = StringAttribute.createFromString(attributesToIgnoreStr, attributesToIgnore);
+		List<String> relationshipTypeValues = new ArrayList<String>();
+		List<String> labelTypeValues = new ArrayList<String>();
+		List<String> methodTypeValues = new ArrayList<String>();
+		for(RelationshipType type : RelationshipType.values()) {
+			relationshipTypeValues.add(type.toString());
+		}
+		for(LabelType type : LabelType.values()) {
+			labelTypeValues.add(type.toString());
+		}
+		for(MethodType type : MethodType.values()) {
+			methodTypeValues.add(type.toString());
+		}
+		List <String> relationshipTypes = new ArrayList<String>();
+		relationshipTypes.add(relationshipType);
+		List<String> labelTypes = new ArrayList<String>();
+		labelTypes.add(labelType);
+		List<String> methodTypes = new ArrayList<String>();
+		methodTypes.add(methodType);
+		relationshipTypeAttribute = new NominalAttribute(relationshipTypeStr, relationshipTypeValues, relationshipTypes);
+		labelTypeAttribute = new NominalAttribute(labelTypeStr, labelTypeValues, labelTypes);
+		methodTypeAttribute = new NominalAttribute(methodTypeStr, methodTypeValues, methodTypes);
+		trainingDescriptionAttribute = StringAttribute.createFromString(trainingDescriptionStr, trainingDescription);
+		pathToOutputModelAttribute = StringAttribute.createFromString(pathToOutputModelStr, pathToOutputModel);
+		
+		addAttribute(inputFeaturesAttribute);
+		addAttribute(inputFeatureTypeAttribute);
         addAttribute(classificationWindowSizeAttribute);
         addAttribute(classificationWindowOverlapAttribute);
         addAttribute(algorithmIdAttribute);
@@ -258,6 +242,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         pathToOutputModelAttribute = (StringAttribute) dataSet.getAttribute(pathToOutputModelStr);
         
         addAttribute(inputFeaturesAttribute);
+        addAttribute(inputFeatureTypeAttribute);
         addAttribute(classificationWindowSizeAttribute);
         addAttribute(classificationWindowOverlapAttribute);
         addAttribute(algorithmIdAttribute);

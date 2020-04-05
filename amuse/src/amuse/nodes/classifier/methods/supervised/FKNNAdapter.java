@@ -54,14 +54,14 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 
 	public void setParameters(String parameterString) {
 		// Default parameters?
-				if(parameterString == "" || parameterString == null) {
-					neighborNumber = 1;
-				} else { 
-					neighborNumber = new Integer(parameterString);
-				}
-				
-				//m is always 2. Maybe later it will be possible to change that
-				m = 2;
+		if(parameterString == "" || parameterString == null) {
+			neighborNumber = 1;
+		} else { 
+			neighborNumber = new Integer(parameterString);
+		}
+		
+		//m is always 2. Maybe later it will be possible to change that
+		m = 2;
 	}
 	
 	/*
@@ -87,6 +87,7 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 		boolean multiclass = ((ClassificationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTICLASS;
 		
 		try {
+			
 			DataSet trainingDataSet = new DataSet(new File(pathToModelFile));
 			
 			int numberOfCategories = ((Double)trainingDataSet.getAttribute("NumberOfCategories").getValueAt(0)).intValue();

@@ -120,6 +120,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	private final FeatureTable inputFeatureList;
 	
 	/**
+	 * Number of values per extraction window.
+	 * Used for raw features so that classification training methods can assemble 
+	 * the feature vectors back to matrices.
+	 */
+	private int numberOfValuesPerWindow = -1;
+	
+	/**
 	 * Standard constructor
 	 * @param validationAlgorithmDescription ID and parameters of validation method
 	 * @param measures Measure list, e.g. containing accuracy and precision
@@ -642,5 +649,19 @@ public class ValidationConfiguration extends TaskConfiguration {
 
 	public FeatureTable getInputFeatureList() {
 		return inputFeatureList;
+	}
+	
+	/**
+	 * @param windowSize the numberOfValuesPerWindow
+	 */
+	public void setNumberOfValuesPerWindow(int windowSize) {
+		this.numberOfValuesPerWindow = windowSize;
+	}
+	
+	/**
+	 * @return the numberOfValuesPerWindow
+	 */
+	public int getNumberOfValuesPerWindow() {
+		return this.numberOfValuesPerWindow;
 	}
 }

@@ -104,21 +104,22 @@ public class TrainingController extends AbstractController {
             } else {
             	inputFeatureDescription = trainingView.getProcessingModelString();
             }
-        	TrainingConfiguration conf = new TrainingConfiguration(
-	    			inputFeatureDescription,
-	    			trainingView.getInputFeatureType(),
-	    			trainingView.getClassificaitonWindowSize(),
-	    			trainingView.getClassificationWindowOverlap(),
-	    			trainingView.getSelectedTrainingAlgorithmStr(),
-	    			trainingView.getPreprocessingAlgorithmStr(), 
-	    			new FileInput(trainingView.getGroundTruthSource()),
-	    			trainingView.getGroundTruthSourceType(),
-	    			trainingView.getAttributesToPredict(),
-	    			trainingView.getAttributesToIgnore(),
-	    			trainingView.getModelType(),
-	    			trainingView.getTrainingDescription(),
-	    			trainingView.getPathToOutputModel());
-            TrainingConfigSet dataSet = new TrainingConfigSet(conf);
+            TrainingConfigSet dataSet = new TrainingConfigSet(
+            		inputFeatureDescription,
+            		trainingView.getInputFeatureType().toString(),
+            		trainingView.getClassificaitonWindowSize(), 
+            		trainingView.getClassificationWindowOverlap(),
+            		trainingView.getSelectedTrainingAlgorithmStr(),
+            		trainingView.getPreprocessingAlgorithmStr(),
+            		trainingView.getGroundTruthSource(),
+            		trainingView.getGroundTruthSourceType().toString(),
+            		trainingView.getAttributesToPredict().toString(),
+            		trainingView.getAttributesToIgnore().toString(),
+            		trainingView.getModelType().getRelationshipType().toString(),
+            		trainingView.getModelType().getLabelType().toString(),
+            		trainingView.getModelType().getMethodType().toString(),
+            		trainingView.getTrainingDescription(),
+            		trainingView.getPathToOutputModel());
             
             // if the input features are given as raw features a feature list must be saved
             if(trainingView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {

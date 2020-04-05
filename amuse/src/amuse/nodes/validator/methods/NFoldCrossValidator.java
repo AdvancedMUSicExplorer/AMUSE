@@ -336,6 +336,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getModelType(),
 				"",
 				this.folderForModels + File.separator + "model_" + i + ".mod");
+			tConf.setNumberOfValuesPerWindow(((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getNumberOfValuesPerWindow());
 			TrainerNodeScheduler ts = new TrainerNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			ts.setCleanInputFolder(false);
 			ts.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), tConf);
@@ -355,6 +356,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				0,
 				this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "result.arff");
 			cConf.setPathToInputModel(this.folderForModels + File.separator + "model_" + i + ".mod");
+			cConf.setNumberOfValuesPerWindow(((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getNumberOfValuesPerWindow());
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
 			ArrayList<ClassifiedSongPartitions> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
