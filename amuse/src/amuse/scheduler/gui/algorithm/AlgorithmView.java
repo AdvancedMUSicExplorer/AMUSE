@@ -387,8 +387,29 @@ public class AlgorithmView {
                                 fileButton.addActionListener(new ActionListenerForXMLFileSelection(textField));
                                 panel.add(fileButton);
 				comp = panel;
-                        }
-                        comp.setToolTipText(algorithm.getParameterDescriptions()[i]);
+			// s for string
+            } else if(definition.equals("s")) {
+            	JTextFieldWithValidation textField = new JTextFieldWithValidation(currentValue, ".*");
+			    algorithm.addAlgorithmChangeListener(new AlgorithmChangeListenerTextField(textField, indexForAlgorithm));
+			    comp = textField;
+            // c for code
+            } else if(definition.equals("c")) {
+            	JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.LINE_AXIS));
+                JTextFieldWithValidation textField = new JTextFieldWithValidation(currentValue, ".*");
+                algorithm.addAlgorithmChangeListener(new AlgorithmChangeListenerTextField(textField, indexForAlgorithm));
+                panel.add(textField);
+                JButton fileButton = new JButton("...");
+                fileButton.addActionListener(new ActionListenerForFileSelection(textField));
+                panel.add(fileButton);
+                
+                JButton editorButton = new JButton("Edit");
+                editorButton.addActionListener(new ActionListenerForTextEditing(textField));
+                panel.add(editorButton);
+                
+                comp = panel;
+            }
+            comp.setToolTipText(algorithm.getParameterDescriptions()[i]);
 		}
 
 		JComponent getJComponent() {
@@ -415,6 +436,24 @@ public class AlgorithmView {
                     field.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
+        }
+        
+        private class ActionListenerForTextEditing implements ActionListener{
+        	private JTextField field;
+        	
+        	public ActionListenerForTextEditing(JTextField field) {
+				this.field = field;
+			}
+        	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				TextEditor textEditor = new TextEditor(new File(field.getText()));
+				File file = textEditor.getFile();
+				if(file != null) {
+					field.setText(file.getAbsolutePath());
+				}
+			}
+        	
         }
 
         private class ActionListenerForFileSelection implements ActionListener {

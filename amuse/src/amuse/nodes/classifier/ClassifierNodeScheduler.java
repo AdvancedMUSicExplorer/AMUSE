@@ -65,6 +65,7 @@ import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
+import amuse.scheduler.gui.algorithm.Algorithm;
 import amuse.util.AmuseLogger;
 
 /**
@@ -576,15 +577,21 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
-					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
+					int numberOfValuesPerWindow = -1;
+					int numberOfAttributesToIgnore = 0;
 					for(int i = 0; i < features.size(); i++) {
+						if(attributesToIgnore.contains(i)) {
+							numberOfAttributesToIgnore++;
+						}
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
-							numberOfValuesPerWindow = i+1;
+							numberOfValuesPerWindow = i;
 							break;
 						}
 					}
-					((ClassificationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
+					// set the numberOfValuesPerWindow in the ClassficationConfiguration for the classification algorithm
+					// (the classification algorithm needs the size of the windows after the attributesToIgnore have been removed)
+					((ClassificationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow - numberOfAttributesToIgnore);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -891,11 +898,33 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	 */
 	private void classify() throws NodeException {
 		try {
+			
 	    	// Check the folder for model file if it exists
 			if(this.requiredParameters != null) {
 				this.requiredParameters = "[" + this.requiredParameters + "]";
 			} else {
 				this.requiredParameters = "";
+			}
+			
+			/**
+			 * if the parameter string contains paths with file separators
+			 * we have to modify it so that the model can be loaded correctly
+			 */
+			String parameterString = requiredParameters;
+			if(parameterString.contains(File.separator)) {
+				String[] parameters = Algorithm.scanParameters(parameterString);
+				parameterString = "[";
+				for(int i = 0; i < parameters.length; i++) {
+					String parameter = parameters[i];
+					if(parameter.contains(File.separator)) {
+						parameter = parameter.substring(parameter.lastIndexOf(File.separator) + 1, parameter.lastIndexOf("."));
+					}
+					parameterString += parameter;
+					if(i < parameters.length - 1) {
+						parameterString += "_";
+					}
+				}
+				parameterString += "]";
 			}
 	    	
 			// Find the classification model in the Amuse model database or set the path to a concrete
@@ -919,7 +948,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						+ ((AmuseTask)this.cad).getProperties().getProperty("id") 
 						+ "-" 
 						+ ((AmuseTask)this.cad).getProperties().getProperty("name") 
-						+ this.requiredParameters + "_"
+						+ parameterString + "_"
 						+ ((ClassificationConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_"
 						+ ((ClassificationConfiguration)this.taskConfiguration).getLabelType().toString() + "_"
 						+ ((ClassificationConfiguration)this.taskConfiguration).getMethodType().toString()
@@ -955,7 +984,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		
 		int positionOfFirstCategory = d.getAttributeCount() - numberOfCategories;
 		
-//		System.out.println(d.getValueCount());
 		// Go through all songs
 		int currentPartition = 0;
 		for(int i=0;i<descriptionOfClassifierInput.size();i++) {
@@ -967,7 +995,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			
 			for(int j=0;j<numberOfCorrespondingPartitions;j++) {
 				for(int category=0;category<numberOfCategories;category++) {
-//					System.out.println(category);
 					relationships[j][category] = (double)d.getAttribute(positionOfFirstCategory + category).getValueAt(currentPartition);
 					if(j==0)labels[category] = d.getAttribute(positionOfFirstCategory + category).getName().substring(10);
 				}

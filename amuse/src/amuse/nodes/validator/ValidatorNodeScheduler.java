@@ -65,6 +65,7 @@ import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidatorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
+import amuse.scheduler.gui.algorithm.Algorithm;
 import amuse.util.AmuseLogger;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -735,15 +736,21 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
-					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
+					int numberOfValuesPerWindow = -1;
+					int numberOfAttributesToIgnore = 0;
 					for(int i = 0; i < features.size(); i++) {
+						if(attributesToIgnore.contains(i)) {
+							numberOfAttributesToIgnore++;
+						}
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
-							numberOfValuesPerWindow = i+1;
+							numberOfValuesPerWindow = i;
 							break;
 						}
 					}
-					((ValidationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
+					// set the numberOfValuesPerWindow in the ValidationConfiguration for the classification algorithm
+					// (the classification algorithm needs the size of the windows after the attributesToIgnore have been removed)
+					((ValidationConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow - numberOfAttributesToIgnore);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -1101,7 +1108,30 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					// Set the name of folder for models and measures (combined from
 					// classifier ID, parameters and name)
-					classifierDescription = ((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription() + "-" + classificationAlgorithmInstance.stringValue(nameAttribute);
+					String classificationAlgorithmDescription = ((ValidationConfiguration)taskConfiguration).getClassificationAlgorithmDescription();
+					/**
+					 * if the parameter string contains paths with file separators
+					 * we have to modify it so that the model can be saved correctly
+					 */
+					if(classificationAlgorithmDescription.contains(File.separator)) {
+						String algorithmId = classificationAlgorithmDescription.substring(0, classificationAlgorithmDescription.indexOf("["));
+						String parameterString = classificationAlgorithmDescription.substring(classificationAlgorithmDescription.indexOf("["), classificationAlgorithmDescription.indexOf("]") + 1);
+						String[] parameters = Algorithm.scanParameters(parameterString);
+						parameterString = "[";
+						for(int i = 0; i < parameters.length; i++) {
+							String parameter = parameters[i];
+							if(parameter.contains(File.separator)) {
+								parameter = parameter.substring(parameter.lastIndexOf(File.separator) + 1, parameter.lastIndexOf("."));
+							}
+							parameterString += parameter;
+							if(i < parameters.length - 1) {
+								parameterString += "_";
+							}
+						}
+						parameterString += "]";
+						classificationAlgorithmDescription = algorithmId + parameterString;
+					}
+					classifierDescription = classificationAlgorithmDescription + "-" + classificationAlgorithmInstance.stringValue(nameAttribute);
 
 					String validatorMethodId = ((ValidationConfiguration)taskConfiguration).getValidationAlgorithmDescription();
 					if(validatorMethodId.contains("[")) {

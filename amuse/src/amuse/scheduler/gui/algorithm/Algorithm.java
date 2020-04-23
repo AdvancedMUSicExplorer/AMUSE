@@ -24,6 +24,7 @@
 package amuse.scheduler.gui.algorithm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -202,14 +203,14 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 		return params.toArray(new String[params.size()]);
 	}
 	
-	public static String[] scanParameters(String defaultParameterValues) {
-		if (defaultParameterValues.isEmpty()) {
+	public static String[] scanParameters(String parameterString) {
+		if (parameterString.isEmpty()) {
 			return new String[0];
 		}
-		if (!defaultParameterValues.startsWith("[") || !defaultParameterValues.endsWith("]")) {
-			throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
+		if (!parameterString.startsWith("[") || !parameterString.endsWith("]")) {
+			throw new IllegalArgumentException("Unable to parse parameters: " + parameterString);
 		}
-		Scanner scanner = new Scanner(defaultParameterValues.substring(1, defaultParameterValues.length() - 1));
+		Scanner scanner = new Scanner(parameterString.substring(1, parameterString.length() - 1));
 		scanner.useDelimiter("\\_"); //FIXME
 		List<String> params = new ArrayList<String>();
 		while (scanner.hasNext()) {
@@ -224,7 +225,7 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 					}
 				}
 				if(!next.endsWith("|")){
-					throw new IllegalArgumentException("Unable to parse default parameters: " + defaultParameterValues);
+					throw new IllegalArgumentException("Unable to parse default parameters: " + parameterString);
 				}
 				next = next.substring(1, next.length() - 1);
 			}
@@ -319,13 +320,26 @@ public class Algorithm implements Comparable<Algorithm>, AlgorithmInterface {
 
 	public String getIdAndParameterStr() {
 		String algorithmStr = getID() + "";
-		if (getCurrentParameterValues().length > 0) {
-			algorithmStr = algorithmStr + "[";
-			for (String parameter : getCurrentParameterValues()) {
-				algorithmStr = algorithmStr + parameter + "_";
-			}
-			algorithmStr = algorithmStr.substring(0, algorithmStr.lastIndexOf('_')) + "]";
-		}
+		String[] allowedParameterStrings = getAllowedParamerterStrings();
+    	String[] currentParameterValues =  getCurrentParameterValues();
+    	String[] modifiedParameterValues = new String[currentParameterValues.length];
+    	if(currentParameterValues.length > 0) {
+    		algorithmStr += "[";
+	    	for(int i = 0; i < currentParameterValues.length; i++){
+	    		if(allowedParameterStrings[i].equals("fof") || allowedParameterStrings[i].equals("f") || allowedParameterStrings[i].equals("s") || allowedParameterStrings[i].equals("c")){
+	    			modifiedParameterValues[i] = "|" + currentParameterValues[i] + "|";
+	    		} else {
+	    			modifiedParameterValues[i] = currentParameterValues[i];
+	    		}
+	    	}
+	    	for(int i = 0; i < modifiedParameterValues.length; i++) {
+	    		algorithmStr += modifiedParameterValues[i];
+	    		if(i < modifiedParameterValues.length -1) {
+	    			algorithmStr += "_";
+	    		}
+	    	}
+	    	algorithmStr += "]";
+    	}
 		return algorithmStr;
 	}
 	

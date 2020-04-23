@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -63,6 +64,7 @@ import amuse.nodes.trainer.interfaces.ClassificationPreprocessingInterface;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
+import amuse.scheduler.gui.algorithm.Algorithm;
 import amuse.util.AmuseLogger;
 
 /**
@@ -667,15 +669,21 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					List<Feature> features = getHarmonizedFeatures(currentInputFile);
 					
-					int numberOfValuesPerWindow = -1;
 					// find out how many values per window were used
+					int numberOfValuesPerWindow = -1;
+					int numberOfAttributesToIgnore = 0;
 					for(int i = 0; i < features.size(); i++) {
+						if(attributesToIgnore.contains(i)) {
+							numberOfAttributesToIgnore++;
+						}
 						if(features.get(i).getHistoryAsString().charAt(6) == '2' || i == features.size()-1) {
-							numberOfValuesPerWindow = i+1;
+							numberOfValuesPerWindow = i;
 							break;
 						}
 					}
-					((TrainingConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow);
+					// set the numberOfValuesPerWindow in the TrainingConfiguration for the training algorithm
+					// (the training algorithm needs the size of the windows after the attributesToIgnore have been removed)
+					((TrainingConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow - numberOfAttributesToIgnore);
 					
 					// create the attributes
 					// and save the numberOfValuesPerWindow
@@ -1130,6 +1138,27 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				folderForModelsString += groundTruthSource.getAttribute(firstCategoryPosition + i).getName();
 			}
 			
+			/**
+			 * if the parameter string contains paths with file separators
+			 * we have to modify it so that the model can be saved correctly
+			 */
+			String parameterString = requiredParameters;
+			if(parameterString.contains(File.separator)) {
+				String[] parameters = Algorithm.scanParameters(parameterString);
+				parameterString = "[";
+				for(int i = 0; i < parameters.length; i++) {
+					String parameter = parameters[i];
+					if(parameter.contains(File.separator)) {
+						parameter = parameter.substring(parameter.lastIndexOf(File.separator) + 1, parameter.lastIndexOf("."));
+					}
+					parameterString += parameter;
+					if(i < parameters.length - 1) {
+						parameterString += "_";
+					}
+				}
+				parameterString += "]";
+			}
+			
 			if(((TrainingConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
 				String inputFeatureDescription = ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription();
 				if(inputFeatureDescription.contains(File.separator) && inputFeatureDescription.contains(".")) {
@@ -1138,12 +1167,12 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				inputFeatureDescription = "RAW_FEATURES_" + inputFeatureDescription;
 				folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
 						"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-						requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
+						parameterString + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
 						inputFeatureDescription;
 			} else {
 				folderForModelsString += File.separator + ((AmuseTask)this.ctad).getProperties().getProperty("id") + 
 						"-" + ((AmuseTask)this.ctad).getProperties().getProperty("name") +  
-						requiredParameters + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
+						parameterString + "_" + ((TrainingConfiguration)this.taskConfiguration).getRelationshipType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getLabelType().toString() + "_" + ((TrainingConfiguration)this.taskConfiguration).getMethodType().toString() + File.separator + 
 						((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription();
 			}
 			

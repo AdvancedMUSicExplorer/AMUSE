@@ -76,7 +76,7 @@ public abstract class AbstractController {
 
     protected boolean askOverwrite(File file) {
         if (file.exists())
-            return showYesNoOption("File already exists!", file.getName() + " already exists!\nDo you want to override this file?");
+            return showYesNoOption("File already exists!", file.getName() + " already exists!\nDo you want to overwrite this file?");
         return true;
     }
 

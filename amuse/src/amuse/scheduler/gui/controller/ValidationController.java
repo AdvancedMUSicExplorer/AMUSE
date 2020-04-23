@@ -115,20 +115,7 @@ public class ValidationController extends AbstractController {
         File measureTableFile = new File(file.getParent() + File.separator + "measureTables" + File.separator
                 + file.getName());
         Algorithm selectedAlgorithm = validationAlgorithmFacade.getSelectedAlgorithm();
-        String validationMethodStr = selectedAlgorithm.getID() + "";
-        if (selectedAlgorithm.getCurrentParameterValues().length > 0 && selectedAlgorithm.getID() == 0) {
-        	String[] allowedParameterStrings = selectedAlgorithm.getAllowedParamerterStrings();
-        	String[] currentParameterValues = selectedAlgorithm.getCurrentParameterValues();
-        	String[] modifiedParamteterValues = new String[currentParameterValues.length];
-        	for(int i = 0; i < currentParameterValues.length; i++){
-        		if(allowedParameterStrings[i].equals("fof")){
-        			modifiedParamteterValues[i] = "|" + currentParameterValues[i] + "|";
-        		}
-        	}
-        	validationMethodStr += Arrays.toString(modifiedParamteterValues);
-        } else {
-        	validationMethodStr += selectedAlgorithm.getParameterStr();
-        }
+        String validationMethodStr = selectedAlgorithm.getIdAndParameterStr();
         MeasureTable measureTable = measuresView.getMeasureTable();
         
         String inputFeatureDescription;
