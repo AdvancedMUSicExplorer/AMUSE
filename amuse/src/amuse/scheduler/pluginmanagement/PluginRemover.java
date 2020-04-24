@@ -302,7 +302,7 @@ public class PluginRemover {
 	
 	/**
 	 * Updates algorithm tables from AMUSEHOME/config folder (features, processing and classification methods etc.)
-	 * TODO Since currently available plugins are only for feature extraction, not all tables are updated!
+	 * TODO Since currently available plugins are only for feature extraction and classification, not all tables are updated!
 	 */
 	private void updateAlgorithmTables() throws SchedulerException {
 		File[] files = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID")).listFiles();
@@ -312,7 +312,7 @@ public class PluginRemover {
 			} else if(files[i].getName().equals("featureExtractorToolTable.arff")) {
 				updateFeatureExtractorToolTable();
 			} else if(files[i].getName().equals("classifierAlgorithmTable.arff")) {
-				// TODO updateClassifierAlgorithmTable();
+				updateClassifierAlgorithmTable();
 			} else if(files[i].getName().equals("classifierPreprocessingAlgorithmTable.arff")) {
 				// TODO updateClassifierPreprocessingAlgorithmTable();
 			} else if(files[i].getName().equals("measureTable.arff")) {
@@ -329,6 +329,156 @@ public class PluginRemover {
 		}
 	}
 	
+	private void updateClassifierAlgorithmTable() throws SchedulerException {
+		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Starting classifier algorithm list update...");
+		
+		try {
+		
+			// Set with features to remove
+			DataSetAbstract classifierSet = new ArffDataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "plugininfo" + File.separator + removeProperties.getProperty("ID") + 
+					File.separator + "classifierAlgorithmTable.arff"));
+			
+			// List with ids of classifiers to remove
+			ArrayList<Integer> sortedClassifierIds = new ArrayList<Integer>(classifierSet.getValueCount());
+			for(int i=0;i<classifierSet.getValueCount();i++) {
+				sortedClassifierIds.add(new Double(classifierSet.getAttribute("Id").getValueAt(i).toString()).intValue());
+			}
+			Collections.sort(sortedClassifierIds);
+			
+			// Set with all installed classifiers
+			DataSetAbstract installedClassifierSet = new ArffDataSet(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
+			
+			// Overwrite the current AMUSE classifier list with the new updated version
+			// TODO Better way could be to create a corresponding data set (ClassifierListSet) and add some functionality
+			// e.g. comments for attributes etc. which will be written also!
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
+					File.separator + "config" + File.separator + "classifierAlgorithmTableUpdated.arff")));
+			String sep = System.getProperty("line.separator");
+			values_writer.writeBytes("% Classification algorithms" + sep);
+			values_writer.writeBytes("@RELATION algorithms" + sep + sep);
+			values_writer.writeBytes("% Unique algorithm ID" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Id NUMERIC" + sep);
+			values_writer.writeBytes("% Algorithm name" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Name STRING" + sep);
+			values_writer.writeBytes("% Algorithm category" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Category {\"Unsupervised\", \"Supervised\", \"Supervised>Trees\", \"Mixed\"}" + sep);
+			values_writer.writeBytes("% Java class which runs classification training" + sep);
+			values_writer.writeBytes("@ATTRIBUTE TrainerAdapterClass STRING" + sep);
+			values_writer.writeBytes("% Java class which runs classification" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ClassifierAdapterClass STRING" + sep);
+			values_writer.writeBytes("% Algorithm home folder (e.g. if an external tool is used)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE HomeFolder STRING" + sep);
+			values_writer.writeBytes("% Algorithm start script for adapter only if external tool is used (otherwise please set to -1)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE StartScript STRING" + sep);
+			values_writer.writeBytes("% Base script for trainer" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputBaseTrainingBatch STRING" + sep);
+			values_writer.writeBytes("% Script for trainer (after the parameters / options were saved to base script)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputTrainingBatch STRING" + sep);
+			values_writer.writeBytes("% Base script for classifier" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputBaseClassificationBatch STRING" + sep);
+			values_writer.writeBytes("% Script for classifier (after the parameters / options were saved to base script)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputClassificationBatch STRING" + sep);
+			values_writer.writeBytes("% Description of algorithm" + sep);
+			values_writer.writeBytes("@ATTRIBUTE AlgorithmDescription STRING" + sep);
+			values_writer.writeBytes("% Names of parameters for this algorithm" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterNames STRING" + sep);
+			values_writer.writeBytes("% Regular expression which describes allowed definition ranges for algorithm parameters" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterDefinitions STRING" + sep);
+			values_writer.writeBytes("% Default parameter values" + sep);
+			values_writer.writeBytes("@ATTRIBUTE DefaultParameterValues STRING" + sep);
+			values_writer.writeBytes("% Descriptions of parameters" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterDescriptions STRING" + sep);
+			values_writer.writeBytes("% Attributes that describes what kind of task the algorithms support" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsBinary NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsContinuous NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsMulticlass NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsMultilabel NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsSinglelabel NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsSupervised NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsUnsupervised NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsRegression NUMERIC" + sep + sep);
+			values_writer.writeBytes("@DATA" + sep + sep);
+			values_writer.writeBytes("% Supervised methods" + sep);
+			
+			// Go through all installed features 
+			for(int i=0;i<installedClassifierSet.getValueCount();i++) {
+				
+				int idOfInstalledClassifier = new Double(installedClassifierSet.getAttribute("Id").getValueAt(i).toString()).intValue();
+				
+				// Save this classifier only if it is not extracted by this plugin (which is being deleted)
+				if(!sortedClassifierIds.contains(idOfInstalledClassifier)) {
+					String name = installedClassifierSet.getAttribute("Name").getValueAt(i).toString();
+					String category = installedClassifierSet.getAttribute("Category").getValueAt(i).toString();
+					String trainerAdapterClass = installedClassifierSet.getAttribute("TrainerAdapterClass").getValueAt(i).toString();
+					String classifierAdapterClass = installedClassifierSet.getAttribute("ClassifierAdapterClass").getValueStrAt(i).toString();
+					String homeFolder = installedClassifierSet.getAttribute("HomeFolder").getValueAt(i).toString();
+					String startScript = installedClassifierSet.getAttribute("StartScript").getValueAt(i).toString();
+					String inputBaseTrainingBatch = installedClassifierSet.getAttribute("InputBaseTrainingBatch").getValueAt(i).toString();
+					String inputTrainingBatch = installedClassifierSet.getAttribute("InputTrainingBatch").getValueAt(i).toString();
+					String inputBaseClassificationBatch = installedClassifierSet.getAttribute("InputBaseClassificationBatch").getValueAt(i).toString();
+					String inputClassificationBatch = installedClassifierSet.getAttribute("InputClassificationBatch").getValueAt(i).toString();
+					String algorithmDescription = installedClassifierSet.getAttribute("AlgorithmDescription").getValueAt(i).toString();
+					String parameterNames = installedClassifierSet.getAttribute("ParameterNames").getValueAt(i).toString();
+					String parameterDefinitions = installedClassifierSet.getAttribute("ParameterDefinitions").getValueAt(i).toString();
+					String defaultParameterValues = installedClassifierSet.getAttribute("DefaultParameterValues").getValueAt(i).toString();
+					String parameterDescriptions = installedClassifierSet.getAttribute("ParameterDescriptions").getValueAt(i).toString();
+					Double supportsBinary = new Double(installedClassifierSet.getAttribute("SupportsBinary").getValueAt(i).toString());
+					String supportsBinaryString = supportsBinary.isNaN() ? "?" : new Integer(supportsBinary.intValue()).toString();
+					Double supportsContinuous = new Double(installedClassifierSet.getAttribute("SupportsContinuous").getValueAt(i).toString());
+					String supportsContinuousString = supportsBinary.isNaN() ? "?" : new Integer(supportsContinuous.intValue()).toString();
+					Double supportsMulticlass = new Double(installedClassifierSet.getAttribute("SupportsMulticlass").getValueAt(i).toString());
+					String supportsMulticlassString = supportsBinary.isNaN() ? "?" : new Integer(supportsMulticlass.intValue()).toString();
+					Double supportsMultilabel = new Double(installedClassifierSet.getAttribute("SupportsMultilabel").getValueAt(i).toString());
+					String supportsMultilabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsMultilabel.intValue()).toString();
+					Double supportsSinglelabel = new Double(installedClassifierSet.getAttribute("SupportsSinglelabel").getValueAt(i).toString());
+					String supportsSinglelabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsSinglelabel.intValue()).toString();
+					Double supportsSupervised= new Double(installedClassifierSet.getAttribute("SupportsSupervised").getValueAt(i).toString());
+					String supportsSupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsSupervised.intValue()).toString();
+					Double supportsUnsupervised = new Double(installedClassifierSet.getAttribute("SupportsUnsupervised").getValueAt(i).toString());
+					String supportsUnsupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsUnsupervised.intValue()).toString();
+					Double supportsRegression = new Double(installedClassifierSet.getAttribute("SupportsRegression").getValueAt(i).toString());
+					String supportsRegressionString = supportsBinary.isNaN() ? "?" : new Integer(supportsRegression.intValue()).toString();
+					
+					values_writer.writeBytes(idOfInstalledClassifier + ", "
+							+ "\"" + name + "\", "
+							+ "\"" + category + "\", "
+							+ trainerAdapterClass + ", "
+							+ classifierAdapterClass + ", "
+							+ "\"" + homeFolder + "\", "
+							+ "\"" + startScript + "\", "
+							+ "\"" + inputBaseTrainingBatch + "\", "
+							+ "\"" + inputTrainingBatch + "\", "
+							+ "\"" + inputBaseClassificationBatch + "\", "
+							+ "\"" + inputClassificationBatch + "\", "
+							+ "\"" + algorithmDescription + "\", "
+							+ "\"" + parameterNames + "\", "
+							+ "\"" + parameterDefinitions + "\", "
+							+ "\"" + defaultParameterValues + "\", "
+							+ "\"" + parameterDescriptions + "\", "
+							+ supportsBinaryString + ", "
+							+ supportsContinuousString + ", "
+							+ supportsMulticlassString + ", "
+							+ supportsMultilabelString + ", "
+							+ supportsSinglelabelString + ", "
+							+ supportsSupervisedString + ", "
+							+ supportsUnsupervisedString + ", "
+							+ supportsRegressionString + sep + sep);
+				}
+			}
+			
+			values_writer.close();
+			
+			// Replace featureTable with featureTableUpdated
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTableUpdated.arff"), 
+					new File(AmusePreferences.getClassifierAlgorithmTablePath()));
+			
+		} catch(IOException e) {
+			throw new SchedulerException("Could not update the list with installed classifiers: " + e.getMessage());
+		}
+		
+		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"..update finished");
+	}
+
 	/**
 	 * Updates featureTable.arff with the sort order according to their ids
 	 */

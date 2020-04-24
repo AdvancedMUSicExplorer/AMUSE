@@ -467,7 +467,7 @@ public class PluginInstaller {
 			} else if(files[i].getName().equals("featureExtractorToolTable.arff")) {
 				updateFeatureExtractorToolTable();
 			} else if(files[i].getName().equals("classifierAlgorithmTable.arff")) {
-				// TODO updateClassifierAlgorithmTable();
+				updateClassifierAlgorithmTable();
 			} else if(files[i].getName().equals("classifierPreprocessingAlgorithmTable.arff")) {
 				// TODO updateClassifierPreprocessingAlgorithmTable();
 			} else if(files[i].getName().equals("measureTable.arff")) {
@@ -484,6 +484,309 @@ public class PluginInstaller {
 		}
 	}
 	
+	private void updateClassifierAlgorithmTable() throws SchedulerException {
+		AmuseLogger.write(PluginInstaller.class.getName(),Level.INFO,"Starting classifier algorithm list update...");
+		
+		File classifierList = new File(pathToPluginFolder + File.separator + "classifierAlgorithmTable.arff");
+		
+		DataSetAbstract newClassifierList;
+		DataSetAbstract installedClassifierList;
+		
+		// Key: classifier id; value: position in the DataSet
+		HashMap<Integer,Integer> newClassifierMap = new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> installedClassifierMap = new HashMap<Integer,Integer>();
+		try {
+			newClassifierList = new ArffDataSet(classifierList);
+			installedClassifierList = new ArffDataSet(new File(AmusePreferences.getClassifierAlgorithmTablePath()));
+			
+			// Go through all installed features
+			for(int j=0;j<installedClassifierList.getValueCount();j++) {
+				installedClassifierMap.put(new Double(installedClassifierList.getAttribute("Id").getValueAt(j).toString()).intValue(), j);
+			}
+			
+			// Go through all new features
+			for(int i=0;i<newClassifierList.getValueCount();i++) {
+				Integer currentId = new Double(newClassifierList.getAttribute("Id").getValueAt(i).toString()).intValue();
+					
+				// Go through all installed features and check if they are equal to new features
+				boolean found = false;
+				for(int j=0;j<installedClassifierList.getValueCount();j++) {
+						
+					// Only if feature is not already found, it must be added to the file
+					if(new Integer(new Double(installedClassifierList.getAttribute("Id").getValueAt(j).toString()).intValue()).equals(currentId)) {
+						found = true;
+					}
+				}
+				if(!found) {
+					newClassifierMap.put(currentId, i);
+				}
+ 			}
+			
+			// Overwrite the current AMUSE classifier list with the new updated version
+			// TODO Better way could be to create a corresponding data set (ClassifierListSet) and add some functionality
+			// e.g. comments for attributes etc. which will be written also!
+			DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + 
+					File.separator + "config" + File.separator + "classifierAlgorithmTableUpdated.arff")));
+			String sep = System.getProperty("line.separator");
+			values_writer.writeBytes("% Classification algorithms" + sep);
+			values_writer.writeBytes("@RELATION algorithms" + sep + sep);
+			values_writer.writeBytes("% Unique algorithm ID" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Id NUMERIC" + sep);
+			values_writer.writeBytes("% Algorithm name" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Name STRING" + sep);
+			values_writer.writeBytes("% Algorithm category" + sep);
+			values_writer.writeBytes("@ATTRIBUTE Category {\"Unsupervised\", \"Supervised\", \"Supervised>Trees\", \"Mixed\"}" + sep);
+			values_writer.writeBytes("% Java class which runs classification training" + sep);
+			values_writer.writeBytes("@ATTRIBUTE TrainerAdapterClass STRING" + sep);
+			values_writer.writeBytes("% Java class which runs classification" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ClassifierAdapterClass STRING" + sep);
+			values_writer.writeBytes("% Algorithm home folder (e.g. if an external tool is used)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE HomeFolder STRING" + sep);
+			values_writer.writeBytes("% Algorithm start script for adapter only if external tool is used (otherwise please set to -1)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE StartScript STRING" + sep);
+			values_writer.writeBytes("% Base script for trainer" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputBaseTrainingBatch STRING" + sep);
+			values_writer.writeBytes("% Script for trainer (after the parameters / options were saved to base script)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputTrainingBatch STRING" + sep);
+			values_writer.writeBytes("% Base script for classifier" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputBaseClassificationBatch STRING" + sep);
+			values_writer.writeBytes("% Script for classifier (after the parameters / options were saved to base script)" + sep);
+			values_writer.writeBytes("@ATTRIBUTE InputClassificationBatch STRING" + sep);
+			values_writer.writeBytes("% Description of algorithm" + sep);
+			values_writer.writeBytes("@ATTRIBUTE AlgorithmDescription STRING" + sep);
+			values_writer.writeBytes("% Names of parameters for this algorithm" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterNames STRING" + sep);
+			values_writer.writeBytes("% Regular expression which describes allowed definition ranges for algorithm parameters" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterDefinitions STRING" + sep);
+			values_writer.writeBytes("% Default parameter values" + sep);
+			values_writer.writeBytes("@ATTRIBUTE DefaultParameterValues STRING" + sep);
+			values_writer.writeBytes("% Descriptions of parameters" + sep);
+			values_writer.writeBytes("@ATTRIBUTE ParameterDescriptions STRING" + sep);
+			values_writer.writeBytes("% Attributes that describes what kind of task the algorithms support" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsBinary NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsContinuous NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsMulticlass NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsMultilabel NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsSinglelabel NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsSupervised NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsUnsupervised NUMERIC" + sep);
+			values_writer.writeBytes("@ATTRIBUTE SupportsRegression NUMERIC" + sep + sep);
+			values_writer.writeBytes("@DATA" + sep + sep);
+			values_writer.writeBytes("% Supervised methods" + sep);
+			
+			ArrayList<Integer> sortedInstalledClassifierIds = new ArrayList<Integer>(installedClassifierMap.keySet());
+			Collections.sort(sortedInstalledClassifierIds);
+			ArrayList<Integer> sortedNewClassifierIds = new ArrayList<Integer>(newClassifierMap.keySet());
+			Collections.sort(sortedNewClassifierIds);
+			int posRequired = 0;
+			
+			// Go through all installed classifiers (sorted by their ids) and check if a line with the new classifier description
+			// or a line with the previously installed classifier description must be written
+			for(int posInstalled = 0;posInstalled<sortedInstalledClassifierIds.size();posInstalled++) {
+				
+				int idOfInstalledClassifier = sortedInstalledClassifierIds.get(posInstalled);
+				int idOfNewClassifier;
+				if(posRequired >= sortedNewClassifierIds.size()) {
+					idOfNewClassifier = Integer.MAX_VALUE;
+				} else {
+					idOfNewClassifier = sortedNewClassifierIds.get(posRequired);
+				}
+				
+				// Write the previously installed feature data
+				if(idOfInstalledClassifier < idOfNewClassifier) {
+					String name = installedClassifierList.getAttribute("Name").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String category = installedClassifierList.getAttribute("Category").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String trainerAdapterClass = installedClassifierList.getAttribute("TrainerAdapterClass").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String classifierAdapterClass = installedClassifierList.getAttribute("ClassifierAdapterClass").getValueStrAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String homeFolder = installedClassifierList.getAttribute("HomeFolder").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String startScript = installedClassifierList.getAttribute("StartScript").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String inputBaseTrainingBatch = installedClassifierList.getAttribute("InputBaseTrainingBatch").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String inputTrainingBatch = installedClassifierList.getAttribute("InputTrainingBatch").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String inputBaseClassificationBatch = installedClassifierList.getAttribute("InputBaseClassificationBatch").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String inputClassificationBatch = installedClassifierList.getAttribute("InputClassificationBatch").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String algorithmDescription = installedClassifierList.getAttribute("AlgorithmDescription").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String parameterNames = installedClassifierList.getAttribute("ParameterNames").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String parameterDefinitions = installedClassifierList.getAttribute("ParameterDefinitions").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String defaultParameterValues = installedClassifierList.getAttribute("DefaultParameterValues").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					String parameterDescriptions = installedClassifierList.getAttribute("ParameterDescriptions").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString();
+					Double supportsBinary = new Double(installedClassifierList.getAttribute("SupportsBinary").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsBinaryString = supportsBinary.isNaN() ? "?" : new Integer(supportsBinary.intValue()).toString();
+					Double supportsContinuous = new Double(installedClassifierList.getAttribute("SupportsContinuous").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsContinuousString = supportsBinary.isNaN() ? "?" : new Integer(supportsContinuous.intValue()).toString();
+					Double supportsMulticlass = new Double(installedClassifierList.getAttribute("SupportsMulticlass").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsMulticlassString = supportsBinary.isNaN() ? "?" : new Integer(supportsMulticlass.intValue()).toString();
+					Double supportsMultilabel = new Double(installedClassifierList.getAttribute("SupportsMultilabel").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsMultilabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsMultilabel.intValue()).toString();
+					Double supportsSinglelabel = new Double(installedClassifierList.getAttribute("SupportsSinglelabel").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsSinglelabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsSinglelabel.intValue()).toString();
+					Double supportsSupervised= new Double(installedClassifierList.getAttribute("SupportsSupervised").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsSupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsSupervised.intValue()).toString();
+					Double supportsUnsupervised = new Double(installedClassifierList.getAttribute("SupportsUnsupervised").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsUnsupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsUnsupervised.intValue()).toString();
+					Double supportsRegression = new Double(installedClassifierList.getAttribute("SupportsRegression").getValueAt(installedClassifierMap.get(idOfInstalledClassifier)).toString());
+					String supportsRegressionString = supportsBinary.isNaN() ? "?" : new Integer(supportsRegression.intValue()).toString();
+					
+					values_writer.writeBytes(idOfInstalledClassifier + ", "
+							+ "\"" + name + "\", "
+							+ "\"" + category + "\", "
+							+ trainerAdapterClass + ", "
+							+ classifierAdapterClass + ", "
+							+ "\"" + homeFolder + "\", "
+							+ "\"" + startScript + "\", "
+							+ "\"" + inputBaseTrainingBatch + "\", "
+							+ "\"" + inputTrainingBatch + "\", "
+							+ "\"" + inputBaseClassificationBatch + "\", "
+							+ "\"" + inputClassificationBatch + "\", "
+							+ "\"" + algorithmDescription + "\", "
+							+ "\"" + parameterNames + "\", "
+							+ "\"" + parameterDefinitions + "\", "
+							+ "\"" + defaultParameterValues + "\", "
+							+ "\"" + parameterDescriptions + "\", "
+							+ supportsBinaryString + ", "
+							+ supportsContinuousString + ", "
+							+ supportsMulticlassString + ", "
+							+ supportsMultilabelString + ", "
+							+ supportsSinglelabelString + ", "
+							+ supportsSupervisedString + ", "
+							+ supportsUnsupervisedString + ", "
+							+ supportsRegressionString + sep + sep);
+				}
+				
+				// Write the data for the new feature
+				else {
+					String name = newClassifierList.getAttribute("Name").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String category = newClassifierList.getAttribute("Category").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String trainerAdapterClass = newClassifierList.getAttribute("TrainerAdapterClass").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String classifierAdapterClass = newClassifierList.getAttribute("ClassifierAdapterClass").getValueStrAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String homeFolder = newClassifierList.getAttribute("HomeFolder").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String startScript = newClassifierList.getAttribute("StartScript").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String inputBaseTrainingBatch = newClassifierList.getAttribute("InputBaseTrainingBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String inputTrainingBatch = newClassifierList.getAttribute("InputTrainingBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String inputBaseClassificationBatch = newClassifierList.getAttribute("InputBaseClassificationBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String inputClassificationBatch = newClassifierList.getAttribute("InputClassificationBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String algorithmDescription = newClassifierList.getAttribute("AlgorithmDescription").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String parameterNames = newClassifierList.getAttribute("ParameterNames").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String parameterDefinitions = newClassifierList.getAttribute("ParameterDefinitions").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String defaultParameterValues = newClassifierList.getAttribute("DefaultParameterValues").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					String parameterDescriptions = newClassifierList.getAttribute("ParameterDescriptions").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+					Double supportsBinary = new Double(newClassifierList.getAttribute("SupportsBinary").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsBinaryString = supportsBinary.isNaN() ? "?" : new Integer(supportsBinary.intValue()).toString();
+					Double supportsContinuous = new Double(newClassifierList.getAttribute("SupportsContinuous").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsContinuousString = supportsBinary.isNaN() ? "?" : new Integer(supportsContinuous.intValue()).toString();
+					Double supportsMulticlass = new Double(newClassifierList.getAttribute("SupportsMulticlass").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsMulticlassString = supportsBinary.isNaN() ? "?" : new Integer(supportsMulticlass.intValue()).toString();
+					Double supportsMultilabel = new Double(newClassifierList.getAttribute("SupportsMultilabel").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsMultilabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsMultilabel.intValue()).toString();
+					Double supportsSinglelabel = new Double(newClassifierList.getAttribute("SupportsSinglelabel").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsSinglelabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsSinglelabel.intValue()).toString();
+					Double supportsSupervised= new Double(newClassifierList.getAttribute("SupportsSupervised").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsSupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsSupervised.intValue()).toString();
+					Double supportsUnsupervised = new Double(newClassifierList.getAttribute("SupportsUnsupervised").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsUnsupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsUnsupervised.intValue()).toString();
+					Double supportsRegression = new Double(newClassifierList.getAttribute("SupportsRegression").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+					String supportsRegressionString = supportsBinary.isNaN() ? "?" : new Integer(supportsRegression.intValue()).toString();
+					
+					values_writer.writeBytes(idOfNewClassifier + ", "
+							+ "\"" + name + "\", "
+							+ "\"" + category + "\", "
+							+ trainerAdapterClass + ", "
+							+ classifierAdapterClass + ", "
+							+ "\"" + homeFolder + "\", "
+							+ "\"" + startScript + "\", "
+							+ "\"" + inputBaseTrainingBatch + "\", "
+							+ "\"" + inputTrainingBatch + "\", "
+							+ "\"" + inputBaseClassificationBatch + "\", "
+							+ "\"" + inputClassificationBatch + "\", "
+							+ "\"" + algorithmDescription + "\", "
+							+ "\"" + parameterNames + "\", "
+							+ "\"" + parameterDefinitions + "\", "
+							+ "\"" + defaultParameterValues + "\", "
+							+ "\"" + parameterDescriptions + "\", "
+							+ supportsBinaryString + ", "
+							+ supportsContinuousString + ", "
+							+ supportsMulticlassString + ", "
+							+ supportsMultilabelString + ", "
+							+ supportsSinglelabelString + ", "
+							+ supportsSupervisedString + ", "
+							+ supportsUnsupervisedString + ", "
+							+ supportsRegressionString + sep + sep);
+					posRequired++;
+					posInstalled--; // This position remains
+				}
+			}
+			
+			// Write the data for the remaining new features which have higher ids than ids of previously installed features
+			for(;posRequired<sortedNewClassifierIds.size();posRequired++) {
+				int idOfNewClassifier = sortedNewClassifierIds.get(posRequired);
+				String name = newClassifierList.getAttribute("Name").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String category = newClassifierList.getAttribute("Category").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String trainerAdapterClass = newClassifierList.getAttribute("TrainerAdapterClass").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String classifierAdapterClass = newClassifierList.getAttribute("ClassifierAdapterClass").getValueStrAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String homeFolder = newClassifierList.getAttribute("HomeFolder").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String startScript = newClassifierList.getAttribute("StartScript").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String inputBaseTrainingBatch = newClassifierList.getAttribute("InputBaseTrainingBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String inputTrainingBatch = newClassifierList.getAttribute("InputTrainingBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String inputBaseClassificationBatch = newClassifierList.getAttribute("InputBaseClassificationBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String inputClassificationBatch = newClassifierList.getAttribute("InputClassificationBatch").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String algorithmDescription = newClassifierList.getAttribute("AlgorithmDescription").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String parameterNames = newClassifierList.getAttribute("ParameterNames").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String parameterDefinitions = newClassifierList.getAttribute("ParameterDefinitions").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String defaultParameterValues = newClassifierList.getAttribute("DefaultParameterValues").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				String parameterDescriptions = newClassifierList.getAttribute("ParameterDescriptions").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString();
+				Double supportsBinary = new Double(newClassifierList.getAttribute("SupportsBinary").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsBinaryString = supportsBinary.isNaN() ? "?" : new Integer(supportsBinary.intValue()).toString();
+				Double supportsContinuous = new Double(newClassifierList.getAttribute("SupportsContinuous").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsContinuousString = supportsBinary.isNaN() ? "?" : new Integer(supportsContinuous.intValue()).toString();
+				Double supportsMulticlass = new Double(newClassifierList.getAttribute("SupportsMulticlass").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsMulticlassString = supportsBinary.isNaN() ? "?" : new Integer(supportsMulticlass.intValue()).toString();
+				Double supportsMultilabel = new Double(newClassifierList.getAttribute("SupportsMultilabel").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsMultilabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsMultilabel.intValue()).toString();
+				Double supportsSinglelabel = new Double(newClassifierList.getAttribute("SupportsSinglelabel").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsSinglelabelString = supportsBinary.isNaN() ? "?" : new Integer(supportsSinglelabel.intValue()).toString();
+				Double supportsSupervised= new Double(newClassifierList.getAttribute("SupportsSupervised").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsSupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsSupervised.intValue()).toString();
+				Double supportsUnsupervised = new Double(newClassifierList.getAttribute("SupportsUnsupervised").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsUnsupervisedString = supportsBinary.isNaN() ? "?" : new Integer(supportsUnsupervised.intValue()).toString();
+				Double supportsRegression = new Double(newClassifierList.getAttribute("SupportsRegression").getValueAt(newClassifierMap.get(idOfNewClassifier)).toString());
+				String supportsRegressionString = supportsBinary.isNaN() ? "?" : new Integer(supportsRegression.intValue()).toString();
+				
+				values_writer.writeBytes(idOfNewClassifier + ", "
+						+ "\"" + name + "\", "
+						+ "\"" + category + "\", "
+						+ trainerAdapterClass + ", "
+						+ classifierAdapterClass + ", "
+						+ "\"" + homeFolder + "\", "
+						+ "\"" + startScript + "\", "
+						+ "\"" + inputBaseTrainingBatch + "\", "
+						+ "\"" + inputTrainingBatch + "\", "
+						+ "\"" + inputBaseClassificationBatch + "\", "
+						+ "\"" + inputClassificationBatch + "\", "
+						+ "\"" + algorithmDescription + "\", "
+						+ "\"" + parameterNames + "\", "
+						+ "\"" + parameterDefinitions + "\", "
+						+ "\"" + defaultParameterValues + "\", "
+						+ "\"" + parameterDescriptions + "\", "
+						+ supportsBinaryString + ", "
+						+ supportsContinuousString + ", "
+						+ supportsMulticlassString + ", "
+						+ supportsMultilabelString + ", "
+						+ supportsSinglelabelString + ", "
+						+ supportsSupervisedString + ", "
+						+ supportsUnsupervisedString + ", "
+						+ supportsRegressionString + sep + sep);
+			}
+			
+			values_writer.close();
+			
+			// Replace featureTable with featureTableUpdated
+			FileOperations.move(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "classifierAlgorithmTableUpdated.arff"), 
+					new File(AmusePreferences.getClassifierAlgorithmTablePath()));
+			
+		} catch(IOException e) {
+			throw new SchedulerException("Could not update the list with installed classifiers: " + e.getMessage());
+		}
+	}
+
 	/**
 	 * Updates featureTable.arff with the sort order according to their ids
 	 */
