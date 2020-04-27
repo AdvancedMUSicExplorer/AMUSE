@@ -479,7 +479,30 @@ public final class WizardController implements WizardControllerInterface {
 			NominalAttribute typeAtt = (NominalAttribute) arffDataSet.getAttribute("Type");
 			StringAttribute pathAtt = (StringAttribute) arffDataSet.getAttribute("Path");
 			for(int i = 0; i < pathAtt.getValueCount(); i++){
-				ControllerType type = ControllerType.valueOf(typeAtt.getValueAt(i));
+				ControllerType type = null;
+				String typeStr = typeAtt.getValueAt(i);
+				switch(typeStr) {
+				case "c":
+					type = ControllerType.CLASSIFICATION;
+					break;
+				case "fe":
+					type = ControllerType.FEATURE_EXTRACTION;
+					break;
+				case "o":
+					type = ControllerType.OPTIMIZATION;
+					break;
+				case "fp":
+					type = ControllerType.FEATURE_PROCESSING;
+					break;
+				case "ct":
+					type = ControllerType.CLASSIFICATION_TRAINING;
+					break;
+				case "v":
+					type = ControllerType.VALIDATION;
+					break;
+				default:
+					type = ControllerType.valueOf(typeAtt.getValueAt(i));
+				}
 				AbstractController controller = type.getController();
 				controller.loadTask(new File(pathAtt.getValueAt(i)));
 				TaskConfiguration configuration = controller.getExperimentConfiguration();
