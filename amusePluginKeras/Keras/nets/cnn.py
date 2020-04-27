@@ -1,7 +1,7 @@
 from keras import models
 from keras import layers
 
-def build(input_shape, num_classes):# cnn
+def build(input_shape, num_classes):
     model = models.Sequential()
     model.add(layers.Conv2D(32, kernel_size=(3, 3), padding="same", activation='relu', input_shape=input_shape))
     model.add(layers.Conv2D(32, kernel_size=(3, 3), padding="same", activation='relu'))
