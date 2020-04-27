@@ -15,6 +15,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,6 +63,8 @@ public class TextEditor implements ActionListener{
         	
         });
         
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        
         JMenuBar menuBar = new JMenuBar();
   
         // Create menu items 
@@ -90,7 +93,7 @@ public class TextEditor implements ActionListener{
         changed = false;
         
         dialog.setJMenuBar(menuBar); 
-        dialog.add(textArea); 
+        dialog.add(scrollPane); 
         dialog.setSize(500, 500);
         dialog.setVisible(true);
     }
