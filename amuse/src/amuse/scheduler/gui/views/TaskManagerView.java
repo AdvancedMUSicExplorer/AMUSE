@@ -40,6 +40,8 @@ import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
+
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -48,18 +50,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableModel;
 import net.miginfocom.swing.MigLayout;
 
@@ -70,13 +72,11 @@ import net.miginfocom.swing.MigLayout;
 public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton, TaskListener{
     private JTable tblTasks;
     private JScrollPane scpTaks;
-    private JButton btnAddTask = new JButton("+");
-    private JButton btnRemoveTask = new JButton("-");
-    private JButton btnUp = new JButton("Up");
-    private JButton btnDown = new JButton("Down");
+    private JButton btnRemoveTask = new JButton("Remove Experiment");
+    private JButton btnUp = new JButton("Move Up");
+    private JButton btnDown = new JButton("Move Down");
     private JButton btnCheckTasks = new JButton("Check Tasks");
     private JButton btnSaveTasks = new JButton("Save Tasks");
-    private JPopupMenu menSelectTask = new JPopupMenu();
     private WizardControllerInterface wizard = WizardController.getInstance();
     private ExperimentSetTable experimentTable = new ExperimentSetTable();
     private static TaskManagerView instance;
@@ -95,23 +95,25 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         tblTasks = new JTable(experimentTable);
         tblTasks.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         scpTaks = new JScrollPane(tblTasks);
-        createPopupMenu();
         tblTasks.getColumnModel().getColumn(0).setMinWidth(30);
         tblTasks.getColumnModel().getColumn(0).setMaxWidth(30);
         tblTasks.getColumnModel().getColumn(1).setMinWidth(200);
         tblTasks.getColumnModel().getColumn(1).setMaxWidth(200);
         
-        btnAddTask.addActionListener(e -> showPopupMenu());
         btnRemoveTask.addActionListener(e -> removeSelected());
         btnUp.addActionListener(e -> moveUp());
         btnDown.addActionListener(e -> moveDown());
         tblTasks.addMouseListener(new TableClickListener());
+
+        addTaskButtons();
+        JPanel editTasksPanel = new JPanel(new GridLayout(1, 3));
+        editTasksPanel.setBorder(new TitledBorder("Edit Experiments"));
+        editTasksPanel.add(btnRemoveTask);
+        editTasksPanel.add(btnUp);
+        editTasksPanel.add(btnDown);
+        add(editTasksPanel, "spanx 3, grow, wrap");
+        add(scpTaks, "spanx, grow");
         
-        add(scpTaks, "spany 4, spanx 2, push, grow");
-        add(btnAddTask, "wrap, bottom, sg buttons");
-        add(btnRemoveTask, "wrap, sg buttons");
-        add(btnUp, "wrap, sg buttons");
-        add(btnDown, "wrap, sg buttons");
         btnCheckTasks.setEnabled(false);
         btnSaveTasks.setEnabled(false);
         add(btnCheckTasks, "right");
@@ -120,12 +122,6 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         btnSaveTasks.setVisible(false);
 		
         wizard.addTaskListener(this);
-    }
-
-    private void showPopupMenu() {
-        menSelectTask.show(this, 
-                btnAddTask.getX(),
-                btnAddTask.getY() + btnAddTask.getHeight());
     }
 
     private void removeSelected() {
@@ -149,9 +145,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     }
 
 
-    private void createPopupMenu() {
-        JMenuItem feTaskItem = new JMenuItem("Feature Extraction");
-        feTaskItem.addActionListener(new ActionListener() {
+    private void addTaskButtons() {
+    	// JPanel for task buttons
+    	JPanel taskButtonPanel = new JPanel(new GridLayout(2, 3));
+		taskButtonPanel.setBorder(new TitledBorder("Add Experiment"));
+    	
+        JButton feTaskButton = new JButton("Feature Extraction");
+        feTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -159,8 +159,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        JMenuItem fpTaskItem = new JMenuItem("Feature Processing");
-        fpTaskItem.addActionListener(new ActionListener() {
+        JButton fpTaskButton = new JButton("Feature Processing");
+        fpTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -168,8 +168,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        JMenuItem ctTaskItem = new JMenuItem("Classification Training");
-        ctTaskItem.addActionListener(new ActionListener() {
+        JButton ctTaskButton = new JButton("Classification Training");
+        ctTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -177,8 +177,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        JMenuItem cTaskItem = new JMenuItem("Classification");
-        cTaskItem.addActionListener(new ActionListener() {
+        JButton cTaskButton = new JButton("Classification");
+        cTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -186,8 +186,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        JMenuItem vTaskItem = new JMenuItem("Classification Validation");
-        vTaskItem.addActionListener(new ActionListener() {
+        JButton vTaskButton = new JButton("Classification Validation");
+        vTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -195,8 +195,8 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        JMenuItem oTaskItem = new JMenuItem("Optimization");
-        oTaskItem.addActionListener(new ActionListener() {
+        JButton oTaskButton = new JButton("Optimization");
+        oTaskButton.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -204,12 +204,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
                 isEditing = false;
             }
         });
-        menSelectTask.add(feTaskItem);
-        menSelectTask.add(fpTaskItem);
-        menSelectTask.add(ctTaskItem);
-        menSelectTask.add(cTaskItem);
-        menSelectTask.add(vTaskItem);
-	menSelectTask.add(oTaskItem);
+        taskButtonPanel.add(feTaskButton);
+        taskButtonPanel.add(fpTaskButton);
+        taskButtonPanel.add(ctTaskButton);
+        taskButtonPanel.add(cTaskButton);
+        taskButtonPanel.add(vTaskButton);
+        taskButtonPanel.add(oTaskButton);
+        this.add(taskButtonPanel, "spanx 3, grow, wrap");
     }
 
     @Override
