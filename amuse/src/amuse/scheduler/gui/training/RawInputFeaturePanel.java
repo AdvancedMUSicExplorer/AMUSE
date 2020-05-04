@@ -72,7 +72,16 @@ public class RawInputFeaturePanel extends JPanel {
             featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView); 
             featureTableController.setSelectedFeatures(selectedFeatures);
             
-            dialog.setContentPane(featureTableView.getView());
+            JButton finishButton = new JButton("OK");
+            finishButton.addActionListener(e -> {
+            	dialog.dispose();
+            });
+            
+            JPanel view = new JPanel(new MigLayout("fill", "", ""));
+            view.add(featureTableView.getView(), "wrap");
+            view.add(finishButton, "push, al right");
+            
+            dialog.setContentPane(view);
             dialog.pack();   
             dialog.setLocationByPlatform(true);
             dialog.setVisible(true);

@@ -32,6 +32,7 @@ import javax.swing.event.TableModelListener;
 import amuse.data.io.DataSet;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.util.AmuseLogger;
+import net.miginfocom.swing.MigLayout;
 
 import javax.swing.table.TableModel;
 
@@ -42,11 +43,13 @@ public class AttributeSelector extends JComponent{
 	private List<String> attributes;
 //	private List<Integer> selectedAttributes;
 	private DataSet readyInput;
+	private JPanel attributeView;
 	private JPanel view;
 	private JTable table;
     private JPanel jPanelAttributeSelectionButtons;
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
+    private JButton jButtonFinish;
     private AttributeTableModel model;
 	
 	public AttributeSelector(String inputPath, String selectedAttributesString) {
@@ -75,19 +78,29 @@ public class AttributeSelector extends JComponent{
 		
 		JDialog dialog = new JDialog((Frame)null, "Attribute Selector", true);
 
-        view = new JPanel();
+		view =  new JPanel(new MigLayout("fill", "", ""));
+		
+        attributeView = new JPanel();
         BorderLayout layout = new BorderLayout();
-        view.setLayout(layout);
+        attributeView.setLayout(layout);
         table = new JTable();
         model = new AttributeTableModel(attributes, currentSelectedAttributes);
+        
+        jButtonFinish = new JButton("OK");
+		jButtonFinish.addActionListener(e -> {
+        	dialog.dispose();
+        });
         
         table.setModel(model);
         table.getColumnModel().getColumn(0).setMinWidth(30);
         table.getColumnModel().getColumn(0).setMaxWidth(25);
         table.setDragEnabled(false);
-        view.add(new JScrollPane(table), BorderLayout.CENTER);
-        view.add(getJPanelAttributeSelectionButtons(), BorderLayout.SOUTH);
-        view.setBorder(new TitledBorder("Select Attributes"));
+        attributeView.add(new JScrollPane(table), BorderLayout.CENTER);
+        attributeView.add(getJPanelAttributeSelectionButtons(), BorderLayout.SOUTH);
+        attributeView.setBorder(new TitledBorder("Select Attributes"));
+        
+        view.add(attributeView, "wrap");
+        view.add(jButtonFinish, "push, al right");
         
         dialog.setContentPane(view);
         dialog.pack();   
@@ -112,7 +125,7 @@ public class AttributeSelector extends JComponent{
         return jPanelAttributeSelectionButtons;
     }
 
-    private JButton getJButtonSelectAll() {
+	private JButton getJButtonSelectAll() {
         if (jButtonSelectAll == null) {
             jButtonSelectAll = new JButton();
             jButtonSelectAll.setText("Check Selected");
