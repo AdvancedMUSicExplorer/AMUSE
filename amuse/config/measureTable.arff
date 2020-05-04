@@ -65,3 +65,4 @@
 405, "Precision", "Events", 1.0, amuse.nodes.validator.measures.events.Precision, true, false
 406, "Recall", "Events", 1.0, amuse.nodes.validator.measures.events.Recall, true, false
 408, "F-measure", "Events", 1.0, amuse.nodes.validator.measures.events.FMeasure, true, false
+416, "Deviation", "Events", 0.0, amuse.nodes.validator.measures.events.Deviation, true, false
