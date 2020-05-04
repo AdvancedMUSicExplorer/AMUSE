@@ -247,7 +247,7 @@ public class CategorySelectionPanel extends JPanel {
 
 			@Override
 			public String toString() {
-				return this.categoryName;
+				return this.id + "-" +  this.categoryName;
 			}
 
 			/* (non-Javadoc)
@@ -255,7 +255,7 @@ public class CategorySelectionPanel extends JPanel {
 			 */
 			@Override
 			public int compareTo(Category o) {
-				return toString().toLowerCase().compareTo(o.toString().toLowerCase());
+				return this.id - o.id;
 			}
 
 			public int getID() {
