@@ -72,9 +72,9 @@ import net.miginfocom.swing.MigLayout;
 public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton, TaskListener{
     private JTable tblTasks;
     private JScrollPane scpTaks;
-    private JButton btnRemoveTask = new JButton("Remove Experiment");
-    private JButton btnUp = new JButton("Move Up");
-    private JButton btnDown = new JButton("Move Down");
+    private JButton btnRemoveTask = new JButton("Delete");
+    private JButton btnUp = new JButton("Up");
+    private JButton btnDown = new JButton("Down");
     private JButton btnCheckTasks = new JButton("Check Tasks");
     private JButton btnSaveTasks = new JButton("Save Tasks");
     private WizardControllerInterface wizard = WizardController.getInstance();
@@ -105,14 +105,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         btnDown.addActionListener(e -> moveDown());
         tblTasks.addMouseListener(new TableClickListener());
 
-        addTaskButtons();
-        JPanel editTasksPanel = new JPanel(new GridLayout(1, 3));
-        editTasksPanel.setBorder(new TitledBorder("Edit Experiments"));
+        JPanel editTasksPanel = new JPanel(new GridLayout(3, 1));
         editTasksPanel.add(btnRemoveTask);
         editTasksPanel.add(btnUp);
         editTasksPanel.add(btnDown);
-        add(editTasksPanel, "spanx 3, grow, wrap");
-        add(scpTaks, "spanx, grow");
+        add(editTasksPanel, "grow");
+        addTaskButtons();
+        add(scpTaks, "span, grow");
         
         btnCheckTasks.setEnabled(false);
         btnSaveTasks.setEnabled(false);
@@ -210,7 +209,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         taskButtonPanel.add(cTaskButton);
         taskButtonPanel.add(vTaskButton);
         taskButtonPanel.add(oTaskButton);
-        this.add(taskButtonPanel, "spanx 3, grow, wrap");
+        this.add(taskButtonPanel, "pushx, growx, wrap");
     }
 
     @Override
@@ -226,7 +225,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
     @Override
     public String getNextButtonText() {
-        return "Start Experiment";
+        return "Start Experiments";
     }
 
     private void startTasks() {
@@ -509,7 +508,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
 	@Override
 	public String getSaveButtonText() {
-		return "Save Experiment";
+		return "Save Experiments";
 	}
 
 	@Override
@@ -530,7 +529,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 
 	@Override
 	public String getLoadButtonText() {
-		return "Load Experiment";
+		return "Load Experiments";
 	}
 
 	@Override
