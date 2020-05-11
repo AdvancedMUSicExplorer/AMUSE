@@ -47,10 +47,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -72,9 +78,9 @@ import net.miginfocom.swing.MigLayout;
 public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsable, HasSaveButton, HasLoadButton, TaskListener{
     private JTable tblTasks;
     private JScrollPane scpTaks;
-    private JButton btnRemoveTask = new JButton("Delete");
-    private JButton btnUp = new JButton("Up");
-    private JButton btnDown = new JButton("Down");
+    private JButton btnRemoveTask = new JButton();
+    private JButton btnUp = new JButton();
+    private JButton btnDown = new JButton();
     private JButton btnCheckTasks = new JButton("Check Tasks");
     private JButton btnSaveTasks = new JButton("Save Tasks");
     private WizardControllerInterface wizard = WizardController.getInstance();
@@ -104,14 +110,39 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         btnUp.addActionListener(e -> moveUp());
         btnDown.addActionListener(e -> moveDown());
         tblTasks.addMouseListener(new TableClickListener());
+        
+        ImageIcon iconRemove = null;
+        ImageIcon iconUp = null;
+        ImageIcon iconDown = null;
+        try {
+			String pathRemove = "jar:file:lib/jlfgr-1_0.jar!/toolbarButtonGraphics/general/Delete16.gif";
+			InputStream isRemove = ((JarURLConnection)new URL(pathRemove).openConnection()).getInputStream();
+			iconRemove = new ImageIcon(ImageIO.read(isRemove));
+			
+			String pathUp = "jar:file:lib/jlfgr-1_0.jar!/toolbarButtonGraphics/navigation/Up16.gif";
+			InputStream isUp = ((JarURLConnection)new URL(pathUp).openConnection()).getInputStream();
+			iconUp = new ImageIcon(ImageIO.read(isUp));
+			
+			String pathDown = "jar:file:lib/jlfgr-1_0.jar!/toolbarButtonGraphics/navigation/Down16.gif";
+			InputStream isDown = ((JarURLConnection)new URL(pathDown).openConnection()).getInputStream();
+			iconDown = new ImageIcon(ImageIO.read(isDown));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+        btnRemoveTask.setIcon(iconRemove);
+        btnRemoveTask.setToolTipText("Remove selected experiment");
+        btnUp.setIcon(iconUp);
+        btnUp.setToolTipText("Move selected experiment up");
+        btnDown.setIcon(iconDown);
+        btnDown.setToolTipText("Move selected experiment down");
 
-        JPanel editTasksPanel = new JPanel(new GridLayout(3, 1));
+        JPanel editTasksPanel = new JPanel(new GridLayout(1, 3));
         editTasksPanel.add(btnRemoveTask);
         editTasksPanel.add(btnUp);
         editTasksPanel.add(btnDown);
-        add(editTasksPanel, "grow");
+        add(editTasksPanel, "span, wrap");
         addTaskButtons();
-        add(scpTaks, "span, grow");
+        add(scpTaks, "grow, span");
         
         btnCheckTasks.setEnabled(false);
         btnSaveTasks.setEnabled(false);
@@ -209,7 +240,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         taskButtonPanel.add(cTaskButton);
         taskButtonPanel.add(vTaskButton);
         taskButtonPanel.add(oTaskButton);
-        this.add(taskButtonPanel, "pushx, growx, wrap");
+        this.add(taskButtonPanel, "pushx, growx, span, wrap");
     }
 
     @Override
