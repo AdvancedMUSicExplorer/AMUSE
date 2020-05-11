@@ -60,7 +60,11 @@ public class AudioSpectrumModel {
 					+ "annotation" 
 					+ File.separator 
 					+ "temp.wav";
-			AudioFileConversion.convertMp3ToWave(musicFile, new File(musicFilePath));
+			File f = new File(musicFilePath);
+			if(!f.getParentFile().exists()) {
+				f.getParentFile().mkdir();
+			}
+			AudioFileConversion.convertMp3ToWave(musicFile, f);
 			return new File(musicFilePath);
 		} catch(IOException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
