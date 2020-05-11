@@ -87,7 +87,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     private ExperimentSetTable experimentTable = new ExperimentSetTable();
     private static TaskManagerView instance;
     private boolean isEditing = false;
-    private enum State {READY, IN_QUEUE, RUNNING, FINISHED};
+    private enum State {CONFIGURED, IN_QUEUE, RUNNING, FINISHED};
 
     public static TaskManagerView getInstance() {
         if (instance == null) {
@@ -235,10 +235,10 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
             }
         });
         taskButtonPanel.add(feTaskButton);
-        taskButtonPanel.add(fpTaskButton);
         taskButtonPanel.add(ctTaskButton);
-        taskButtonPanel.add(cTaskButton);
         taskButtonPanel.add(vTaskButton);
+        taskButtonPanel.add(fpTaskButton);
+        taskButtonPanel.add(cTaskButton);
         taskButtonPanel.add(oTaskButton);
         this.add(taskButtonPanel, "pushx, growx, span, wrap");
     }
@@ -320,13 +320,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         
 		public void addExperiment(TaskConfiguration ex) {
             experiments.add(ex);
-            states.add(State.READY);
+            states.add(State.CONFIGURED);
             notifyListenersOfAdd(experiments.indexOf(ex));
         }
 
         private void addExperiment(int row, TaskConfiguration ex) {
             experiments.add(row, ex);
-            states.add(State.READY);
+            states.add(State.CONFIGURED);
             notifyListenersOfAdd(experiments.indexOf(ex));
         }
 
@@ -480,7 +480,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         	boolean currentlyRunning = currentlyExperimentsRunning();
         	
         	int index = experiments.indexOf(experiment);
-        	return states.get(index).equals(State.READY) && !currentlyRunning;
+        	return states.get(index).equals(State.CONFIGURED) && !currentlyRunning;
         }
         
         private boolean currentlyExperimentsRunning() {
@@ -499,7 +499,7 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
         	List<TaskConfiguration> readyExperiments = new ArrayList<TaskConfiguration>();
         	
         	for(int i = 0; i < experiments.size(); i++) {
-        		if(states.get(i).equals(State.READY)) {
+        		if(states.get(i).equals(State.CONFIGURED)) {
         			readyExperiments.add(experiments.get(i));
         		}
         	}
