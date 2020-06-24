@@ -290,6 +290,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// reduction step..
 		FeatureTable featureSet = ((ProcessingConfiguration)this.taskConfiguration).getInputFeatureList();
 		List<Integer> featureIDs = featureSet.getSelectedIds();
+		List<String> configurationIDs = featureSet.getSelectedConfigurationIds();
 			
 		// Feature files for the current music file
 		for(int i=0;i<featureIDs.size();i++) {
@@ -307,10 +308,14 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i) + ".arff"));
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i)
+					+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+					+ ".arff"));
 			} else {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-						File.separator + relativeName + "_" + featureIDs.get(i) + ".arff"));
+						File.separator + relativeName + "_" + featureIDs.get(i)
+						+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+						+ ".arff"));
 			}
 		}
 		
@@ -400,6 +405,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				adaptedFeature.setHistory(features.get(i).getHistory());
 				adaptedFeature.setSampleRate(features.get(i).getSampleRate());
 				adaptedFeature.setSourceFrameSize(features.get(i).getSourceFrameSize());
+				adaptedFeature.setSourceStepSize(features.get(i).getSourceStepSize());
 				features.set(i, adaptedFeature);
 			} else {
 				initialNumberOfUsedRawTimeWindows += features.get(i).getValues().size();

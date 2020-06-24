@@ -55,6 +55,7 @@ import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -93,8 +94,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		// Load the jAudio batch script
 		Document jAudioScript;
 		try {
-			jAudioScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(properties.getProperty("extractorFolder") + 
-					File.separator + properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+		    // if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			jAudioScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBatchPath);
 		} catch (SAXException e) {
 			throw new NodeException("Setting of input music file with jAudio failed: " + e.getMessage());		
 		} catch (IOException e) {
@@ -133,8 +138,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "jAudio.dtd");
 			DOMSource domsource = new DOMSource(jAudioScript);
-			File modifiedScript = new File( 
-					properties.getProperty("extractorFolder") + File.separator + properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+		    // if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			File modifiedScript = new File(inputBatchPath);
 			
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite())
@@ -162,9 +171,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		// Load jAudio base script
 		Document currentBaseScript = null;
 		try {
-			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + File.separator +
-					properties.getProperty("inputExtractorBaseBatch"));
+			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
+		    // if it is a relative path the input batch is in the extractor folder
+		    if(!inputBaseBatchPath.startsWith(File.separator)) {
+		    	inputBaseBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBaseBatchPath;
+		    }
+			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBaseBatchPath);
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open jAudio base script: " + e.getMessage());
 		} catch(javax.xml.parsers.ParserConfigurationException e) {
@@ -244,8 +256,13 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "jAudio.dtd");
 			DOMSource domsource = new DOMSource(currentBaseScript);
-			File modifiedScript = new File(properties.getProperty("extractorFolder")+ File.separator +
-										   properties.getProperty("inputExtractorBatch"));
+			
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+		    // if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			File modifiedScript = new File(inputBatchPath);
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite()) {
 					throw new NodeException("Cannot write to modified jAudio base script");
@@ -285,7 +302,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    List<String> commands = new ArrayList<String>();
 		    commands.add("jAudioFE");
 		    commands.add("-b");
-		    commands.add(properties.getProperty("extractorFolder") + File.separator + properties.getProperty("inputExtractorBatch"));
+		    String inputBatchPath = properties.getProperty("inputExtractorBatch");
+		    // if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+		    commands.add(inputBatchPath);
 		    ExternalProcessBuilder jAudio = ExternalProcessBuilder.buildJavaProcess(javaParameters, libs, commands);
 		    jAudio.setWorkingDirectory(new File(amuse + File.separator +"tools"+ File.separator + "jAudio"));
 		    Process pc = jAudio.start();
@@ -315,7 +337,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
             pc.waitFor();
 		    convertOutput();
 		} catch (InterruptedException e) {
-                        throw new NodeException("Extraciton with jAudio interrupted! " + e.getMessage());
+                        throw new NodeException("Extraction with jAudio interrupted! " + e.getMessage());
                 }
                 catch (NodeException e) {
 			throw new NodeException("Extraction with jAudio failed: " + e.getMessage());		
@@ -333,8 +355,12 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		// Maps the jAudio feature name to Amuse feature ID
 		HashMap<String,Integer> jAudioFeatureToAmuseId = new HashMap<String,Integer>();
 		
-		// Maps the Amuse feature ID to its name
+		// Maps the Amuse feature ID to the Amuse feature name
 		HashMap<Integer,String> amuseIdToAmuseName = new HashMap<Integer,String>();
+		
+		// Maps the Amuse feature ID to feature that wa extracted with a custom configuration
+		// if custom configurations are used
+		HashMap<Integer,Feature> amuseIdToCustomFeature = new HashMap<Integer,Feature>();
 		
 		// Maps the Amuse feature ID to the corresponding list of jAudio features
 		HashMap<Integer,ArrayList<String>> featureIdToFeatureList = new HashMap<Integer,ArrayList<String>>();
@@ -374,8 +400,14 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 			// Set the Amuse descriptions of features
 			FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
 			for(int i=0;i<featureTable.size();i++) {
-				amuseIdToAmuseName.put(featureTable.getFeatureAt(i).getId(),
-						featureTable.getFeatureAt(i).getDescription());
+				Feature feature = featureTable.getFeatureAt(i);
+				amuseIdToAmuseName.put(feature.getId(),
+						feature.getDescription());
+				// if the feature was extracted by this extractor using a custom configuration
+				// put in the hash map of custom features
+				if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+					amuseIdToCustomFeature.put(feature.getId(), feature);
+				}
 			}
 			
 			// Go through Amuse metafeatures one by one and save them to ARFF feature files
@@ -429,12 +461,16 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				
 				// Create a name for Amuse feature file 
 				String currentFeatureFile = new String(folder.toString());
+				String configurationId = "";
+				if(amuseIdToCustomFeature.containsKey(new Integer(o.toString()))) {
+					configurationId = "_" + amuseIdToCustomFeature.get(new Integer(o.toString())).getConfigurationId();
+				}
 				if(musicFile.lastIndexOf(File.separator) != -1) {
 					currentFeatureFile += File.separator +
-						musicFile.substring(musicFile.lastIndexOf(File.separator),musicFile.lastIndexOf(".")) + "_" + o + ".arff";
+						musicFile.substring(musicFile.lastIndexOf(File.separator),musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
 				} else {
 					currentFeatureFile += File.separator +
-						musicFile.substring(0,musicFile.lastIndexOf(".")) + "_" + o + ".arff";
+						musicFile.substring(0,musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
 				}
 				File feature_values_save_file = new File(currentFeatureFile);
 				if (feature_values_save_file.exists())
@@ -449,8 +485,14 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				DataOutputStream values_writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
 				
+				int windowSize = 512;
+				int stepSize = 512;
+				if(amuseIdToCustomFeature.containsKey(new Integer(o.toString()))) {
+					windowSize = amuseIdToCustomFeature.get(new Integer(o.toString())).getSourceFrameSize();
+					stepSize = amuseIdToCustomFeature.get(new Integer(o.toString())).getSourceStepSize();
+				}
+				
 				// Write to the ARFF feature file (header)
-				// TODO Set correctly window size and sample frequency!!!
 				values_writer.writeBytes("@RELATION 'Music feature'");
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%rows=" + atts.size());
@@ -459,7 +501,9 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%sample_rate=" + "22050");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%window_size=" + "512");
+				values_writer.writeBytes("%window_size=" + windowSize);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%step_size=" + stepSize);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 				

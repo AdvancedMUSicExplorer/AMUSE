@@ -35,9 +35,11 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
 import amuse.interfaces.nodes.NodeException;
@@ -246,11 +248,37 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
     	// ---------------------------------------------
 		// (I) Load the mapping of features to extractor
 		// ---------------------------------------------
+    	
+    	// list of all features that are extracted using their regular settings
+    	// (no custom settings defined)
+    	List<Feature> regularFeatures = new ArrayList<Feature>();
 		HashMap<Integer, Integer> feature2Tool = new HashMap<Integer, Integer>();
-		List<Integer> indices = featureTable.getSelectedIds();
-		for (int j = 0; j < indices.size(); j++) {
-		    feature2Tool.put(indices.get(j), featureTable.getFeatureByID(indices.get(j)).getExtractorId());
+		// hash map with the custom scripts for each extractor tool
+		HashMap<Integer, List<String>> tool2CustomScripts = new HashMap<Integer, List<String>>();
+		// hash map with the features that are extracted with each custom base script
+		HashMap<String, List<Feature>> script2Features = new HashMap<String, List<Feature>>();
+		List<Feature> features = featureTable.getSelectedFeatures();
+		for (int j = 0; j < features.size(); j++) {
+			Feature feature = features.get(j);
+			if(feature.getConfigurationId() == null) { // is it a regular feature?
+				feature2Tool.put(feature.getId(), feature.getExtractorId());
+				regularFeatures.add(feature);
+		    } else { // or does it have a custom configuration?
+		    	int extractorId = feature.getExtractorId();
+				String customScript = feature.getCustomScript();
+				if(!tool2CustomScripts.containsKey(extractorId)){
+					tool2CustomScripts.put(extractorId, new ArrayList<String>());
+				}
+				if(!tool2CustomScripts.get(extractorId).contains(customScript)) {
+					tool2CustomScripts.get(extractorId).add(customScript);
+				}
+				if(!script2Features.containsKey(customScript)) {
+					script2Features.put(customScript, new ArrayList<Feature>());
+				}
+				script2Features.get(customScript).add(feature);
+		    }
 		}
+		FeatureTable regularFeatureTable = new FeatureTable(regularFeatures);
 		AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Feature table loaded");
     	
 		// --------------------------------------
@@ -268,6 +296,8 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 			for(int i=0;i<toolTableSet.getValueCount();i++) {
 		    	if (feature2Tool.containsValue(new Double(idAttribute.getValueAt(i).toString()).intValue())) {
 		    		try {
+		    			// convert the base script for the regular features
+		    			
 		    			// Create extractor adapter for the modification of the
 		    			// base script
 		    			Class<?> adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
@@ -283,9 +313,64 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 						((AmuseTask) ead).configure(extractorProperties, null, null);
 		
 						// Convert the base script
-						ead.convertBaseScript(feature2Tool, featureTable);
+						ead.convertBaseScript(feature2Tool, regularFeatureTable);
 						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, extractorNameAttribute.getValueAt(i)
 							+ " base script converted");
+						
+						// convert the base scripts of the custom features
+						int extractorId = new Double(idAttribute.getValueAt(i).toString()).intValue();
+						if(!tool2CustomScripts.containsKey(extractorId)) {
+							continue;
+						}
+						for(String customScript : tool2CustomScripts.get(extractorId)) {
+							FeatureTable customFeatureTable = new FeatureTable(script2Features.get(customScript));
+							HashMap<Integer, Integer> customFeature2Tool = new HashMap<Integer, Integer>();
+							String customBaseScript = "";
+							for(Feature feature : script2Features.get(customScript)) {
+								// prepare the feature to tool hash map
+								// if one feature is extracted multiple times with the same script
+								// (by different tools) we put the current tool in the map
+								if(!customFeature2Tool.containsKey(feature.getId()) || feature.getExtractorId() == extractorId) {
+									customFeature2Tool.put(feature.getId(), feature.getExtractorId());
+								}
+								
+								// find the path where the modified script should be saved
+								if(feature.getExtractorId() == extractorId) {
+									DataSet configurationDataSet = new DataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "features" + File.separator + feature.getId() + ".arff"));
+									for(int j = 0; j < configurationDataSet.getValueCount(); j++) {
+										if(configurationDataSet.getAttribute("Id").getValueAt(j).equals(feature.getConfigurationId())) {
+											String currentBaseScript = configurationDataSet.getAttribute("InputBaseBatch").getValueAt(j).toString();
+											if(customBaseScript.equals("")) {
+												customBaseScript = currentBaseScript;
+											} else if(!customBaseScript.equals(currentBaseScript)) {
+												AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Cannot convert custom base script " + currentBaseScript + " for feature " + feature.getId() + " because the input script " + customScript + " is already used for another base script.");
+											}
+											break;
+										}
+									}
+								}
+							}
+							
+							// Create extractor adapter for the modification of the
+			    			// base script
+			    			adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
+			    			ead = (ExtractorInterface) adapter.newInstance();
+			    			
+			    			// Set the extractor properties
+							extractorProperties = new Properties();
+							extractorProperties.setProperty("id", new Integer(new Double(idAttribute.getValueAt(i).toString()).intValue()).toString());
+							extractorProperties.setProperty("extractorName", extractorNameAttribute.getValueAt(i).toString());
+							extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + homeFolderAttribute.getValueAt(i));
+							extractorProperties.setProperty("inputExtractorBaseBatch", customBaseScript);
+							extractorProperties.setProperty("inputExtractorBatch", customScript);
+							((AmuseTask) ead).configure(extractorProperties, null, null);
+							
+							// Convert the base script
+							ead.convertBaseScript(customFeature2Tool, customFeatureTable);
+							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, extractorNameAttribute.getValueAt(i)
+								+ " custom base script " + customBaseScript + " converted");
+						}
+						
 				    } catch (ClassNotFoundException e) {
 				    	AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Extractor class cannot be located: "
 				    		+ adapterClassAttribute.getValueAt(i));

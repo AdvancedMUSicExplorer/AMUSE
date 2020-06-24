@@ -25,6 +25,7 @@ package amuse.data.datasets;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import amuse.data.io.ArffDataSet;
@@ -39,10 +40,11 @@ import amuse.data.io.attributes.StringAttribute;
  */
 public class FeatureTableSet extends ArffDataSet {
 
-    private final NumericAttribute idAttribute;
+    private final StringAttribute idAttribute;
     private final StringAttribute descriptionAttribute;
     private final NumericAttribute extractorIDAttribute;
     private final NumericAttribute windowSizeAttribute;
+    private final NumericAttribute stepSizeAttribute;
     private final NumericAttribute dimensionsAttribute;
     private final NominalAttribute featureTypeAttribute;
 
@@ -50,6 +52,7 @@ public class FeatureTableSet extends ArffDataSet {
     private static final String strDescription = "Description";
     private static final String strExtractiorID = "ExtractorId";
     private static final String strWindowSize = "WindowSize";
+    private static final String strStepSize = "StepSize";
     private static final String strDimensions = "Dimensions";
     private static final String strFeatureType = "FeatureType";
 
@@ -64,7 +67,7 @@ public class FeatureTableSet extends ArffDataSet {
         if (!this.getAttributeNames().contains(strDescription) || !(this.getAttribute(strDescription) instanceof StringAttribute)) {
             throw new IOException("No " + strDescription +" Attribute!");
         }
-        if (!this.getAttributeNames().contains(strID) || !(this.getAttribute(strID) instanceof NumericAttribute)) {
+        if (!this.getAttributeNames().contains(strID) || (!(this.getAttribute(strID) instanceof NumericAttribute) && !(this.getAttribute(strID) instanceof StringAttribute))) {
             throw new IOException("No " + strID + " Attribute!");
         }
         if (!this.getAttributeNames().contains(strExtractiorID) || !(this.getAttribute(strExtractiorID) instanceof NumericAttribute)) {
@@ -79,31 +82,69 @@ public class FeatureTableSet extends ArffDataSet {
         if (!this.getAttributeNames().contains(strFeatureType) || !(this.getAttribute(strFeatureType) instanceof NominalAttribute)) {
             throw new IOException("No " + strFeatureType + " Attribute!");
         }
-        idAttribute = (NumericAttribute) this.getAttribute(strID);
+        if(this.getAttribute(strID) instanceof NumericAttribute) {
+        	NumericAttribute idAttributeNumeric = (NumericAttribute) this.getAttribute(strID);
+        	List<String> values = new ArrayList<String>();
+        	for(Double value : idAttributeNumeric.getValues()) {
+        		values.add(value.toString());
+        	}
+        	idAttribute = new StringAttribute(strID, values);
+        } else {
+        	idAttribute = (StringAttribute) this.getAttribute(strID);
+        }
         descriptionAttribute = (StringAttribute) this.getAttribute(strDescription);
         extractorIDAttribute = (NumericAttribute) this.getAttribute(strExtractiorID);
         windowSizeAttribute = (NumericAttribute) this.getAttribute(strWindowSize);
+        // if there is no step size attribute the step sizes are equal to the window sizes
+        if (!this.getAttributeNames().contains(strStepSize) || !(this.getAttribute(strStepSize) instanceof NumericAttribute)) {
+            stepSizeAttribute = new NumericAttribute(strStepSize, new ArrayList<Double>());
+            for(double value : windowSizeAttribute.getValues()) {
+            	stepSizeAttribute.addValue(value);
+            }
+        } else {
+        	stepSizeAttribute = (NumericAttribute) this.getAttribute(strStepSize);
+        }
         dimensionsAttribute = (NumericAttribute) this.getAttribute(strDimensions);
         featureTypeAttribute = (NominalAttribute) this.getAttribute(strFeatureType);
     }
     
-    public FeatureTableSet(List<String> description, List<Integer> featureIds, List<Integer> extractorId, List<Integer> windowsize, List<Integer> dimensions, List<String> featureTypes) {
+    public FeatureTableSet(List<String> description, List<String> featureIds, List<Integer> extractorId, List<Integer> windowsize, List<Integer> stepsize, List<Integer> dimensions, List<String> featureTypes) {
     	super("FeatureTable");
-    	idAttribute = NumericAttribute.createFromIntList(strID, featureIds);
+    	idAttribute = new StringAttribute(strID, featureIds);
     	descriptionAttribute = new StringAttribute(strDescription, description);
     	extractorIDAttribute = NumericAttribute.createFromIntList(strExtractiorID, extractorId);
     	windowSizeAttribute = NumericAttribute.createFromIntList(strWindowSize, windowsize);
+    	stepSizeAttribute = NumericAttribute.createFromIntList(strStepSize, stepsize);
     	dimensionsAttribute = NumericAttribute.createFromIntList(strDimensions, dimensions);
     	featureTypeAttribute = new NominalAttribute(strFeatureType, featureTypes);
     	this.addAttribute(idAttribute);
     	this.addAttribute(descriptionAttribute);
     	this.addAttribute(extractorIDAttribute);
     	this.addAttribute(windowSizeAttribute);
+    	this.addAttribute(stepSizeAttribute);
+    	this.addAttribute(dimensionsAttribute);
+    	this.addAttribute(featureTypeAttribute);
+    }
+    
+    public FeatureTableSet(List<String> description, List<String> featureIds, List<Integer> extractorId, List<Integer> windowsize, List<Integer> dimensions, List<String> featureTypes) {
+    	super("FeatureTable");
+    	idAttribute = new StringAttribute(strID, featureIds);
+    	descriptionAttribute = new StringAttribute(strDescription, description);
+    	extractorIDAttribute = NumericAttribute.createFromIntList(strExtractiorID, extractorId);
+    	windowSizeAttribute = NumericAttribute.createFromIntList(strWindowSize, windowsize);
+    	stepSizeAttribute = NumericAttribute.createFromIntList(strStepSize, windowsize);
+    	dimensionsAttribute = NumericAttribute.createFromIntList(strDimensions, dimensions);
+    	featureTypeAttribute = new NominalAttribute(strFeatureType, featureTypes);
+    	this.addAttribute(idAttribute);
+    	this.addAttribute(descriptionAttribute);
+    	this.addAttribute(extractorIDAttribute);
+    	this.addAttribute(windowSizeAttribute);
+    	this.addAttribute(stepSizeAttribute);
     	this.addAttribute(dimensionsAttribute);
     	this.addAttribute(featureTypeAttribute);
     }
 
-	public NumericAttribute getIDAttribute() {
+	public StringAttribute getIDAttribute() {
         return idAttribute;
     }
 
@@ -117,6 +158,10 @@ public class FeatureTableSet extends ArffDataSet {
 
     public NumericAttribute getWindowSizeAttribute() {
         return windowSizeAttribute;
+    }
+    
+    public NumericAttribute getStepSizeAttribute() {
+    	return stepSizeAttribute;
     }
 
     public NumericAttribute getDimensionsAttribute() {
