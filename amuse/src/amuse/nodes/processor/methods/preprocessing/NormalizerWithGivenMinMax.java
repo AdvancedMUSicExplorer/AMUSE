@@ -21,7 +21,7 @@
  * 
  * Creation date: 15.06.2009
  */
-package amuse.nodes.processor.methods.reducers;
+package amuse.nodes.processor.methods.preprocessing;
 
 import java.io.File;
 import java.io.IOException;
