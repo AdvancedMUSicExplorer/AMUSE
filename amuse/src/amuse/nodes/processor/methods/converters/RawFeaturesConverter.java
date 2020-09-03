@@ -54,7 +54,7 @@ public class RawFeaturesConverter extends AmuseTask implements MatrixToVectorCon
 	}
 
 	@Override
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap,
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize,
 			String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the raw feature conversion...");
 		
@@ -81,7 +81,7 @@ public class RawFeaturesConverter extends AmuseTask implements MatrixToVectorCon
 				
 				// In 2nd case we can calculate the number of windows which belong to each partition
 				partitionSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
-				overlapSizeInWindows = (Double)(sampleRate*((ms-overlap)/1000d)/windowSize);
+				overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
 				
 				// FIXME evtl. check! Calculates the last used time window and the number of maximum available partitions from it
 				double numberOfAllPartitionsD = ((features.get(0).getWindows().get(features.get(0).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;

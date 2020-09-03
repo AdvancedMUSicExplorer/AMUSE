@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -47,8 +47,12 @@ public interface MatrixToVectorConverterInterface  {
 	 * Runs the conversion of feature matrix to vector (using some model like GMM or ARMA) or
 	 * several vectors (partitioning of input matrix)
 	 * @param features Features to run conversion on
+	 * @param ms Aggregation window size
+	 * @param stepSize Aggregation window step size
+	 * @param nameOfProcessorModel Optional string which describes the processor model
+	 * @return Converted features
 	 * @throws NodeException
 	 */
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException;
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException;
 
 }

@@ -67,7 +67,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 		}
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
@@ -117,7 +117,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 					
 					// In 2nd case we can calculate the number of windows which belong to each partition
 					partitionSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
-					overlapSizeInWindows = (Double)(sampleRate*((ms-overlap)/1000d)/windowSize);
+					overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
 					
 					// Calculates the last used time window and the number of maximum available partitions from it
 					double numberOfAllPartitionsD = ((features.get(i).getWindows().get(features.get(i).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;

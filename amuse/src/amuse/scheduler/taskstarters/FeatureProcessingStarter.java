@@ -74,10 +74,11 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
 				ArrayList<String> filePath = new ArrayList<String>(1);
 				filePath.add(((ProcessingConfiguration)taskConfiguration[i]).getMusicFileList().getFileAt(k));
 				oneTaskConfigs.add(new ProcessingConfiguration(new FileTable(fileId,filePath),
-						((ProcessingConfiguration)taskConfiguration[i]).getInputFeatureList(),
+						((ProcessingConfiguration)taskConfiguration[i]).getInputSourceType(),
+						((ProcessingConfiguration)taskConfiguration[i]).getInputFeatures(),
 						((ProcessingConfiguration)taskConfiguration[i]).getReductionSteps(),
-						((ProcessingConfiguration)taskConfiguration[i]).getPartitionSize(),
-						((ProcessingConfiguration)taskConfiguration[i]).getPartitionOverlap(),
+						((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowSize(),
+						((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowStepSize(),
 						((ProcessingConfiguration)taskConfiguration[i]).getConversionStep(),
 						((ProcessingConfiguration)taskConfiguration[i]).getFeatureDescription()));
 				
@@ -88,11 +89,11 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
             if (oneTaskConfigs.size() > 0) {
                 ProcessingConfiguration pc = oneTaskConfigs.get(0);
                 if(!pc.getFeatureDescription().trim().equals(new String(""))) {
-				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getPartitionSize() + "ms_" +
-						pc.getPartitionOverlap() + "ms_" + pc.getFeatureDescription());
+				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getAggregationWindowSize() + "ms_" +
+						pc.getAggregationWindowStepSize() + "ms_" + pc.getFeatureDescription());
 			} else {
-				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getPartitionSize() + "ms_" +
-						pc.getPartitionOverlap() + "ms");
+				ph.appendLine(pc.getReductionSteps() + "__" + pc.getConversionStep() + "__" + pc.getAggregationWindowSize() + "ms_" +
+						pc.getAggregationWindowStepSize() + "ms");
 			}
             }
         } catch (IOException ex) {

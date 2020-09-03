@@ -60,7 +60,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 		this.numberOfPartitionsToSelect = new Integer(parameterString);
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on song structure information...");
 		
 		int sampleRate = features.get(0).getSampleRate();
@@ -136,7 +136,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 				}
 				
 				double partitionSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
-				double overlapSizeInWindows = (Double)(sampleRate*((ms-overlap)/1000d)/windowSize);
+				double overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
 				
 				// FIXME evtl. check! Calculates the last used time window and the number of maximum available partitions from it
 				double numberOfAllPartitionsD = ((features.get(i).getWindows().get(features.get(i).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;
