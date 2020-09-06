@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -46,6 +46,9 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 	private boolean calculateFirstDerivation = false;
 	private boolean calculateSecondDerivation = false;
 	
+	/** Replace the original feature series? */
+	private boolean replaceOriginalFeatureSeries = false;
+	
 	/**
 	 * @see amuse.nodes.processor.interfaces.DimensionProcessorInterface#setParameters(String)
 	 */
@@ -57,6 +60,11 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 			}
 			if(tok.nextToken().equals("true")) {
 				calculateSecondDerivation = true;
+			}
+			if(tok.hasMoreTokens()) {
+				if(tok.nextToken().equals("true")) {
+					replaceOriginalFeatureSeries = true;
+				}
 			}
 		} else {
 			throw new NodeException("Parameters for derivation calculation are not set!");
@@ -144,6 +152,11 @@ public class DerivationCalculator extends AmuseTask implements DimensionProcesso
 				currentDer.setSampleRate(sampleRate);
 				newFeatures2ndDerivation.add(currentDer);
 			}
+		}
+		
+		// Replace the original feature series with derivation(s)?
+		if(replaceOriginalFeatureSeries) {
+			features.clear();
 		}
 				
 		if(calculateFirstDerivation) {
