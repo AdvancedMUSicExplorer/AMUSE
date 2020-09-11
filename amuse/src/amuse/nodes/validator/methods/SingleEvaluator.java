@@ -45,6 +45,7 @@ import amuse.nodes.validator.ValidationConfiguration;
 import amuse.nodes.validator.ValidatorNodeScheduler;
 import amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.DataReductionMeasureCalculatorInterface;
+import amuse.nodes.validator.interfaces.EventDetectionQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.MeasureCalculatorInterface;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -196,7 +197,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null;
-					Object test = this.measureCalculators.get(currentMeasure);
+					MeasureCalculatorInterface test = this.measureCalculators.get(currentMeasure);
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
 						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
@@ -212,6 +213,8 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {
 						currMeas = ((DataReductionMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMeasure(
 								((ValidatorNodeScheduler)this.correspondingScheduler).getListOfAllProcessedFiles());
+					} else if(this.measureCalculators.get(currentMeasure) instanceof EventDetectionQualityDoubleMeasureCalculator){
+						// Measure currently not supported by Single Evaluator
 					} else {
 						throw new NodeException("Unknown measure: " + this.measureCalculators.get(currentMeasure));
 					}
@@ -223,7 +226,6 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				}
 				measuresForEveryModel.add(measuresOfThisRun);
 			} catch (NodeException e) {
-				e.printStackTrace();
 				throw e;
 			}
 		}
