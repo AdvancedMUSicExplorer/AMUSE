@@ -197,7 +197,6 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				ArrayList<ValidationMeasure> measuresOfThisRun = new ArrayList<ValidationMeasure>();
 				for(int currentMeasure = 0; currentMeasure < this.measureCalculators.size(); currentMeasure++) {
 					ValidationMeasure[] currMeas = null;
-					MeasureCalculatorInterface test = this.measureCalculators.get(currentMeasure);
 					if(this.measureCalculators.get(currentMeasure) instanceof ClassificationQualityMeasureCalculatorInterface) {
 						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
