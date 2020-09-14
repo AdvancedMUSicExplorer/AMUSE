@@ -23,18 +23,6 @@
  */
 package amuse.util.audio;
 
-import amuse.interfaces.nodes.NodeException;
-import amuse.preferences.AmusePreferences;
-import amuse.preferences.KeysBooleanValue;
-import amuse.preferences.KeysIntValue;
-import amuse.util.AmuseLogger;
-import javazoom.jl.converter.Converter;
-import javazoom.jl.decoder.JavaLayerException;
-import org.apache.log4j.Level;
-
-import javax.sound.sampled.*;
-import javax.sound.sampled.AudioFileFormat.Type;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +30,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.logging.Logger;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import org.apache.log4j.Level;
+import org.jflac.FLACDecoder;
+import org.jflac.PCMProcessor;
+import org.jflac.metadata.StreamInfo;
+import org.jflac.util.ByteData;
+import org.jflac.util.WavWriter;
+
+import amuse.interfaces.nodes.NodeException;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysBooleanValue;
+import amuse.preferences.KeysIntValue;
+import amuse.util.AmuseLogger;
+import javazoom.jl.converter.Converter;
+import javazoom.jl.decoder.JavaLayerException;
 
 /**
  * This class provides static methods to do various operations on audio files.
@@ -82,15 +92,21 @@ public class AudioFileConversion {
         }
 
         // ---------------------------------------------------------------------
-        // II.: Try to convert mp3 to wave if needed:
+        // II.a: Try to convert mp3 to wave if needed / II.b: Try convert from flac
         // ---------------------------------------------------------------------
         if (audioFileFormat == null || audioFileFormat.getType() != Type.WAVE) { // If not wave already, convert to wave
             try {
-                AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave.");
+                AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave asuming mp3 file is given.");
                 convertMp3ToWave(musicFile, wavFile);
-                isOriginal = false;
+                if (!wavFile.exists()) { // must be done because javazoom.jl.converter.Converter does not throw conversion error on flac input
+                	AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave asuming flac file is given.");
+                    convertFlacToWave(musicFile, wavFile);
+                }
+                if (wavFile.exists()) {
+                	isOriginal = false;
+                }
             } catch (IOException ex) {
-                throw new IOException("Error converting audio file " + musicFile.getName() + ": " + ex.getMessage());
+            	throw new IOException("Error converting audio file " + musicFile.getName() + ": " + ex.getMessage());
             }
         } else {
 
@@ -303,8 +319,57 @@ public class AudioFileConversion {
             Converter con = new Converter();
             con.convert(mp3File.getAbsolutePath(), outputFile.getAbsolutePath());
         } catch (JavaLayerException ex) {
+        	System.out.println("aha!");
             Logger.getLogger(AudioFileConversion.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * This method is used to convert a given .flac file to .wav. This method currently uses the jflac library from github.com/nguillaumin/jflac.
+     *
+     * @param flacFile    The file to convert.
+     * @param outputFile The file to write the converted .wav to.
+     * @throws IOException Thrown each time the given file is invalid.
+     */
+    public static void convertFlacToWave(File flacFile, File outputFile) throws IOException {
+//        try {
+        FileInputStream is = null;
+        FileOutputStream os = null;
+        try {
+            is = new FileInputStream(flacFile.getAbsolutePath());
+            os = new FileOutputStream(outputFile.getAbsolutePath());
+            final WavWriter wav = new WavWriter(os);
+            FLACDecoder decoder = new FLACDecoder(is);
+            decoder.addPCMProcessor(new PCMProcessor() {
+				@Override
+				public void processStreamInfo(StreamInfo info) {
+					try {
+			            wav.writeHeader(info);
+			        } catch (IOException e) {
+			            e.printStackTrace();
+			        }
+				}
+				@Override
+				public void processPCM(ByteData pcm) {
+					try {
+			            wav.writePCM(pcm);
+			        } catch (IOException e) {
+			            e.printStackTrace();
+			        }
+				}
+			});
+            decoder.decode();
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+            if (os != null) {
+                os.close();
+            }
+        }
+//        } catch (JavaLayerException ex) {
+//            Logger.getLogger(AudioFileConversion.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
     }
 
     private static void deleteConvertedFile(File wavFile, boolean original) {
