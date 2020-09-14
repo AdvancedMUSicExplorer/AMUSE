@@ -319,7 +319,6 @@ public class AudioFileConversion {
             Converter con = new Converter();
             con.convert(mp3File.getAbsolutePath(), outputFile.getAbsolutePath());
         } catch (JavaLayerException ex) {
-        	System.out.println("aha!");
             Logger.getLogger(AudioFileConversion.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
     }
