@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('%AMUSEHOME%/tools/MatlabFeatures');
-addpath('%AMUSEHOME%/tools/MIRToolbox/MIRToolbox');
-addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
+addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MatlabFeatures');
+addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MIRToolbox/MIRToolbox');
+addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
@@ -67,7 +67,7 @@ mirres=mirrms(f);
 <amuseEnableFeature id="4" dimensions="1">
 	<text>
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'4.arff'],'Root mean square',res');
+		arff_saver_with_windows_number([output_file_prefix,'4.arff'],'Root mean square',res',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="11" dimensions="1">
@@ -89,7 +89,7 @@ mirres=mirrms(f);
 		  end;
 		end;
 		res(currentWindow) = numberOfPeaksInCurrentWindow;
-		arff_saver_with_windows_number([output_file_prefix,'11.arff'],'RMS peak number in 3 seconds',res,66150);
+		arff_saver_with_windows_number([output_file_prefix,'11.arff'],'RMS peak number in 3 seconds',res,66150,66150);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="12" dimensions="1">
@@ -126,7 +126,7 @@ mirres=mirrms(f);
 		  end;
 		end;
 		res(currentWindow) = numberOfPeaksInCurrentWindow;
-		arff_saver_with_windows_number([output_file_prefix,'12.arff'],'RMS peak number above mean amplitude in 3 seconds',res,66150);
+		arff_saver_with_windows_number([output_file_prefix,'12.arff'],'RMS peak number above mean amplitude in 3 seconds',res,66150,66150);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="1000" dimensions="1">
@@ -148,7 +148,7 @@ mirres=mirrms(f);
 		  end;
 		end;
 		res(currentWindow) = numberOfPeaksInCurrentWindow;
-		arff_saver_with_windows_number([output_file_prefix,'1000.arff'],'RMS peak number in 60 seconds',res,1323000);
+		arff_saver_with_windows_number([output_file_prefix,'1000.arff'],'RMS peak number in 60 seconds',res,1323000,1323000);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="1001" dimensions="1">
@@ -185,7 +185,7 @@ mirres=mirrms(f);
 		  end;
 		end;
 		res(currentWindow) = numberOfPeaksInCurrentWindow;
-		arff_saver_with_windows_number([output_file_prefix,'1001.arff'],'RMS peak number above mean amplitude in 60 seconds',res,1323000);
+		arff_saver_with_windows_number([output_file_prefix,'1001.arff'],'RMS peak number above mean amplitude in 60 seconds',res,1323000,1323000);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="1002" dimensions="1">
@@ -211,7 +211,7 @@ mirres=mirrms(f);
 		% Spectral irregularity (degree of variation of the successive peaks of the spectrum)
 		mirres=mirregularity(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'15.arff'],'Spectral irregularity',res);
+		arff_saver_with_windows_number([output_file_prefix,'15.arff'],'Spectral irregularity',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="21" dimensions="1">
@@ -220,7 +220,7 @@ mirres=mirrms(f);
 		% Default setting: 80 percent
 		mirres=mirrolloff(f,'Threshold',0.8);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'21.arff'],'Spectral extent',res');
+		arff_saver_with_windows_number([output_file_prefix,'21.arff'],'Spectral extent',res',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="22" dimensions="1">
@@ -228,7 +228,7 @@ mirres=mirrms(f);
 		% Spectral flux
 		mirres=mirflux(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'22.arff'],'Spectral flux',[NaN res']);
+		arff_saver_with_windows_number([output_file_prefix,'22.arff'],'Spectral flux',[NaN res'],wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="23" dimensions="1">
@@ -236,7 +236,7 @@ mirres=mirrms(f);
 		% Spectral brightness
 		mirres=mirbrightness(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'23.arff'],'Spectral brightness',res);
+		arff_saver_with_windows_number([output_file_prefix,'23.arff'],'Spectral brightness',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="24" dimensions="1">
@@ -245,7 +245,7 @@ mirres=mirrms(f);
 		% Default settings: time window of 1024 samples with 1024 sample overlap
 		mirres=mirroughness(a,'Frame',1024,'sp',1024,'sp');
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res,1024);
+		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res,1024,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="39" dimensions="13">
@@ -253,7 +253,7 @@ mirres=mirrms(f);
 		% Mel frequency cepstral coefficients
 		mirres=mirmfcc(f);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'39.arff'],'Mel frequency cepstral coefficients - MIR Toolbox',res,512);
+		arff_saver_with_windows_number([output_file_prefix,'39.arff'],'Mel frequency cepstral coefficients - MIR Toolbox',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="40" dimensions="23">
@@ -261,7 +261,7 @@ mirres=mirrms(f);
 		% Bark scale magnitudes
 		mirres=mirspectrum(f,'Bark');
 		res=squeeze(mirgetdata(mirres));
-		arff_saver_with_windows_number([output_file_prefix,'40.arff'],'Bark scale magnitudes',res',512);
+		arff_saver_with_windows_number([output_file_prefix,'40.arff'],'Bark scale magnitudes',res',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="48" dimensions="13">
@@ -270,7 +270,7 @@ mirres=mirrms(f);
 		mirres=mirmfcc(f,'Delta',1);
 		res=mirgetdata(mirres);
 		nan_arr = [NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN NaN]';
-		arff_saver_with_windows_number([output_file_prefix,'48.arff'],'Delta MFCCs - MIR Toolbox',[nan_arr nan_arr res nan_arr nan_arr],512);
+		arff_saver_with_windows_number([output_file_prefix,'48.arff'],'Delta MFCCs - MIR Toolbox',[nan_arr nan_arr res nan_arr nan_arr],wlength,woffset);
 	</text>
 </amuseEnableFeature>
 
@@ -289,7 +289,7 @@ mirres=mirrms(f);
 		res = mirgetdata(mirres);
 		r = [r res'];
 		end;
-		arff_saver_with_windows_number([output_file_prefix,'60.arff'],'Zero-crossing rate for ERB bands',r',512);
+		arff_saver_with_windows_number([output_file_prefix,'60.arff'],'Zero-crossing rate for ERB bands',r',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="61" dimensions="10">
@@ -303,7 +303,7 @@ mirres=mirrms(f);
 		res = mirgetdata(mirres);
 		r = [r res'];
 		end;
-		arff_saver_with_windows_number([output_file_prefix,'61.arff'],'Root mean square for ERB bands',r',512);
+		arff_saver_with_windows_number([output_file_prefix,'61.arff'],'Root mean square for ERB bands',r',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="62" dimensions="10">
@@ -317,7 +317,7 @@ mirres=mirrms(f);
 			res = mirgetdata(mirres);
 			r = [r res'];
 		end;
-		arff_saver_with_windows_number([output_file_prefix,'62.arff'],'Spectral centroid for ERB bands',r',512);
+		arff_saver_with_windows_number([output_file_prefix,'62.arff'],'Spectral centroid for ERB bands',r',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 
@@ -328,20 +328,20 @@ mirres=mirrms(f);
 	% --------------------------------------------------------------------------------------------------
 	% Fundamental frequency and inharmonicity ----------------------------------------------------------
 	% --------------------------------------------------------------------------------------------------
-	[ih,s,ff] = mirinharmonicity(a,'Frame',512,'sp',512,'sp');
+	[ih,s,ff] = mirinharmonicity(a,'Frame',wlength,'sp',woffset,'sp');
 </text>
 <amuseEnableFeature id="200" dimensions="1">
 	<text>
 		% Fundamental frequency
 		res=mirgetdata(ff);
-		arff_saver_with_windows_number([output_file_prefix,'200.arff'],'Fundamental frequency',res',512);
+		arff_saver_with_windows_number([output_file_prefix,'200.arff'],'Fundamental frequency',res',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="201" dimensions="1">
 	<text>
 		% Inharmonicity
 		res=mirgetdata(ih);
-		arff_saver_with_windows_number([output_file_prefix,'201.arff'],'Inharmonicity',res,512);
+		arff_saver_with_windows_number([output_file_prefix,'201.arff'],'Inharmonicity',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 </transformContent>
@@ -353,14 +353,14 @@ mirres=mirrms(f);
 	% --------------------------------------------------------------------------------------------------
 	% Chromagram features ------------------------------------------------------------------------------
 	% --------------------------------------------------------------------------------------------------
-	chroma = mirchromagram(a,'Frame',512,'sp',512,'sp');
+	chroma = mirchromagram(a,'Frame',wlength,'sp',woffset,'sp');
 	chroma4096 = mirchromagram(a,'Frame',4096,'sp',4096,'sp');
 </text>
 <amuseEnableFeature id="206" dimensions="12">
 	<text>
 		% Chroma vector (harmonic pitch class profile)
 		res=mirgetdata(chroma);
-		arff_saver_with_windows_number([output_file_prefix,'206.arff'],'Chroma vector - MIR Toolbox',res, 512);
+		arff_saver_with_windows_number([output_file_prefix,'206.arff'],'Chroma vector - MIR Toolbox',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="202" dimensions="2">
@@ -369,7 +369,7 @@ mirres=mirrms(f);
 		[k c]=mirkey(chroma);
 		key=mirgetdata(k);
 		clarity=mirgetdata(c);
-		arff_saver_with_windows_number([output_file_prefix,'202.arff'],'Key and its clarity',[key' clarity']', 512);
+		arff_saver_with_windows_number([output_file_prefix,'202.arff'],'Key and its clarity',[key' clarity']',wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="203" dimensions="1">
@@ -377,7 +377,7 @@ mirres=mirrms(f);
 		% Major/minor alignment
 		mirres=mirmode(chroma);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res, 512);
+		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="209,210" dimensions="12,12">
@@ -387,8 +387,8 @@ mirres=mirrms(f);
 		res=mirgetdata(mirres);
 		major_strengths=res(:,:,1);
 		minor_strengths=res(:,:,2);
-		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths, 512);
-		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths, 512);
+		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
+		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="216" dimensions="6">
@@ -396,7 +396,7 @@ mirres=mirrms(f);
 		% Tonal centroid vector
 		mirres=mirtonalcentroid(chroma);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'216.arff'],'Tonal centroid vector',res, 512);
+		arff_saver_with_windows_number([output_file_prefix,'216.arff'],'Tonal centroid vector',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="217" dimensions="1">
@@ -405,7 +405,7 @@ mirres=mirrms(f);
 		mirres=mirhcdf(chroma);
 		res=mirgetdata(mirres);
 		% Add NaN at the beginning since the flux calculates the differences between frames
-		arff_saver_with_windows_number([output_file_prefix,'217.arff'],'Harmonic change detection function',[NaN res], 512);
+		arff_saver_with_windows_number([output_file_prefix,'217.arff'],'Harmonic change detection function',[NaN res],wlength,woffset);
 		
 	</text>
 </amuseEnableFeature>
@@ -465,7 +465,7 @@ mirres=mirrms(f);
 		  i = i+1;
 		end;
 			
-		arff_saver_with_windows_number([output_file_prefix,'420.arff'],'Estimated onset number per minute',opm',229376);
+		arff_saver_with_windows_number([output_file_prefix,'420.arff'],'Estimated onset number per minute',opm',229376,229376);
 	</text>
 </amuseEnableFeature>
 
@@ -506,7 +506,7 @@ mirres=mirrms(f);
 		% time windows which start directly from the song beginning!
 		mirres=mirpulseclarity(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res,66150);
+		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res,66150,66150);
 	</text>
 </amuseEnableFeature>
 
@@ -519,7 +519,7 @@ mirres=mirrms(f);
 		% time windows which start directly from the song beginning!
 		mirres=mirtempo(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res,66150);
+		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res,66150,66150);
 	</text>
 </amuseEnableFeature>
 </transformContent>
@@ -533,7 +533,7 @@ mirres=mirrms(f);
 		fluct = mirfluctuation(s,'Summary');
 		mirres = mirpeaks(fluct, 'Total', 5);
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'427.arff'],'Five peaks of fluctuation curves summed across all bands',res, 229376);
+		arff_saver_with_windows_number([output_file_prefix,'427.arff'],'Five peaks of fluctuation curves summed across all bands',res, 229376, 229376);
 		clear('s');
 		clear('fluct');
 	</text>

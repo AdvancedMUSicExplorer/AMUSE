@@ -98,9 +98,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 		// Load Sonic Annotator base script
 		Document currentBaseScript = null;
 		try {
-			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + File.separator + 
-					properties.getProperty("inputExtractorBaseBatch"));
+			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBaseBatchPath.startsWith(File.separator)) {
+		    	inputBaseBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBaseBatchPath;
+		    }
+			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBaseBatchPath);
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open Sonic Annotator base script: " + e.getMessage());
 		} catch(javax.xml.parsers.ParserConfigurationException e) {
@@ -201,8 +204,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			DOMSource domsource = new DOMSource(currentBaseScript);
-			File modifiedScript = new File(properties.getProperty("extractorFolder") + File.separator
-							+ properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			File modifiedScript = new File(inputBatchPath);
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite()) {
 					throw new NodeException(
@@ -226,6 +233,15 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	 * @see amuse.nodes.extractor.interfaces.ExtractorInterface#convertOutput()
 	 */
 	public void convertOutput() throws NodeException {
+		// maps feature id to custom feature
+		HashMap<Integer,Feature> idToCustomFeature = new HashMap<Integer,Feature>();
+		FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
+		for(Feature feature : featureTable.getFeatures()) {
+			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+				idToCustomFeature.put(feature.getId(), feature);
+			}
+		}
+		
 		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
 		
 		// Create a folder for Amuse feature files
@@ -239,9 +255,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 		// Load Sonic Annotator modified script
 		Document modifiedBaseScript = null;
 		try {
-			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + File.separator + 
-					properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBatchPath);
 		} catch(Exception e) {
 			throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
 		} 
@@ -257,11 +276,22 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			String outputPath = outputFeatureFile + File.separator + musicFileName + "_" + filename;
 			
 			// Retrieve current Feature
-			Feature currentFeature = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable().getFeatureByID(id);
+			Feature currentFeature = null;
+			// if the current feature was extracted using a custom configuration
+			if(idToCustomFeature.containsKey(id)) {
+				currentFeature = idToCustomFeature.get(id);
+			} else {
+				// if the feature was extracted using the standard configuration
+				for(Feature feature : featureTable.getFeatures()) {
+					if(feature.getCustomScript() == null && feature.getId() == id) {
+						currentFeature = feature;
+					}
+				}
+			}
 			
 			// For AMUSE feature file (TMP in the folder name is omitted)
 			String outputAmuseFeature = outputFeatureFile.substring(0,outputFeatureFile.length()-3) + 
-				File.separator + musicFileName + "_" + id + ".arff";
+				File.separator + musicFileName + "_" + id + (currentFeature.getConfigurationId() == null ? "" : "_" + currentFeature.getConfigurationId()) + ".arff";
 			FileReader featuresInput = null;
 			BufferedReader featuresReader = null;
 			int rows;
@@ -296,7 +326,8 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 						+ "%rows=" + rows + sep
 						+ "%columns=" + columns + sep 
 						+ "%sample_rate=" + "22050" + sep /*Currently hardcoded to 22050Hz, variable implementation: currentFeature.getSampleRate()*/ 
-						+ "%window_size=" + currentFeature.getSourceFrameSize() + sep + sep);
+						+ "%window_size=" + currentFeature.getSourceFrameSize() + sep
+						+ "%step_size=" + currentFeature.getSourceStepSize() + sep + sep);
 				
 				// Write attribute declarations
 				// Time attribute needed if there are no windows 
@@ -427,9 +458,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			// Load Sonic Annotator modified script
 			Document modifiedBaseScript = null;
 			try {
-				modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-						properties.getProperty("extractorFolder") + File.separator + 
-						properties.getProperty("inputExtractorBatch"));
+				String inputBatchPath = properties.getProperty("inputExtractorBatch");
+				// if it is a relative path the input batch is in the extractor folder
+			    if(!inputBatchPath.startsWith(File.separator)) {
+			    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+			    }
+				modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBatchPath);
 			} catch(Exception e) {
 				throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
 			} 
@@ -472,6 +506,14 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	 * Extracts the AMUSE features based on previously extracted Sonic Annotator features
 	 */
 	private void extractAMUSEFeatures() throws NodeException {
+		// maps feature id to custom feature
+		HashMap<Integer,Feature> idToCustomFeature = new HashMap<Integer,Feature>();
+		FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
+		for(Feature feature : featureTable.getFeatures()) {
+			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+				idToCustomFeature.put(feature.getId(), feature);
+			}
+		}
 		
 		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
 		
@@ -486,9 +528,12 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 		// Load Sonic Annotator modified script
 		Document modifiedBaseScript = null;
 		try {
-			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + File.separator + 
-					properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			modifiedBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBatchPath);
 		} catch(Exception e) {
 			throw new NodeException("Cannot open Sonic Annotator modified script: " + e.getMessage());
 		} 
@@ -502,10 +547,25 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 			Integer id = new Integer(attr.getNamedItem("id").getNodeValue());
 			String source = new String(attr.getNamedItem("source").getNodeValue());
 			String sourceFeatureFile = folder + "TMP" + File.separator + musicFileName + "_" + source;
+			
+			// Retrieve current Feature
+			Feature currentFeature = null;
+			// if the current feature was extracted using a custom configuration
+			if(idToCustomFeature.containsKey(id)) {
+				currentFeature = idToCustomFeature.get(id);
+			} else {
+				// if the feature was extracted using the standard configuration
+				for(Feature feature : featureTable.getFeatures()) {
+					if(feature.getCustomScript() == null && feature.getId() == id) {
+						currentFeature = feature;
+					}
+				}
+			}
+			
 			try {
 				Class<?> featureClass = Class.forName(featureClassString);
 				NNLSDerivedFeature featureToEstimate = (NNLSDerivedFeature)featureClass.newInstance();
-				featureToEstimate.extractFeature(sourceFeatureFile, folder + File.separator + musicFileName + "_" + id + ".arff");
+				featureToEstimate.extractFeature(sourceFeatureFile, folder + File.separator + musicFileName + "_" + id + (currentFeature.getConfigurationId() == null ? "" : "_" + currentFeature.getConfigurationId()) + ".arff");
 			} catch (Exception e) {
 				throw new NodeException("Cannot convert Sonic Annotator feature file to AMUSE feature file: " + e.getMessage());
 			}

@@ -37,6 +37,7 @@ import amuse.data.FeatureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.NumericAttribute;
+import amuse.data.io.attributes.StringAttribute;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 
 /**
@@ -159,9 +160,9 @@ public class FeatureTableController implements ActionListener {
 
     private void loadFeatureTableSelection(DataSetAbstract set) {
             List<Integer> ids = new ArrayList<Integer>(set.getValueCount());
-            NumericAttribute idAttribute = (NumericAttribute) set.getAttribute("Id");
-            for (Double id : idAttribute.getValues()) {
-                ids.add(id.intValue());
+            StringAttribute idAttribute = (StringAttribute) set.getAttribute("Id");
+            for (String id : idAttribute.getValues()) {
+                ids.add(new Double(id).intValue());
             }
             model.selectFeaturesByID(ids);
 

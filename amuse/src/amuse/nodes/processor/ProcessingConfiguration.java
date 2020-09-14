@@ -47,21 +47,30 @@ public class ProcessingConfiguration extends TaskConfiguration {
 
 	/** For Serializable interface */
 	private static final long serialVersionUID = -6557916168549473663L; 
+	
+	/** Input types */
+	public enum InputSourceType{RAW_FEATURE_LIST, PROCESSING_CONFIG};
 
 	/** Music file list for feature processing */
 	private final FileTable musicFileList;
 
+	/** Input type for this configuration */
+	private final InputSourceType inputSourceType;
+	
+	/** Input features (either raw feature list or processing configuration) */
+	private final String inputFeatures;
+	
 	/** List with features to process */
 	private final FeatureTable inputFeatureList;
 	
 	/** Processing steps (feature or time dimension processing) */
 	private final String reductionSteps;
 	
-	/** Partition size (each partition -> input for classification) */
-	private final Integer partitionSize;
+	/** Aggregation window size (each window -> input for classification) */
+	private final Integer aggregationWindowSize;
 	
-	/** Partition overlap */
-	private final Integer partitionOverlap;
+	/** Aggregation window step size */
+	private final Integer aggregationWindowStepSize;
 	
 	/** Method for conversion of matrix (features over time) to vector */
 	private final String conversionStep;
@@ -75,20 +84,53 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	/**
 	 * Standard constructor
 	 * @param inputMusicFile Music file list for feature processing
+	 * @param inputSourceType Input source type, either raw or processed features
+	 * @param inputFeatures Description of input features (feature table or processing configuration)
+	 * @param reductionSteps Processing steps (feature or time dimension processing)
+	 * @param aggregationWindowSize Aggregation window size (each window -> input for classification)
+	 * @param aggregationWindowStepSize Partition overlap
+	 * @param conversionStep Method for conversion of matrix (features over time) to vector
+	 * @param featureDescription Feature description, if required
+	 */
+	public ProcessingConfiguration(FileTable musicFileList, InputSourceType inputSourceType, String inputFeatures, String reductionSteps,
+			Integer aggregationWindowSize, Integer aggregationWindowStepSize, String conversionStep, String featureDescription) {
+		this.musicFileList = musicFileList;
+		this.inputSourceType = inputSourceType;
+		if(inputSourceType == InputSourceType.RAW_FEATURE_LIST) {
+			this.inputFeatureList = new FeatureTable(new File(inputFeatures));
+		} else {
+			this.inputFeatureList = null;
+		}
+		this.inputFeatures = inputFeatures;
+		this.reductionSteps = reductionSteps;
+		this.aggregationWindowSize = aggregationWindowSize;
+		this.aggregationWindowStepSize = aggregationWindowStepSize;
+		this.conversionStep = conversionStep;
+		this.featureDescription = featureDescription;
+		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
+	}
+	
+	/**
+	 * Standard constructor
+	 * @param inputMusicFile Music file list for feature processing
 	 * @param inputFeatureList List with features to process
 	 * @param reductionSteps Processing steps (feature or time dimension processing)
 	 * @param partitionSize Partition size (each partition -> input for classification)
 	 * @param partitionOverlap Partition overlap
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
+	 * 
+	 * @deprecated Old constructor when only raw features are used as input
 	 */
 	public ProcessingConfiguration(FileTable musicFileList, String inputFeatureList, String reductionSteps,
 			Integer partitionSize, Integer partitionOverlap, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
+		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
+		this.inputFeatures = null;
 		this.inputFeatureList = new FeatureTable(new File(inputFeatureList));
 		this.reductionSteps = reductionSteps;
-		this.partitionSize = partitionSize;
-		this.partitionOverlap = partitionOverlap;
+		this.aggregationWindowSize = partitionSize;
+		this.aggregationWindowStepSize = partitionOverlap;
 		this.conversionStep = conversionStep;
 		this.featureDescription = featureDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -103,14 +145,18 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param partitionOverlap Partition overlap
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
+	 * 
+	 * @deprecated Old constructor when only raw features are used as input
 	 */
 	public ProcessingConfiguration(FileTable musicFileList, FeatureTable inputFeatureList, String reductionSteps,
 			Integer partitionSize, Integer partitionOverlap, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
+		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
+		this.inputFeatures = null;
 		this.inputFeatureList = inputFeatureList;
 		this.reductionSteps = reductionSteps;
-		this.partitionSize = partitionSize;
-		this.partitionOverlap = partitionOverlap;
+		this.aggregationWindowSize = partitionSize;
+		this.aggregationWindowStepSize = partitionOverlap;
 		this.conversionStep = conversionStep;
 		this.featureDescription = featureDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -127,17 +173,18 @@ public class ProcessingConfiguration extends TaskConfiguration {
    		// Proceed music file lists one by one
 	    for(int i=0;i<processingConfig.getValueCount();i++) {
 			String currentMusicFileList = processingConfig.getMusicFileListAttribute().getValueAt(i).toString();
-			String currentFeatureList = processingConfig.getFeatureListAttribute().getValueAt(i).toString();
+			String currentInputSourceType = processingConfig.getInputSourceTypeAttribute().getValueAt(i).toString();
+			String currentInput = processingConfig.getInputAttribute().getValueAt(i).toString();
 			String currentReductionSteps = processingConfig.getReductionStepsAttribute().getValueAt(i).toString();
-			Integer currentPartitionSize = (new Double(processingConfig.getPartitionSizeAttribute().getValueAt(i).toString())).intValue();
-			Integer currentPartitionOverlap = (new Double(processingConfig.getPartitionOverlapAttribute().getValueAt(i).toString())).intValue();
+			Integer currentAggregationWindowSize = (new Double(processingConfig.getAggregationWindowSizeAttribute().getValueAt(i).toString())).intValue();
+			Integer currentAggregationWindowStepSize = (new Double(processingConfig.getAggregationWindowStepSizeAttribute().getValueAt(i).toString())).intValue();
 			String currentMatrixToVectorMethod = processingConfig.getMatrixToVectorMethodAttribute().getValueAt(i).toString();
 			String currentFeatureDescription = processingConfig.getFeatureDescriptionAttribute().getValueAt(i).toString();
 	
 			// Proceed music files from the current file list
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
-		    taskConfigurations.add(new ProcessingConfiguration(currentFileTable, currentFeatureList, currentReductionSteps,
-	    		currentPartitionSize, currentPartitionOverlap, currentMatrixToVectorMethod, currentFeatureDescription));
+		    taskConfigurations.add(new ProcessingConfiguration(currentFileTable, InputSourceType.valueOf(currentInputSourceType), currentInput, currentReductionSteps,
+	    		currentAggregationWindowSize, currentAggregationWindowStepSize, currentMatrixToVectorMethod, currentFeatureDescription));
 			AmuseLogger.write(ProcessingConfiguration.class.getName(), Level.DEBUG, taskConfigurations.size() + " processing task(s) for " + currentMusicFileList + " loaded");
 		}
 		
@@ -167,6 +214,20 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	}
 
 	/**
+	 * @return the inputSourceType
+	 */
+	public InputSourceType getInputSourceType() {
+		return inputSourceType;
+	}
+	
+	/**
+	 * @return the inputFeatures
+	 */
+	public String getInputFeatures() {
+		return inputFeatures;
+	}
+	
+	/**
 	 * @return the inputFeatureList
 	 */
 	public FeatureTable getInputFeatureList() {
@@ -181,17 +242,17 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the partitionSize
+	 * @return the aggregationWindowSize
 	 */
-	public Integer getPartitionSize() {
-		return partitionSize;
+	public Integer getAggregationWindowSize() {
+		return aggregationWindowSize;
 	}
 
 	/**
-	 * @return the partitionOverlap
+	 * @return the AggregationWindowStepSize
 	 */
-	public Integer getPartitionOverlap() {
-		return partitionOverlap;
+	public Integer getAggregationWindowStepSize() {
+		return aggregationWindowStepSize;
 	}
 
 	/**

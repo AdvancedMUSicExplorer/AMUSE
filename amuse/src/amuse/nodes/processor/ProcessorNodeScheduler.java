@@ -41,6 +41,7 @@ import amuse.data.ArffFeatureLoader;
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.TaskConfiguration;
@@ -282,6 +283,21 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	 */
 	private ArrayList<Feature> loadFeatures() throws NodeException {
 		
+		// Load either raw unprocessed or previously processed features?
+		if (((ProcessingConfiguration)this.taskConfiguration).getInputSourceType() == ProcessingConfiguration.InputSourceType.RAW_FEATURE_LIST) {
+			return loadFeaturesRaw();
+		} else {
+			return loadFeaturesProcessed();
+		}
+	}
+	
+	/**
+	 * Prepares the first list of all features to be processed from the raw feature files
+	 * @return List of feature files
+	 * @throws NodeException
+	 */
+	private ArrayList<Feature> loadFeaturesRaw() throws NodeException {
+		
 		ArrayList<Feature> features = new ArrayList<Feature>();
 		
 		// Calculate the first list of feature files to be processed.
@@ -290,6 +306,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// reduction step..
 		FeatureTable featureSet = ((ProcessingConfiguration)this.taskConfiguration).getInputFeatureList();
 		List<Integer> featureIDs = featureSet.getSelectedIds();
+		List<String> configurationIDs = featureSet.getSelectedConfigurationIds();
 			
 		// Feature files for the current music file
 		for(int i=0;i<featureIDs.size();i++) {
@@ -307,10 +324,14 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			if(relativeName.lastIndexOf(File.separator) != -1) {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i) + ".arff"));
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i)
+					+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+					+ ".arff"));
 			} else {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-						File.separator + relativeName + "_" + featureIDs.get(i) + ".arff"));
+						File.separator + relativeName + "_" + featureIDs.get(i)
+						+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+						+ ".arff"));
 			}
 		}
 		
@@ -400,6 +421,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				adaptedFeature.setHistory(features.get(i).getHistory());
 				adaptedFeature.setSampleRate(features.get(i).getSampleRate());
 				adaptedFeature.setSourceFrameSize(features.get(i).getSourceFrameSize());
+				adaptedFeature.setSourceStepSize(features.get(i).getSourceStepSize());
 				features.set(i, adaptedFeature);
 			} else {
 				initialNumberOfUsedRawTimeWindows += features.get(i).getValues().size();
@@ -412,6 +434,85 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		initialNumberOfFeatureMatrixEntries = numberOfAllFeatureDimensions * features.get(0).getWindows().size();
 		
+		return features;
+	}
+	
+	/**
+	 * Prepares the first list of all features to be processed from the already processed feature files
+	 * @return List of feature files
+	 * @throws NodeException
+	 */
+	private ArrayList<Feature> loadFeaturesProcessed() throws NodeException {
+		
+		ArrayList<Feature> features = new ArrayList<Feature>();
+		
+		// Calculate the path to processed feature files
+		String relativeName = new String();
+		if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+		} else {
+			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
+		}
+		if(relativeName.charAt(0) == File.separatorChar) {
+			relativeName = relativeName.substring(1);
+		}
+		if(relativeName.contains(".")) {
+			relativeName = relativeName.substring(0,relativeName.lastIndexOf('.'));
+		}
+		
+		String processedFeatureFile = new String();
+		if(relativeName.lastIndexOf(File.separator) != -1) {
+			processedFeatureFile = (AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE) + File.separator + relativeName +
+				relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + ((ProcessingConfiguration)this.taskConfiguration).getInputFeatures()
+				+ ".arff");
+		} else {
+			processedFeatureFile = (AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE) + File.separator + relativeName +
+					File.separator + relativeName + "_" + ((ProcessingConfiguration)this.taskConfiguration).getInputFeatures()
+					+ ".arff");
+		}
+		
+		// Load the processed feature files omitting the last three attributes (Unit, Start, End)
+		DataSet inputFeatureSet = null;
+		try {
+			inputFeatureSet = new DataSet(new File(processedFeatureFile));
+		} catch (IOException e) {
+			throw new NodeException("Could not load processed features as input for processing task: " + e.getMessage());
+		}
+
+		// Estimate window size and step size based on the first two windows
+		int sourceFrameSize = new Integer(inputFeatureSet.getAttribute("End").getValueStrAt(0)) - new Integer(inputFeatureSet.getAttribute("Start").getValueStrAt(0));
+		int sourceStepSize = new Integer(inputFeatureSet.getAttribute("Start").getValueStrAt(1));
+		
+		for(int currAttribute=0;currAttribute<inputFeatureSet.getAttributeCount()-3;currAttribute++) {
+			ArrayList<Integer> id = new ArrayList<Integer>(1);
+			id.add(new Integer(-1)); // No id available for already processed features
+			String featureName = inputFeatureSet.getAttribute(currAttribute).getName();
+			
+			ArrayList<Double[]> values = new ArrayList<Double[]>(inputFeatureSet.getValueCount());
+			ArrayList<Double> windows = new ArrayList<Double>(inputFeatureSet.getValueCount());
+			
+			for(int currWindow=0;currWindow<inputFeatureSet.getValueCount();currWindow++) {
+				Double val = new Double(inputFeatureSet.getAttribute(currAttribute).getValueStrAt(currWindow));
+				values.add(new Double[] {val});
+				
+				// The number of the current window
+				int startMsOfCurrentWindow = new Integer(inputFeatureSet.getAttribute("Start").getValueStrAt(currWindow));
+				Double windowN = startMsOfCurrentWindow / sourceStepSize + 1d;
+				windows.add(windowN);
+			}
+			
+			Feature loadedFeature = new Feature(id, featureName, values, windows);
+			loadedFeature.setSourceFrameSize(sourceFrameSize);
+			loadedFeature.setSourceStepSize(sourceStepSize);
+			loadedFeature.setSampleRate(22050);
+			features.add(loadedFeature);
+		}
+		
+		// Set the minimal frame size using a notional frame rate of 22050 Hz 
+		this.minimalFrameSize = new Double(Math.floor(sourceFrameSize * 22050d / 1000d)).intValue();
+		
+		// Current hack, as the original frame size is not known for already processed features
+		featureIdToSourceFrameSize.put(-1, this.minimalFrameSize);
 		return features;
 	}
 	
@@ -616,12 +717,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	    }
 		
 		// Start the adapter
-		return mtvci.runConversion(features, ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize(), 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap(), 
+		return mtvci.runConversion(features, ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize(), 
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize(), 
 				((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "_" + 
 				((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() + "ms_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap() + "ms");
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms");
 	}
 	
 	/**
@@ -650,14 +751,14 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" +
 				((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" + 
 				((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() + "ms_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap() + "ms" + featureDesc + ".arff";
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
 		} else {
 			relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
 					File.separator + relativeName + "_" + ((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
 					((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-					((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() + "ms_" + 
-					((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap() + "ms" + featureDesc + ".arff";
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
 		}	
 		
 		File destinationFileFolder = new File(relativeName.substring(0,relativeName.lastIndexOf(File.separator)));
@@ -720,10 +821,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					numberOfMaxPartitions = features.get(j).getValues().size();
 				}
 			}
-			if((numberOfMaxPartitions * (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
-					((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap())) > 360000) {
-				numberOfMaxPartitions = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getPartitionSize() - 
-						((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap());
+			if((numberOfMaxPartitions * (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize())) > 360000) {
+				numberOfMaxPartitions = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
+						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize());
 				AmuseLogger.write(this.getClass().getName(), Level.WARN, 
 		   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
 		   				" to " + numberOfMaxPartitions);
@@ -740,8 +841,8 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				releaseEnds = loadEventTimes("release");		
 			}
 			
-			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getPartitionSize();
-			double stepSize = partSize - ((ProcessingConfiguration)this.taskConfiguration).getPartitionOverlap();
+			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize();
+			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize();
 			
 			// Save the data
 			for(int i=0;i<numberOfMaxPartitions;i++) {

@@ -27,6 +27,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -34,13 +35,16 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 
+import amuse.data.Feature;
 import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
 import amuse.interfaces.nodes.NodeEvent;
@@ -68,14 +72,14 @@ import amuse.util.audio.AudioFileConversion;
  */
 public class ExtractorNodeScheduler extends NodeScheduler {
 
-	/** Extractors are keeped in this map (ID -> extractor interface) during feature extraction */
+	/** Extractors are kept in this map (ID -> extractor interface) during feature extraction */
 	private HashMap<Integer,ExtractorInterface> extractors;
 	
 	/** Input music file */
 	private String inputFileName = null;
 	
 	
-	/** If the music file is splitted into several parts.. */
+	/** If the music file is split into several parts.. */
 	private int numberOfParts = 0;
 	
 	/** currentPartForThisExtractor[i] contains the number of a song part
@@ -289,11 +293,36 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	 */
 	public void configureFeatureExtractors() throws NodeException {
 		
+		// HashMap with the custom scripts for each extractor tool
+		HashMap<Integer, List<String>> tool2CustomScripts = new HashMap<Integer, List<String>>();
+		// HashMap with the features that each custom script extracts
+		HashMap<String, List<Feature>> customScript2Features = new HashMap<String, List<Feature>>();
 		ArrayList<Integer> requiredExtractorIDs = new ArrayList<Integer>();
-		for(int i=0;i<((ExtractionConfiguration)taskConfiguration).getFeatureTable().getFeatures().size();i++) {
-			if(!requiredExtractorIDs.contains(((ExtractionConfiguration)this.taskConfiguration).getFeatureTable().getFeatureAt(i).getExtractorId()) 
-				&& ((ExtractionConfiguration)this.taskConfiguration).getFeatureTable().getFeatureAt(i).isSelectedForExtraction()) {
-				requiredExtractorIDs.add(((ExtractionConfiguration)this.taskConfiguration).getFeatureTable().getFeatureAt(i).getExtractorId());
+		// extractorIDs of extractors that extract regular features
+		ArrayList<Integer> requiredRegularExtractorIDs = new ArrayList<Integer>();
+		for(Feature feature : ((ExtractionConfiguration)this.taskConfiguration).getFeatureTable().getSelectedFeatures()) {
+			if(!requiredExtractorIDs.contains(feature.getExtractorId()) ) {
+				requiredExtractorIDs.add(feature.getExtractorId());
+			}
+			// if the feature has a custom configuration
+			// it has to be added to tool2customScripts
+			if(feature.getConfigurationId() != null) {
+				int extractorId = feature.getExtractorId();
+				String customScript = feature.getCustomScript();
+				if(!tool2CustomScripts.containsKey(extractorId)){
+					tool2CustomScripts.put(extractorId, new ArrayList<String>());
+				}
+				if(!tool2CustomScripts.get(extractorId).contains(customScript)) {
+					tool2CustomScripts.get(extractorId).add(customScript);
+				}
+				if(!customScript2Features.containsKey(customScript)) {
+					customScript2Features.put(customScript, new ArrayList<Feature>());
+				}
+				customScript2Features.get(customScript).add(feature);
+			} else {
+				if(!requiredRegularExtractorIDs.contains(feature.getExtractorId())) {
+					requiredRegularExtractorIDs.add(feature.getExtractorId());
+				}
 			}
 		}
 		
@@ -311,31 +340,75 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			Attribute homeFolderAttribute = extractorTableSet.getAttribute("HomeFolder");
 			Attribute extractorStartScriptAttribute = extractorTableSet.getAttribute("StartScript");
 			Attribute inputExtractorBatchAttribute = extractorTableSet.getAttribute("InputBatch");
+			
+			int highestId = 0;
+			for(int i = 0; i < extractorTableSet.getValueCount(); i++) {
+				int id = ((Double)idAttribute.getValueAt(i)).intValue();
+				if(id > highestId) {
+					highestId = id;
+				}
+			}
+			int currentCustomId = highestId + 1;
+			
 			for(int i=0;i<extractorTableSet.getValueCount();i++) {
 
 				// Load the adapters classes and configure them
 				if(requiredExtractorIDs.contains(new Double(idAttribute.getValueAt(i).toString()).intValue())) {
 					try {
+						// prepare extractor
+						
 						Class<?> adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
 						
 						ExtractorInterface ead = (ExtractorInterface)adapter.newInstance();
 						Properties extractorProperties = new Properties();
 						Integer idOfCurrentExtractor = new Double(idAttribute.getValueAt(i).toString()).intValue();
-						extractorProperties.setProperty("id",idOfCurrentExtractor.toString());
-						extractorProperties.setProperty("extractorName",extractorNameAttribute.getValueAt(i).toString());
-						extractorProperties.setProperty("extractorFolderName",homeFolderAttribute.getValueAt(i).toString());
-						if(directStart) {
-							extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
-						} else {
-							extractorProperties.setProperty("extractorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
-						}
-						extractorProperties.setProperty("extractorStartScript",extractorStartScriptAttribute.getValueAt(i).toString());
-						extractorProperties.setProperty("inputExtractorBatch",inputExtractorBatchAttribute.getValueAt(i).toString());
-						((AmuseTask)ead).configure(extractorProperties,this,null);
-						this.extractors.put(idOfCurrentExtractor,ead);
 						
-						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, 
-								"Extractor is configured: " + adapterClassAttribute.getValueAt(i));
+						// prepare the extractor for regular features if that is required
+						if(requiredRegularExtractorIDs.contains(idOfCurrentExtractor)) {
+							extractorProperties.setProperty("id",idOfCurrentExtractor.toString());
+							extractorProperties.setProperty("extractorName",extractorNameAttribute.getValueAt(i).toString());
+							extractorProperties.setProperty("extractorFolderName",homeFolderAttribute.getValueAt(i).toString());
+							if(directStart) {
+								extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
+							} else {
+								extractorProperties.setProperty("extractorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
+							}
+							extractorProperties.setProperty("extractorStartScript",extractorStartScriptAttribute.getValueAt(i).toString());
+							extractorProperties.setProperty("inputExtractorBatch",inputExtractorBatchAttribute.getValueAt(i).toString());
+							((AmuseTask)ead).configure(extractorProperties,this,null);
+							this.extractors.put(idOfCurrentExtractor,ead);
+							
+							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, 
+									"Extractor is configured: " + adapterClassAttribute.getValueAt(i));
+							}
+							
+							// prepare extractor for features with custom configurations
+							if(!tool2CustomScripts.containsKey(idOfCurrentExtractor)) {
+								continue;
+							}
+							for(String customScript : tool2CustomScripts.get(idOfCurrentExtractor)) {
+								adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
+								
+								ead = (ExtractorInterface)adapter.newInstance();
+								extractorProperties = new Properties();
+								extractorProperties.setProperty("id",idOfCurrentExtractor.toString());
+								extractorProperties.setProperty("extractorName",extractorNameAttribute.getValueAt(i).toString());
+								extractorProperties.setProperty("extractorFolderName",homeFolderAttribute.getValueAt(i).toString());
+								if(directStart) {
+									extractorProperties.setProperty("extractorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
+								} else {
+									extractorProperties.setProperty("extractorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i));
+								}
+								extractorProperties.setProperty("extractorStartScript",extractorStartScriptAttribute.getValueAt(i).toString());
+								extractorProperties.setProperty("inputExtractorBatch",customScript);
+								((AmuseTask)ead).configure(extractorProperties,this,null);
+								this.extractors.put(currentCustomId,ead);
+								currentCustomId++;
+								
+								AmuseLogger.write(this.getClass().getName(), Level.DEBUG, 
+										"Extractor with custom script " + customScript + " is configured: " + adapterClassAttribute.getValueAt(i));
+						}
+						
 					} catch(ClassNotFoundException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 								"Extractor class cannot be located: " + adapterClassAttribute.getValueAt(i));
@@ -404,7 +477,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	private void consolidateResults(ExtractorInterface adapter) {
 		
 		// -------------------------------------------------------------------------
-		// (I) If the song was splitted, create a new arff feature file from several
+		// (I) If the song was split, create a new arff feature file from several
 		// -------------------------------------------------------------------------
 		if(numberOfParts > 1) {
 			File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator + 
@@ -424,7 +497,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			// Go through all features (equal to the number of files for each part)
 			for(int i=0;i<files.length;i++) {
 				
-				// TODO Problem for features from splitted files.
+				// TODO Problem for features from split files.
 				// Currently hard-coded, better solution required!!!
 				double duration_id_400=0.0d;
 				boolean dataPartStarted=false;

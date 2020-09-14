@@ -23,8 +23,15 @@
  */
 package amuse.data;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSet;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 
 /**
  * Feature Object that contains information about a single music feature.
@@ -45,11 +52,26 @@ public class Feature implements Serializable {
 	
 	private int extractorId;
 	
+	/*
+	 * Id of feature configuration.
+	 * Only set if custom configuration is used.
+	 */
+	private String configurationId;
+	
+	/*
+	 * Custom extraction script for this feature.
+	 * Only set if custom configuration is used.
+	 */
+	private String customScript;
+	
 	/** Dimension of this feature (e.g. linear prediction coefficients may have a dimension equal to 10 */
 	private int dimension;
 	
 	/** Time window size in samples, from which the feature was extracted, e.g. 512 samples */
 	private int sourceFrameSize;
+	
+	/** Step size in samples between the extraction windows, from which the feature was extracted, e.g. 512 samples */
+	private int sourceStepSize;
 
 	/** The number of samples per second */
 	private int sampleRate;
@@ -202,6 +224,14 @@ public class Feature implements Serializable {
 		this.sourceFrameSize = sourceFrameSize;
 	}
 	
+	public int getSourceStepSize() {
+		return sourceStepSize;
+	}
+	
+	public void setSourceStepSize(int sourceStepSize) {
+		this.sourceStepSize = sourceStepSize;
+	}
+	
 	public void setHistory(ArrayList<String> history) {
 		this.history = new ArrayList<String>();
 		for(int i=0;i<history.size();i++) {
@@ -240,5 +270,26 @@ public class Feature implements Serializable {
 	
 	public String getFeatureType(){
 		return featureType.toString();
+	}
+	
+	public void setConfigurationId(String configurationId) throws IOException {
+		this.configurationId = configurationId;
+		// there might be an alternative extractor id specified in the configuration set
+		DataSet configurationDataSet = new DataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "features" + File.separator + this.ids.get(0) + ".arff"));
+		for(int i = 0; i < configurationDataSet.getValueCount(); i++) {
+			if(configurationDataSet.getAttribute("Id").getValueAt(i).equals(configurationId)) {
+				extractorId = ((Double)configurationDataSet.getAttribute("ExtractorId").getValueAt(i)).intValue();
+				customScript = configurationDataSet.getAttribute("InputBatch").getValueAt(i).toString();
+				break;
+			}
+		}
+	}
+	
+	public String getConfigurationId() {
+		return this.configurationId;
+	}
+	
+	public String getCustomScript()	{
+		return this.customScript;
 	}
 }

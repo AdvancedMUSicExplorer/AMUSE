@@ -45,6 +45,7 @@ public class ArffFeatureLoader {
 		ArrayList<Double> windows;
 		int numberOfValues = 0;
 		int sourceFrameSize = -1;
+		int sourceStepSize = -1;
 		int sampleRate = -1;
 		String featureName = new String();
 		
@@ -68,6 +69,8 @@ public class ArffFeatureLoader {
 					numberOfValues = new Integer(line.substring(9));
 				} else if (line.toLowerCase().startsWith(new String("%window_size="))) {
 					sourceFrameSize = new Integer(line.substring(13)); 
+				} else if(line.toLowerCase().startsWith(new String("%step_size="))) {
+					sourceStepSize = new Integer(line.substring(11));
 				} else if (line.toLowerCase().startsWith(new String("%sample_rate="))) {
 					sampleRate = new Integer(line.substring(13));
 				} else if(line.toLowerCase().startsWith(new String("@attribute"))) {
@@ -138,6 +141,10 @@ public class ArffFeatureLoader {
 		id.add(new Integer(featureFile.substring(featureFile.lastIndexOf("_")+1,featureFile.lastIndexOf("."))));
 		Feature loadedFeature = new Feature(id, featureName, values, windows);
 		loadedFeature.setSourceFrameSize(sourceFrameSize);
+		if(sourceStepSize == -1) {
+			sourceStepSize = sourceFrameSize;
+		}
+		loadedFeature.setSourceStepSize(sourceStepSize);
 		loadedFeature.setSampleRate(sampleRate);
 		return loadedFeature;
 	}

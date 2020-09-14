@@ -1,7 +1,7 @@
 /**
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  *
- * Copyright 2006-2010 by code authors
+ * Copyright 2006-2020 by code authors
  *
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>)
@@ -37,29 +37,34 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 
 /**
- * This class represents a list of processing tasks as used in AMUSE. Serialisation to ARFF is supported.
+ * This class represents a list of processing tasks as used in AMUSE. Serialization to ARFF is supported.
  * @author Clemens Waeltken
  * @version $Id: ProcessorConfigSet.java 197 2017-08-11 12:15:34Z frederik-h $
  */
 public class ProcessorConfigSet extends AbstractArffExperimentSet {
 
+	/** Automatically generated serial version ID */
+	private static final long serialVersionUID = -2440427291614221309L;
+	
 	// Strings which describe ARFF attributes
 	private static final String strMusicFileList = "FileList";
-	private static final String strFeatureList = "FeatureList";
+	private static final String strInputSourceType = "InputSourceType";
+	private static final String strInput = "Input";
 	private static final String strReductionSteps = "ReductionSteps";
 	private static final String strUnit = "Unit";
-	private static final String strPartitionSize = "PartitionSize";
-	private static final String strPartitionOverlap = "PartitionOverlap";
+	private static final String strAggregationWindowSize = "AggregationWindowSize";
+	private static final String strAggregationWindowStepSize = "AggregationWindowStepSize";
 	private static final String strMatrixToVectorMethod = "MatrixToVectorMethod";
 	private static final String strFeatureDescription = "FeatureDescription";
 
 	// ARFF attributes
 	private final StringAttribute musicFileListAttribute;
-    private final StringAttribute featureListAttribute;
+	private final NominalAttribute inputSourceTypeAttribute;
+    private final StringAttribute inputAttribute;
     private final StringAttribute reductionStepsAttribute;
     private final NominalAttribute unitAttribute;
-    private final NumericAttribute partitionSizeAttribute;
-    private final NumericAttribute partitionOverlapAttribute;
+    private final NumericAttribute aggregationWindowSizeAttribute;
+    private final NumericAttribute aggregationWindowStepSizeAttribute;
     private final StringAttribute matrixToVectorMethodAttribute;
     private final StringAttribute featureDescriptionAttribute;
     private String description = "";
@@ -67,19 +72,21 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
     public ProcessorConfigSet(DataSetAbstract dataSet) throws DataSetException {
         super(dataSet.getName());
         dataSet.checkStringAttribute(strMusicFileList);
-        dataSet.checkStringAttribute(strFeatureList);
+        dataSet.checkNominalAttribute(strInputSourceType);
+        dataSet.checkStringAttribute(strInput);
         dataSet.checkStringAttribute(strReductionSteps);
         dataSet.checkNominalAttribute(strUnit);
-        dataSet.checkNumericAttribute(strPartitionSize);
-        dataSet.checkNumericAttribute(strPartitionOverlap);
+        dataSet.checkNumericAttribute(strAggregationWindowSize);
+        dataSet.checkNumericAttribute(strAggregationWindowStepSize);
         dataSet.checkStringAttribute(strMatrixToVectorMethod);
         dataSet.checkStringAttribute(strFeatureDescription);
         musicFileListAttribute = (StringAttribute) dataSet.getAttribute(strMusicFileList);
-        featureListAttribute = (StringAttribute) dataSet.getAttribute(strFeatureList);
+        inputSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputSourceType);
+        inputAttribute = (StringAttribute) dataSet.getAttribute(strInput);
         reductionStepsAttribute = (StringAttribute) dataSet.getAttribute(strReductionSteps);
         unitAttribute = (NominalAttribute) dataSet.getAttribute(strUnit);
-        partitionSizeAttribute = (NumericAttribute) dataSet.getAttribute(strPartitionSize);
-        partitionOverlapAttribute = (NumericAttribute) dataSet.getAttribute(strPartitionOverlap);
+        aggregationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(strAggregationWindowSize);
+        aggregationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(strAggregationWindowStepSize);
         matrixToVectorMethodAttribute = (StringAttribute) dataSet.getAttribute(strMatrixToVectorMethod);
         featureDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strFeatureDescription);
 
@@ -87,9 +94,11 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
 
     public List<File> getFeatureTables() {
         List<File> featureTables = new ArrayList<File>();
-        for (int i = 0; i < featureListAttribute.getValueCount(); i++) {
-	    featureTables.add(new File(featureListAttribute.getValueAt(i)));
-	}
+        for (int i = 0; i < inputAttribute.getValueCount(); i++) {
+        	if(inputSourceTypeAttribute.getValueStrAt(i).equals("RAW_FEATURE_LIST")) {        	
+        		featureTables.add(new File(inputAttribute.getValueAt(i)));
+        	} 
+        }
         return featureTables;
     }
 
@@ -110,19 +119,21 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         super(file);
         // Check preconditions:
         checkStringAttribute(strMusicFileList);
-        checkStringAttribute(strFeatureList);
+        checkNominalAttribute(strInputSourceType);
+        checkStringAttribute(strInput);
         checkStringAttribute(strReductionSteps);
         checkNominalAttribute(strUnit);
-        checkNumericAttribute(strPartitionSize);
-        checkNumericAttribute(strPartitionOverlap);
+        checkNumericAttribute(strAggregationWindowSize);
+        checkNumericAttribute(strAggregationWindowStepSize);
         checkStringAttribute(strMatrixToVectorMethod);
         checkStringAttribute(strFeatureDescription);
         musicFileListAttribute = (StringAttribute) this.getAttribute(strMusicFileList);
-        featureListAttribute = (StringAttribute) this.getAttribute(strFeatureList);
+        inputSourceTypeAttribute = (NominalAttribute) this.getAttribute(strInputSourceType);
+        inputAttribute = (StringAttribute) this.getAttribute(strInput);
         reductionStepsAttribute = (StringAttribute) this.getAttribute(strReductionSteps);
         unitAttribute = (NominalAttribute) this.getAttribute(strUnit);
-        partitionSizeAttribute = (NumericAttribute) this.getAttribute(strPartitionSize);
-        partitionOverlapAttribute = (NumericAttribute) this.getAttribute(strPartitionOverlap);
+        aggregationWindowSizeAttribute = (NumericAttribute) this.getAttribute(strAggregationWindowSize);
+        aggregationWindowStepSizeAttribute = (NumericAttribute) this.getAttribute(strAggregationWindowStepSize);
         matrixToVectorMethodAttribute = (StringAttribute) this.getAttribute(strMatrixToVectorMethod);
         featureDescriptionAttribute = (StringAttribute) this.getAttribute(strFeatureDescription);
     }
@@ -137,7 +148,7 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
      * @param partitionOverlap The partition overlap.
      * @param matrixToVectorMethod The matrix to vector method and configuration as String.
      */
-    public ProcessorConfigSet(File fileList, File featureTable,
+    public ProcessorConfigSet(File fileList, String inputSourceType, String input,
             String reductionSteps, String unit,
             int partitionSize, int partitionOverlap,
             String matrixToVectorMethod, String featureDescription) {
@@ -146,9 +157,13 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         fileL.add(fileList.getAbsolutePath());
         musicFileListAttribute = new StringAttribute(strMusicFileList, fileL);
 
-        List<String> featureTablesL = new ArrayList<String>();
-        featureTablesL.add(featureTable.getAbsolutePath());
-        featureListAttribute = new StringAttribute(strFeatureList, featureTablesL);
+        List<String> inputSourceTypeL = new ArrayList<String>();
+        inputSourceTypeL.add(inputSourceType);
+        inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, inputSourceTypeL);
+        
+        List<String> inputsL = new ArrayList<String>();
+        inputsL.add(input);
+        inputAttribute = new StringAttribute(strInput, inputsL);
 
         List<String> reductionStepList = new ArrayList<String>();
         reductionStepList.add(reductionSteps);
@@ -160,11 +175,11 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
 
         ArrayList<Double> partitionSizes = new ArrayList<Double>();
         partitionSizes.add(((Integer)partitionSize).doubleValue());
-        partitionSizeAttribute = new NumericAttribute(strPartitionSize, new ArrayList<Double>(partitionSizes));
+        aggregationWindowSizeAttribute = new NumericAttribute(strAggregationWindowSize, new ArrayList<Double>(partitionSizes));
 
         ArrayList<Double> overlapList = new ArrayList<Double>();
         overlapList.add(((Integer)partitionOverlap).doubleValue());
-        partitionOverlapAttribute = new NumericAttribute(strPartitionOverlap, overlapList);
+        aggregationWindowStepSizeAttribute = new NumericAttribute(strAggregationWindowStepSize, overlapList);
 
         List<String> matrixToVectorMethodsList = new ArrayList<String>();
         matrixToVectorMethodsList.add(matrixToVectorMethod);
@@ -175,11 +190,12 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         featureDescriptionAttribute = new StringAttribute(strFeatureDescription, featureDescriptionList);
 
         this.addAttribute(musicFileListAttribute);
-        this.addAttribute(featureListAttribute);
+        this.addAttribute(inputSourceTypeAttribute);
+        this.addAttribute(inputAttribute);
         this.addAttribute(reductionStepsAttribute);
         this.addAttribute(unitAttribute);
-        this.addAttribute(partitionSizeAttribute);
-        this.addAttribute(partitionOverlapAttribute);
+        this.addAttribute(aggregationWindowSizeAttribute);
+        this.addAttribute(aggregationWindowSizeAttribute);
         this.addAttribute(matrixToVectorMethodAttribute);
         this.addAttribute(featureDescriptionAttribute);
     }
@@ -199,7 +215,7 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
                 return description;
             }
             try {
-                featureCount = new FeatureTableSet(new File(featureListAttribute.getValueAt(0))).getValueCount();
+                featureCount = new FeatureTableSet(new File(inputAttribute.getValueAt(0))).getValueCount();
             } catch (IOException ex) {
                 description = "WARINING: Feature table seems to be broken.";
                 return description;
@@ -213,12 +229,12 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         return unitAttribute;
     }
 
-    public NumericAttribute getPartitionSizeAttribute() {
-        return partitionSizeAttribute;
+    public NumericAttribute getAggregationWindowSizeAttribute() {
+        return aggregationWindowSizeAttribute;
     }
 
-    public NumericAttribute getPartitionOverlapAttribute() {
-        return partitionOverlapAttribute;
+    public NumericAttribute getAggregationWindowStepSizeAttribute() {
+        return aggregationWindowStepSizeAttribute;
     }
 
     public StringAttribute getMatrixToVectorAttribute() {
@@ -243,6 +259,13 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
     }
 
 	/**
+	 * @return the inputSourceTypeAttribute
+	 */
+	public NominalAttribute getInputSourceTypeAttribute() {
+		return inputSourceTypeAttribute;
+	}
+	
+	/**
 	 * @return the musicFileListAttribute
 	 */
 	public StringAttribute getMusicFileListAttribute() {
@@ -250,10 +273,10 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
 	}
 
 	/**
-	 * @return the featureListAttribute
+	 * @return the inputAttribute
 	 */
-	public StringAttribute getFeatureListAttribute() {
-		return featureListAttribute;
+	public StringAttribute getInputAttribute() {
+		return inputAttribute;
 	}
 
 	/**

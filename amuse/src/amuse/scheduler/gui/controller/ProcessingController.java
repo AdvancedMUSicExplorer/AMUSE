@@ -159,9 +159,14 @@ public class ProcessingController extends AbstractController {
         int partitiopnOverlap = pcmController.getPartitionOverlap();
         String matrixToVector = pcmController.getConversionStep();
         String optionalModelStr = pcmController.getOptionalModelStr();
+        /*ProcessorConfigSet dataSet = new ProcessorConfigSet(musicFilesFile,
+        		featureTableFile, reductionSteps, unit, partitionSize,
+                partitiopnOverlap, matrixToVector, optionalModelStr);*/
+        // FIXME
         ProcessorConfigSet dataSet = new ProcessorConfigSet(musicFilesFile,
-                featureTableFile, reductionSteps, unit, partitionSize,
+        		ProcessingConfiguration.InputSourceType.RAW_FEATURE_LIST.toString(),featureTableFile.toString(), reductionSteps, unit, partitionSize,
                 partitiopnOverlap, matrixToVector, optionalModelStr);
+        
         // Create folders...
         featureTableFile.getParentFile().mkdirs();
         musicFilesFile.getParentFile().mkdirs();
@@ -194,8 +199,8 @@ public class ProcessingController extends AbstractController {
         File featureTableFile = config.getFeatureTables().get(0);
         filesAndFeatures.loadFilesAndFeatures(musicFileList, featureTableFile);
         pcmController.setUnit(config.getUnitAttribute().getValueAt(0));
-        pcmController.setPartitionSize(config.getPartitionSizeAttribute().getValueAt(0).intValue());
-        pcmController.setOverlapSize(config.getPartitionOverlapAttribute().getValueAt(0).intValue());
+        pcmController.setPartitionSize(config.getAggregationWindowSizeAttribute().getValueAt(0).intValue());
+        pcmController.setOverlapSize(config.getAggregationWindowStepSizeAttribute().getValueAt(0).intValue());
         pcmController.setMatrixToVector(config.getMatrixToVectorAttribute().getValueAt(0));
         pcmController.setReductionSteps(config.getReductionStepsAttribute().getValueAt(0));
         pcmController.setOptionalModelStr(config.getFeatureDescriptionAttribute().getValueAt(0));
@@ -278,8 +283,8 @@ public class ProcessingController extends AbstractController {
             filesAndFeatures.loadFeatureTable(ex.getInputFeatureList());
 
             // pcmController.setUnit();
-        pcmController.setPartitionSize(ex.getPartitionSize());
-        pcmController.setOverlapSize(ex.getPartitionOverlap());
+        pcmController.setPartitionSize(ex.getAggregationWindowSize());
+        pcmController.setOverlapSize(ex.getAggregationWindowStepSize());
         pcmController.setMatrixToVector(ex.getConversionStep());
         pcmController.setReductionSteps(ex.getReductionSteps());
         pcmController.setOptionalModelStr(ex.getFeatureDescription());

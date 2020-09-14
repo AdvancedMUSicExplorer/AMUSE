@@ -37,7 +37,8 @@ if __name__ == '__main__':
         file.write("%rows=" + str(n_mels) + "\n")
         file.write("%columns=" + str(len(features[0])) + "\n")
         file.write("%sample_rate=" + str(samplingRate) + "\n")
-        file.write("%window_size=" + str(n_fft) + "\n\n")
+        file.write("%window_size=" + str(n_fft) + "\n")
+        file.write("%step_size=" + str(hop_length) + "\n\n")
 
         for i in range(0, len(features)):
             file.write("@ATTRIBUTE '" + featureName + " " + str(i+1) + "' NUMERIC\n")

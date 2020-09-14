@@ -136,8 +136,8 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
-		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setId(201);
+		absMeasure[0].setName("Relative error on song level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
@@ -170,8 +170,8 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
-		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setId(201);
+		absMeasure[0].setName("Relative error on partition level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
@@ -208,8 +208,8 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
-		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setId(201);
+		absMeasure[0].setName("Relative error on song level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
@@ -241,8 +241,8 @@ public class RelativeError extends ClassificationQualityDoubleMeasureCalculator 
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
-		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setId(201);
+		absMeasure[0].setName("Relative error on partition level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}

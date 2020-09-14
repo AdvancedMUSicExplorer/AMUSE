@@ -1,0 +1,318 @@
+<operator name="Root" class="Experiment">
+    <parameter key="logfile"	value="featureslogfile.log"/>
+    <parameter key="logverbosity"	value="warning"/>
+    <parameter key="random_seed"	value="-1"/>
+    <operator name="Input" class="MusicPreprocessing">
+        <parameter key="first_sample"	value="0"/>
+        <parameter key="number_of_samples"	value="-1"/>
+        <parameter key="random_sample"	value="false"/>
+        <parameter key="source_dir"	value="../input"/>
+        <parameter key="use_interval_attributes"	value="false"/>
+        <operator name="Preprocessing" class="OperatorChain">
+            <operator name="MultivariateWindowing" class="MultivariateWindowing">
+                <parameter key="overlap"	value="0.0"/>
+                <parameter key="step_size"	value="256"/>
+                <parameter key="window_size"	value="256"/>
+                <operator name="FeatureExtraction" class="OperatorChain">
+                    <operator name="Branching" class="Branching">
+                        <amuseEnableFeature id="4" dimensions="1">
+                        <operator name="RMS-Loudness ID=4" class="Average">
+                            <parameter key="mean_type"	value="quadratic mean"/>
+                        </operator>
+                        </amuseEnableFeature>
+                        <amuseEnableFeature id="6" dimensions="1">
+                        <operator name="LowEnergy ID=6" class="LowEnergy">
+                        </operator>
+			</amuseEnableFeature>
+                        <amuseEnableTransform>
+                        <operator name="BeatHistogramFeatures" class="OperatorChain">
+                            <operator name="Correlation" class="AutoCorrelation">
+                                <parameter key="end"	value="300"/>
+                                <parameter key="start"	value="40"/>
+                            </operator>
+                            <operator name="TempoFeatures" class="Branching">
+                                <amuseEnableFeature id="401" dimensions="1">
+                                <operator name="TempoFinder ID=401" class="MinIndex">
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="407" dimensions="1">
+                                <operator name="SumFunction ID=407" class="SumFunction">
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="405,406" dimensions="1,1">
+                                <operator name="PeriodsOfFirstAndSecondPeaks" class="OperatorChain">
+                                    <operator name="PeakFinder" class="PeakFinder">
+                                        <parameter key="number_of_peaks"	value="2"/>
+                                    </operator>
+                                    <operator name="PeriodsOfFirstAndSecondPeaks ID=405,406" class="Selection">
+                                        <parameter key="feature_indices"	value="1,4"/>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                            </operator>
+                        </operator>
+			</amuseEnableTransform>
+                        <amuseEnableFeature id="3" dimensions="2">
+                        <operator name="ZeroCrossingsDifference ID=3" class="OperatorChain">
+                            <operator name="ZeroCrossingFilter" class="ZeroCrossingFilter">
+                            </operator>
+                            <operator name="DisplacementDifferences (2)" class="DisplacementDifferences">
+                            </operator>
+                            <operator name="DifferenceAverage (2)" class="Average">
+                            </operator>
+                        </operator>
+                        </amuseEnableFeature>
+                        <amuseEnableTransform>
+                        <operator name="PhaseSpaceChain" class="OperatorChain">
+                            <operator name="PhaseSpaceTransformation" class="PhaseSpaceTransformation">
+                            </operator>
+                            <operator name="AnglesAndDistances" class="Branching">
+                                <amuseEnableFeature id="32" dimensions="1">
+                                <operator name="Angles ID=32" class="OperatorChain">
+                                    <operator name="Angles" class="AngleTransformation">
+                                    </operator>
+                                    <operator name="AngleAverage" class="Average">
+                                    </operator>
+                                    	<operator name="SelectAngleAverage" class="Selection">
+                                    <parameter key="feature_indices"	value="0"/>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="33" dimensions="1">
+                                <operator name="Distances ID=33" class="OperatorChain">
+                                    <operator name="Distances" class="DistanceTransformation">
+                                    </operator>
+                                    <operator name="DistanceAverage" class="Average">
+                                    </operator>
+                                    <operator name="SelectDistanceAverage" class="Selection">
+                                        <parameter key="feature_indices"	value="0"/>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                            </operator>
+                        </operator>
+                        </amuseEnableTransform>
+                        <amuseEnableTransform>
+                        <operator name="FFTChain" class="OperatorChain">
+                            <operator name="Hanning" class="WindowFunction">
+                            </operator>
+                            <operator name="FFT" class="FastFourierTransform">
+                            </operator>
+                            <operator name="PowerSpectrumFilter" class="PowerSpectrumFilter">
+                                <parameter key="function_type"	value="Hanning"/>
+                            </operator>
+                            <operator name="FFT_Features" class="Branching">
+				<amuseEnableFeature id="2" dimensions="2">
+        	                    <operator name="ExtremaDifference ID=2" class="OperatorChain">
+                	              <operator name="Characteristica_1" class="CharacteristicaExtractor">
+                        	      </operator>
+                            	      <operator name="DisplacementDifferences" class="DisplacementDifferences">
+                            	      </operator>
+                            	      <operator name="DifferenceAverage" class="Average">
+                            	      </operator>
+                        	    </operator>
+                        	</amuseEnableFeature>
+				<amuseEnableFeature id="14" dimensions="1">
+                                <operator name="Centroid ID=14" class="Centroid">
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="211,212,213,214,215" dimensions="3,3,3,3,3">
+                                <operator name="FrequencyPeaksChain" class="OperatorChain">
+                                    <operator name="FrequencyPeaks ID=201,202,203" class="PeakFinder">
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="16" dimensions="1">
+                                <operator name="BandwidthChain ID=16" class="OperatorChain">
+                                    <operator name="Bandwidth" class="Bandwidth">
+                                    </operator>
+                                    <operator name="Selection (2)" class="Selection">
+                                        <parameter key="feature_indices"	value="0"/>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+										  <amuseEnableFeature id="25" dimensions="4">
+                                <operator name="BandEnergyRatio ID=25" class="BandEnergyRatio">
+                                		<parameter key="subband_number"	value="4"/>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="21" dimensions="1">
+                                <operator name="RolloffFunction ID=21" class="RolloffFunction">
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="19" dimensions="4">
+										  <operator name="SpectralCrestFactorChain ID=19" class="OperatorChain">
+                                    <operator name="SubBandGenerators" class="Branching">
+                                        <operator name="250-500 Hz" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="500.0"/>
+                                                <parameter key="min_displacement"	value="250.0"/>
+                                            </operator>
+                                            <operator name="SpectralCrestFactor ID=19" class="CombinedFunction">
+                                                <operator name="SpecMax" class="Max">
+                                                </operator>
+                                                <operator name="SpecArithAvg" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="500-1000 Hz" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (2)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="1000.0"/>
+                                                <parameter key="min_displacement"	value="500.0"/>
+                                            </operator>
+                                            <operator name="SpectralCrestFactor ID=19 (2)" class="CombinedFunction">
+                                                <operator name="SpecMax (2)" class="Max">
+                                                </operator>
+                                                <operator name="SpecArithAvg (2)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="1000-2000 Hz" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (3)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="2000.0"/>
+                                                <parameter key="min_displacement"	value="1000.0"/>
+                                            </operator>
+                                            <operator name="SpectralCrestFactor ID=19 (3)" class="CombinedFunction">
+                                                <operator name="SpecMax (3)" class="Max">
+                                                </operator>
+                                                <operator name="SpecArithAvg (3)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="2000-4000 Hz" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (4)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="4000.0"/>
+                                                <parameter key="min_displacement"	value="2000.0"/>
+                                            </operator>
+                                            <operator name="SpectralCrestFactor ID=19 (4)" class="CombinedFunction">
+                                                <operator name="SpecMax (4)" class="Max">
+                                                </operator>
+                                                <operator name="SpecArithAvg (4)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="20" dimensions="4">
+                                <operator name="SpectralFlatnessMeasureChain ID=20" class="OperatorChain">
+                                    <operator name="SubBandGenerators (2)" class="Branching">
+                                        <operator name="250-500 Hz (2)" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (5)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="500.0"/>
+                                                <parameter key="min_displacement"	value="250.0"/>
+                                            </operator>
+                                            <operator name="SpectralFlatnessMeasure ID=20" class="CombinedFunction">
+                                                <operator name="SpecGeomAverage" class="Average">
+                                                    <parameter key="mean_type"	value="geometric mean"/>
+                                                </operator>
+                                                <operator name="SpecArithAverage" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="500-1000 Hz (2)" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (6)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="1000.0"/>
+                                                <parameter key="min_displacement"	value="500.0"/>
+                                            </operator>
+                                            <operator name="SpectralFlatnessMeasure ID=20 (2)" class="CombinedFunction">
+                                                <operator name="SpecGeomAverage (2)" class="Average">
+                                                    <parameter key="mean_type"	value="geometric mean"/>
+                                                </operator>
+                                                <operator name="SpecArithAverage (2)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="1000-2000 Hz (2)" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (7)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="2000.0"/>
+                                                <parameter key="min_displacement"	value="1000.0"/>
+                                            </operator>
+                                            <operator name="SpectralFlatnessMeasure ID=20 (3)" class="CombinedFunction">
+                                                <operator name="SpecGeomAverage (3)" class="Average">
+                                                    <parameter key="mean_type"	value="geometric mean"/>
+                                                </operator>
+                                                <operator name="SpecArithAverage (3)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                        <operator name="2000-4000 Hz (2)" class="OperatorChain">
+                                            <operator name="SelectDisplacementsInterval (8)" class="SelectDisplacementsInterval">
+                                                <parameter key="max_displacement"	value="4000.0"/>
+                                                <parameter key="min_displacement"	value="2000.0"/>
+                                            </operator>
+                                            <operator name="SpectralFlatnessMeasure ID=20 (4)" class="CombinedFunction">
+                                                <operator name="SpecGeomAverage (4)" class="Average">
+                                                    <parameter key="mean_type"	value="geometric mean"/>
+                                                </operator>
+                                                <operator name="SpecArithAverage (4)" class="Average">
+                                                </operator>
+                                            </operator>
+                                        </operator>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableTransform>
+                                <operator name="ChromagramChain" class="OperatorChain">
+                                    <operator name="Frequency2CentTransformation" class="Frequency2CentTransformation">
+                                    </operator>
+                                    <amuseEnableFeature id="209" dimensions="1">
+                                    <operator name="SumOfChromagram ID=209" class="SumFunction">
+                                    </operator>
+                                    </amuseEnableFeature>
+                                    <amuseEnableTransform>
+                                    <operator name="FoldedChain" class="OperatorChain">
+                                        <operator name="Cent2HalfToneTransformation" class="Cent2HalfToneTransformation">
+                                        </operator>
+                                        <amuseEnableFeature id="207" dimensions="1">
+                                        <operator name="PositionOfMaxPeakOfFoldedHistogram ID=207" class="MaxIndex">
+                                        </operator>
+                                        </amuseEnableFeature>
+                                        <amuseEnableFeature id="205" dimensions="1">
+                                        <operator name="AmplitudeOfMaxPeakOfFoldedHistogram ID=205" class="Max">
+                                        </operator>
+                                        </amuseEnableFeature>
+                                        <amuseEnableFeature id="204" dimensions="24">
+                                        <operator name="ChromaVector ID=204" class="ChromaVector">
+                                        </operator>
+                                        </amuseEnableFeature>
+                                    </operator>
+                                    </amuseEnableTransform>
+                                </operator>
+                                </amuseEnableTransform>
+                                <amuseEnableFeature id="28" dimensions="34">
+                                <operator name="MFCC512At22kHz ID=28" class="MFCC512At22kHz">
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="29,30,31" dimensions="1,1,1">
+                                <operator name="LinearRegressionChain" class="OperatorChain">
+                                    <operator name="Slope,YAxisIntercept,Discrepancy ID=29,30,31 (2)" class="LinearRegressionFunction">
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                                <amuseEnableFeature id="17,18" dimensions="1,1">
+                                <operator name="MomentsChain" class="OperatorChain">
+                                    <operator name="Moments" class="Moments">
+                                    </operator>
+                                    <operator name="Skewness,Kurtosis ID=17,18" class="Selection">
+                                        <parameter key="feature_indices"	value="2,3"/>
+                                    </operator>
+                                </operator>
+                                </amuseEnableFeature>
+                            </operator>
+                        </operator>
+                        </amuseEnableTransform>
+                    </operator>
+                </operator>
+            </operator>
+            <operator name="GnuPlotWriter" class="GnuPlotWriter">
+                <parameter key="output_file"	value="extractedFeatures.txt"/>
+            </operator>
+        </operator>
+    </operator>
+    <operator name="Output" class="ExampleSetWriter" activated="no">
+        <parameter key="attribute_description_file"	value="processed_data.att"/>
+        <parameter key="example_set_file"	value="processed_data.exa"/>
+    </operator>
+</operator>
+

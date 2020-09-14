@@ -12,6 +12,9 @@
 
 function matlab_base(input_file,output_dir)
 
+% Add the paths to AMUSE Matlab libraries
+addpath('%AMUSEHOME%/tools/MatlabFeatures');
+
 % define window length of analysis window in number of samples
 wlength = 512;
 
@@ -39,7 +42,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_41_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'41.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,50000);
+	arff_saver_with_windows_number([output_file_prefix,'41.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,50000,50000);
 </text>
 </amuseEnableFeature>
 
@@ -49,7 +52,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_42_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'42.arff'],'CMRARE cepstral modulation features with polynomial order 4',res,50000);
+	arff_saver_with_windows_number([output_file_prefix,'42.arff'],'CMRARE cepstral modulation features with polynomial order 4',res,50000,50000);
 </text>
 </amuseEnableFeature>
 <amuseEnableFeature id="43" dimensions="8">
@@ -58,7 +61,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_43_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'43.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,100000);
+	arff_saver_with_windows_number([output_file_prefix,'43.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,100000,100000);
 </text>
 </amuseEnableFeature>
 
@@ -68,7 +71,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_44_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'44.arff'],'CMRARE cepstral modulation features with polynomial order 4',res,100000);
+	arff_saver_with_windows_number([output_file_prefix,'44.arff'],'CMRARE cepstral modulation features with polynomial order 4',res,100000,100000);
 </text>
 </amuseEnableFeature>
 
@@ -78,7 +81,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_45_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'45.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,110250);
+	arff_saver_with_windows_number([output_file_prefix,'45.arff'],'CMRARE cepstral modulation features with polynomial order 3',res,110250,110250);
 </text>
 </amuseEnableFeature>
 
@@ -88,7 +91,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_46_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'46.arff'],'CMRARE cepstral modulation features with polynomial order 5',res,110250);
+	arff_saver_with_windows_number([output_file_prefix,'46.arff'],'CMRARE cepstral modulation features with polynomial order 5',res,110250,110250);
 </text>
 </amuseEnableFeature>
 <amuseEnableFeature id="47" dimensions="22">
@@ -97,7 +100,7 @@ nwin = floor(1 + (s(1)-wlength)/woffset);
 	res = f_47_CMRARE_start(input_file);
 	
 	% save the results
-	arff_saver_with_windows_number([output_file_prefix,'47.arff'],'CMRARE cepstral modulation features with polynomial order 10',res,110250);
+	arff_saver_with_windows_number([output_file_prefix,'47.arff'],'CMRARE cepstral modulation features with polynomial order 10',res,110250,110250);
 </text>
 </amuseEnableFeature>
 
@@ -125,21 +128,21 @@ res = f_7_10_harmonic_analysis(x,fs,wlength,woffset,ff);
 <amuseEnableFeature id="200" dimensions="1">
 <text>
 % save the results
-arff_saver_with_windows_number([output_file_prefix,'200.arff'],'Fundamental frequency',ff);
+arff_saver_with_windows_number([output_file_prefix,'200.arff'],'Fundamental frequency',ff,wlength,woffset);
 </text>
 </amuseEnableFeature>
 
 <amuseEnableFeature id="7" dimensions="1">
 <text>
 % save the results
-arff_saver_with_windows_number([output_file_prefix,'7.arff'],'Normalized energy of harmonic components',res(3,:));
+arff_saver_with_windows_number([output_file_prefix,'7.arff'],'Normalized energy of harmonic components',res(3,:),wlength,woffset);
 </text>
 </amuseEnableFeature>
 
 <amuseEnableFeature id="10" dimensions="2">
 <text>
 % save the results
-arff_saver_with_windows_number([output_file_prefix,'10.arff'],'Tristimulus',[res(1,:)' res(2,:)']');
+arff_saver_with_windows_number([output_file_prefix,'10.arff'],'Tristimulus',[res(1,:)' res(2,:)']',wlength,woffset);
 </text>
 </amuseEnableFeature>
 

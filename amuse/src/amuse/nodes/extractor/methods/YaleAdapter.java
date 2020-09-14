@@ -54,6 +54,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
 import weka.core.converters.ArffSaver;
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -96,12 +97,15 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		// Load the Yale batch script
 		Document yaleScript;
 		try {
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
 			yaleScript = DocumentBuilderFactory
 					.newInstance()
 					.newDocumentBuilder()
-					.parse(properties.getProperty("extractorFolder")
-							+ File.separator
-							+ properties.getProperty("inputExtractorBatch"));
+					.parse(inputBatchPath);
 		} catch (SAXException e) {
 			throw new NodeException(
 					"Setting of input music file with Yale failed: "
@@ -173,9 +177,12 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 			Transformer transformer = TransformerFactory.newInstance()
 					.newTransformer();
 			DOMSource domsource = new DOMSource(yaleScript);
-			File modifiedScript = new File(
-					properties.getProperty("extractorFolder") + File.separator
-							+ properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			File modifiedScript = new File(inputBatchPath);
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite())
 					throw new NodeException("Cannot write to " + modifiedScript
@@ -205,9 +212,8 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void convertBaseScript(HashMap<Integer, Integer> feature2Tool,
 			FeatureTable featureTable) throws NodeException {
-		// First of all, a mapping from Amuse feature ID to its description is
-		// loaded
-		HashMap<Integer, String> featureId2Description = new HashMap<Integer, String>();
+		// First of all, a mapping from Amuse feature ID to the corresponding feature is loaded
+		HashMap<Integer, Feature> featureId2Feature = new HashMap<Integer, Feature>();
 		/*
 		 * ArffLoader featureTableLoader = new ArffLoader(); Instance
 		 * currentInstance;
@@ -215,8 +221,8 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 		// Load feature table
 		for (int i = 0; i < featureTable.size(); i++) {
-			featureId2Description.put(featureTable.getFeatureAt(i).getId(),
-					featureTable.getFeatureAt(i).getDescription());
+			featureId2Feature.put(featureTable.getFeatureAt(i).getId(),
+					featureTable.getFeatureAt(i));
 		}
 
 		// Create an attribute vector with Amuse feature names. Yale outputs all
@@ -228,6 +234,10 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		amuseAttributes.addElement(new Attribute("Id"));
 		amuseAttributes.addElement(new Attribute("Description",
 				(FastVector) null));
+		amuseAttributes.addElement(new Attribute("ConfigurationId",
+				(FastVector) null));
+		amuseAttributes.addElement(new Attribute("WindowSize"));
+		amuseAttributes.addElement(new Attribute("StepSize"));
 		amuseAttributes.addElement(new Attribute("Dimensions"));
 		amuseAttributes.addElement(new Attribute("Consider"));
 		Instances data = new Instances("Music feature", amuseAttributes, 0);
@@ -235,12 +245,15 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		// Load Yale base script
 		Document currentBaseScript = null;
 		try {
+			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBaseBatchPath.startsWith(File.separator)) {
+		    	inputBaseBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBaseBatchPath;
+		    }
 			currentBaseScript = DocumentBuilderFactory
 					.newInstance()
 					.newDocumentBuilder()
-					.parse(properties.getProperty("extractorFolder")
-							+ File.separator
-							+ properties.getProperty("inputExtractorBaseBatch"));
+					.parse(inputBaseBatchPath);
 		} catch (java.io.IOException e) {
 			throw new NodeException("Cannot open Yale base script: "
 					+ e.getMessage());
@@ -319,25 +332,39 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 													+ properties
 															.getProperty("extractorName"));
 
-							double vals[] = new double[4];
+							double vals[] = new double[7];
+							Feature feature = featureId2Feature.get(idsOfCurrentEnabler.get(j));
+							String configurationId = feature.getConfigurationId();
+							if(configurationId == null) {
+								configurationId = "";
+							}
 							vals[0] = idsOfCurrentEnabler.get(j);
-							vals[1] = data.attribute(1).addStringValue(
-									featureId2Description
-											.get(idsOfCurrentEnabler.get(j)));
-							vals[2] = dimensionsOfFeaturesOfCurrentEnabler
+							vals[1] = data.attribute(1).addStringValue(feature.getDescription());
+							vals[2] = data.attribute(2).addStringValue(configurationId);
+							vals[3] = feature.getSourceFrameSize();
+							vals[4] = feature.getSourceStepSize();
+							vals[5] = dimensionsOfFeaturesOfCurrentEnabler
 									.get(j);
-							vals[3] = 1;
+							vals[6] = 1;
 							data.add(new Instance(1.0, vals));
 							continue;
 						}
 					}
 
-					double vals[] = new double[4];
-					vals[0] = idsOfCurrentEnabler.get(j);
+					double vals[] = new double[7];
+					Feature feature = featureId2Feature.get(idsOfCurrentEnabler.get(j));
+					String configurationId = feature.getConfigurationId();
+					if(configurationId == null) {
+						configurationId = "";
+					}
 					vals[1] = data.attribute(1).addStringValue(
 							"feature result is to be ignored");
-					vals[2] = dimensionsOfFeaturesOfCurrentEnabler.get(j);
-					vals[3] = 0;
+					vals[2] = data.attribute(2).addStringValue(configurationId);
+					vals[3] = feature.getSourceFrameSize();
+					vals[4] = feature.getSourceStepSize();
+					vals[5] = dimensionsOfFeaturesOfCurrentEnabler
+							.get(j);
+					vals[6] = 0;
 					data.add(new Instance(1.0, vals));
 				}
 
@@ -408,9 +435,12 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 			Transformer transformer = TransformerFactory.newInstance()
 					.newTransformer();
 			DOMSource domsource = new DOMSource(currentBaseScript);
-			File modifiedScript = new File(
-					properties.getProperty("extractorFolder") + File.separator
-							+ properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			File modifiedScript = new File(inputBatchPath);
 			if (modifiedScript.exists())
 				if (!modifiedScript.canWrite()) {
 					throw new NodeException(
@@ -437,9 +467,13 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		ArffSaver saver = new ArffSaver();
 
 		// Create a name for Amuse feature file
-		String currentFeatureFile = new String();
-		currentFeatureFile = properties.getProperty("extractorFolder")
-				+ File.separator + "extractorFeatureTable.arff";
+		String inputBatchPath = properties.getProperty("inputExtractorBatch");
+	    if(!inputBatchPath.startsWith(File.separator)) {
+	    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+	    }
+		String currentFeatureFile = inputBatchPath.substring(0, inputBatchPath.lastIndexOf(File.separator) + 1)
+				+ inputBatchPath.substring(inputBatchPath.lastIndexOf(File.separator) + 1, inputBatchPath.lastIndexOf(".")) + "_"
+				+ "extractorFeatureTable.arff";
 		saver.setInstances(data);
 		new File(currentFeatureFile).delete();
 		try {
@@ -471,9 +505,12 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 			libs.add(lib + "yale.jar");
 			List<String> commands = new ArrayList<String>();
 			commands.add("edu.udo.cs.yale.YaleCommandLine");
-			commands.add(properties.getProperty("extractorFolder")
-					+ File.separator
-					+ properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			commands.add(inputBatchPath);
 			ExternalProcessBuilder javaPCB = ExternalProcessBuilder
 					.buildJavaProcess(javaProperties, libs, commands);
 			javaPCB.setWorkingDirectory(new File(properties
@@ -576,12 +613,20 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 		// Load the IDs of features
 		ArffLoader featureDescriptionsloader = new ArffLoader();
 		try {
-			featureDescriptionsloader.setFile(new File(properties
-					.getProperty("extractorFolder")
-					+ File.separator + "extractorFeatureTable.arff"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			String currentFeatureTableFile = inputBatchPath.substring(0, inputBatchPath.lastIndexOf(File.separator) + 1)
+					+ inputBatchPath.substring(inputBatchPath.lastIndexOf(File.separator) + 1, inputBatchPath.lastIndexOf(".")) + "_"
+					+ "extractorFeatureTable.arff";
+			featureDescriptionsloader.setFile(new File(currentFeatureTableFile));
 
 			// Set up the attributes
 			Attribute idAttribute = featureDescriptionsloader.getStructure().attribute("Id");
+			Attribute configurationIdAttribute = featureDescriptionsloader.getStructure().attribute("ConfigurationId");
+			Attribute windowSizeAttribute = featureDescriptionsloader.getStructure().attribute("WindowSize");
+			Attribute stepSizeAttribute = featureDescriptionsloader.getStructure().attribute("StepSize");
 			Attribute dimensionsAttribute = featureDescriptionsloader.getStructure().attribute("Dimensions");
 			Attribute considerAttribute = featureDescriptionsloader.getStructure().attribute("Consider");
 			Instance currentInstance = featureDescriptionsloader.getNextInstance(featureDescriptionsloader.getStructure());
@@ -616,7 +661,10 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 				int id = new Double(currentInstance.value(idAttribute))
 						.intValue();
-
+				String configurationId = currentInstance.stringValue(configurationIdAttribute);
+				int windowSize = new Double(currentInstance.value(windowSizeAttribute)).intValue();
+				int stepSize = new Double(currentInstance.value(stepSizeAttribute)).intValue();
+				
 				// Create a folder for Amuse feature files
 				File folder = new File(this.getCorrespondingScheduler()
 						.getHomeFolder()
@@ -642,6 +690,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 							+ musicFile.substring(
 									musicFile.lastIndexOf(File.separator),
 									musicFile.lastIndexOf(".")) + "_" + id
+							+ (configurationId.equals("") ? "" : "_" + configurationId)
 							+ ".arff";
 				} else {
 					currentFeatureFile += File.separator
@@ -673,7 +722,9 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%sample_rate=" + "22050");
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%window_size=" + "512");
+				values_writer.writeBytes("%window_size=" + windowSize);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%step_size=" + stepSize);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 

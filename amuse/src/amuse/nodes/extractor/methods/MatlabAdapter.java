@@ -49,9 +49,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -99,9 +101,12 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		// Load Matlab base script
 		Document currentBaseScript = null;
 		try {
-			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + File.separator + 
-					properties.getProperty("inputExtractorBaseBatch"));
+			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBaseBatchPath.startsWith(File.separator)) {
+		    	inputBaseBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBaseBatchPath;
+		    }
+			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBaseBatchPath);
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open Matlab base script: " + e.getMessage());
 		} catch(javax.xml.parsers.ParserConfigurationException e) {
@@ -212,15 +217,22 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		BufferedWriter out = null;
 		FileWriter fileWriter = null;
 		try {
-				fileWriter = new FileWriter(properties.getProperty("extractorFolder")
-						+ File.separator
-						+ properties.getProperty("inputExtractorBatch"));
+				String inputBatchPath = properties.getProperty("inputExtractorBatch");
+				// if it is a relative path the input batch is in the extractor folder
+			    if(!inputBatchPath.startsWith(File.separator)) {
+			    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+			    }
+				fileWriter = new FileWriter(inputBatchPath);
 		        out = new BufferedWriter(fileWriter);
 		        
 		        nList = currentBaseScript.getElementsByTagName("text");
 				for(int i=0;i<nList.getLength();i++) {
 					Node node = nList.item(i);
-					out.write(node.getTextContent());
+					String content = node.getTextContent();
+					if(content.contains("%AMUSEHOME%")) {
+						content = content.replace("%AMUSEHOME%", System.getenv("AMUSEHOME"));
+					}
+					out.write(content);
 				}
 		} catch (IOException e) {
 		    	e.printStackTrace();
@@ -266,11 +278,18 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			commands.add("-nosplash");
 			commands.add("-nojvm");
 			commands.add("-r");
-			commands.add("matlabBaseModified('" + this.musicFile + "','" + folder + "')");
+			File inputBatchFile = new File(properties.getProperty("inputExtractorBatch"));
+			String inputBatchName = inputBatchFile.getName();
+			inputBatchName = inputBatchName.substring(0, inputBatchName.lastIndexOf("."));
+			String inputBatchFolder = properties.getProperty("extractorFolder");
+			if(properties.getProperty("inputExtractorBatch").startsWith(File.separator)) {
+				inputBatchFolder = inputBatchFile.getParent();
+			}
+			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
 			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MatlabFeatures.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
-			matlab.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
+			matlab.setWorkingDirectory(new File(inputBatchFolder));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
 			
 			// Monitor the path that contains the log file
@@ -282,7 +301,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			Process matlabProcess = matlab.start();
 			
 			// Monitor the log file as long as the process did not finish on its own.
-			whileMatlabProcessAlive:
+			//whileMatlabProcessAlive:
 			while (matlabProcess.isAlive()) {
 			    WatchKey key;
 			    try {
@@ -341,7 +360,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			        	    }
 			        	} catch(FileNotFoundException e) {
 		        	    	AmuseLogger.write(this.getClass().getName(), Level.WARN, "Unable to monitor the log-File from Matlab. " + e.getMessage());
-		        	    	break whileMatlabProcessAlive;
+		        	    	break;
 			        	} finally {
 			        		if(scanner != null){
 				        		scanner.close();
@@ -370,6 +389,8 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 				e.printStackTrace();
 			}
 			
+			convertOutput();
+			
 		} catch (IOException e) {
         	throw new NodeException("Extraction with Matlab failed: " + e.getMessage());
         } 
@@ -381,6 +402,50 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void convertOutput() throws NodeException {
 		// Conversion is not needed, since Matlab script writes output as Amuse ARFF
+		// but files might need to be renamed, Matlab does not know which custom configurations were used
+		
+		// list of ids of custom features
+		List<Integer> ids = new ArrayList<Integer>();
+		// maps feature id to configuration id
+		HashMap<Integer,String> idToConfiguration = new HashMap<Integer,String>();
+		
+		FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
+		for(Feature feature : featureTable.getFeatures()) {
+			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+				ids.add(feature.getId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+			}
+		}
+		
+		// rename files of custom features
+		if(!ids.isEmpty()) {
+			File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+					File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));
+			File[] listOfFiles = folder.listFiles();
+			if(listOfFiles == null) {
+				listOfFiles = new File[0];
+			}
+			for(int id : ids) {
+				// search for the feature file
+				for(int i = 0; i < listOfFiles.length; i++) {
+					File file = listOfFiles[i];
+					if(file != null && file.getName().endsWith("_" + id + ".arff")) {
+						String oldPath = file.getAbsolutePath();
+						String newPath = oldPath.substring(0, oldPath.lastIndexOf(".")) + "_" + idToConfiguration.get(id) + ".arff";
+						
+						// rename the file
+						file.renameTo(new File(newPath));
+						
+						// the file cannot be renamed twice
+						// this could otherwise occur
+						// if a configurationId ends
+						// with the Id of another feature
+						listOfFiles[i] = null;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	/*

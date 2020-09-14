@@ -40,9 +40,11 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -90,9 +92,12 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 		// Load Librosa base XML script
 		Document currentBaseScript = null;
 		try {
-			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(
-					properties.getProperty("extractorFolder") + 
-					"/"	+ properties.getProperty("inputExtractorBaseBatch"));
+			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBaseBatchPath.startsWith(File.separator)) {
+		    	inputBaseBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBaseBatchPath;
+		    }
+			currentBaseScript = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputBaseBatchPath);
 			
 		} catch(java.io.IOException e) {
 			throw new NodeException("Cannot open Librosa base script: " + e.getMessage());
@@ -200,8 +205,12 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 		
 		// Save the modified script as python file (content found in "text" nodes will be written)
 		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter(properties.getProperty("extractorFolder") + 
-				"/"	+ properties.getProperty("inputExtractorBatch")));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			BufferedWriter out = new BufferedWriter(new FileWriter(inputBatchPath));
 		    nList = currentBaseScript.getElementsByTagName("text");
 			for(int i=0;i<nList.getLength();i++) {
 				Node node = nList.item(i);
@@ -234,7 +243,12 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 		try {
 			List<String> commands = new ArrayList<String>();
 			commands.add(AmusePreferences.get(KeysStringValue.PYTHON_PATH));
-			commands.add(properties.getProperty("extractorFolder") + File.separator + properties.getProperty("inputExtractorBatch"));
+			String inputBatchPath = properties.getProperty("inputExtractorBatch");
+			// if it is a relative path the input batch is in the extractor folder
+		    if(!inputBatchPath.startsWith(File.separator)) {
+		    	inputBatchPath = properties.getProperty("extractorFolder") + File.separator + inputBatchPath;
+		    }
+			commands.add(inputBatchPath);
 			commands.add(this.musicFile);
 			commands.add(folder.getAbsolutePath());
 			ExternalProcessBuilder librosa = new ExternalProcessBuilder(commands);
@@ -281,6 +295,50 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void convertOutput() throws NodeException {
 		// Conversion is not needed, since Librosa script writes output as Amuse ARFF
+		// but files might need to be renamed, Librosa does not know which custom configurations were used
+		
+		// list of ids of custom features
+		List<Integer> ids = new ArrayList<Integer>();
+		// maps feature id to configuration id
+		HashMap<Integer,String> idToConfiguration = new HashMap<Integer,String>();
+		
+		FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
+		for(Feature feature : featureTable.getFeatures()) {
+			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+				ids.add(feature.getId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+			}
+		}
+		
+		// rename files of custom features
+		if(!ids.isEmpty()) {
+			File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+					File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName"));
+			File[] listOfFiles = folder.listFiles();
+			if(listOfFiles == null) {
+				listOfFiles = new File[0];
+			}
+			for(int id : ids) {
+				// search for the feature file
+				for(int i = 0; i < listOfFiles.length; i++) {
+					File file = listOfFiles[i];
+					if(file != null && file.getName().endsWith("_" + id + ".arff")) {
+						String oldPath = file.getAbsolutePath();
+						String newPath = oldPath.substring(0, oldPath.lastIndexOf(".")) + "_" + idToConfiguration.get(id) + ".arff";
+						
+						// rename the file
+						file.renameTo(new File(newPath));
+						
+						// the file cannot be renamed twice
+						// this could otherwise occur
+						// if a configurationId ends
+						// with the Id of another feature
+						listOfFiles[i] = null;
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	/*

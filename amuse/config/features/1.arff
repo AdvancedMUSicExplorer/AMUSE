@@ -1,0 +1,31 @@
+%alternative configurations for feature with Id 0 (zeroCrossing)
+@RELATION features
+
+% Unique configuration ID
+@ATTRIBUTE Id STRING
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Step size in samples
+@ATTRIBUTE StepSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+% Type of feature:
+%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length
+%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time
+%   Event: feature marks events as points in time, but has no duration or value
+@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
+% Base script for feature extraction
+@ATTRIBUTE InputBaseBatch STRING
+% Script for feature extraction (after the parameters / options were saved to base script)
+@ATTRIBUTE InputBatch STRING
+
+@DATA
+
+% Timbre features
+
+1024, "Linear prediction coefficients", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
+256, "Zero-crossing rate", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"

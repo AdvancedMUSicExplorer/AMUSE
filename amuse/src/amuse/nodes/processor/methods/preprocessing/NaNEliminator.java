@@ -21,7 +21,7 @@
  * 
  * Creation date: 11.12.2007
  */
-package amuse.nodes.processor.methods.reducers;
+package amuse.nodes.processor.methods.preprocessing;
 
 import java.util.ArrayList;
 

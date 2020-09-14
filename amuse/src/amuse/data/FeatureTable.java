@@ -57,20 +57,33 @@ public class FeatureTable implements Serializable {
     public FeatureTable(File featureTableFile) {
         try {
             FeatureTableSet featureTableSet = new FeatureTableSet(featureTableFile);
-            NumericAttribute id = featureTableSet.getIDAttribute();
+            StringAttribute id = featureTableSet.getIDAttribute();
             StringAttribute description = featureTableSet.getDescriptionAttribute();
             NumericAttribute extractorID = featureTableSet.getExtractorIDAttribute();
             NumericAttribute dimension = featureTableSet.getDimensionsAttribute();
             NumericAttribute windowSize = featureTableSet.getWindowSizeAttribute();
+            NumericAttribute stepSize = featureTableSet.getStepSizeAttribute();
             NominalAttribute featureType = featureTableSet.getFeatureTypeAttribute();
             for (int i = 0; i < featureTableSet.getValueCount(); i++) {
             	if (extractorID.getValueAt(i).isNaN()) {
             		// Skip this
             	} else {
-            		Feature f = new Feature(id.getValueAt(i).intValue(), description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
+            		String idString = id.getValueAt(i);
+            		int idInt;
+            		String configurationId = "";
+            		if(idString.contains("_")) {
+            			idInt = new Integer(idString.substring(0, idString.indexOf("_")));
+            			configurationId = idString.substring(idString.indexOf("_") + 1);
+            		} else {
+            			idInt = new Double(idString).intValue();
+            		}
+            		Feature f = new Feature(idInt, description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
             		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
+            		f.setSourceStepSize(stepSize.getValueAt(i).intValue());
+            		if(!configurationId.equals("")) {
+            			f.setConfigurationId(configurationId);
+            		}
             		features.add(f);
-            		
             	}
             }
         } catch (IOException ex) {
@@ -115,7 +128,7 @@ public class FeatureTable implements Serializable {
      * @return DataSet containign all currently selected features.
      */
     public FeatureTableSet getAccordingDataSet() {
-        List<Integer> featureIDList = new ArrayList<Integer>();
+        List<String> featureIDList = new ArrayList<String>();
         List<String> featureDescriptionList = new ArrayList<String>();
         List<Integer> extractorIDList = new ArrayList<Integer>();
         List<Integer> windowSizeList = new ArrayList<Integer>();
@@ -123,7 +136,12 @@ public class FeatureTable implements Serializable {
         List<String> featureTypeList = new ArrayList<String>();
         for (Feature f : features) {
             if (f.isSelectedForExtraction()) {
-                featureIDList.add(f.getId());
+            	String configurationId = f.getConfigurationId();
+            	if(configurationId != null) {
+            		featureIDList.add(f.getId() + "_" + configurationId);
+                } else {
+                	featureIDList.add("" + f.getId());
+                }
                 featureDescriptionList.add(f.getDescription());
                 extractorIDList.add(f.getExtractorId());
                 windowSizeList.add(f.getSourceFrameSize());
@@ -151,7 +169,7 @@ public class FeatureTable implements Serializable {
         }
         return null;
     }
-
+    
     public List<Feature> getFeatures() {
         return this.features;
     }
@@ -164,6 +182,16 @@ public class FeatureTable implements Serializable {
             }
         }
         return indices;
+    }
+    
+    public List<Feature> getSelectedFeatures() {
+    	Vector<Feature> selectedFeatures = new Vector<Feature>();
+    	for(int i = 0; i < features.size(); i++) {
+    		if(features.get(i).isSelectedForExtraction()) {
+    			selectedFeatures.add(features.get(i));
+    		}
+    	}
+    	return selectedFeatures;
     }
 
     public void printTable() {
@@ -223,5 +251,15 @@ public class FeatureTable implements Serializable {
 		} else if (!features.equals(other.features))
 			return false;
 		return true;
+	}
+
+	public List<String> getSelectedConfigurationIds() {
+		Vector<String> indices = new Vector<String>();
+        for (int i = 0; i < features.size(); i++) {
+            if (features.get(i).isSelectedForExtraction()) {
+                indices.add(features.get(i).getConfigurationId());
+            }
+        }
+        return indices;
 	}
 }
