@@ -54,7 +54,7 @@ public class PluginLoader {
 					// Load the classes of all JARs found in plugin folder
 					if(currentPlugin.getAbsoluteFile().toString().toLowerCase().endsWith(".jar")) {
 						try {
-							URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader(); 
+							URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
 							Class<?> systemClass = URLClassLoader.class; 
 							Method method = null;
 							method = systemClass.getDeclaredMethod("addURL", new Class[] { URL.class });

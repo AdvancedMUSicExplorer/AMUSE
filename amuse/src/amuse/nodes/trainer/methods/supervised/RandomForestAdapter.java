@@ -29,17 +29,23 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
+import amuse.util.FileOperations;
 import amuse.util.LibraryInitializer;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.io.RepositoryStorer;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.local.LocalRepository;
 import com.rapidminer.tools.OperatorService;
 
 import java.io.File;
+import java.util.List;
 
 import com.rapidminer.Process;
+import com.rapidminer.ProcessLocation;
 
 /**
  * Adapter for Random Forest. For further details of RapidMiner see <a href="http://rapid-i.com/">http://rapid-i.com/</a>
@@ -95,8 +101,8 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 			process.getRootOperator().getSubprocess(0).addOperator(modelLearner);
 			
 			// Write the model
-			Operator modelWriter = OperatorService.createOperator(ModelWriter.class);
-			modelWriter.setParameter("model_file", outputModel);
+			RepositoryStorer modelWriter = OperatorService.createOperator(RepositoryStorer.class);
+			modelWriter.setParameter(RepositoryStorer.PARAMETER_REPOSITORY_ENTRY, "//" + LibraryInitializer.RAPIDMINER_REPO_NAME + "/model");
 			process.getRootOperator().getSubprocess(0).addOperator(modelWriter);
 			
 			// Connect the Ports
@@ -107,10 +113,15 @@ public class RandomForestAdapter extends AmuseTask implements TrainerInterface {
 			
 			modelLearnerOutputPort.connectTo(modelWriterInputPort);
 			processOutputPort.connectTo(modelLearnerInputPort);
-			
+
 			// Run the process
 			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
+			
+			// Copy the model into the model database
+			FileOperations.copy(new File(LibraryInitializer.REPOSITORY_PATH + File.separator + "model.ioo"), new File(outputModel));
+			
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new NodeException("Classification training failed: " + e.getMessage());
 		}
 	}
