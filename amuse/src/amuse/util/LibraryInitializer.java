@@ -24,6 +24,8 @@
 package amuse.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
@@ -31,6 +33,10 @@ import java.util.logging.Logger;
 
 import com.rapidminer.RapidMiner;
 import com.rapidminer.RapidMiner.ExecutionMode;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryException;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.local.LocalRepository;
 
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -42,8 +48,11 @@ import amuse.preferences.KeysStringValue;
  */
 public class LibraryInitializer {
 	
-	private static boolean rapidMinerInitialized = false;
+	public static final String RAPIDMINER_REPO_NAME = "RapidMinerRepoAmuse";
+	public static final String REPOSITORY_PATH = AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + "RapidMiner9" + File.separator + "repository";
 	
+	private static boolean rapidMinerInitialized = false;
+	private static Repository rapidMinerRepo;
 
 	/**
 	 * Initializes RapidMiner as library
@@ -58,8 +67,8 @@ public class LibraryInitializer {
 	public static void initializeRapidMiner() throws Exception {
 		if(!rapidMinerInitialized) {
 			try {
-				String pathToRapidMinerHome = AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + "RapidMiner5";
-				pathToRapidMinerHome = pathToRapidMinerHome.replaceAll(File.separator + "+", File.separator); // Make sure there are no consecutive separators 
+				String pathToRapidMinerHome = AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + "RapidMiner9";
+				pathToRapidMinerHome = pathToRapidMinerHome.replaceAll(File.separator + "+", File.separator); // Make sure there are no consecutive separators
 				System.setProperty("rapidminer.home", pathToRapidMinerHome);
 				System.setProperty("rapidminer.init.weka", "true");
 				System.setProperty("rapidminer.init.plugins", "false");
@@ -68,7 +77,8 @@ public class LibraryInitializer {
 				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
 				
 				// DEV_INFO: To load all operators, comment the next line
-				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS,"/OperatorsCoreReduced.xml");
+//				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS,"/OperatorsCoreReduced.xml");
+				System.setProperty(RapidMiner.PROPERTY_RAPIDMINER_INIT_OPERATORS,"/OperatorsCore.xml");
 				
 
 				// This log handler redirects messages to the AmuseLogger
@@ -93,11 +103,46 @@ public class LibraryInitializer {
 				rootLogger.removeHandler(rootLogger.getHandlers()[0]);
 				rootLogger.addHandler(logHandler);
 				RapidMiner.init();
+				
+				// Load the RapidMiner Repository
+				loadRapidMinerRepo();
 			} catch(Exception e) {
 				throw e;
 			}
 			rapidMinerInitialized = true;
 		}
+		clearRepositoryFolder();
 	}
 	
+	/**
+	 * Loads the RapidMiner repository.
+	 * Creates it if it does not exist yet.
+	 * @throws RepositoryException
+	 */
+	private static void loadRapidMinerRepo() throws RepositoryException {
+		// try to load the repository
+		try {
+			rapidMinerRepo = RepositoryManager.getInstance(null).getRepository(RAPIDMINER_REPO_NAME);
+		} catch (RepositoryException e) {}
+		// create the repository if it does not exist yet
+		if(rapidMinerRepo == null) {
+			rapidMinerRepo = new LocalRepository(RAPIDMINER_REPO_NAME, new File(REPOSITORY_PATH));
+			RepositoryManager.getInstance(null).addRepository(rapidMinerRepo);
+		}
+	}
+	
+	/**
+	 * Clears the repository folder
+	 * @throws IOException 
+	 */
+	private static void clearRepositoryFolder() throws IOException {
+		File[] files = new File(REPOSITORY_PATH).listFiles();
+		boolean successful = true;
+		for(File file : files) {
+			successful = successful & FileOperations.delete(file, true);
+		}
+		if(!successful) {
+			throw new IOException("Could not clear RapidMiner repository folder!");
+		}
+	}
 }
