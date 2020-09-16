@@ -116,10 +116,8 @@ public class TrainingView extends JPanel {
 	        targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
 	        targetPathSelectionPanel.setBorder(pathSelectionTitle);
 	        btnSelectFolder.addActionListener(new SelectFolderListener());
+	        addRightSide(targetPathSelectionPanel);
         }
-        
-		trainingDescriptionPanel = new TrainingDescriptionPanel();
-		if(training)addRightSide(targetPathSelectionPanel);
 		
 		splitPane.setDividerLocation(0.5);
 	}

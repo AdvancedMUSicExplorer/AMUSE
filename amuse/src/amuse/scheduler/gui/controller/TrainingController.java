@@ -167,8 +167,7 @@ public class TrainingController extends AbstractController {
         
         trainingView.setProcessingModelString(ttSet.getInputFeatureAttribute().getValueAt(0));
         trainingView.setPreprocessingAlgorithm(ttSet.getPreprocessingAlgorithmIdAttribute().getValueAt(0));
-        //TODO set attributesToPredict, attributesToIgnore, ClassificationType, fuzzy (and other new features?) correctly (this has to be done also for the ClassiferController)
-        
+
         String groundTruthSourceType = ttSet.getGroundTruthSourceTypeAttribute().getValueAt(0);
         if(groundTruthSourceType.equals(GroundTruthSourceType.CATEGORY_ID.toString())){
         	trainingView.setGroundTruthSourceType(GroundTruthSourceType.CATEGORY_ID);
@@ -214,6 +213,7 @@ public class TrainingController extends AbstractController {
 		}
 		trainingView.setAttributesToIgnore(attributesToIgnore);
 		
+		String test = ttSet.getTrainingDescriptionAttribute().getValueAt(0).toString();
 		trainingView.setTrainingDescription(ttSet.getTrainingDescriptionAttribute().getValueAt(0).toString());
 		trainingView.setPathToOutputModel(ttSet.getPathToOutputModelAttribute().getValueAt(0).toString());
 		
