@@ -120,7 +120,7 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			outlierDetectorOutputPort.connectTo(exampleFilterInputPort);
 			exampleFilterOutputPort.connectTo(processSinkOutputPort);
 			
-			// (4) Run the process and update the example set (removing the outliers)
+			// (5) Run the process and update the example set (removing the outliers)
 			int oldSize = exampleSet.size();
 			IOContainer container = process.run(new IOContainer(exampleSet));
 
@@ -133,7 +133,7 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			if(newSize == 0){
 				throw new Exception("Every example was marked as outlier.");
 			}
-			// (5) Convert the results to AMUSE EditableDataSet
+			// (6) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
 					new DataSet(exampleSet)));
 		} catch(Exception e) {
