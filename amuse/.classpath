@@ -18,7 +18,6 @@
 	<classpathentry kind="lib" path="lib/jAudio.jar"/>
 	<classpathentry kind="lib" path="lib/jhall.jar"/>
 	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-nop-1.7.30.jar"/>
 	<classpathentry kind="lib" path="lib/weka.jar"/>
 	<classpathentry kind="lib" path="lib/jar-loader.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/activation-1.1.jar"/>
