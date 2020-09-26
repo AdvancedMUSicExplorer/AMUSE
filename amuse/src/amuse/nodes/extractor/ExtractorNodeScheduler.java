@@ -166,9 +166,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		if(relativeName.charAt(0) == File.separatorChar) {
 			relativeName = relativeName.substring(1);
 		}
-		if(relativeName.endsWith(".mp3")) {
+		if(!relativeName.endsWith(".wav") && !relativeName.endsWith(".wave")) {
 			// Cut extension
-			relativeName = relativeName.substring(0,relativeName.length()-4);
+			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
 			relativeName = new String(relativeName + ".wav");
 		}
 		
