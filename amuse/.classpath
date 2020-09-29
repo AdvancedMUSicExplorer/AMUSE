@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/jama.jar"/>
 	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/launcher.jar"/>
@@ -36,6 +40,9 @@
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/versioned-repository-0.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jxl-2.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/poi-ooxml-3.17.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/ojalgo-47.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/java_fx/javafx.base.jar"/>
+	<classpathentry kind="lib" path="lib/java_fx/javafx.graphics.jar"/>
+	<classpathentry kind="lib" path="lib/java_fx/javafx.media.jar"/>
+	<classpathentry kind="lib" path="lib/java_fx/javafx.swing.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
