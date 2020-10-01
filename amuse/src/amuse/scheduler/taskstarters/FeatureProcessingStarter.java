@@ -73,14 +73,24 @@ public class FeatureProcessingStarter extends AmuseTaskStarter {
 				fileId.add(((ProcessingConfiguration)taskConfiguration[i]).getMusicFileList().getIds().get(k));
 				ArrayList<String> filePath = new ArrayList<String>(1);
 				filePath.add(((ProcessingConfiguration)taskConfiguration[i]).getMusicFileList().getFileAt(k));
-				oneTaskConfigs.add(new ProcessingConfiguration(new FileTable(fileId,filePath),
-						((ProcessingConfiguration)taskConfiguration[i]).getInputSourceType(),
-						((ProcessingConfiguration)taskConfiguration[i]).getInputFeatures(),
-						((ProcessingConfiguration)taskConfiguration[i]).getReductionSteps(),
-						((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowSize(),
-						((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowStepSize(),
-						((ProcessingConfiguration)taskConfiguration[i]).getConversionStep(),
-						((ProcessingConfiguration)taskConfiguration[i]).getFeatureDescription()));
+				if(((ProcessingConfiguration)taskConfiguration[i]).getInputFeatures() != null) {
+					oneTaskConfigs.add(new ProcessingConfiguration(new FileTable(fileId,filePath),
+							((ProcessingConfiguration)taskConfiguration[i]).getInputSourceType(),
+							((ProcessingConfiguration)taskConfiguration[i]).getInputFeatures(),
+							((ProcessingConfiguration)taskConfiguration[i]).getReductionSteps(),
+							((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowSize(),
+							((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowStepSize(),
+							((ProcessingConfiguration)taskConfiguration[i]).getConversionStep(),
+							((ProcessingConfiguration)taskConfiguration[i]).getFeatureDescription()));
+				} else {
+					oneTaskConfigs.add(new ProcessingConfiguration(new FileTable(fileId,filePath),
+							((ProcessingConfiguration)taskConfiguration[i]).getInputFeatureList(),
+							((ProcessingConfiguration)taskConfiguration[i]).getReductionSteps(),
+							((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowSize(),
+							((ProcessingConfiguration)taskConfiguration[i]).getAggregationWindowStepSize(),
+							((ProcessingConfiguration)taskConfiguration[i]).getConversionStep(),
+							((ProcessingConfiguration)taskConfiguration[i]).getFeatureDescription()));
+				}
 				
 			}
 		}

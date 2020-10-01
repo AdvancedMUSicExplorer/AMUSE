@@ -95,7 +95,7 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
     public List<File> getFeatureTables() {
         List<File> featureTables = new ArrayList<File>();
         for (int i = 0; i < inputAttribute.getValueCount(); i++) {
-        	if(inputSourceTypeAttribute.getValueStrAt(i).equals("RAW_FEATURE_LIST")) {        	
+        	if(inputSourceTypeAttribute.getValueAt(i).toString().equals("RAW_FEATURE_LIST")) {        	
         		featureTables.add(new File(inputAttribute.getValueAt(i)));
         	} 
         }
@@ -195,7 +195,7 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         this.addAttribute(reductionStepsAttribute);
         this.addAttribute(unitAttribute);
         this.addAttribute(aggregationWindowSizeAttribute);
-        this.addAttribute(aggregationWindowSizeAttribute);
+        this.addAttribute(aggregationWindowStepSizeAttribute);
         this.addAttribute(matrixToVectorMethodAttribute);
         this.addAttribute(featureDescriptionAttribute);
     }
