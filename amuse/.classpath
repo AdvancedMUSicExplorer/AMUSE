@@ -40,9 +40,6 @@
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/versioned-repository-0.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jxl-2.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/poi-ooxml-3.17.jar"/>
-	<classpathentry kind="lib" path="lib/java_fx/javafx.base.jar"/>
-	<classpathentry kind="lib" path="lib/java_fx/javafx.graphics.jar"/>
-	<classpathentry kind="lib" path="lib/java_fx/javafx.media.jar"/>
-	<classpathentry kind="lib" path="lib/java_fx/javafx.swing.jar"/>
+	<classpathentry kind="lib" path="lib/rapidminer_dependencies/ojalgo-47.3.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
