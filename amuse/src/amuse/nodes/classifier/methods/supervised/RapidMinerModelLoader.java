@@ -28,14 +28,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.rapidminer.Process;
+import com.rapidminer.ProcessLocation;
+import com.rapidminer.RepositoryProcessLocation;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.ModelApplier;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelLoader;
+import com.rapidminer.operator.io.RepositorySource;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryAccessor;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.local.LocalRepository;
+import com.rapidminer.repository.versioned.FilesystemRepositoryAdapter;
 import com.rapidminer.tools.OperatorService;
+import com.rapidminer.tools.encryption.EncryptionProvider;
+import com.rapidminer.versioning.repository.FileSystemRepository;
+import com.google.crypto.tink.aead.AeadConfig;
 
 import amuse.data.ModelType.LabelType;
 import amuse.data.io.DataSet;
@@ -46,6 +56,7 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.classifier.interfaces.ClassifierInterface;
+import amuse.util.FileOperations;
 import amuse.util.LibraryInitializer;
 
 /**
@@ -56,7 +67,7 @@ import amuse.util.LibraryInitializer;
  * @version $Id: RapidMinerModelLoader.java 208 2017-09-29 12:21:50Z frederik-h $
  */
 public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterface {
-
+	
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.interfaces.AmuseTaskInterface#setParameters(java.lang.String)
@@ -86,37 +97,45 @@ public class RapidMinerModelLoader extends AmuseTask implements ClassifierInterf
 		DataSet dataSetToClassify = ((DataSetInput)((ClassificationConfiguration)this.correspondingScheduler.
 				getConfiguration()).getInputToClassify()).getDataSet();
 		
-		
 		try {
 			
-			Process process = new Process();
+		 	Process process = new Process();
 			
 			// (1) Create ExampleSet from the ClassificationConfiguration
 			ExampleSet exampleSet = dataSetToClassify.convertToRapidMinerExampleSet();
 			int numberOfAttributes = new DataSet(exampleSet).getAttributeCount();//Number of attributes before classification
 			
-			// (2) Load the model
-			Operator modelLoader = OperatorService.createOperator(ModelLoader.class); 
-			modelLoader.setParameter(ModelLoader.PARAMETER_MODEL_FILE, pathToModelFile);
-			process.getRootOperator().getSubprocess(0).addOperator(modelLoader);
+			// (2) Copy Model to repository
+			FileOperations.copy(new File(pathToModelFile), new File(LibraryInitializer.REPOSITORY_PATH + File.separator + "model.ioo"));	
 			
-			// (3) Apply the model
+			// (3) create retrieve operator
+			RepositorySource retrieveModel = OperatorService.createOperator(RepositorySource.class);
+			retrieveModel.setParameter(RepositorySource.PARAMETER_REPOSITORY_ENTRY, "//" + LibraryInitializer.RAPIDMINER_REPO_NAME + "/model");
+			process.getRootOperator().getSubprocess(0).addOperator(retrieveModel);
+			
+			// (4) Apply the model
 			Operator modelApplier = OperatorService.createOperator(ModelApplier.class);
 			process.getRootOperator().getSubprocess(0).addOperator(modelApplier);
 
-			// (4) Connect the ports
+			// (5) Connect the ports
 			InputPort modelApplierModelInputPort = modelApplier.getInputPorts().getPortByName("model");
 			InputPort modelApplierUnlabelledDataInputPort = modelApplier.getInputPorts().getPortByName("unlabelled data");
-			OutputPort modelLoaderOutputPort = modelLoader.getOutputPorts().getPortByName("output");
+			OutputPort modelLoaderOutputPort = retrieveModel.getOutputPorts().getPortByName("output");
 			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
 
+			InputPort processInputPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(0);
+			OutputPort modelApplierLabelledDataOutputPort = modelApplier.getOutputPorts().getPortByName("labelled data");
+			
 			modelLoaderOutputPort.connectTo(modelApplierModelInputPort);
 			processOutputPort.connectTo(modelApplierUnlabelledDataInputPort);
+			modelApplierLabelledDataOutputPort.connectTo(processInputPort);
 			
-			// (5) Run the process
-			process.run(new IOContainer(exampleSet));
+		 	// (6) Run the process
+			IOContainer result = process.run(new IOContainer(exampleSet));
 			
-			// (6) Convert the results to AMUSE EditableDataSet
+			exampleSet = result.get(ExampleSet.class);
+			
+			// (7) Convert the results to AMUSE EditableDataSet
 			exampleSet.getAttributes().getPredictedLabel().setName("PredictedCategory");
 			
 			DataSet exampleDataSet = new DataSet(exampleSet);

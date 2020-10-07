@@ -32,6 +32,7 @@ import org.apache.log4j.Level;
 
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.util.AmuseLogger;
+import ca.cgjennings.jvm.JarLoader;
 
 /**
  * PluginLoader loads plugin classes to CLASSPATH
@@ -54,14 +55,10 @@ public class PluginLoader {
 					// Load the classes of all JARs found in plugin folder
 					if(currentPlugin.getAbsoluteFile().toString().toLowerCase().endsWith(".jar")) {
 						try {
-							URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader(); 
-							Class<?> systemClass = URLClassLoader.class; 
-							Method method = null;
-							method = systemClass.getDeclaredMethod("addURL", new Class[] { URL.class });
-							method.setAccessible(true);
-					    	File jar = new File(currentPlugin.getAbsolutePath());
-							method.invoke(sysLoader, jar.toURI().toURL());
-
+							File jar = new File(currentPlugin.getAbsolutePath());
+							
+							JarLoader.addToClassPath(jar);
+							
 							AmuseLogger.write(PluginLoader.class.getName(), Level.INFO, "Plugin classes from " + currentPlugin.getName() + 
 									" loaded");
 						} catch (Exception e) {

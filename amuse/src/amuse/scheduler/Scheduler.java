@@ -98,12 +98,12 @@ public class Scheduler implements Runnable {
 			this.jobCounter = new Integer(line);
 			inputReader.close();
 		} catch(Exception e) {
-			AmuseLogger.write(schedulerInstance.getClass().getName(),Level.ERROR,"Could not load the number of batch jobs: " + e.getMessage());
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR,"Could not load the number of batch jobs: " + e.getMessage());
 		}
 		try {
 			PluginLoader.loadPlugins(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins"));
 		} catch(SchedulerException e) {
-			AmuseLogger.write(schedulerInstance.getClass().getName(),Level.ERROR,"Could not load properly AMUSE plugins, further " +
+			AmuseLogger.write(this.getClass().getName(),Level.ERROR,"Could not load properly AMUSE plugins, further " +
 					"errors are possible (" + e.getMessage() + ")");
 		}
 	}

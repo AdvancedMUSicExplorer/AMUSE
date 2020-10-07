@@ -40,7 +40,6 @@ import com.rapidminer.Process;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ArffExampleSetWriter;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
 import com.rapidminer.operator.preprocessing.filter.ExampleFilter;
@@ -109,27 +108,19 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			exampleFilter.setParameter("invert_filter", "false");
 			process.getRootOperator().getSubprocess(0).addOperator(exampleFilter);
 			
-			// (4) Save the ExampleSet and replace the original data file for classification
-			Operator exampleWriter = OperatorService.createOperator(ArffExampleSetWriter.class);
-			exampleWriter.setParameter("example_set_file", new String(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + "input.arff"));
-			process.getRootOperator().getSubprocess(0).addOperator(exampleWriter);
-			
 			// (4) Connect the ports
 			InputPort outlierDetectorInputPort = outlierDetector.getInputPorts().getPortByName("example set input");
 			OutputPort outlierDetectorOutputPort = outlierDetector.getOutputPorts().getPortByName("example set output");
 			InputPort exampleFilterInputPort = exampleFilter.getInputPorts().getPortByName("example set input");
 			OutputPort exampleFilterOutputPort = exampleFilter.getOutputPorts().getPortByName("example set output");
-			InputPort exampleWriterInputPort = exampleWriter.getInputPorts().getPortByName("input");
-			OutputPort exampleWriterOutputPort = exampleWriter.getOutputPorts().getPortByName("through");
 			OutputPort processSourceOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
 			InputPort processSinkOutputPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(0);
 			
 			processSourceOutputPort.connectTo(outlierDetectorInputPort);
 			outlierDetectorOutputPort.connectTo(exampleFilterInputPort);
-			exampleFilterOutputPort.connectTo(exampleWriterInputPort);
-			exampleWriterOutputPort.connectTo(processSinkOutputPort);
+			exampleFilterOutputPort.connectTo(processSinkOutputPort);
 			
-			// (4) Run the process and update the example set (removing the outliers)
+			// (5) Run the process and update the example set (removing the outliers)
 			int oldSize = exampleSet.size();
 			IOContainer container = process.run(new IOContainer(exampleSet));
 
@@ -142,7 +133,7 @@ public class DistanceBasedOutlierDetectorAdapter extends AmuseTask implements Cl
 			if(newSize == 0){
 				throw new Exception("Every example was marked as outlier.");
 			}
-			// (5) Convert the results to AMUSE EditableDataSet
+			// (6) Convert the results to AMUSE EditableDataSet
 			((TrainingConfiguration)(this.correspondingScheduler.getConfiguration())).setGroundTruthSource(new DataSetInput(
 					new DataSet(exampleSet)));
 		} catch(Exception e) {

@@ -90,6 +90,8 @@ public class TrainerNodeScheduler extends NodeScheduler {
 	/** Path to the output model(s) */
 	private String outputModel = null;
 	
+	private String[] categoryNames;
+	
 	/**
 	 * Constructor
 	 */
@@ -371,7 +373,11 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 					
 						//Add the category attributes
+						categoryNames = new String[numberOfCategories];
+						int categoryIndex = 0;
 						for(int i : attributesToPredict) {
+							categoryNames[categoryIndex] = completeInput.getAttribute(i).getName();
+							categoryIndex++;
 							labeledInputForTraining.addAttribute(completeInput.getAttribute(i));
 							//If the classification is not continuous, the values have to be rounded
 							if(((TrainingConfiguration)this.taskConfiguration).getRelationshipType() == RelationshipType.BINARY && ((TrainingConfiguration)this.taskConfiguration).getLabelType() != LabelType.MULTICLASS) {	
@@ -521,8 +527,13 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					//It marks where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					//add the category attributes
+					categoryNames = new String[numberOfCategories];
+					int categoryIndex = 0;
 					for(int category : attributesToPredict) {
-						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+						String categoryName = classifierGroundTruthSet.getAttribute(5 + category).getName();
+						categoryNames[categoryIndex] = categoryName;
+						categoryIndex++;
+						labeledInputForTraining.addAttribute(new NumericAttribute(categoryName,new ArrayList<Double>()));
 					}
 					
 					
@@ -701,8 +712,13 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					//It marks where the categories that are to be classified start and how many will follow
 					labeledInputForTraining.addAttribute(new NumericAttribute("NumberOfCategories",new ArrayList<Double>()));
 					//add the category attributes
+					categoryNames = new String[numberOfCategories];
+					int categoryIndex = 0;
 					for(int category : attributesToPredict) {
-						labeledInputForTraining.addAttribute(new NumericAttribute(classifierGroundTruthSet.getAttribute(5 + category).getName(),new ArrayList<Double>()));
+						String categoryName = classifierGroundTruthSet.getAttribute(5 + category).getName();
+						categoryNames[categoryIndex] = categoryName;
+						categoryIndex++;
+						labeledInputForTraining.addAttribute(new NumericAttribute(categoryName,new ArrayList<Double>()));
 					}
 					
 					// Create the labeled data
@@ -1128,14 +1144,12 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					this.categoryDescription + File.separator;
 			
 			//choose the path according to the categories that are classified;
-			DataSet groundTruthSource = ((DataSetInput)((TrainingConfiguration)this.taskConfiguration).getGroundTruthSource()).getDataSet();
 			int numberOfCategories = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict().size();
-			int firstCategoryPosition = groundTruthSource.getAttributeCount() - numberOfCategories;
 			for(int i = 0; i < numberOfCategories; i++) {
 				if(i != 0) {
 					folderForModelsString += "_";
 				}
-				folderForModelsString += groundTruthSource.getAttribute(firstCategoryPosition + i).getName();
+				folderForModelsString += categoryNames[i];
 			}
 			
 			/**

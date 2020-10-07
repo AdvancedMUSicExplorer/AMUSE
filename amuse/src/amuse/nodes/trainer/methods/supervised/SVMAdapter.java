@@ -23,6 +23,7 @@
  */
 package amuse.nodes.trainer.methods.supervised;
 
+import java.io.File;
 import java.util.StringTokenizer;
 
 import amuse.data.io.DataSet;
@@ -31,15 +32,19 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
+import amuse.util.FileOperations;
 import amuse.util.LibraryInitializer;
 
 import com.rapidminer.Process;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.io.RepositoryStorer;
 import com.rapidminer.operator.learner.functions.kernel.JMySVMLearner;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.local.LocalRepository;
 import com.rapidminer.tools.OperatorService;
 
 /**
@@ -133,9 +138,9 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 			modelLearner.setParameter("epsilon", this.epsilon.toString());
 			process.getRootOperator().getSubprocess(0).addOperator(modelLearner);
 			
-			// Save the model
-			Operator modelWriter = OperatorService.createOperator(ModelWriter.class);
-			modelWriter.setParameter("model_file", outputModel);
+			// Write the model
+			RepositoryStorer modelWriter = OperatorService.createOperator(RepositoryStorer.class);
+			modelWriter.setParameter(RepositoryStorer.PARAMETER_REPOSITORY_ENTRY, "//" + LibraryInitializer.RAPIDMINER_REPO_NAME + "/model");
 			process.getRootOperator().getSubprocess(0).addOperator(modelWriter);
 			
 			// Connect the ports
@@ -149,6 +154,10 @@ public class SVMAdapter extends AmuseTask implements TrainerInterface {
 			
 			// Run the process
 			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
+			
+			// Copy the model into the model database
+			FileOperations.copy(new File(LibraryInitializer.REPOSITORY_PATH + File.separator + "model.ioo"), new File(outputModel));
+			
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());
 		}

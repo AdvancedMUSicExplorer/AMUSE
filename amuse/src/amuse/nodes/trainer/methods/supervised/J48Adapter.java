@@ -30,14 +30,20 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.trainer.interfaces.TrainerInterface;
+import amuse.util.FileOperations;
 import amuse.util.LibraryInitializer;
+
+import java.io.File;
 
 import com.rapidminer.Process;
 import com.rapidminer.operator.IOContainer;
 import com.rapidminer.operator.Operator;
-import com.rapidminer.operator.io.ModelWriter;
+import com.rapidminer.operator.io.RepositoryStorer;
 import com.rapidminer.operator.ports.InputPort;
 import com.rapidminer.operator.ports.OutputPort;
+import com.rapidminer.repository.Repository;
+import com.rapidminer.repository.RepositoryManager;
+import com.rapidminer.repository.local.LocalRepository;
 import com.rapidminer.tools.OperatorService;
 
 
@@ -93,8 +99,8 @@ public class J48Adapter extends AmuseTask implements TrainerInterface {
 			process.getRootOperator().getSubprocess(0).addOperator(modelLearner);
 			
 			// Write the model
-			Operator modelWriter = OperatorService.createOperator(ModelWriter.class);
-			modelWriter.setParameter("model_file", outputModel);
+			RepositoryStorer modelWriter = OperatorService.createOperator(RepositoryStorer.class);
+			modelWriter.setParameter(RepositoryStorer.PARAMETER_REPOSITORY_ENTRY, "//" + LibraryInitializer.RAPIDMINER_REPO_NAME + "/model");
 			process.getRootOperator().getSubprocess(0).addOperator(modelWriter);
 			
 			// Connect the Ports
@@ -108,6 +114,10 @@ public class J48Adapter extends AmuseTask implements TrainerInterface {
 			
 			// Run the process
 			process.run(new IOContainer(dataSet.convertToRapidMinerExampleSet()));
+			
+			// Copy the model into the model database
+			FileOperations.copy(new File(LibraryInitializer.REPOSITORY_PATH + File.separator + "model.ioo"), new File(outputModel));
+			
 		} catch (Exception e) {
 			throw new NodeException("Classification training failed: " + e.getMessage());
 		}
