@@ -137,6 +137,9 @@ public class LibraryInitializer {
 	 */
 	private static void clearRepositoryFolder() throws IOException {
 		File[] files = new File(REPOSITORY_PATH).listFiles();
+		if(files == null) {
+			return;
+		}
 		boolean successful = true;
 		for(File file : files) {
 			successful = successful & FileOperations.delete(file, true);
