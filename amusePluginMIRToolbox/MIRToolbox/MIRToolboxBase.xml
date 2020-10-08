@@ -245,7 +245,7 @@ mirres=mirrms(f);
 		% Default settings: time window of 1024 samples with 1024 sample overlap
 		mirres=mirroughness(a,'Frame',1024,'sp',1024,'sp');
 		res=mirgetdata(mirres);
-		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res,1024,wlength,woffset);
+		arff_saver_with_windows_number([output_file_prefix,'24.arff'],'Sensory roughness',res,1024,1024);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="39" dimensions="13">
