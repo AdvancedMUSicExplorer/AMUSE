@@ -120,15 +120,14 @@ public class LibraryInitializer {
 	 * @throws RepositoryException
 	 */
 	private static void loadRapidMinerRepo() throws RepositoryException {
-		// try to load the repository
+		// if the repository already exists remove it
 		try {
 			rapidMinerRepo = RepositoryManager.getInstance(null).getRepository(RAPIDMINER_REPO_NAME);
+			RepositoryManager.getInstance(null).removeRepository(rapidMinerRepo);
 		} catch (RepositoryException e) {}
-		// create the repository if it does not exist yet
-		if(rapidMinerRepo == null) {
-			rapidMinerRepo = new LocalRepository(RAPIDMINER_REPO_NAME, new File(REPOSITORY_PATH));
-			RepositoryManager.getInstance(null).addRepository(rapidMinerRepo);
-		}
+		// create a new repository
+		rapidMinerRepo = new LocalRepository(RAPIDMINER_REPO_NAME, new File(REPOSITORY_PATH));
+		RepositoryManager.getInstance(null).addRepository(rapidMinerRepo);
 	}
 	
 	/**
