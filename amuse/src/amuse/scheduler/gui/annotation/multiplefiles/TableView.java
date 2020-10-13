@@ -413,7 +413,9 @@ public class TableView extends JPanel{
 					JLabel comp = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 					String text = comp.getText();
 					// Display only the name of the file, not the whole path
-					text = text.substring(commonPathPrefix.length());
+					if(text.length() > commonPathPrefix.length()) {
+						text = text.substring(commonPathPrefix.length());
+					}
 					comp.setText(text);
 					return comp;
 				}
