@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="lib/jama.jar"/>
 	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/launcher.jar"/>
@@ -37,5 +41,19 @@
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jxl-2.6.12.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/poi-ooxml-3.17.jar"/>
 	<classpathentry kind="lib" path="lib/rapidminer_dependencies/ojalgo-47.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/jave-core-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave-nativebin-linux32-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave-nativebin-linux64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave-nativebin-osx64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave-nativebin-win32-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave-nativebin-win64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.30.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-core-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-nativebin-linux32-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-nativebin-linux64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-nativebin-osx64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-nativebin-win32-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/jave-nativebin-win64-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jave/slf4j-api-1.7.30.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

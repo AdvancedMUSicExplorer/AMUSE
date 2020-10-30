@@ -23,25 +23,32 @@
  */
 package amuse.util.audio;
 
-import amuse.interfaces.nodes.NodeException;
-import amuse.preferences.AmusePreferences;
-import amuse.preferences.KeysBooleanValue;
-import amuse.preferences.KeysIntValue;
-import amuse.util.AmuseLogger;
-import javazoom.jl.converter.Converter;
-import javazoom.jl.decoder.JavaLayerException;
-import org.apache.log4j.Level;
-
-import javax.sound.sampled.*;
-import javax.sound.sampled.AudioFileFormat.Type;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.util.logging.Logger;
+
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioFileFormat.Type;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import org.apache.log4j.Level;
+
+import amuse.interfaces.nodes.NodeException;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysBooleanValue;
+import amuse.preferences.KeysIntValue;
+import amuse.util.AmuseLogger;
+import ws.schild.jave.Encoder;
+import ws.schild.jave.EncoderException;
+import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.encode.AudioAttributes;
+import ws.schild.jave.encode.EncodingAttributes;
 
 /**
  * This class provides static methods to do various operations on audio files.
@@ -82,14 +89,32 @@ public class AudioFileConversion {
         }
 
         // ---------------------------------------------------------------------
-        // II.: Try to convert mp3 to wave if needed:
+        // II.: Try to convert from any compressed format (mp3, ogg, flac,..) to wave if needed:
         // ---------------------------------------------------------------------
         if (audioFileFormat == null || audioFileFormat.getType() != Type.WAVE) { // If not wave already, convert to wave
             try {
-                AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave.");
-                convertMp3ToWave(musicFile, wavFile);
-                isOriginal = false;
-            } catch (IOException ex) {
+            	AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave.");
+                
+				//Audio Attributes                                       
+				AudioAttributes audio = new AudioAttributes();
+				// TODO all conversion (mono, downsampling, splitting, mixing) could be done much easier using jave2
+				// Simple example:
+//				if (isReduceToMono)
+//				    audio.setChannels(1);
+//				if (isDownSamplingActive)
+//					audio.setSamplingRate(targetKHZ);                               
+				                                                             
+				//Encoding attributes                                   
+				EncodingAttributes attrs = new EncodingAttributes();
+				attrs.setOutputFormat("wav");                                     
+				attrs.setAudioAttributes(audio);                         
+				                                                             
+				//Encode                                                    
+				Encoder encoder = new Encoder();                            
+				encoder.encode(new MultimediaObject(musicFile), wavFile, attrs);
+				     
+				isOriginal = false;
+            } catch (EncoderException ex) {
                 throw new IOException("Error converting audio file " + musicFile.getName() + ": " + ex.getMessage());
             }
         } else {
@@ -289,22 +314,6 @@ public class AudioFileConversion {
             }
         }
         return part;
-    }
-
-    /**
-     * This method is used to convert a given .mp3 file to .wav. This method currently uses the javazoom library from www.javazoom.net.
-     *
-     * @param mp3File    The file to convert.
-     * @param outputFile The file to write the converted .wav to.
-     * @throws IOException Thrown each time the given file is invalid.
-     */
-    public static void convertMp3ToWave(File mp3File, File outputFile) throws IOException {
-        try {
-            Converter con = new Converter();
-            con.convert(mp3File.getAbsolutePath(), outputFile.getAbsolutePath());
-        } catch (JavaLayerException ex) {
-            Logger.getLogger(AudioFileConversion.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
     }
 
     private static void deleteConvertedFile(File wavFile, boolean original) {
