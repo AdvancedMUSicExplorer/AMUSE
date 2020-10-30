@@ -282,7 +282,7 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 				} 
 			}
 		} catch(Exception e) {
-			throw new NodeException("Could not load the time events: " + e.getMessage());
+			throw new NodeException("Could not load the time events (can be extracted with MIRToolbox-Plugin): " + e.getMessage());
 		}
 		return eventTimes;
 	}
