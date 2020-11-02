@@ -31,6 +31,7 @@ import org.apache.log4j.Level;
 
 import com.rapidminer.Process;
 import com.rapidminer.example.Attribute;
+import com.rapidminer.example.Attributes;
 import com.rapidminer.example.ExampleSet;
 import com.rapidminer.example.table.AttributeFactory;
 import com.rapidminer.example.table.DoubleArrayDataRow;
@@ -145,26 +146,23 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 			// Train the model
 			Operator pca = OperatorService.createOperator(PCA.class);
 			pca.setParameter("number_of_components", numberOfComponents.toString());
+			pca.setParameter("dimensionality_reduction", "fixed_number");
 			process.getRootOperator().getSubprocess(0).addOperator(pca);
-			
-			// Apply the model
-			Operator modelApp = OperatorService.createOperator(ModelApplier.class);
-			process.getRootOperator().getSubprocess(0).addOperator(modelApp);
 			
 			// Connect the Ports
 			InputPort pcaInputPort = pca.getInputPorts().getPortByName("example set input");
-			OutputPort pcaDataOutputPort = pca.getOutputPorts().getPortByName("original");
-			OutputPort pcaModelOutputPort = pca.getOutputPorts().getPortByName("preprocessing model");
-			InputPort modelAppModelInputPort = modelApp.getInputPorts().getPortByName("model");
-			InputPort modelAppDataInputPort = modelApp.getInputPorts().getPortByName("unlabelled data");
+			OutputPort pcaOutputPort = pca.getOutputPorts().getPortByName("example set output");
 			OutputPort processOutputPort = process.getRootOperator().getSubprocess(0).getInnerSources().getPortByIndex(0);
+			
+			InputPort processInputPort = process.getRootOperator().getSubprocess(0).getInnerSinks().getPortByIndex(0);
 
 			processOutputPort.connectTo(pcaInputPort);
-			pcaModelOutputPort.connectTo(modelAppModelInputPort);
-			pcaDataOutputPort.connectTo(modelAppDataInputPort);
+			pcaOutputPort.connectTo(processInputPort);
 			
 			// Run the process
-			process.run(new IOContainer(exampleSet));
+			IOContainer result = process.run(new IOContainer(exampleSet));
+			
+			exampleSet = result.get(ExampleSet.class);
 		} catch(OperatorException e) {
 			throw new NodeException("Problem occured during PCA: " + e.getMessage());
 		} catch (OperatorCreationException e) {
