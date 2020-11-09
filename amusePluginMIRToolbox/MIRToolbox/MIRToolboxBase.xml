@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MatlabFeatures');
-addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MIRToolbox/MIRToolbox');
-addpath('/home/ginsel/workspace_git/AMUSE/amuse//tools/MIRToolbox/AuditoryToolbox');
+addpath('%AMUSEHOME%/tools/MatlabFeatures');
+addpath('%AMUSEHOME%/tools/MIRToolbox/MIRToolbox');
+addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
