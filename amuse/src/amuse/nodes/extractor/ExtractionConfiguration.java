@@ -158,7 +158,7 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	 * @see amuse.interfaces.nodes.TaskConfiguration#getDescription()
 	 */
 	public String getDescription() {
-		return new String("File number: " + musicFileList.getFiles().size() + " Feature number: " + features.getSelectedIds().size());
+		return new String("File number: " + musicFileList.getFiles().size() + " Number of features: " + features.getSelectedIds().size());
 	}
 
 	

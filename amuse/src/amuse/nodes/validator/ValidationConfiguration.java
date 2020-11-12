@@ -602,7 +602,7 @@ public class ValidationConfiguration extends TaskConfiguration {
                 if (m.isSongLevelSelected())
                     songLevel++;
             }
-        return new String("Input: " + inputToValidate.toString() + " Measure number: " + songLevel +"(Songlevel) " + partitionLevel+"(Partitionlevel)");
+        return new String("Input: " + inputToValidate.toString() + " Number of measures: " + songLevel +"(Songlevel) " + partitionLevel+"(Partitionlevel)");
 	}
 
 	/**
