@@ -160,9 +160,11 @@ public abstract class AmuseTaskStarter implements AmuseTaskStarterInterface, Nod
      */
     protected void removeInputFolder() throws Exception {
         File f = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "node" + File.separator + this.nodeFolder + File.separator + "input");
-        boolean delete = FileOperations.delete(f, true);
-        if (!delete) {
-            throw new SchedulerException("Can't remove node input folder: " + f);
+        if(f.exists()) {
+	        boolean delete = FileOperations.delete(f, true);
+	        if (!delete) {
+	            throw new SchedulerException("Can't remove node input folder: " + f);
+	        }
         }
     }
 }
