@@ -90,7 +90,7 @@ public class TrainingView extends JPanel {
 		this.inputFeaturePanel = new InputFeaturePanel();
 		viewLeft.add(groundTruthSelectionPanel, "growx, span, wrap");
 		groundTruthSelectionPanel.getGroundTruthSourceTypeComboBox().addActionListener(e -> {
-			setChildsEnabled(inputFeaturePanel, groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.CATEGORY_ID));
+			setChildsEnabled(inputFeaturePanel, !groundTruthSelectionPanel.getSelectedGroundTruthSourceType().equals(GroundTruthSourceType.READY_INPUT));
 		});
 		if (leftTitle.equals(trainingViewName)) {
 			preprocessingAlgorithmFacade = new AlgorithmConfigurationFacade("Preprocessing", new File("config" + File.separator + "classifierPreprocessingAlgorithmTable.arff"));
