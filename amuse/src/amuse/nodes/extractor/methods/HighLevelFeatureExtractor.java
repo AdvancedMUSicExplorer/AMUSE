@@ -196,7 +196,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 
 		String relativePath = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getMusicFileList().getFileAt(0);
 		if(relativePath.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-			relativePath = relativePath.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+			relativePath = relativePath.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		}
 		relativePath = relativePath.substring(0,relativePath.lastIndexOf("."));
 		String musicFile = relativePath.substring(relativePath.lastIndexOf(File.separator)+1);

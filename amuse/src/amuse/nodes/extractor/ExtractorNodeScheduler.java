@@ -159,7 +159,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// Set the music file name without music database directory path 
 		String relativeName = new String();
 		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
 		}

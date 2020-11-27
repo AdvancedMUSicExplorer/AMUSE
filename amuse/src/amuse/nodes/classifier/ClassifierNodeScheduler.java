@@ -434,7 +434,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						currentInputFile = 
 							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 							+ File.separator 
-							+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+							+ currentInputFile.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length() + 1,
 									currentInputFile.lastIndexOf("."))
 							+ File.separator
 							+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,
@@ -484,7 +484,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							currentInputFile = 
 								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 
-								+ currentInputFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length() + 1,
+								+ currentInputFile.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length() + 1,
 										currentInputFile.lastIndexOf("."))
 								+ File.separator
 								+ currentInputFile.substring(currentInputFile.lastIndexOf(File.separator) + 1,

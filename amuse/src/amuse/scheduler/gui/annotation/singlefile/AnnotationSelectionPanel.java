@@ -735,7 +735,7 @@ public class AnnotationSelectionPanel extends JSplitPane {
 						String songPath = annotationController.getMusicFilePath();
 						String relativeName = new String();
 						if(songPath.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-							relativeName = songPath.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+							relativeName = songPath.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 						} else {
 							relativeName = songPath;
 						}

@@ -314,7 +314,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			// Calculate the path to feature files
 			String relativeName = new String();
 			if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 			} else {
 				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
 			}
@@ -449,7 +449,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// Calculate the path to processed feature files
 		String relativeName = new String();
 		if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
 		}
@@ -1029,7 +1029,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			// Calculate the path to file with time events
 			String relativeName = new String();
 			if(currentTimeEventFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-				relativeName = currentTimeEventFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
+				relativeName = currentTimeEventFile.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 			} else {
 				relativeName = currentTimeEventFile;
 			}
