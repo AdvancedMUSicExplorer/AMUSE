@@ -133,7 +133,7 @@ public class AnnotationIO {
 			writer = new PrintWriter(path);
 			writer.write("@RELATION 'Annotation " + dataSetName + "'\n");
 			writer.write("%rows=" + tableModel.getRowCount() + "\n");
-			writer.write("%columns=" + (tableModel.getColumnCount() - 1) + "\n\n");
+			writer.write("%columns=" + (columnModel.getColumnCount() + 3) + "\n\n");
 			
 			// Write the header according to the type of the attribute
 			writer.write("@ATTRIBUTE Id NUMERIC\n");
