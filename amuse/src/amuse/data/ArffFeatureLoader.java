@@ -40,7 +40,7 @@ import amuse.interfaces.nodes.NodeException;
  */
 public class ArffFeatureLoader {
 	
-	public static Feature loadFeature(String featureFile) throws NodeException {
+	public static Feature loadFeature(String featureFile, int id) throws NodeException {
 		ArrayList<Double[]> values;
 		ArrayList<Double> windows;
 		int numberOfValues = 0;
@@ -137,9 +137,9 @@ public class ArffFeatureLoader {
 		}
 		
 		// Create the Feature object and set the frame size
-		ArrayList<Integer> id = new ArrayList<Integer>(1);
-		id.add(new Integer(featureFile.substring(featureFile.lastIndexOf("_")+1,featureFile.lastIndexOf("."))));
-		Feature loadedFeature = new Feature(id, featureName, values, windows);
+		ArrayList<Integer> ids = new ArrayList<Integer>(1);
+		ids.add(id);
+		Feature loadedFeature = new Feature(ids, featureName, values, windows);
 		loadedFeature.setSourceFrameSize(sourceFrameSize);
 		if(sourceStepSize == -1) {
 			sourceStepSize = sourceFrameSize;

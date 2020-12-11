@@ -326,12 +326,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
 					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i)
 					+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
-					+ ".arff"));
+					+ ".arff", featureIDs.get(i)));
 			} else {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
 						File.separator + relativeName + "_" + featureIDs.get(i)
 						+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
-						+ ".arff"));
+						+ ".arff", featureIDs.get(i)));
 			}
 		}
 		
