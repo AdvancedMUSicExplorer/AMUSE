@@ -156,6 +156,8 @@ public class FileTreeController implements ActionListener, KeyListener {
             }
         } else if (e.getActionCommand().equals("remove")) {
             removeSelectedNodes();
+        } else if(e.getActionCommand().equals("remove all")) {
+        	model.removeAllFiles();
         }
     }
 
@@ -182,7 +184,7 @@ public class FileTreeController implements ActionListener, KeyListener {
      * @param files
      */
     public void loadFiles(List<File> files) {
-        model.removeAllFiles();
+        // model.removeAllFiles();
         for (File currentFile : files) {
             model.addFile(currentFile);
         }
@@ -220,4 +222,5 @@ public class FileTreeController implements ActionListener, KeyListener {
             JOptionPane.showMessageDialog(view.getView(), "Select atleast one file to remove.", "No file selcted!", JOptionPane.WARNING_MESSAGE);
         }
     }
+    
 }

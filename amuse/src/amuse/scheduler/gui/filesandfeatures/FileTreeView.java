@@ -49,6 +49,7 @@ public class FileTreeView {
     JPanel buttonPanel;
     JButton addButton;
     JButton removeButton;
+    JButton removeAllButton;
     JButton saveFileListButton;
     JButton loadFileListButton;
 
@@ -85,6 +86,7 @@ public class FileTreeView {
         tree.addKeyListener(controller);
         addButton.addActionListener(controller);
         removeButton.addActionListener(controller);
+        removeAllButton.addActionListener(controller);
         saveFileListButton.addActionListener(controller);
         loadFileListButton.addActionListener(controller);
     }
@@ -99,24 +101,28 @@ public class FileTreeView {
             BoxLayout layout = new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS);
             buttonPanel.setLayout(layout);
             addButton = new JButton();
-            addButton.setText("Add Files");
+            addButton.setText("<html>Add<br>File(s)</html>");
             addButton.setActionCommand("add");
             removeButton = new JButton();
-            removeButton.setText("Remove Selected");
+            removeButton.setText("<html>Remove<br>Selected</html>");
             removeButton.setActionCommand("remove");
+            removeAllButton = new JButton();
+            removeAllButton.setText("<html>Remove<br>All</html>");
+            removeAllButton.setActionCommand("remove all");
             saveFileListButton = new JButton();
-            saveFileListButton.setText("->|");
-            saveFileListButton.setToolTipText("Save this FileList");
+            saveFileListButton.setText("<html>Save<br>List</html>");
+            // saveFileListButton.setToolTipText("Save this FileList");
             saveFileListButton.setActionCommand("save");
             loadFileListButton = new JButton();
-            loadFileListButton.setText("<-|");
-            loadFileListButton.setToolTipText("Load FileFist");
+            loadFileListButton.setText("<html>Add<br>List</html>");
+            // loadFileListButton.setToolTipText("Add FileFist");
             loadFileListButton.setActionCommand("load");
             buttonPanel.add(addButton);
-            buttonPanel.add(removeButton);
-            buttonPanel.add(Box.createHorizontalGlue());
             buttonPanel.add(loadFileListButton);
+            buttonPanel.add(removeButton);
+            buttonPanel.add(removeAllButton);
             buttonPanel.add(saveFileListButton);
+            buttonPanel.add(Box.createHorizontalGlue());
         }
         return buttonPanel;
     }
