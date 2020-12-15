@@ -43,6 +43,7 @@ import amuse.data.FeatureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
+import amuse.data.io.attributes.Attribute;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.NodeEvent;
@@ -54,12 +55,8 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
-
 /**
- * ProcessorNodeScheduler is responsible for the processor node. The given features over time
+ * ProcessorNodeScheduler is responsible for the processor node. The gInstiven features over time
  * are converted to vectors for classification algorithms 
  * 
  * @author Igor Vatolkin
@@ -549,67 +546,62 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			DimensionProcessorInterface dri = null;
 			
 			// Load the tool table
-			ArffLoader processingToolsLoader = new ArffLoader();
+			DataSetAbstract processingToolsSet;
 		    try {
 		    	if(this.directStart) {
-		    		processingToolsLoader.setFile(new File(AmusePreferences.getProcessorAlgorithmTablePath()));
+		    		processingToolsSet = new ArffDataSet(new File(AmusePreferences.getProcessorAlgorithmTablePath()));
 		    	} else {
-		    		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorAlgorithmTable.arff"));
+		    		processingToolsSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorAlgorithmTable.arff"));
 		    	}
-				Instance currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
-				Attribute idAttribute = processingToolsLoader.getStructure().attribute("Id");
-				while(currentInstance != null) {
+				Attribute idAttribute = processingToolsSet.getAttribute("Id");
+				for(int i=0;i<processingToolsSet.getValueCount();i++) {
 
 					// Load the required adapter class and configure it
-					if(!currentInstance.isMissing(idAttribute) && 
-							currentStepID == new Double(currentInstance.value(idAttribute)).intValue()) {
+					if(currentStepID == new Double(idAttribute.getValueAt(i).toString()).intValue()) {
 						
 						// Attributes with properties of dimension reducer
-						Attribute processorNameAttribute = processingToolsLoader.getStructure().attribute("Name");
-						Attribute adapterClassAttribute = processingToolsLoader.getStructure().attribute("AdapterClass");
-						Attribute homeFolderAttribute = processingToolsLoader.getStructure().attribute("HomeFolder");
-						Attribute processorStartScriptAttribute = processingToolsLoader.getStructure().attribute("StartScript");
-						Attribute inputProcessorBatchAttribute = processingToolsLoader.getStructure().attribute("InputBatch");
+						Attribute processorNameAttribute = processingToolsSet.getAttribute("Name");
+						Attribute adapterClassAttribute = processingToolsSet.getAttribute("AdapterClass");
+						Attribute homeFolderAttribute = processingToolsSet.getAttribute("HomeFolder");
+						Attribute processorStartScriptAttribute = processingToolsSet.getAttribute("StartScript");
+						Attribute inputProcessorBatchAttribute = processingToolsSet.getAttribute("InputBatch");
 						
 						try {
-							adapter = Class.forName(currentInstance.stringValue(adapterClassAttribute));
+							adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
 							
 							dri = (DimensionProcessorInterface)adapter.newInstance();
 							Properties processorProperties = new Properties();
-							Integer idOfCurrentProcessor = new Double(currentInstance.value(idAttribute)).intValue();
+							Integer idOfCurrentProcessor = new Double(idAttribute.getValueAt(i).toString()).intValue();
 							processorProperties.setProperty("id",idOfCurrentProcessor.toString());
-							processorProperties.setProperty("processorName",currentInstance.stringValue(processorNameAttribute));
-							processorProperties.setProperty("processorFolderName",currentInstance.stringValue(homeFolderAttribute));
+							processorProperties.setProperty("processorName",processorNameAttribute.getValueAt(i).toString());
+							processorProperties.setProperty("processorFolderName",homeFolderAttribute.getValueAt(i).toString());
 							if(directStart) {
-								processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
+								processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i).toString());
 							} else {
-								processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
+								processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i).toString());
 							}
-							processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
-							processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));
+							processorProperties.setProperty("processorStartScript",processorStartScriptAttribute.getValueAt(i).toString());
+							processorProperties.setProperty("inputProcessorBatch",inputProcessorBatchAttribute.getValueAt(i).toString());
 							processorProperties.setProperty("minimalFrameSize",new Integer(this.minimalFrameSize).toString());
 							((AmuseTask)dri).configure(processorProperties,this,currentStepParams);
 							((AmuseTask)dri).initialize();
 							
 							AmuseLogger.write(this.getClass().getName(), Level.INFO, 
-									"Processor step is configured: " + currentInstance.stringValue(adapterClassAttribute));
+									"Processor step is configured: " + adapterClassAttribute.getValueAt(i).toString());
 							break;
 						} catch(ClassNotFoundException e) {
 							AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-									"Processor class cannot be located: " + currentInstance.stringValue(adapterClassAttribute));
+									"Processor class cannot be located: " + adapterClassAttribute.getValueAt(i).toString());
 						} catch(IllegalAccessException e) {
 							AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-									"Processor class or its nullary constructor is not accessible: " + currentInstance.stringValue(adapterClassAttribute));
+									"Processor class or its nullary constructor is not accessible: " + adapterClassAttribute.getValueAt(i).toString());
 						} catch(InstantiationException e) {
 							AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-									"Instantiation failed for processor class: " + currentInstance.stringValue(adapterClassAttribute));
+									"Instantiation failed for processor class: " + adapterClassAttribute.getValueAt(i).toString());
 						}
 					}
-					currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
 				}
-				processingToolsLoader.reset();
 		    } catch(IOException e) {
-		    	e.printStackTrace();
 	    		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
 		    				"Processor table could not be parsed properly: " + e.getMessage());
 	    		System.exit(1);
@@ -651,65 +643,61 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		MatrixToVectorConverterInterface mtvci = null;
 			
 		// Load the tool table
-		ArffLoader processingToolsLoader = new ArffLoader();
+		DataSetAbstract processingToolsSet;
 		try {
 		   	if(this.directStart) {
-		   		processingToolsLoader.setFile(new File(AmusePreferences.getProcessorConversionAlgorithmTablePath()));
+		   		processingToolsSet = new ArffDataSet(new File(AmusePreferences.getProcessorConversionAlgorithmTablePath()));
 		   	} else {
-		   		processingToolsLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorConversionAlgorithmTable.arff"));
+		   		processingToolsSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "processorConversionAlgorithmTable.arff"));
 		   	}
-			Instance currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
-			Attribute idAttribute = processingToolsLoader.getStructure().attribute("Id");
-			while(currentInstance != null) {
+			Attribute idAttribute = processingToolsSet.getAttribute("Id");
+			for(int i=0;i<processingToolsSet.getValueCount();i++) {
 
 				// Load the required adapter class and configure it
-				if(!currentInstance.isMissing(idAttribute) && 
-						stepID == new Double(currentInstance.value(idAttribute)).intValue()) {
+				if(stepID == new Double(idAttribute.getValueAt(i).toString()).intValue()) {
 						
 					// Attributes with properties of dimension reducer
-					Attribute processorNameAttribute = processingToolsLoader.getStructure().attribute("Name");
-					Attribute adapterClassAttribute = processingToolsLoader.getStructure().attribute("AdapterClass");
-					Attribute homeFolderAttribute = processingToolsLoader.getStructure().attribute("HomeFolder");
-					Attribute processorStartScriptAttribute = processingToolsLoader.getStructure().attribute("StartScript");
-					Attribute inputProcessorBatchAttribute = processingToolsLoader.getStructure().attribute("InputBatch");
+					Attribute processorNameAttribute = processingToolsSet.getAttribute("Name");
+					Attribute adapterClassAttribute = processingToolsSet.getAttribute("AdapterClass");
+					Attribute homeFolderAttribute = processingToolsSet.getAttribute("HomeFolder");
+					Attribute processorStartScriptAttribute = processingToolsSet.getAttribute("StartScript");
+					Attribute inputProcessorBatchAttribute = processingToolsSet.getAttribute("InputBatch");
 						
 					try {
-						adapter = Class.forName(currentInstance.stringValue(adapterClassAttribute));
+						adapter = Class.forName(adapterClassAttribute.getValueAt(i).toString());
 							
 						mtvci = (MatrixToVectorConverterInterface)adapter.newInstance();
 						Properties processorProperties = new Properties();
-						Integer idOfCurrentProcessor = new Double(currentInstance.value(idAttribute)).intValue();
+						Integer idOfCurrentProcessor = new Double(idAttribute.getValueAt(i).toString()).intValue();
 						processorProperties.setProperty("id",idOfCurrentProcessor.toString());
-						processorProperties.setProperty("processorName",currentInstance.stringValue(processorNameAttribute));
-						processorProperties.setProperty("processorFolderName",currentInstance.stringValue(homeFolderAttribute));
+						processorProperties.setProperty("processorName",processorNameAttribute.getValueAt(i).toString());
+						processorProperties.setProperty("processorFolderName",homeFolderAttribute.getValueAt(i).toString());
 						if(directStart) {
-							processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
+							processorProperties.setProperty("processorFolder",AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i).toString());
 						} else {
-							processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + currentInstance.stringValue(homeFolderAttribute));
+							processorProperties.setProperty("processorFolder",nodeHome + File.separator + "tools" + File.separator + homeFolderAttribute.getValueAt(i).toString());
 						}
-						processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
-						processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));
+						processorProperties.setProperty("processorStartScript",processorStartScriptAttribute.getValueAt(i).toString());
+						processorProperties.setProperty("inputProcessorBatch",inputProcessorBatchAttribute.getValueAt(i).toString());
 						processorProperties.setProperty("minimalFrameSize",new Integer(this.minimalFrameSize).toString());
 						((AmuseTask)mtvci).configure(processorProperties,this,stepParams);
 							
 						AmuseLogger.write(this.getClass().getName(), Level.INFO, 
-								"Processor step is configured: " + currentInstance.stringValue(adapterClassAttribute));
+								"Processor step is configured: " + adapterClassAttribute.getValueAt(i).toString());
 						break;
 					} catch(ClassNotFoundException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Processor class cannot be located: " + currentInstance.stringValue(adapterClassAttribute));
+								"Processor class cannot be located: " + adapterClassAttribute.getValueAt(i).toString());
 					} catch(IllegalAccessException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Processor class or its nullary constructor is not accessible: " + currentInstance.stringValue(adapterClassAttribute));
+								"Processor class or its nullary constructor is not accessible: " + adapterClassAttribute.getValueAt(i).toString());
 					} catch(InstantiationException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Instantiation failed for processor class: " + currentInstance.stringValue(adapterClassAttribute));
+								"Instantiation failed for processor class: " + adapterClassAttribute.getValueAt(i).toString());
 					}
 				}
-				currentInstance = processingToolsLoader.getNextInstance(processingToolsLoader.getStructure());
 			}
-			processingToolsLoader.reset();
-	   } catch(IOException e) {
+	    } catch(IOException e) {
 		   e.printStackTrace();
 	    	AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
 		   				"Processor table could not be parsed properly: " + e.getMessage());
