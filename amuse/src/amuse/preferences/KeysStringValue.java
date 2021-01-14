@@ -56,7 +56,8 @@ public enum KeysStringValue {
     GRID_SCRIPT_OPTIMIZER,
     JAVA_PATH, 
     MATLAB_PATH,
-    PYTHON_PATH;
+    PYTHON_PATH,
+	LD_LIBRARY_PATH;
 
     /**
      * This method is used to determine and get default values for any key.
@@ -121,6 +122,8 @@ public enum KeysStringValue {
 	    	return true;
 	    case PYTHON_PATH:
 		return true;
+	    case LD_LIBRARY_PATH:
+		return true;
             default:
                 AmuseLogger.write(this.getClass().getName(), Level.DEBUG, this.toString() + ": no validator available!");
                 // If NoValue String is passed return false otherwise return true.
@@ -176,6 +179,7 @@ public enum KeysStringValue {
 		map.put(JAVA_PATH.toString(), "Path to your local java executable:");
 		map.put(MATLAB_PATH.toString(), "Path to your local Matlab executable:");
 		map.put(PYTHON_PATH.toString(), "Path to your local Python3 executable:");
+		map.put(LD_LIBRARY_PATH.toString(), "Python library path:");
 		return map;
 	}
 }
