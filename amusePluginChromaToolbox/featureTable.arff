@@ -14,6 +14,8 @@
 @ATTRIBUTE ExtractorId NUMERIC
 % Window size in samples
 @ATTRIBUTE WindowSize NUMERIC
+% Step size in samples
+@ATTRIBUTE StepSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
 % Type of feature:
@@ -23,6 +25,6 @@
 @ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
-218, "Chroma Energy Normalized Statistics", 5, 4410, 12, WindowedNumeric
-219, "Chroma DCT-Reduced log Pitch", 5, 4410, 12, WindowedNumeric
-220, "Strengths of CRP cooccurrences", 5, 4410, 66, WindowedNumeric
+218, "Chroma Energy Normalized Statistics", 5, 4410, 4410, 12, WindowedNumeric
+219, "Chroma DCT-Reduced log Pitch", 5, 4410, 4410, 12, WindowedNumeric
+220, "Strengths of CRP cooccurrences", 5, 4410, 4410, 66, WindowedNumeric
