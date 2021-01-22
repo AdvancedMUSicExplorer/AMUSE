@@ -71,12 +71,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	int currentProcessingStep = 0;
 	
 	/** Minimal source frame size from all features to process */
-	private int minimalFrameSize = Integer.MAX_VALUE;
+	private int minimalStepSize = Integer.MAX_VALUE;
 	
 	/** Saves the number of initially used time windows for features from larger frame sources as from minimal sources */
 	private HashMap<Integer,Long> featureIdToWindowNumber;
 	
-	private HashMap<Integer,Integer> featureIdToSourceFrameSize;
+	private HashMap<Integer,Integer> featureIdToSourceStepSize;
 	
 	/** Number of time windows before processing, used for the calculation of used raw time windows ratio measure.
 	 * Here the number of MINIMAL time windows is calculated. E.g. if the feature with the smallest source frame
@@ -152,7 +152,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		this.jobId = new Long(jobId);
 		this.featureIdToWindowNumber = new HashMap<Integer,Long>();
-		this.featureIdToSourceFrameSize = new HashMap<Integer,Integer>();
+		this.featureIdToSourceStepSize = new HashMap<Integer,Integer>();
 		this.taskConfiguration = processingConfiguration;
 		
 		// If this node is started directly, the properties are loaded from AMUSEHOME folder;
@@ -347,37 +347,37 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		
 		// If the features to process have different source time windows (e.g. mfccs for each 512 samples
 		// and fluctuation patterns for each 32768 samples), the feature vectors must be adjusted according to the
-		// smallest window size. The reason is that the processor methods should operate on the vectors of equal length
+		// smallest step size. The reason is that the processor methods should operate on the vectors of equal length
 		// and some methods will produce errors in extremal cases: e.g. onset pruning makes no sense for a feature
-		// "Duration of a music piece" since it has only one value. Therefore the smallest window size in samples
+		// "Duration of a music piece" since it has only one value. Therefore the smallest step size in samples
 		// is here calculated and the features from larger time windows are converted, e.g. "Duration of a music pieces"
 		// becomes a vector with a larger number of equal values
-		this.minimalFrameSize = Integer.MAX_VALUE;
-		int exampleOfFeatureWithMinimalFrame = -1; // Used later
+		this.minimalStepSize = Integer.MAX_VALUE;
+		int exampleOfFeatureWithMinimalStep = -1; // Used later
 		for(int i=0;i<features.size();i++) {
-			if(features.get(i).getSourceFrameSize() != -1 && features.get(i).getSourceFrameSize() < minimalFrameSize) {
-				minimalFrameSize = features.get(i).getSourceFrameSize();
-				exampleOfFeatureWithMinimalFrame = i;
+			if(features.get(i).getSourceFrameSize() != -1 && features.get(i).getSourceFrameSize() < minimalStepSize) {
+				minimalStepSize = features.get(i).getSourceStepSize();
+				exampleOfFeatureWithMinimalStep = i;
 			}
 		}
 		this.initialNumberOfUsedRawTimeWindows = 0;
 		
 		// Change the feature vectors if the corresponding feature is created from larger frames as the minimal frame
 		for(int i=0;i<features.size();i++) {
-			int actualFrameSize = features.get(i).getSourceFrameSize();
-			featureIdToSourceFrameSize.put(features.get(i).getId(), features.get(i).getSourceFrameSize());
+			int actualStepSize = features.get(i).getSourceStepSize();
+			featureIdToSourceStepSize.put(features.get(i).getId(), features.get(i).getSourceStepSize());
 			
 			// If the complete song is used as source..
-			if(actualFrameSize == -1) {
-				actualFrameSize = features.get(exampleOfFeatureWithMinimalFrame).getWindows().size() * minimalFrameSize;
+			if(actualStepSize == -1) {
+				actualStepSize = features.get(exampleOfFeatureWithMinimalStep).getWindows().size() * minimalStepSize;
 				features.get(i).getWindows().set(0,1d);
 			}
 			
-			if(actualFrameSize > minimalFrameSize) {
+			if(actualStepSize > minimalStepSize) {
 				featureIdToWindowNumber.put(features.get(i).getId(), new Long(features.get(i).getValues().size()));
-				initialNumberOfUsedRawTimeWindows += (features.get(i).getValues().size() * (new Double(actualFrameSize) / minimalFrameSize));
-				ArrayList<Double[]> newValues = new ArrayList<Double[]>(features.get(exampleOfFeatureWithMinimalFrame).getWindows().size());
-				ArrayList<Double> newWindows = new ArrayList<Double>(features.get(exampleOfFeatureWithMinimalFrame).getWindows().size());
+				initialNumberOfUsedRawTimeWindows += (features.get(i).getValues().size() * (new Double(actualStepSize) / minimalStepSize));
+				ArrayList<Double[]> newValues = new ArrayList<Double[]>(features.get(exampleOfFeatureWithMinimalStep).getWindows().size());
+				ArrayList<Double> newWindows = new ArrayList<Double>(features.get(exampleOfFeatureWithMinimalStep).getWindows().size());
 				int numberOfCurrentSmallWindow = 0;
 				
 				// Proceed the larger time frames and map them to the smallest time frame
@@ -387,8 +387,8 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					double numberOfLargeTimeWindow = features.get(i).getWindows().get(indexOfLargeWindow);
 					
 					// The last small time window which correspond to the large time window
-					int numberOfLastSmallTWForThisLargeTW = new Double(Math.ceil(numberOfLargeTimeWindow * (double)actualFrameSize / 
-							(double)minimalFrameSize)).intValue();
+					int numberOfLastSmallTWForThisLargeTW = new Double(Math.ceil(numberOfLargeTimeWindow * (double)actualStepSize / 
+							(double)minimalStepSize)).intValue();
 					
 					for(int smallTWCounter = numberOfCurrentSmallWindow; smallTWCounter < numberOfLastSmallTWForThisLargeTW;
 						smallTWCounter++) {
@@ -408,7 +408,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				// features with minimal frame length. However the features from longer source frames will not 
 				// achieve the end of music file so precise as the features from smaller source frames and we
 				// must fill some windows with NaN values
-				for(;numberOfCurrentSmallWindow < features.get(exampleOfFeatureWithMinimalFrame).getWindows().size();numberOfCurrentSmallWindow++) {
+				for(;numberOfCurrentSmallWindow < features.get(exampleOfFeatureWithMinimalStep).getWindows().size();numberOfCurrentSmallWindow++) {
 					Double[] vals = new Double[features.get(i).getValues().get(0).length];
 					for(int k=0;k<vals.length;k++) vals[k] = Double.NaN;
 					newValues.add(vals);
@@ -509,10 +509,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		
 		// Set the minimal frame size using a notional frame rate of 22050 Hz 
-		this.minimalFrameSize = new Double(Math.floor(sourceFrameSize * 22050d / 1000d)).intValue();
+		this.minimalStepSize = new Double(Math.floor(sourceStepSize * 22050d / 1000d)).intValue();
 		
 		// Current hack, as the original frame size is not known for already processed features
-		featureIdToSourceFrameSize.put(-1, this.minimalFrameSize);
+		featureIdToSourceStepSize.put(-1, this.minimalStepSize);
 		return features;
 	}
 	
@@ -587,7 +587,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 							}
 							processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
 							processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));
-							processorProperties.setProperty("minimalFrameSize",new Integer(this.minimalFrameSize).toString());
+							processorProperties.setProperty("minimalStepSize",new Integer(this.minimalStepSize).toString());
 							((AmuseTask)dri).configure(processorProperties,this,currentStepParams);
 							((AmuseTask)dri).initialize();
 							
@@ -689,7 +689,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 						}
 						processorProperties.setProperty("processorStartScript",currentInstance.stringValue(processorStartScriptAttribute));
 						processorProperties.setProperty("inputProcessorBatch",currentInstance.stringValue(inputProcessorBatchAttribute));
-						processorProperties.setProperty("minimalFrameSize",new Integer(this.minimalFrameSize).toString());
+						processorProperties.setProperty("minimalStepSize",new Integer(this.minimalStepSize).toString());
 						((AmuseTask)mtvci).configure(processorProperties,this,stepParams);
 							
 						AmuseLogger.write(this.getClass().getName(), Level.INFO, 
@@ -890,14 +890,14 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		for(Integer currentRawFeature : usedRawFeatures) {
 			
 			// If the feature has the minimal frame size, the number of used minimal raw time windows can be calculated directly
-			if(featureIdToSourceFrameSize.get(currentRawFeature) == minimalFrameSize) {
+			if(featureIdToSourceStepSize.get(currentRawFeature) == minimalStepSize) {
 				
 				// Here we suggest that the windows are the same for all features!! (Reduction methods work for all features
 				// similarly, since the matrix form remains!)
 				finalNumberOfUsedRawTimeWindows += features.get(0).getWindows().size();
 			}
 			
-			else if(featureIdToSourceFrameSize.get(currentRawFeature) == -1) {
+			else if(featureIdToSourceStepSize.get(currentRawFeature) == -1) {
 				finalNumberOfUsedRawTimeWindows += features.get(0).getWindows().size();
 			}
 			
@@ -906,12 +906,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				int numberOfUsedLargeTimeWindows = 1;
 				int previousLargeWindow = 0;
 				int actualLargeWindow = 0;
-				int sourceFrameSize = featureIdToSourceFrameSize.get(currentRawFeature); 
+				int sourceStepSize = featureIdToSourceStepSize.get(currentRawFeature); 
 				for(int j=0;j<features.get(0).getWindows().size();j++) {
 					// Get the number of the corresponding large time window
 					double actualSmallWindow = features.get(0).getWindows().get(j);
 					actualLargeWindow = new Double(actualSmallWindow / 
-							((new Double(sourceFrameSize) / minimalFrameSize))).intValue();
+							((new Double(sourceStepSize) / minimalStepSize))).intValue();
 					
 					// If we get large windows which were not initially used (at conversion of feature vectors from smaller number of
 					// values to the larger number some values at the end of the vector are filled with NaNs and they actually do
@@ -926,7 +926,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 						previousLargeWindow = actualLargeWindow;
 					}
 				}
-				finalNumberOfUsedRawTimeWindows += (numberOfUsedLargeTimeWindows * (new Double(sourceFrameSize) / minimalFrameSize));
+				finalNumberOfUsedRawTimeWindows += (numberOfUsedLargeTimeWindows * (new Double(sourceStepSize) / minimalStepSize));
 			}
 		}
 		
@@ -954,7 +954,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		for(Integer currentRawFeature : usedRawFeatures) {
 			
 			// If the feature has the minimal frame size, the number of used minimal raw time windows can be calculated directly
-			if(featureIdToSourceFrameSize.get(currentRawFeature) == minimalFrameSize) {
+			if(featureIdToSourceStepSize.get(currentRawFeature) == minimalStepSize) {
 				
 				// Here we suggest that the windows are the same for all features!! (Reduction methods work for all features
 				// similarly, since the matrix form remains!)
@@ -965,12 +965,12 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				int numberOfUsedLargeTimeWindows = 1;
 				int previousLargeWindow = 0;
 				int actualLargeWindow = 0;
-				int sourceFrameSize = featureIdToSourceFrameSize.get(currentRawFeature); 
+				int sourceStepSize = featureIdToSourceStepSize.get(currentRawFeature); 
 				for(int j=0;j<usedTimeWindows.size();j++) {
 					// Get the number of the corresponding large time window
 					double actualSmallWindow = usedTimeWindows.get(j);
 					actualLargeWindow = new Double(actualSmallWindow / 
-							((new Double(sourceFrameSize) / minimalFrameSize))).intValue();
+							((new Double(sourceStepSize) / minimalStepSize))).intValue();
 					
 					// If we get large windows which were not initially used (at conversion of feature vectors from smaller number of
 					// values to the larger number some values at the end of the vector are filled with NaNs and they actually do
@@ -985,7 +985,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 						previousLargeWindow = actualLargeWindow;
 					}
 				}
-				finalNumberOfUsedRawTimeWindows += (numberOfUsedLargeTimeWindows * (new Double(sourceFrameSize) / minimalFrameSize));
+				finalNumberOfUsedRawTimeWindows += (numberOfUsedLargeTimeWindows * (new Double(sourceStepSize) / minimalStepSize));
 			}
 		}
 		
@@ -997,10 +997,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	}
 
 	/**
-	 * @return the minimalFrameSize
+	 * @return the minimalStepSize
 	 */
-	public int getMinimalFrameSize() {
-		return minimalFrameSize;
+	public int getMinimalStepSize() {
+		return minimalStepSize;
 	}
 	
 	/**

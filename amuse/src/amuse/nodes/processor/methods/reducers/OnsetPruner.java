@@ -74,7 +74,7 @@ public class OnsetPruner extends AmuseTask implements DimensionProcessorInterfac
 		// for finding the path to onset times file (ID = 419)
 		Double[] onsetTimes = loadOnsetTimes();
 			
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {
