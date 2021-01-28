@@ -24,6 +24,7 @@
 package amuse.data;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -68,8 +69,11 @@ public class FileTable implements Serializable {
             	ids.add(id.getValueAt(i).intValue());
             	files.add(path.getValueAt(i));
             }
+        } catch (FileNotFoundException ex) {
+        	AmuseLogger.write(this.getClass().getName(), Level.FATAL, "Can't initialize FileTable: File not Found: " + ex.getMessage());
+            throw new RuntimeException(ex);
         } catch (IOException ex) {
-            AmuseLogger.write(this.getClass().getName(), Level.FATAL, "Can't initialize FileTable!");
+            AmuseLogger.write(this.getClass().getName(), Level.FATAL, "Can't initialize FileTable: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }
