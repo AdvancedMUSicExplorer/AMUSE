@@ -350,7 +350,7 @@ public class Scheduler implements Runnable {
 		try {
 			while(!isReady) {
 				if(!taskFolder.exists()) {
-					AmuseLogger.write(this.getClass().getName(),Level.FATAL, "Task input folder does not exist!");
+					AmuseLogger.write(this.getClass().getName(),Level.FATAL, "Task input folder " + taskFolder.getAbsolutePath() + " does not exist!");
 					System.exit(1);
 				}
 				
