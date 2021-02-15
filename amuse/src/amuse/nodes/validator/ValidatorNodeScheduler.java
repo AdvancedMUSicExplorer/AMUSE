@@ -659,6 +659,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		
 						}
 						
+						// Do not go to the next description if this was already the last description
+						if(i == validatorGroundTruthSet.getValueCount() - 1) {
+							break;
+						}
+						
 						// Go to the next description
 						String newInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
 						
@@ -689,7 +694,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
 						// Go to the next music file?
-						if(!newInputFile.equals(currentInputFile)) {
+						if(!newInputFile.equals(currentInputFile) || (Double)validatorGroundTruthSet.getAttribute("Start").getValueAt(i+1) == 0) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							validatorInputLoader = new ArffLoader();
