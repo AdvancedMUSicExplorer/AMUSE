@@ -13,3 +13,4 @@
 @ATTRIBUTE PluginList STRING
 
 @DATA
+3, "Sonic Annotator", "SonicAnnotator", "0.6", "3"

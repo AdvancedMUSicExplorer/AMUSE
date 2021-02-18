@@ -159,7 +159,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// Set the music file name without music database directory path 
 		String relativeName = new String();
 		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
+			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
 		}
@@ -177,10 +177,11 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extractor node scheduler for " + 
 				this.inputFileName + " configured; starting decoding..");
 	
+		// FIXME comment for zygons
 		// --------------------------------
 		// (II) Convert mp3 file to wave(s)
 		// --------------------------------
-		try {
+		/*try {
 			AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
 					new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
 		} catch(NodeException e) {
@@ -207,7 +208,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			if(files[i].isDirectory()) {
 				this.numberOfParts++;
 			}
-		}
+		}*/
+		this.numberOfParts = 1;
 		
 		// --------------------------------------
 		// (III) Configure the extractor adapters 
@@ -458,6 +460,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					this.extractors.get(i).setFilenames(musicInput, featureOutput,currentPart);
 					this.extractors.get(i).extractFeatures();
 				} catch (NodeException e) {
+					e.printStackTrace();
 					AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 							"Error occured during feature extraction with extractor '" + 
 							((AmuseTask)this.extractors.get(i)).getProperties().getProperty("extractorName") + 

@@ -64,6 +64,19 @@
 213, "Amplitude, position and width of 3rd spectral peak", 1, 512, 3, WindowedNumeric
 214, "Amplitude, position and width of 4th spectral peak", 1, 512, 3, WindowedNumeric
 215, "Amplitude, position and width of 5th spectral peak", 1, 512, 3, WindowedNumeric
+250, "Chroma - NNLS", 7, 2048, 12, WindowedNumeric
+251, "Bass chroma - NNLS", 7, 2048, 12, WindowedNumeric
+252, "Semitone spectrum - NNLS", 7, 2048, 85, WindowedNumeric
+253, "Local tuning - NNLS", 7, 8192, 1, WindowedNumeric
+254, "Harmonic change - NNLS", 7, 2048, 1, WindowedNumeric
+255, "Consonance - NNLS", 7, 2048, 1, WindowedNumeric
+256, "Simplechord - NNLS", 7, -1, 1, SegmentedString
+257, "Number of different chords in 10s", 7, 220500, 1, WindowedNumeric
+258, "Number of chord changes in 10s", 7, 220500, 1, WindowedNumeric
+259, "Shares of the most frequent 20, 40 and 60 percents of chords with regard to their duration", 7, 220500, 3, WindowedNumeric
+260, "Interval strengths estimated from 10 highest semitone peaks", 7, 2048, 12, WindowedNumeric
+261, "Interval strengths estimated from the semitone peaks above 3/4 of the maximum peak", 7, 2048, 12, WindowedNumeric
+262, "Chord Vector", 7, 512, 20, WindowedNumeric
 
 % Tempo features
 
