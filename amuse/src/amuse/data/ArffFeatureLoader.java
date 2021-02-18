@@ -65,14 +65,14 @@ public class ArffFeatureLoader {
 		try {
 			String line = featureReader.readLine();
 			while(!line.toLowerCase().startsWith(new String("@data"))) {
-				if(line.toLowerCase().startsWith(new String("%columns="))) {
-					numberOfValues = new Integer(line.substring(9));
-				} else if (line.toLowerCase().startsWith(new String("%window_size="))) {
-					sourceFrameSize = new Integer(line.substring(13)); 
-				} else if(line.toLowerCase().startsWith(new String("%step_size="))) {
-					sourceStepSize = new Integer(line.substring(11));
-				} else if (line.toLowerCase().startsWith(new String("%sample_rate="))) {
-					sampleRate = new Integer(line.substring(13));
+				if(line.toLowerCase().replaceAll("\\s+","").startsWith(new String("%columns="))) {
+					numberOfValues = new Integer(line.replaceAll("\\s+","").substring(9));
+				} else if (line.toLowerCase().replaceAll("\\s+","").startsWith(new String("%window_size="))) {
+					sourceFrameSize = new Integer(line.replaceAll("\\s+","").substring(13)); 
+				} else if(line.toLowerCase().replaceAll("\\s+","").startsWith(new String("%step_size="))) {
+					sourceStepSize = new Integer(line.replaceAll("\\s+","").substring(11));
+				} else if (line.toLowerCase().replaceAll("\\s+","").startsWith(new String("%sample_rate="))) {
+					sampleRate = new Integer(line.replaceAll("\\s+","").substring(13));
 				} else if(line.toLowerCase().startsWith(new String("@attribute"))) {
 					String lineTrimmed = line.replace("'", "");
 					lineTrimmed = lineTrimmed.replace("\"", "");
