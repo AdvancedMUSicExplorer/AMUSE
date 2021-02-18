@@ -105,8 +105,7 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	 */
 	public static ExtractionConfiguration[] loadConfigurationsFromFile(File configurationFile) throws IOException {
 		ExtractorConfigSet extractionConfig = new ExtractorConfigSet(configurationFile);
-		return loadConfigurationsFromDataSet(extractionConfig);
-    		
+		return loadConfigurationsFromDataSet(extractionConfig);	
 	}
 
 	/**
