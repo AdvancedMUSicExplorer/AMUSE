@@ -9,4 +9,3 @@
 @ATTRIBUTE VersionDescription STRING
 
 @DATA
-3, "Sonic Annotator", "0.1 beta"

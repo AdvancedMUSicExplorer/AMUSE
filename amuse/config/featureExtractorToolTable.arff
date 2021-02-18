@@ -20,7 +20,3 @@
 0, "jAudio", "amuse.nodes.extractor.methods.JAudioAdapter", "jAudio", "jAudioStart.sh", "jAudioBase512.xml", "jAudioBaseModified512.xml"
 1, "Yale", "amuse.nodes.extractor.methods.YaleAdapter", "Yale", "yaleStart1800.sh", "yaleBase512.xml", "yaleBaseModified512.xml"
 2, "Matlab", "amuse.nodes.extractor.methods.MatlabAdapter", "MatlabFeatures", "matlabStart.sh", "matlabBase.xml", "matlabBaseModified.m"
-7, "SonicAnnotator", "amuse.nodes.extractor.methods.SonicAnnotatorAdapter", "SonicAnnotator", "sonic-annotator", "SonicAnnotatorBase.xml", "SonicAnnotatorBaseModified.xml"
-9, "ZygonExtractor", "amuse.nodes.extractor.methods.ZygonExtractor", "ZygonExtractor", "-1", "ZygonExtractorBase.xml", "ZygonExtractorBaseModified.xml"
-10, "ZygonExtractorConcrete", "amuse.nodes.extractor.methods.ZygonExtractorConcrete", "ZygonExtractor", "-1", "ZygonExtractorConcreteBase.xml", "ZygonExtractorConcreteBaseModified.xml"
-11, "ZygonExtractorMorePerfectionGrades", "amuse.nodes.extractor.methods.ZygonExtractorMorePerfectionGrades", "ZygonExtractor", "-1", "ZygonExtractorMorePerfectionGradesBase.xml", "ZygonExtractorMorePerfectionGradesBaseModified.xml"
