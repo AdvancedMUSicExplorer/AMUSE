@@ -613,11 +613,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		
 						}
 						
-						// Do not go the next description if this was already the last description
-						if(i == classifierGroundTruthSet.getValueCount() - 1) {
-							break;
-						}
-						
 						// Go to the next description
 						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
 						
@@ -650,7 +645,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 						
 						// Go to the next music file?
-						if(!newInputFile.equals(currentInputFile) || (Double)classifierGroundTruthSet.getAttribute("Start").getValueAt(i + 1) == 0) {
+						if(!newInputFile.equals(currentInputFile)) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							classifierInputLoader = new ArffLoader();
@@ -670,6 +665,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 					}
 				} catch(IOException e) {
+					e.printStackTrace();
 					throw new NodeException(e.getMessage());
 				}
 			} else {

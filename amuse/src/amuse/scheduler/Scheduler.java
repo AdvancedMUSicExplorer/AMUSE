@@ -192,7 +192,7 @@ public class Scheduler implements Runnable {
 					// Start of Amuse in loop mode requires 1 parameter: 
 					// -start_loop folder4Tasks
 					if(counterOfTaskLines+1 >= taskList.length) {
-						AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Path to task input folder missing!");
+						AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not parse the command line properly");
 						System.exit(1);
 					}
 					AmuseLogger.write(this.getClass().getName(),Level.INFO, "Scheduler started in loop mode");
@@ -350,7 +350,7 @@ public class Scheduler implements Runnable {
 		try {
 			while(!isReady) {
 				if(!taskFolder.exists()) {
-					AmuseLogger.write(this.getClass().getName(),Level.FATAL, "Task input folder " + taskFolder.getAbsolutePath() + " does not exist!");
+					AmuseLogger.write(this.getClass().getName(),Level.FATAL, "Task input folder does not exist!");
 					System.exit(1);
 				}
 				
@@ -459,9 +459,7 @@ public class Scheduler implements Runnable {
 									
 									PluginRemover pm = new PluginRemover(new Integer(taskJobs.nextToken()));
 									pm.removePlugin();
-								}  else {
-									AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Unknown parameter " + currentTask);
-								}
+								}  
 								
 								
 								
@@ -487,7 +485,7 @@ public class Scheduler implements Runnable {
 			AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Scheduler interrupted: " + e.getMessage());
 			System.exit(1);
 		} catch(FileNotFoundException e) {
-			AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Scheduler error: File not found: " + e.getMessage());
+			AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Scheduler error: " + e.getMessage());
 			System.exit(1);
 		} catch(IOException e) {
 			AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Scheduler error: " + e.getMessage());
