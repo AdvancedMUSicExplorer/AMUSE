@@ -314,7 +314,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 						((AmuseTask) ead).configure(extractorProperties, null, null);
 		
 						// Convert the base script
-						ead.convertBaseScript(regularFeature2Tool, regularFeatureTable);
+						ead.convertBaseScript(regularFeature2Tool, featureTable);
 						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, extractorNameAttribute.getValueAt(i)
 							+ " base script converted");
 	    			}
@@ -366,7 +366,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 							((AmuseTask) ead).configure(extractorProperties, null, null);
 							
 							// Convert the base script
-							ead.convertBaseScript(customFeature2Tool, customFeatureTable);
+							ead.convertBaseScript(customFeature2Tool, featureTable);
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, extractorNameAttribute.getValueAt(i)
 								+ " custom base script " + customBaseScript + " converted");
 						}
