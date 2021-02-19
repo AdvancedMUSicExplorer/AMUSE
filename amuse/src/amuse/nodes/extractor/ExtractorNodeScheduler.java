@@ -554,7 +554,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					
 					int lineCounter = 1;
 						
-					// Go through the splitted parts
+					// Go through all the splitted parts
 					for(int j=1;j<=numberOfParts;j++) {
 						
 						// TODO v0.2 Problem for features from splitted files.
