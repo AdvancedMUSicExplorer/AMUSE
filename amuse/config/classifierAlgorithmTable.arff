@@ -48,7 +48,7 @@
 % Supervised methods
 0, "J48", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.J48Adapter, 'amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader', "RapidMiner5", "-1", "-1", "-1", "-1", "-1", "C4.5 learner from Weka Toolbox", "C:", "[%d]", "[0.25]", "Confidence threshold for pruning", 1, 0, 0, 0, 1, 1, 0, 0
 
-1, "RandomForest", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.RandomForestAdapter, 'amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader', "RapidMiner5", "-1", "-1", "-1", "-1", "-1", "Random forest learner from Weka Toolbox", "Number of trees:", "[%i]", "[10]", "The number of decision trees", 1, 0, 1, 0, 1, 1, 0, 0
+1, "RandomForest", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.RandomForestAdapter, 'amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader', "RapidMiner5", "-1", "-1", "-1", "-1", "-1", "Random forest learner from Weka Toolbox", "Number of trees:", "[%i]", "[100]", "The number of decision trees", 1, 0, 1, 0, 1, 1, 0, 0
 
 %2, "LinearDiscriminantAnalysis", "Supervised", amuse.nodes.trainer.methods.supervised.LinearDiscriminantAnalysisAdapter, 'amuse.nodes.classifier.methods.supervised.LinearDiscriminantAnalysisAdapter', "MatlabClassification", "matlabStart.sh", "-1", "-1", "-1", "-1", "Linear Discriminant Analysis", "", "", "", "", 1, 0, 0, 0, 1, 1, 0, 0
 
