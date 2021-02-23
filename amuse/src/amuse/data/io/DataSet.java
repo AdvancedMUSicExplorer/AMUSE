@@ -181,6 +181,10 @@ public class DataSet extends DataSetAbstract implements Serializable {
     public void addAttribute(Attribute a) {
     	attributes.add(a);
     }
+    
+    public void removeAttribute(int n) {
+    	attributes.remove(n);
+    }
 
     /**
      * Generates the RapidMiner object ExampleSet from this DataSet
