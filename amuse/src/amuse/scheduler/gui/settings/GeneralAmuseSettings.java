@@ -80,6 +80,7 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		settings.add(new PathSelectionPanel("Java Executable", KeysStringValue.JAVA_PATH));
 		settings.add(new PathSelectionPanel("MatLab Executable", KeysStringValue.MATLAB_PATH));
 		settings.add(new PathSelectionPanel("Python Executable", KeysStringValue.PYTHON_PATH));
+		settings.add(new PathSelectionPanel("LD Library Path", KeysStringValue.LD_LIBRARY_PATH));
 		settings.add(new TextFieldWithValidation("Yale heap size in megabytes", KeysIntValue.YALE_HEAP_SIZE));
 		for (EditableAmuseSettingInterface singlePref : settings) {
 			internalPanel.add(singlePref.getPanel(), "wrap");
