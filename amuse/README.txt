@@ -1,11 +1,14 @@
-|-----------------------------------------|
-|AMUSE framework (Advanced MUsic Explorer)|
-|-----------------------------------------|
+|---------------------------------------------------|
+|AMUSE framework (Advanced MUsic Explorer) v0.3 beta|
+|---------------------------------------------------|
 
 Copyright 2006-2021 by code authors
 
 Created at TU Dortmund, Chair of Algorithm Engineering
-(Contact: <http://ls11-www.cs.tu-dortmund.de>) 
+<http://ls11-www.cs.tu-dortmund.de>
+
+Contact:
+<http://sig-ma.de/contact>
 
 AMUSE is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
