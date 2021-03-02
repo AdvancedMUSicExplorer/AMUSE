@@ -145,11 +145,11 @@ public class WizardView {
 	    annotationPanel.add(Box.createRigidArea(new Dimension(panelWidth, 5)));
 	    
 	    startButtonsPanel.add(Box.createHorizontalGlue());
-	    startButtonsPanel.add(experimentsPanel);
-	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    startButtonsPanel.add(buttonAmuseSettings);
 	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    startButtonsPanel.add(annotationPanel);
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    startButtonsPanel.add(experimentsPanel);
 	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    
 	    
