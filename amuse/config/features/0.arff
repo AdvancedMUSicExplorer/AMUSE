@@ -27,5 +27,5 @@
 
 % Timbre features
 
-1024, "Zero-crossing rate", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
-256, "Zero-crossing rate", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"
+1024, "Zero-crossing rate with windowsize 1024", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
+256, "Zero-crossing rate with windowsize 256", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"

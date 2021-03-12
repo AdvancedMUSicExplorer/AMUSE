@@ -27,5 +27,5 @@
 
 % Timbre features
 
-1024, "Chroma vector", 1, 1024, 1024, 24, WindowedNumeric, "yaleBase_1024.xml", "yaleBase_1024_modified.xml"
-256, "Chroma vector", 1, 256, 256, 24, WindowedNumeric, "yaleBase_256.xml", "yaleBase_256_modified.xml"
+1024, "Chroma vector with windowsize 1024", 1, 1024, 1024, 24, WindowedNumeric, "yaleBase_1024.xml", "yaleBase_1024_modified.xml"
+256, "Chroma vector with windowsize 256", 1, 256, 256, 24, WindowedNumeric, "yaleBase_256.xml", "yaleBase_256_modified.xml"
