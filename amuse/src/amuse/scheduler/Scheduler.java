@@ -54,7 +54,8 @@ import amuse.scheduler.taskstarters.ClassificationValidationStarter;
 import amuse.scheduler.taskstarters.FeatureExtractionStarter;
 import amuse.scheduler.taskstarters.FeatureProcessingStarter;
 import amuse.scheduler.taskstarters.OptimizationStarter;
-
+import amuse.scheduler.taskstarters.ToolStarter;
+import amuse.scheduler.tools.ToolConfiguration;
 import amuse.util.AmuseLogger;
 
 /**
@@ -272,6 +273,15 @@ public class Scheduler implements Runnable {
 					
 					PluginRemover pm = new PluginRemover(new Integer(taskList[++counterOfTaskLines]));
 					pm.removePlugin();
+				} else if (taskList[counterOfTaskLines].equals("-t")) {
+
+					// Only 1 parameter is required!
+					if(counterOfTaskLines+1 >= taskList.length) {
+						AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not parse the command line properly");
+						System.exit(1);
+					} 
+					
+					proceedToolTasks(ToolConfiguration.loadConfigurationsFromFile(new File(taskList[++counterOfTaskLines])));
 				} else {
 					AmuseLogger.write(this.getClass().getName(),Level.FATAL,"Could not parse the command line properly");
 					System.exit(1);
@@ -657,5 +667,25 @@ public class Scheduler implements Runnable {
 			schedulerInstance.jobCounter = os.startTask(optimizationConfigurations, properties);
 		}
 		os.logResults();
+	}
+	
+	/**
+	 * Delegates the tool task(s) to the corresponding task starter
+	 * @param toolConfigurations Task configuration(s)
+	 * @throws SchedulerException
+	 */
+	private void proceedToolTasks(ToolConfiguration[] toolConfigurations) throws SchedulerException {
+		ToolStarter ts;
+		// If the task will be started via grid, wait until they are ready
+		if(AmusePreferences.getBoolean(KeysBooleanValue.USE_GRID_TOOL) == true) {
+			ts = new ToolStarter("tool", schedulerInstance.jobCounter, false);
+			Long currentLastJob = new Long(jobCounter);
+			schedulerInstance.jobCounter = ts.startTask(toolConfigurations, properties);
+			waitForJobs(schedulerInstance.jobCounter - currentLastJob);
+		} else {
+			ts = new ToolStarter("tool", schedulerInstance.jobCounter, true);
+			schedulerInstance.jobCounter = ts.startTask(toolConfigurations, properties);
+		}
+		ts.logResults();
 	}
 }
