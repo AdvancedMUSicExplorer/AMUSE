@@ -70,7 +70,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	/** Minimal source frame size from all features to process */
 	private int minimalFrameSize = Integer.MAX_VALUE;
 	
-	/** Optional settings which cen be used in tool node */
+	/** Optional settings which can be used in tool node */
 	public boolean loadFeaturesFromGivenFolder = false;
 	public boolean saveDirectlyToDatabase = false;
 	
