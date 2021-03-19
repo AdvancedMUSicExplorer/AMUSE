@@ -54,6 +54,7 @@ public enum KeysStringValue {
     GRID_SCRIPT_CLASSIFIER, 
     GRID_SCRIPT_VALIDATOR, 
     GRID_SCRIPT_OPTIMIZER,
+    GRID_SCRIPT_TOOL,
     JAVA_PATH, 
     MATLAB_PATH,
     PYTHON_PATH,
@@ -89,6 +90,7 @@ public enum KeysStringValue {
             case GRID_SCRIPT_CLASSIFIER:
             case GRID_SCRIPT_EXTRACTOR:
             case GRID_SCRIPT_OPTIMIZER:
+            case GRID_SCRIPT_TOOL:
             case GRID_SCRIPT_PROCESSOR:
             case GRID_SCRIPT_TRAINER:
             case GRID_SCRIPT_VALIDATOR:
@@ -173,6 +175,7 @@ public enum KeysStringValue {
 		map.put(GRID_SCRIPT_CLASSIFIER.toString(), "Batch command to proceed classifier task in grid:");
 		map.put(GRID_SCRIPT_EXTRACTOR.toString(), "Batch command to proceed feature extractor task in grid:");
 		map.put(GRID_SCRIPT_OPTIMIZER.toString(), "Batch command to proceed optimizer task in grid:");
+		map.put(GRID_SCRIPT_TOOL.toString(), "Batch command to proceed tool task in grid:");
 		map.put(GRID_SCRIPT_PROCESSOR.toString(), "Batch command to proceed feature processor task in grid:");
 		map.put(GRID_SCRIPT_TRAINER.toString(), "Batch command to proceed classification trainer task in grid:");
 		map.put(GRID_SCRIPT_VALIDATOR.toString(), "Batch command to proceed validator task in grid:");

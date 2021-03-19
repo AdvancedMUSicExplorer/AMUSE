@@ -70,6 +70,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	/** Minimal source frame size from all features to process */
 	private int minimalFrameSize = Integer.MAX_VALUE;
 	
+	/** Optional settings which can be used in tool node */
+	public boolean loadFeaturesFromGivenFolder = false;
+	public boolean saveDirectlyToDatabase = false;
+	
 	/** Saves the number of initially used time windows for features from larger frame sources as from minimal sources */
 	private HashMap<Integer,Long> featureIdToWindowNumber;
 	
@@ -319,11 +323,20 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				relativeName = relativeName.substring(1);
 			}
 			relativeName = relativeName.substring(0,relativeName.lastIndexOf("."));
+			
 			if(relativeName.lastIndexOf(File.separator) != -1) {
-				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
-					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i)
-					+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
-					+ ".arff", featureIDs.get(i)));
+				// TODO-17C1 evomix
+				if(loadFeaturesFromGivenFolder) {
+					features.add(ArffFeatureLoader.loadFeature(((ProcessingConfiguration)this.taskConfiguration).getFeatureDatabase() + File.separator + 
+							relativeName.substring(relativeName.lastIndexOf(File.separator)+1,relativeName.length()) + "_" + featureIDs.get(i) + 
+							(configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+							+ ".arff", featureIDs.get(i)));
+				} else {
+					features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
+							relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" + featureIDs.get(i)
+							+ (configurationIDs.get(i) == null ? "" : "_" + configurationIDs.get(i))
+							+ ".arff", featureIDs.get(i)));
+				}
 			} else {
 				features.add(ArffFeatureLoader.loadFeature(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE) + File.separator + relativeName +
 						File.separator + relativeName + "_" + featureIDs.get(i)
@@ -734,20 +747,31 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		if(!((ProcessingConfiguration)this.taskConfiguration).getFeatureDescription().equals(new String(""))) {
 			featureDesc = "_" + ((ProcessingConfiguration)this.taskConfiguration).getFeatureDescription();
 		}
-		if(relativeName.lastIndexOf(File.separator) != -1) {
-			relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
-				relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" +
-				((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" + 
-				((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
-		} else {
-			relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
-					File.separator + relativeName + "_" + ((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
+		
+		// Can be used in tool node
+		if(saveDirectlyToDatabase) {
+			relativeName = relativeName.substring(relativeName.lastIndexOf(File.separator)+1,relativeName.length());
+			relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName + "_" + 
+					((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
 					((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
 					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
 					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
-		}	
+		} else {
+			if(relativeName.lastIndexOf(File.separator) != -1) {
+				relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
+					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" +
+					((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" + 
+					((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
+			} else {
+				relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
+						File.separator + relativeName + "_" + ((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
+						((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
+						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
+						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
+			}
+		}
 		
 		File destinationFileFolder = new File(relativeName.substring(0,relativeName.lastIndexOf(File.separator)));
 		destinationFileFolder.mkdirs();
