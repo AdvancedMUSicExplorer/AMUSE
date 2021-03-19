@@ -2,7 +2,7 @@
 @RELATION features
 
 % Unique configuration ID
-@ATTRIBUTE Id STRING
+@ATTRIBUTE Id NUMERIC
 % Feature description
 @ATTRIBUTE Description STRING
 % ID of tool to extract the feature (see extractorTable.arff)
@@ -27,5 +27,5 @@
 
 % Timbre features
 
-1024, "Linear prediction coefficients with windowsize 1024", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
-256, "Linear prediction coefficients with windowsize 256", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"
+1, "Linear prediction coefficients | windowsize = 1024", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
+2, "Linear prediction coefficients | windowsize = 256", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"

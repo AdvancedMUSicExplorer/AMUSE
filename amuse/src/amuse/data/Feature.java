@@ -56,7 +56,7 @@ public class Feature implements Serializable {
 	 * Id of feature configuration.
 	 * Only set if custom configuration is used.
 	 */
-	private String configurationId;
+	private Integer configurationId;
 	
 	/*
 	 * Custom extraction script for this feature.
@@ -272,7 +272,7 @@ public class Feature implements Serializable {
 		return featureType.toString();
 	}
 	
-	public void setConfigurationId(String configurationId) throws IOException {
+	public void setConfigurationId(int configurationId) throws IOException {
 		this.configurationId = configurationId;
 		// there might be an alternative extractor id specified in the configuration set
 		DataSet configurationDataSet = new DataSet(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "features" + File.separator + this.ids.get(0) + ".arff"));
@@ -285,11 +285,19 @@ public class Feature implements Serializable {
 		}
 	}
 	
-	public String getConfigurationId() {
+	public Integer getConfigurationId() {
 		return this.configurationId;
 	}
 	
 	public String getCustomScript()	{
 		return this.customScript;
+	}
+	
+	public boolean equals(Object o) {
+		if(o instanceof Feature) {
+			return ((Feature)o).getId() == this.getId() && ((Feature)o).getConfigurationId() == this.getConfigurationId();
+		} else {
+			return false;
+		}
 	}
 }

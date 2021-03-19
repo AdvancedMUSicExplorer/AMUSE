@@ -407,7 +407,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		// list of ids of custom features
 		List<Integer> ids = new ArrayList<Integer>();
 		// maps feature id to configuration id
-		HashMap<Integer,String> idToConfiguration = new HashMap<Integer,String>();
+		HashMap<Integer,Integer> idToConfiguration = new HashMap<Integer,Integer>();
 		
 		FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
 		for(Feature feature : featureTable.getFeatures()) {

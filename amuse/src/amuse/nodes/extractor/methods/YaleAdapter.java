@@ -334,13 +334,10 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 							double vals[] = new double[7];
 							Feature feature = featureId2Feature.get(idsOfCurrentEnabler.get(j));
-							String configurationId = feature.getConfigurationId();
-							if(configurationId == null) {
-								configurationId = "";
-							}
+							Integer configurationId = feature.getConfigurationId();
 							vals[0] = idsOfCurrentEnabler.get(j);
 							vals[1] = data.attribute(1).addStringValue(feature.getDescription());
-							vals[2] = data.attribute(2).addStringValue(configurationId);
+							vals[2] = data.attribute(2).addStringValue(configurationId == null ? "" : configurationId.toString());
 							vals[3] = feature.getSourceFrameSize();
 							vals[4] = feature.getSourceStepSize();
 							vals[5] = dimensionsOfFeaturesOfCurrentEnabler
@@ -353,13 +350,10 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 					double vals[] = new double[7];
 					Feature feature = featureId2Feature.get(idsOfCurrentEnabler.get(j));
-					String configurationId = feature.getConfigurationId();
-					if(configurationId == null) {
-						configurationId = "";
-					}
+					Integer configurationId = feature.getConfigurationId();
 					vals[1] = data.attribute(1).addStringValue(
 							"feature result is to be ignored");
-					vals[2] = data.attribute(2).addStringValue(configurationId);
+					vals[2] = data.attribute(2).addStringValue(configurationId == null ? "" : configurationId.toString());
 					vals[3] = feature.getSourceFrameSize();
 					vals[4] = feature.getSourceStepSize();
 					vals[5] = dimensionsOfFeaturesOfCurrentEnabler

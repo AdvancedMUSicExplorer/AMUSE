@@ -36,6 +36,8 @@ import amuse.data.datasets.FeatureTableSet;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 
 /**
@@ -70,17 +72,17 @@ public class FeatureTable implements Serializable {
             	} else {
             		String idString = id.getValueAt(i);
             		int idInt;
-            		String configurationId = "";
+            		Integer configurationId = null;
             		if(idString.contains("_")) {
-            			idInt = new Integer(idString.substring(0, idString.indexOf("_")));
-            			configurationId = idString.substring(idString.indexOf("_") + 1);
+            			idInt = new Double(idString.substring(0, idString.indexOf("_"))).intValue();
+            			configurationId = new Double(idString.substring(idString.indexOf("_") + 1)).intValue();
             		} else {
             			idInt = new Double(idString).intValue();
             		}
-            		Feature f = new Feature(idInt, description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
+             		Feature f = new Feature(idInt, description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
             		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
             		f.setSourceStepSize(stepSize.getValueAt(i).intValue());
-            		if(!configurationId.equals("")) {
+            		if(configurationId != null) {
             			f.setConfigurationId(configurationId);
             		}
             		features.add(f);
@@ -136,7 +138,7 @@ public class FeatureTable implements Serializable {
         List<String> featureTypeList = new ArrayList<String>();
         for (Feature f : features) {
             if (f.isSelectedForExtraction()) {
-            	String configurationId = f.getConfigurationId();
+            	Integer configurationId = f.getConfigurationId();
             	if(configurationId != null) {
             		featureIDList.add(f.getId() + "_" + configurationId);
                 } else {
@@ -253,13 +255,78 @@ public class FeatureTable implements Serializable {
 		return true;
 	}
 
-	public List<String> getSelectedConfigurationIds() {
-		Vector<String> indices = new Vector<String>();
+	public List<Integer> getSelectedConfigurationIds() {
+		Vector<Integer> indices = new Vector<Integer>();
         for (int i = 0; i < features.size(); i++) {
             if (features.get(i).isSelectedForExtraction()) {
                 indices.add(features.get(i).getConfigurationId());
             }
         }
         return indices;
+	}
+	
+	/*
+	 * Adds the corresponding custom features of this
+	 */
+	public void addCustomFeatures() {
+		for(int i = 0; i < features.size(); i++) {
+			Feature feature = features.get(i);
+			List<Feature> customFeatures = loadCustomFeatures(features.get(i).getId());
+			for(Feature customFeature : customFeatures) {
+				if(!features.contains(customFeature)) {
+					i++;
+					features.add(i, customFeature);
+				}
+			}
+		}
+	}
+	
+	/*
+	 * Removes all custom features from this feature table
+	 */
+	public void removeCustomFeatures() {
+		for(int i = 0; i < features.size(); i++) {
+			if(features.get(i).getConfigurationId() != null) {
+				features.remove(i);
+				i--;
+			}
+		}
+	}
+	
+	/*
+	 * Loads the corresponding custom features for a feature id
+	 */
+	private List<Feature> loadCustomFeatures(int id){
+		List<Feature> features = new ArrayList<Feature>();
+		File featureTableFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "features" + File.separator + id + ".arff");
+		if(featureTableFile.exists()) {
+			try {
+	            FeatureTableSet featureTableSet = new FeatureTableSet(featureTableFile);
+	            StringAttribute idAttribute = featureTableSet.getIDAttribute();
+	            StringAttribute description = featureTableSet.getDescriptionAttribute();
+	            NumericAttribute extractorID = featureTableSet.getExtractorIDAttribute();
+	            NumericAttribute dimension = featureTableSet.getDimensionsAttribute();
+	            NumericAttribute windowSize = featureTableSet.getWindowSizeAttribute();
+	            NumericAttribute stepSize = featureTableSet.getStepSizeAttribute();
+	            NominalAttribute featureType = featureTableSet.getFeatureTypeAttribute();
+	            for (int i = 0; i < featureTableSet.getValueCount(); i++) {
+	            	if (extractorID.getValueAt(i).isNaN()) {
+	            		// Skip this
+	            	} else {
+	            		String configIdString = idAttribute.getValueAt(i);
+	            		int configIdInt = new Double(configIdString).intValue();
+	             		Feature f = new Feature(id, description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
+	            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
+	            		f.setSourceStepSize(stepSize.getValueAt(i).intValue());
+	            		f.setConfigurationId(configIdInt);
+	            		features.add(f);
+	            	}
+	            }
+	        } catch (IOException ex) {
+	            ex.printStackTrace();
+	            AmuseLogger.write(this.getClass().getName(), Level.FATAL, "Can't load Feature Table!");
+	        }
+		}
+		return features;
 	}
 }

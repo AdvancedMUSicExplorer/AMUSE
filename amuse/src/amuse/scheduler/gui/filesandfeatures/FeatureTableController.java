@@ -159,12 +159,28 @@ public class FeatureTableController implements ActionListener {
     }
 
     private void loadFeatureTableSelection(DataSetAbstract set) {
+    		boolean containsCustomFeatures = false;
             List<Integer> ids = new ArrayList<Integer>(set.getValueCount());
+            List<Integer> confIds = new ArrayList<Integer>(set.getValueCount());
             StringAttribute idAttribute = (StringAttribute) set.getAttribute("Id");
-            for (String id : idAttribute.getValues()) {
-                ids.add(new Double(id).intValue());
+            for (String idString : idAttribute.getValues()) {
+            	Integer id = null;
+            	Integer confId = null;
+                if(idString.contains("_")) {
+                	id = new Double(idString.substring(0, idString.indexOf("_"))).intValue();
+                	confId = new Double(idString.substring(idString.indexOf("_") + 1)).intValue();
+                	containsCustomFeatures = true;
+                } else {
+                	id = new Double(idString).intValue();
+                }
+                ids.add(id);
+                confIds.add(confId);
             }
-            model.selectFeaturesByID(ids);
+            if(containsCustomFeatures) {
+            	model.addCustomFeatures();
+            	view.showCustomFeatures(true);
+            }
+            model.selectFeaturesByID(ids, confIds);
 
     }
 

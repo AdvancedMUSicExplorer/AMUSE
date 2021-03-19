@@ -2,7 +2,7 @@
 @RELATION features
 
 % Unique configuration ID
-@ATTRIBUTE Id STRING
+@ATTRIBUTE Id NUMERIC
 % Feature description
 @ATTRIBUTE Description STRING
 % ID of tool to extract the feature (see extractorTable.arff)
@@ -26,6 +26,5 @@
 @DATA
 
 % Timbre features
-
-1024, "Zero-crossing rate with windowsize 1024", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
-256, "Zero-crossing rate with windowsize 256", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"
+1, "Zero-crossing rate | windowsize = 1024", 0, 1024, 1024, 1, WindowedNumeric, "jAudioBase1024.xml", "jAudioBase1024_modified.xml"
+2, "Zero-crossing rate | windowsize =  256", 0, 256, 256, 1, WindowedNumeric, "jAudioBase256.xml", "jAudioBase256_modified.xml"

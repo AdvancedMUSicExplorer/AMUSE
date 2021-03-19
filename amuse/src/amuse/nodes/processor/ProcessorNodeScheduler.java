@@ -303,7 +303,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// reduction step..
 		FeatureTable featureSet = ((ProcessingConfiguration)this.taskConfiguration).getInputFeatureList();
 		List<Integer> featureIDs = featureSet.getSelectedIds();
-		List<String> configurationIDs = featureSet.getSelectedConfigurationIds();
+		List<Integer> configurationIDs = featureSet.getSelectedConfigurationIds();
 			
 		// Feature files for the current music file
 		for(int i=0;i<featureIDs.size();i++) {
