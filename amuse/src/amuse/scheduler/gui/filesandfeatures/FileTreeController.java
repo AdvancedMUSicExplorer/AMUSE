@@ -111,21 +111,39 @@ public class FileTreeController implements ActionListener, KeyListener {
             JOptionPane.showMessageDialog(view.getView(), "FileList successfully saved!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else if (e.getActionCommand().equals("load")) {
             // 1. FileName:
-            JFileChooser loadDialog = new SelectArffFileChooser("File List", filelistFolder);
-            File file = null;
-            while (true) {
-                int option = loadDialog.showDialog(view.getView(), "Load from ARFF File");
-                if (option == JFileChooser.CANCEL_OPTION) {
-                    return;
+            JFileChooser loadDialog = new SelectArffFileChooser("File List(s)", filelistFolder);
+            loadDialog.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+            loadDialog.setAcceptAllFileFilterUsed(false);
+            loadDialog.setMultiSelectionEnabled(true);
+            loadDialog.setFileFilter(new FileFilter() {
+
+                @Override
+                public boolean accept(File arg0) {
+                    if (arg0.isDirectory() || arg0.getName().endsWith(".arff")) {
+                        return true;
+                    }
+                    return false;
                 }
-                file = loadDialog.getSelectedFile();
-                if (file.exists()) {
-                    break;
-                } else {
-                    JOptionPane.showMessageDialog(view.getView(), "Selected file does not exist!", "Missing File", JOptionPane.ERROR_MESSAGE);
+
+                @Override
+                public String getDescription() {
+                    return getFileFilterDescription();
+                }
+            });
+            int returnValue = loadDialog.showDialog(view.getView(), "Load from ARFF File(s)");
+            if (returnValue == javax.swing.JFileChooser.APPROVE_OPTION) {
+                for (File f : loadDialog.getSelectedFiles()) {
+                	if(f.isDirectory()) {
+                		for(File file : f.listFiles()) {
+                			if(file.getName().endsWith(".arff")) {
+                				loadFileList(file);
+                			}
+                		}
+                	} else {
+                		loadFileList(f);
+                	}
                 }
             }
-            loadFileList(file);
         } else if (e.getActionCommand().equals("add")) {
             JFileChooser jFileChooserSelect = new JFileChooser();
             jFileChooserSelect.setDialogTitle("Add Music File/Folder");
