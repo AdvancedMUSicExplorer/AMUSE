@@ -1102,7 +1102,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			}
 			values_writer.close();
 		} catch(Exception e) {
-			e.printStackTrace();
+			throw new NodeException(e.getMessage());
 		}
 		
 	}
