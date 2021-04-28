@@ -21,7 +21,7 @@
  * 
  * Creation date: 29.08.2020
  */
-package amuse.nodes.processor.methods.preprocessing;
+package amuse.nodes.processor.methods.preprocessing.discretization;
 
 import java.util.ArrayList;
 import java.util.Collections;

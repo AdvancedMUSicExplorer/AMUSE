@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2020 by code authors
+ * Copyright 2006-2021 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
  * 
- * Creation date: 29.08.2020
+ * Creation date: 28.04.2021
  */
 package amuse.nodes.processor.methods.preprocessing.discretization;
 
@@ -35,36 +35,36 @@ import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.util.AmuseLogger;
 
 /**
- * Performs discretization of original values to intervals defined by percentiles
+ * Performs discretization of original values to histogram bins of equal length
  * 
  * @author Igor Vatolkin
  * @version $Id$
  */
 public class HistogramDiscretization extends AmuseTask implements DimensionProcessorInterface {
 	
-	/** Number of percentile boundaries (default: 4 for quartiles */
-	private int numOfPercentileBoundaries = 4;
+	/** Number of histogram bins (default: 10) */
+	private int numOfHistogramBins = 10;
 
 	/**
 	 * @see amuse.nodes.processor.interfaces.DimensionProcessorInterface#setParameters(String)
 	 */
 	public void setParameters(String parameterString) throws NodeException {
-		this.numOfPercentileBoundaries = new Integer(parameterString);
+		this.numOfHistogramBins = new Integer(parameterString);
 	}
 	
 	/**
 	 * Perform normalization
 	 */
 	public void runDimensionProcessing(ArrayList<Feature> features) throws NodeException {
-		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting percentile discretization...");
+		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting histogram discretization...");
 		
 		// Go through features
 		for(int f=0;f<features.size();f++) {
 			
-			// After each indexBoundaryForPercentile indices begins the new interval for discretization
-			int indexBoundaryForPercentile = features.get(f).getWindows().size() / numOfPercentileBoundaries;
+			// After each indexBoundaryForHistogramBin indice begins the new interval for discretization
+			int indexBoundaryForHistogramBin = features.get(f).getWindows().size() / numOfHistogramBins;
 			   	
-			features.get(f).getHistory().add(new String("PercentileDiscretized"));
+			features.get(f).getHistory().add(new String("HistogramEqualBinWidthDiscretized"));
 				
 			// Go through feature dimensions
 			for(int d=0;d<features.get(f).getValues().get(0).length;d++) {
@@ -80,7 +80,7 @@ public class HistogramDiscretization extends AmuseTask implements DimensionProce
 				// Go through all time windows and discretize
 				for(int tw=0;tw<features.get(f).getWindows().size();tw++) {
 					int positionInSortedList = sortedValuesOfCurrentDimension.indexOf(features.get(f).getValues().get(tw)[d]);
-					features.get(f).getValues().get(tw)[d] = new Double(positionInSortedList / indexBoundaryForPercentile);
+					features.get(f).getValues().get(tw)[d] = new Double(positionInSortedList / indexBoundaryForHistogramBin);
 				}
 			}
 		}
