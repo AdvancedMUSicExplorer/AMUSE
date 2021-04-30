@@ -115,7 +115,7 @@ public class FilesAndFeaturesFacade {
 
     private FileTreeModel getFileTreeModel() {
         if(fileTreeModel == null) {
-            fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
+    		fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
         }
         return fileTreeModel;
     }
