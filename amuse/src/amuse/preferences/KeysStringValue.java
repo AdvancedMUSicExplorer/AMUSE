@@ -162,7 +162,7 @@ public enum KeysStringValue {
 	 */
 	private static Map<String, String> getCommentsMap() {
 		Map<String, String> map = new HashMap<String, String>();
-		map.put(AMUSE_PATH.toString(), "Absolute path to Amuse folder:");
+		map.put(AMUSE_PATH.toString(), "Absolute path to AMUSE folder:");
 		map.put(AMUSE_VERSION.toString(), "Amuse version:");
 		map.put(MUSIC_DATABASE.toString(), "Absolute path to database folder with music files:");
 		map.put(SINGLE_TRACK_ANNOTATION_DATABASE.toString(), "Absolute path to database folder with annotations for a single tack:");
