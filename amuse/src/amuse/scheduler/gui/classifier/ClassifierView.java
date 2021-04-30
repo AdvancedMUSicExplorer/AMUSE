@@ -89,7 +89,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
     private JButton btnSelectFolder = new JButton("Select File");
     private JCheckBox selectAverageCalculation = new JCheckBox("Calculate average");
     private TitledBorder pathSelectionTitle = new TitledBorder("Additional Settings");
-    private static final String toolTipCheckboxAverage = "Select to calculate song average category relationship over all song partitions";
+    private static final String toolTipCheckboxAverage = "Select to calculate track average category relationship over all classification windows";
     
     
     /**
