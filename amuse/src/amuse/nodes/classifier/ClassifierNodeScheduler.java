@@ -429,8 +429,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					// Load the first classifier input for attributes information
 					String currentInputFile = ((FileListInput)inputToClassify).
 						getInputFiles().get(0).toString();
-					
-					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+					if(currentInputFile.startsWith(musicDatabasePath)) {
 						currentInputFile = 
 							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 							+ File.separator 
@@ -480,7 +482,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 						// Save the name of music file for later conversion of classification output
 						String currentInputSong = new String(currentInputFile);
-						if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						if(currentInputFile.startsWith(musicDatabasePath)) {
 							currentInputFile = 
 								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 
