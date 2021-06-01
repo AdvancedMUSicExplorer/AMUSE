@@ -26,7 +26,6 @@ package amuse.util.audio;
 import org.apache.log4j.Level;
 
 import amuse.util.AmuseLogger;
-import tools.j17c1evomix.randommixer.MixingFloatAudioInputStream;
 
 import javax.sound.sampled.*;
 import java.io.File;

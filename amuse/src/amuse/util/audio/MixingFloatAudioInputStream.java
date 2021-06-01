@@ -227,7 +227,11 @@ public class MixingFloatAudioInputStream extends AudioInputStream {
         // specified audioFormat's sample format.
         // ***OLD*** mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
         // TODO Old code (line above) did not compile; can be removed sometime..
-        maxMixed += mixBuffer.convertToByteArray(abData, nOffset, getFormat()); 
+        // FIXME New code has problems with mixing of samples: maxMixed += mixBuffer.convertToByteArray(abData, nOffset, getFormat());
+        
+        //mixBuffer.convertToByteArray(abData, nOffset, getFormat()); // works..
+        mixBuffer.convertToByteArray(0, maxMixed, abData, nOffset, getFormat());
+        
         return maxMixed * getFormat().getFrameSize();
     }
 
