@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 
 /**
@@ -115,7 +116,7 @@ public class FilesAndFeaturesFacade {
 
     private FileTreeModel getFileTreeModel() {
         if(fileTreeModel == null) {
-            fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
+    		fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
         }
         return fileTreeModel;
     }

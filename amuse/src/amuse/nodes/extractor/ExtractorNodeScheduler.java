@@ -159,9 +159,13 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			}
 		}
 		
+		
 		// Set the music file name without music database directory path 
 		String relativeName = new String();
-		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+		String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+		// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+		musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath)) {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);

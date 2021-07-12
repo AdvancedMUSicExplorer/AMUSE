@@ -69,7 +69,7 @@ public final class WizardController implements WizardControllerInterface {
 	private static WizardController instance;
 	private WizardView wizard;
 	private JFrame wizardFrame;
-	private final String applicationTitle = "Amuse Wizard";
+	private final String applicationTitle = "AMUSE Wizard";
 	private ExtractionController exController;
 	private ProcessingController proController;
 	private TrainingController trainController;

@@ -111,5 +111,30 @@ public class AudioFileMixing {
         // Do the job
         mixFiles(filesToMix, mixedFile);
     }
+    
+    public static void mixSamples(List<File> files, File targetFile) throws UnsupportedAudioFileException, IOException {
+    	List<File> musicFiles = new ArrayList<File>(files);
+
+    	// Check preconditions:
+    	if (musicFiles.isEmpty()) {
+    		throw new IOException("No Input Files!");
+    	}
+    	if (targetFile.exists() && !targetFile.delete()) {
+    		throw new IOException("Unable to write output!");
+    	}
+
+    	AudioFormat format = AudioSystem.getAudioFileFormat(files.get(0)).getFormat();
+    	List<AudioInputStream> audioStreams = new ArrayList<AudioInputStream>();
+    	for (File f : files) {
+    		audioStreams.add(AudioSystem.getAudioInputStream(f));
+    	}
+
+    	MixingFloatAudioInputStream mixingStream = new MixingFloatAudioInputStream(format, audioStreams);
+    	AmuseLogger.write(AudioFileMixing.class.getName(), Level.DEBUG, "Start writing stream... \t" + format);
+    	AudioSystem.write(mixingStream, AudioFileFormat.Type.WAVE, targetFile);
+    	AmuseLogger.write(AudioFileMixing.class.getName(), Level.DEBUG, "..finished");
+    }
+
+    
 
 }

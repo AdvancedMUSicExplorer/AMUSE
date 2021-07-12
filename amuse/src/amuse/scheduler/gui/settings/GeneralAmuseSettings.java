@@ -57,7 +57,7 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		internalPanel.setBorder(new TitledBorder("Path Settings"));
 		Vector<EditableAmuseSettingInterface> settings = new Vector<EditableAmuseSettingInterface>();
 		// Add Grid Components:
-		settings.add(new PathSelectionPanel("Amuse Folder", KeysStringValue.AMUSE_PATH));
+		settings.add(new PathSelectionPanel("AMUSE Folder", KeysStringValue.AMUSE_PATH));
 		settings.add(new PathSelectionPanel("Music Database", KeysStringValue.MUSIC_DATABASE));
 		settings.add(new PathSelectionPanel("Feature Database", KeysStringValue.FEATURE_DATABASE));
 		settings.add(new PathSelectionPanel("Single Track Annotation Database", KeysStringValue.SINGLE_TRACK_ANNOTATION_DATABASE));

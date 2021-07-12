@@ -488,7 +488,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			while(currentInstance != null) {
 				
 				String musicFile = currentInstance.stringValue(musicFileNameAttribute);
-				if(musicFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+				String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+				// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+				musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+				if(musicFile.startsWith(musicDatabasePath)) {
 					musicFile = musicFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length(),musicFile.length());
 				}
 				String absoluteName = musicFile.substring(musicFile.lastIndexOf(File.separator)+1,musicFile.lastIndexOf("."));

@@ -462,8 +462,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					// Load the first classifier input for attributes information
 					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
-					
-					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+					if(currentInputFile.startsWith(musicDatabasePath)) {
 						String processedFeatureDatabase = ((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase();
 
 						if(processedFeatureDatabase.endsWith(File.separator)){
@@ -620,8 +622,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 						// Go to the next description
 						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
-						
-						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						if(newInputFile.startsWith(musicDatabasePath)) {
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 

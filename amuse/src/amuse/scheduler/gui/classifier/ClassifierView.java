@@ -89,7 +89,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
     private JButton btnSelectFolder = new JButton("Select File");
     private JCheckBox selectAverageCalculation = new JCheckBox("Calculate average");
     private TitledBorder pathSelectionTitle = new TitledBorder("Additional Settings");
-    private static final String toolTipCheckboxAverage = "Select to calculate song average category relationship over all song partitions";
+    private static final String toolTipCheckboxAverage = "Select to calculate track average category relationship over all classification windows";
     
     
     /**
@@ -135,7 +135,7 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
         targetPathSelectionPanel.add(selectAverageCalculation, "growx, wrap");
         targetPathSelectionPanel.add(new JLabel("Enter Filename for Result:"), "wrap");
         targetPathSelectionPanel.add(txtTargetFilePath, "growx");
-        txtTargetFilePath.setText(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "experiments" + 
+        txtTargetFilePath.setText(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + (AmusePreferences.get(KeysStringValue.AMUSE_PATH).endsWith(File.separator) ? "" : File.separator) + "experiments" + 
         		File.separator);
         targetPathSelectionPanel.add(btnSelectFolder, "gap rel");
         targetPathSelectionPanel.setBorder(pathSelectionTitle);

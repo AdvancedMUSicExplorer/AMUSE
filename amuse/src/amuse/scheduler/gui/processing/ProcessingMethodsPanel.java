@@ -209,11 +209,11 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		});
 		matrixToVectorPanel.add(mtvComboBox, BorderLayout.CENTER);
 		leftLower.add(matrixToVectorPanel, BorderLayout.CENTER);
-		globalSettingsPanel.add(new JLabel("Partition Size:"));
+		globalSettingsPanel.add(new JLabel("Window Size:"));
 		partitionSize = new IntegerTextField("5000");
 		globalSettingsPanel.add(partitionSize,
 				"gap rel, w 1.5cm:max, growx");
-		globalSettingsPanel.add(new JLabel("Partition Overlap:"), "gap unrel");
+		globalSettingsPanel.add(new JLabel("Step Size:"), "gap unrel");
 		partitionOverlap = new IntegerTextField("2500");
 		globalSettingsPanel.add(partitionOverlap,
 				"gap rel, w 1.5cm:max, growx, wrap");

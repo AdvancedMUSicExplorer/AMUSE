@@ -314,7 +314,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 					
 			// Calculate the path to feature files
 			String relativeName = new String();
-			if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+			String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+			// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+			musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+			if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath)) {
 				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 			} else {
 				relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
@@ -458,7 +461,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		
 		// Calculate the path to processed feature files
 		String relativeName = new String();
-		if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+		String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+		// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+		musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+		if(((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath)) {
 			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
@@ -734,7 +740,10 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// Create file and folder for processed features
 		String destinationFile = ((ProcessingConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0);
 		String relativeName = new String();
-		if(destinationFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+		String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+		// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+		musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+		if(destinationFile.startsWith(musicDatabasePath)) {
 			relativeName = destinationFile.substring(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE).length());
 		} else {
 			relativeName = destinationFile;
