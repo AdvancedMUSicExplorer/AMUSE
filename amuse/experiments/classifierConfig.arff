@@ -14,8 +14,8 @@
 @ATTRIBUTE 'InputFeatureType' {'RAW_FEATURES', 'PROCESSED_FEATURES'}
 % Size of classification window in milliseconds
 @ATTRIBUTE 'ClassificationWindowSize' NUMERIC
-% Size of classification window overlap in milliseconds
-@ATTRIBUTE 'ClassificationWindowOverlap' NUMERIC
+% Size of classification window step size in milliseconds
+@ATTRIBUTE 'ClassificationWindowStepSize' NUMERIC
 % Classification algorithm ID  -> used for calculation of path to model file
 @ATTRIBUTE 'AlgorithmId' STRING
 % Ground truth category ID -> used for calculation of path to model file (not needed if model is directly specified)
@@ -31,9 +31,9 @@
 @ATTRIBUTE 'LabelType' {'MULTICLASS','MULTILABEL','SINGLELABEL'}
 % Is the prediction supervised classification, unsupervised classification or regression?
 @ATTRIBUTE 'MethodType' {'SUPERVISED','UNSUPERVISED','REGRESSION'}
-% If equal to 1, song relationship grade is averaged over all classified partitions;
-% If equal to 0, relationships for each partition are saved to output result
-@ATTRIBUTE 'MergeSongResults' NUMERIC
+% If equal to 1, track relationship grade is averaged over all classified classification windows;
+% If equal to 0, relationships for each classification window are saved to output result
+@ATTRIBUTE 'MergeTrackResults' NUMERIC
 % Path for classification result
 @ATTRIBUTE 'OutputResult' STRING
 % Description that was used for training -> used for calculation of path to model file (not needed if the model directly specified)

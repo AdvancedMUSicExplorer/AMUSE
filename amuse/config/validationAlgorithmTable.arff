@@ -24,4 +24,4 @@
 @DATA
 0, "Single_Evaluator", "Single evaluation", "amuse.nodes.validator.methods.SingleEvaluator", "Evaluates the given classification model(s)", "Path to classification model or folder with models:", "[%fof]", "[]", "Path to a single classification model file or folder with several models"
 
-1, "n-Fold_Cross-Validation", "Cross-validation", "amuse.nodes.validator.methods.NFoldCrossValidator", "n-fold cross validation", "n:|Random seed:", "[%i{2-INF} %d]", "[10_0]", "Partition number|Set to 0 if the new seed should be generated; set to -1 if the partitions should be built sequentually from the song list"
+1, "n-Fold_Cross-Validation", "Cross-validation", "amuse.nodes.validator.methods.NFoldCrossValidator", "n-fold cross validation", "n:|Random seed:", "[%i{2-INF} %d]", "[10_0]", "Partition number|Set to 0 if the new seed should be generated; set to -1 if the partitions should be built sequentually from the track list"

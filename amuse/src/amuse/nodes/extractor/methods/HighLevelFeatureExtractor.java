@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
 
 import amuse.data.ModelType;
 import amuse.data.ModelType.RelationshipType;
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.FeatureTable;
@@ -276,7 +276,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 					
 					
 					// Classify the music input with the current model
-					ArrayList<ClassifiedSongPartitions> predictedFeatures = new ArrayList<ClassifiedSongPartitions>();
+					ArrayList<ClassifiedClassificationWindow> predictedFeatures = new ArrayList<ClassifiedClassificationWindow>();
 					ClassificationConfiguration cConf = null;
 					cConf = new ClassificationConfiguration(
 						new DataSetInput(featuresToClassify),
@@ -303,12 +303,12 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 					int numberOfValuesInCurrentFrame = 0;
 					int sumOfPositivesInCurrentFrame = 0;
 					
-					// Go through all feature partitions
+					// Go through all feature classification windows
 					for(int i=0;i<processedFeatures.getValueCount();i++) {
-						int currentPartitionStart = new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue();
-						int currentPartitionEnd = new Double(processedFeatures.getAttribute("End").getValueAt(i).toString()).intValue();
+						int currentClassificationWindowStart = new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue();
+						int currentClassificationWindowEnd = new Double(processedFeatures.getAttribute("End").getValueAt(i).toString()).intValue();
 						
-						if(currentPartitionEnd > currentFrameEnd) {
+						if(currentClassificationWindowEnd > currentFrameEnd) {
 							// Save the results
 							featureValues.get(currentDim).add((double)sumOfPositivesInCurrentFrame/(double)numberOfValuesInCurrentFrame);
 							
@@ -321,7 +321,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 							while(i>0 && new Double(processedFeatures.getAttribute("Start").getValueAt(i).toString()).intValue() > currentFrameStart) {
 								i--;
 							}
-						} else if(currentPartitionStart >= currentFrameStart){
+						} else if(currentClassificationWindowStart >= currentFrameStart){
 							numberOfValuesInCurrentFrame++;
 							// Since all of the feature vectors have become the id 0..
 							sumOfPositivesInCurrentFrame += predictedFeatures.get(0).getRelationships()[i][0];

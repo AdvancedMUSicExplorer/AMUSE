@@ -12,8 +12,8 @@
 @ATTRIBUTE 'InputFeatureType' {'RAW_FEATURES', 'PROCESSED_FEATURES'}
 % Size of classification window in milliseconds
 @ATTRIBUTE 'ClassificationWindowSize' NUMERIC
-% Size of classification window overlap in milliseconds
-@ATTRIBUTE 'ClassificationWindowOverlap' NUMERIC
+% Size of classification window step size in milliseconds
+@ATTRIBUTE 'ClassificationWindowStepSize' NUMERIC
 % Input to validate
 @ATTRIBUTE 'InputToValidate' STRING
 % Ground truth source type

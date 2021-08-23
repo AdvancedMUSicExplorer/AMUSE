@@ -53,8 +53,8 @@ public class MeasuresTableModel extends DefaultTableModel {
             column[0] = m.getID();
             column[1] = m.getName();
             column[2] = m.getCategory();
-            column[3] = m.isSongLevelSelected();
-            column[4] = m.isPartitionLevelSelected();
+            column[3] = m.isTrackLevelSelected();
+            column[4] = m.isWindowLevelSelected();
             index++;
         }
         this.setDataVector(data, columnHeaders);
@@ -62,8 +62,8 @@ public class MeasuresTableModel extends DefaultTableModel {
 
     public void loadSelection(MeasureTable table) {
         for (int i = 0; i < table.size(); i++) {
-           setValueAt(table.get(i).isSongLevelSelected(), i, 3);
-           setValueAt(table.get(i).isPartitionLevelSelected(), i, 4);
+           setValueAt(table.get(i).isTrackLevelSelected(), i, 3);
+           setValueAt(table.get(i).isWindowLevelSelected(), i, 4);
         }
     }
   
@@ -95,11 +95,11 @@ public class MeasuresTableModel extends DefaultTableModel {
 
     public MeasureTable getMeasureTable() {
         for (int i = 0; i < getRowCount(); i++) {
-            boolean songLevel = (Boolean)getValueAt(i, 3);
-            boolean partitionLevel = (Boolean)getValueAt(i, 4);
+            boolean trackLevel = (Boolean)getValueAt(i, 3);
+            boolean classificationWindowLevel = (Boolean)getValueAt(i, 4);
             Measure measure = measureTable.get(i);
-            measure.setSongLevelSelected(songLevel);
-            measure.setPartitionLevelSelected(partitionLevel);
+            measure.setTrackLevelSelected(trackLevel);
+            measure.setWindowLevelSelected(classificationWindowLevel);
         }
         return measureTable;
     }

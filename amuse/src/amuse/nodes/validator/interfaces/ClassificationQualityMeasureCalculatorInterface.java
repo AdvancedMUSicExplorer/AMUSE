@@ -25,7 +25,7 @@ package amuse.nodes.validator.interfaces;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 
 /**
@@ -37,20 +37,20 @@ import amuse.interfaces.nodes.NodeException;
  */
 public interface ClassificationQualityMeasureCalculatorInterface extends MeasureCalculatorInterface {
 	
-	/** Switchs the measure calculation on song level on/off */
-	public void setSongLevel(boolean level);
+	/** Switchs the measure calculation on track level on/off */
+	public void setTrackLevel(boolean level);
 	
-	/** Switchs the measure calculation on partition level on/off */
-	public void setPartitionLevel(boolean level);
+	/** Switchs the measure calculation on classificationWindow level on/off */
+	public void setWindowLevel(boolean level);
 	
 	/** Switchs the fuzzy measure calculation on/off */
 	public void setContinuous(boolean fuzzy);
 	
-	/** Returns true if this measure will be calculated on song level */
-	public boolean getSongLevel();
+	/** Returns true if this measure will be calculated on track level */
+	public boolean getTrackLevel();
 	
-	/** Returns true if this measure will be calculated on partition level */
-	public boolean getPartitionLevel();
+	/** Returns true if this measure will be calculated on classification window level */
+	public boolean getWindowLevel();
 	
 	//** Returns true if this measure will be be calculated in a fuzzy way */
 	public boolean isContinuous();
@@ -62,7 +62,7 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	 * @return Measure or null if this calculator does not support required classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMeasure[] calculateOneClassMeasure(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateOneClassMeasure(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
 	/**
 	 * Calculates the measure, if this calculator supports fuzzy classifiers
@@ -71,12 +71,12 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	 * @return Measure or null if this calculator does not support fuzzy classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMeasure[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
-	public ValidationMeasure[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
 	
-	public ValidationMeasure[] calculateMultiClassMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiClassMeasure(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
 	/**
 	 * Calculates the measure, if this calculator supports multiclass classifiers
@@ -85,12 +85,12 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	 * @return Measure or null if this calculator does not support multiclass classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMeasure[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
-	public ValidationMeasure[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
 	
-	public ValidationMeasure[] calculateMultiLabelMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiLabelMeasure(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
 	/**
 	 * Calculates the measure, if this calculator supports multilabel classifiers
@@ -99,7 +99,7 @@ public interface ClassificationQualityMeasureCalculatorInterface extends Measure
 	 * @return Measure or null if this calculator does not support multilabel classifiers
 	 * @throws NodeException
 	 */
-	public ValidationMeasure[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 	
-	public ValidationMeasure[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException;
+	public ValidationMeasure[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException;
 }

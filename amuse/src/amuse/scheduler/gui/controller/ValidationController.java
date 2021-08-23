@@ -128,7 +128,7 @@ public class ValidationController extends AbstractController {
         }
         String inputFeatureType = validationView.getInputFeatureType().toString();
         Integer classificationWindowSize = validationView.getClassificationWindowSize();
-        Integer classificationWindowOverlap = validationView.getClassificationWindowOverlap();
+        Integer classificationWindowStepSize = validationView.getClassificationWindowStepSize();
         String groundTruthSource = validationView.getGroundTruthSource();
         String groundTruthSourceType = validationView.getGroundTruthSourceType().toString();
         String classificationAlgorithmId = validationView.getClassifierAlgorithmStr();
@@ -144,7 +144,7 @@ public class ValidationController extends AbstractController {
                 inputFeatureDescription, 
                 inputFeatureType,
                 classificationWindowSize,
-                classificationWindowOverlap,
+                classificationWindowStepSize,
                 groundTruthSource, 
                 groundTruthSourceType,
                 attributesToPredict,
@@ -217,7 +217,7 @@ public class ValidationController extends AbstractController {
             	FeatureTable inputFeatures = new FeatureTable(new File(set.getInputFeaturesAttribute().getValueAt(0)));
             	validationView.setInputFeatures(inputFeatures);
             	validationView.setClassificationWindowSize(set.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
-            	validationView.setClassificationWindowOverlap(set.getClassificationWindowOverlapAttribute().getValueAt(0).intValue());
+            	validationView.setClassificationWindowStepSize(set.getClassificationWindowStepSizeAttribute().getValueAt(0).intValue());
             } else {
             	validationView.setInputFeatureType(InputFeatureType.PROCESSED_FEATURES);
             	validationView.setProcessingModelString(set.getInputFeaturesAttribute().getValueAt(0));
@@ -285,7 +285,7 @@ public class ValidationController extends AbstractController {
         MeasureTable measureTable = measuresView.getMeasureTable();
         InputFeatureType inputFeatureType = validationView.getInputFeatureType();
         Integer classificationWindowSize = validationView.getClassificationWindowSize();
-        Integer classificationWindowOverlap = validationView.getClassificationWindowOverlap();
+        Integer classificationWindowStepSize = validationView.getClassificationWindowStepSize();
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
         GroundTruthSourceType groundTruthSourceType = validationView.getGroundTruthSourceType();
         String classificationAlgorithmStr = validationView.getClassifierAlgorithmStr();
@@ -300,7 +300,7 @@ public class ValidationController extends AbstractController {
 	        		measureTable,
 	                inputFeatures, 
 	                classificationWindowSize,
-	                classificationWindowOverlap,
+	                classificationWindowStepSize,
 	                classificationAlgorithmStr, 
 	                groundTruthSource,
 	                groundTruthSourceType,
@@ -316,7 +316,7 @@ public class ValidationController extends AbstractController {
 	                processedFeatureDescription, 
 	                inputFeatureType,
 	                classificationWindowSize,
-	                classificationWindowOverlap,
+	                classificationWindowStepSize,
 	                classificationAlgorithmStr, 
 	                groundTruthSource,
 	                groundTruthSourceType,
@@ -466,7 +466,7 @@ public class ValidationController extends AbstractController {
             if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
             	validationView.setInputFeatures(valConf.getInputFeatureList());
             	validationView.setClassificationWindowSize(valConf.getClassificationWindowSize());
-            	validationView.setClassificationWindowOverlap(valConf.getClassificationWindowOverlap());
+            	validationView.setClassificationWindowStepSize(valConf.getClassificationWindowStepSize());
             } else {
             	validationView.setProcessingModelString(valConf.getInputFeaturesDescription());
             }

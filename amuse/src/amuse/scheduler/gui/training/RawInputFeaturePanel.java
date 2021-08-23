@@ -34,9 +34,9 @@ public class RawInputFeaturePanel extends JPanel {
     private FeatureTable featureTable = new FeatureTable();
     private JButton featureButton;
     private JLabel windowSizeLabel = new JLabel("Window Size (ms):");
-    private JLabel windowOverlapLabel = new JLabel("Window Overlap (ms):");
+    private JLabel windowStepSizeLabel = new JLabel("Window Step Size (ms):");
     private JTextField windowSizeTextField = new JTextField(10);
-    private JTextField windowOverlapTextField = new JTextField(10);
+    private JTextField windowStepSizeTextField = new JTextField(10);
     
     public RawInputFeaturePanel() {
     	super(new MigLayout("fillx"));
@@ -48,12 +48,12 @@ public class RawInputFeaturePanel extends JPanel {
 			featureTable = featureSelector.getFeatureTable();
 		});
     	windowSizeTextField.setText("5000");
-    	windowOverlapTextField.setText("2500");
+    	windowStepSizeTextField.setText("2500");
     	this.add(featureButton, "wrap");
     	this.add(windowSizeLabel);
     	this.add(windowSizeTextField, "pushx, wrap");
-    	this.add(windowOverlapLabel);
-    	this.add(windowOverlapTextField, "pushx, wrap");
+    	this.add(windowStepSizeLabel);
+    	this.add(windowStepSizeTextField, "pushx, wrap");
     	this.add(attributesToIgnoreLabel, "pushx, wrap");
         this.add(attributesToIgnoreTextField, "growx, wrap");
     }
@@ -122,15 +122,15 @@ public class RawInputFeaturePanel extends JPanel {
     	return size;
     }
     
-    public int getClassificaitonWindowOverlap() {
-    	int overlap = -1;
+    public int getClassificaitonWindowStepSize() {
+    	int stepSize = -1;
     	try {
-    		overlap = Integer.parseInt(windowOverlapTextField.getText());
+    		stepSize = Integer.parseInt(windowStepSizeTextField.getText());
     	} catch(NumberFormatException e) {
     		AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-					"Please specify the Classification Window Overlap correctly.");
+					"Please specify the Classification Window Step Size correctly.");
     	}
-    	return overlap;
+    	return stepSize;
     }
 
     public List<Integer> getAttributesToIgnore(){
@@ -168,8 +168,8 @@ public class RawInputFeaturePanel extends JPanel {
 		this.windowSizeTextField.setText(size.toString());
 	}
 
-	public void setClassificationWindowOverlap(Integer overlap) {
-		this.windowOverlapTextField.setText(overlap.toString());
+	public void setClassificationWindowStepSize(Integer stepSize) {
+		this.windowStepSizeTextField.setText(stepSize.toString());
 	}
 
 }

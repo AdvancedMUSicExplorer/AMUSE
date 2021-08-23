@@ -24,7 +24,7 @@
 package amuse.nodes.validator.interfaces;
 
 /**
- * For validation measures which consist of a string (e.g. the list of correctly predicted songs).
+ * For validation measures which consist of a string (e.g. the list of correctly predicted tracks).
  *  
  * @author Igor Vatolkin
  * @version $Id: ValidationMeasureString.java 241 2018-07-26 12:35:24Z frederik-h $

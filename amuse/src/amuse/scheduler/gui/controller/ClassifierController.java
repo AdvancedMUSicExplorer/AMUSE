@@ -100,12 +100,12 @@ public class ClassifierController extends AbstractController {
         }
         String inputFeatureType = classifierView.getInputFeatureType().toString();
         Integer classificationWindowSize = classifierView.getClassificationWindowSize();
-        Integer classificationWindowOverlap = classifierView.getClassificationWindowOverlap();
+        Integer classificationWindowStepSize = classifierView.getClassificationWindowStepSize();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
         int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
-        int mergeSongResults = 1;
+        int mergeTrackResults = 1;
         if (!classifierView.isAverageCalculationSelected()) {
-            mergeSongResults = 0;
+            mergeTrackResults = 0;
         }
         String outputResultPath = classifierView.getTargetFilePath();
         String attributesToPredict = classifierView.getAttributesToPredict().toString();
@@ -124,14 +124,14 @@ public class ClassifierController extends AbstractController {
 	        		inputFeatureDescription, 
 	        		inputFeatureType,
 	        		classificationWindowSize,
-	        		classificationWindowOverlap,
+	        		classificationWindowStepSize,
 	        		algorithmId, 
 	        		groundTruthCategoryId,
 	        		attributesToPredict,
 	        		relationshipType,
 	        		labelType,
 	        		methodType,
-	        		mergeSongResults,
+	        		mergeTrackResults,
 	        		outputResultPath,
 	        		pathToInputModel,
 	        		trainingDescription);
@@ -200,19 +200,19 @@ public class ClassifierController extends AbstractController {
         if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
         	classifierView.setInputFeatures(conf.getInputFeatureList());
         	classifierView.setClassificationWindowSize(conf.getClassificationWindowSize());
-        	classifierView.setClassificationWindowOverlap(conf.getClassificationWindowOverlap());
+        	classifierView.setClassificationWindowStepSize(conf.getClassificationWindowStepSize());
         } else {
         	classifierView.setProcessingModelString(conf.getInputFeatures());
         }
     	classifierView.setInputSourceType(conf.getInputSourceType());
         classifierView.setSelectedTrainingAlgorithm(conf.getAlgorithmDescription());
         classifierView.setGroundTruthCategoryId(conf.getGroundTruthCategoryId());
-        classifierView.setAverageCalculationSelected(conf.getMergeSongResults());
+        classifierView.setAverageCalculationSelected(conf.getMergeTrackResults());
         classifierView.setTargetFilePath(conf.getClassificationOutput());
         classifierView.setAttributesToPredict(conf.getAttributesToPredict());
         classifierView.setAttributesToIgnore(conf.getAttributesToIgnore());
         classifierView.setModelType(conf.getModelType());
-        classifierView.setMergeSongResults(conf.getMergeSongResults());
+        classifierView.setMergeTrackResults(conf.getMergeTrackResults());
         classifierView.setOutputResult(conf.getClassificationOutput());
         classifierView.setTrainingDescription(conf.getTrainingDescription());
         classifierView.setInputSourceType(conf.getInputSourceType());
@@ -247,15 +247,15 @@ public class ClassifierController extends AbstractController {
             String inputSourceType = classifierView.getInputSourceType().toString();
             InputFeatureType inputFeatureType = classifierView.getInputFeatureType();
             Integer classificationWindowSize = classifierView.getClassificationWindowSize();
-            Integer classificationWindowOverlap = classifierView.getClassificationWindowOverlap();
+            Integer classificationWindowStepSize = classifierView.getClassificationWindowStepSize();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
             int groundTruthCategoryId = classifierView.getGroundTruthCategoryId();
             List<Integer> attributesToPredict = classifierView.getAttributesToPredict();
             List<Integer> attributesToIgnore = classifierView.getAttributesToIgnore();
             ModelType modelType = classifierView.getModelType();
-            int mergeSongResults = 1;
+            int mergeTrackResults = 1;
             if (!classifierView.isAverageCalculationSelected()) {
-                mergeSongResults = 0;
+                mergeTrackResults = 0;
             }
             String outputResultPath = classifierView.getTargetFilePath();
             String pathToInputModel = classifierView.getPathToInputModel();
@@ -278,12 +278,12 @@ public class ClassifierController extends AbstractController {
 	            		attributesToIgnore,
 	            		inputFeatures, 
 	            		classificationWindowSize,
-	            		classificationWindowOverlap,
+	            		classificationWindowStepSize,
 	            		algorithmStr, 
 	            		groundTruthCategoryId,
 	            		attributesToPredict,
 	            		modelType,
-	            		mergeSongResults, 
+	            		mergeTrackResults, 
 	            		outputResultPath,
 	            		pathToInputModel,
 	            		trainingDescription);
@@ -297,12 +297,12 @@ public class ClassifierController extends AbstractController {
 	            		processedFeatureDescription, 
 	            		inputFeatureType,
 	            		classificationWindowSize,
-	            		classificationWindowOverlap,
+	            		classificationWindowStepSize,
 	            		algorithmStr, 
 	            		groundTruthCategoryId,
 	            		attributesToPredict,
 	            		modelType,
-	            		mergeSongResults, 
+	            		mergeTrackResults, 
 	            		outputResultPath,
 	            		pathToInputModel,
 	            		trainingDescription);

@@ -91,7 +91,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of input features (feature table or processing configuration)
 	 * @param reductionSteps Processing steps (feature or time dimension processing)
 	 * @param aggregationWindowSize Aggregation window size (each window -> input for classification)
-	 * @param aggregationWindowStepSize Partition overlap
+	 * @param aggregationWindowStepSize Classification window step size
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
 	 */
@@ -118,22 +118,22 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param inputMusicFile Music file list for feature processing
 	 * @param inputFeatureList List with features to process
 	 * @param reductionSteps Processing steps (feature or time dimension processing)
-	 * @param partitionSize Partition size (each partition -> input for classification)
-	 * @param partitionOverlap Partition overlap
+	 * @param classificationWindowSize Classification window size (each classification window -> input for classification)
+	 * @param classificationWindowStepSize Classification window step size
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
 	 * 
 	 * @deprecated Old constructor when only raw features are used as input
 	 */
 	public ProcessingConfiguration(FileTable musicFileList, String inputFeatureList, String reductionSteps,
-			Integer partitionSize, Integer partitionOverlap, String conversionStep, String featureDescription) {
+			Integer classificationWindowSize, Integer classificationWindowStepSize, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
 		this.inputFeatures = null;
 		this.inputFeatureList = new FeatureTable(new File(inputFeatureList));
 		this.reductionSteps = reductionSteps;
-		this.aggregationWindowSize = partitionSize;
-		this.aggregationWindowStepSize = partitionOverlap;
+		this.aggregationWindowSize = classificationWindowSize;
+		this.aggregationWindowStepSize = classificationWindowStepSize;
 		this.conversionStep = conversionStep;
 		this.featureDescription = featureDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
@@ -144,22 +144,22 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param inputMusicFile Music file list for feature processing
 	 * @param inputFeatureList List with features to process
 	 * @param reductionSteps Processing steps (feature or time dimension processing)
-	 * @param partitionSize Partition size (each partition -> input for classification)
-	 * @param partitionOverlap Partition overlap
+	 * @param classificationWindowSize Classification window size (each classification window -> input for classification)
+	 * @param classificationWindowStepSize Classification window step size
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
 	 * 
 	 * @deprecated Old constructor when only raw features are used as input
 	 */
 	public ProcessingConfiguration(FileTable musicFileList, FeatureTable inputFeatureList, String reductionSteps,
-			Integer partitionSize, Integer partitionOverlap, String conversionStep, String featureDescription) {
+			Integer classificationWindowSize, Integer classificationWindowStepSize, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
 		this.inputFeatures = null;
 		this.inputFeatureList = inputFeatureList;
 		this.reductionSteps = reductionSteps;
-		this.aggregationWindowSize = partitionSize;
-		this.aggregationWindowStepSize = partitionOverlap;
+		this.aggregationWindowSize = classificationWindowSize;
+		this.aggregationWindowStepSize = classificationWindowStepSize;
 		this.conversionStep = conversionStep;
 		this.featureDescription = featureDescription;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);

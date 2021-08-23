@@ -380,7 +380,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			int actualFrameSize = features.get(i).getSourceFrameSize();
 			featureIdToSourceFrameSize.put(features.get(i).getId(), features.get(i).getSourceFrameSize());
 			
-			// If the complete song is used as source..
+			// If the complete track is used as source..
 			if(actualFrameSize == -1) {
 				actualFrameSize = features.get(exampleOfFeatureWithMinimalFrame).getWindows().size() * minimalFrameSize;
 				features.get(i).getWindows().set(0,1d);
@@ -835,23 +835,23 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			values_writer.writeBytes("@DATA");
 			values_writer.writeBytes(sep);
 			
-			// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
-			int numberOfMaxPartitions = features.get(0).getValues().size();
+			// TODO Consider only the classification windows up to 6 minutes of a music track; should be a parameter?
+			int numberOfMaxClassificatoinWindows = features.get(0).getValues().size();
 			for(int j=1;j<features.size();j++) {
-				if(features.get(j).getValues().size() < numberOfMaxPartitions) {
-					numberOfMaxPartitions = features.get(j).getValues().size();
+				if(features.get(j).getValues().size() < numberOfMaxClassificatoinWindows) {
+					numberOfMaxClassificatoinWindows = features.get(j).getValues().size();
 				}
 			}
-			if((numberOfMaxPartitions * (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
+			if((numberOfMaxClassificatoinWindows * (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
 					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize())) > 360000) {
-				numberOfMaxPartitions = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
+				numberOfMaxClassificatoinWindows = 360000 / (((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() - 
 						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize());
 				AmuseLogger.write(this.getClass().getName(), Level.WARN, 
-		   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
-		   				" to " + numberOfMaxPartitions);
+		   				"Number of classification windows after processing reduced from " + features.get(0).getValues().size() + 
+		   				" to " + numberOfMaxClassificatoinWindows);
 			}
 			
-			// TODO [1/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
+			// TODO [1/2] For adaptive onset classification windows the boundaries are calculated here. A more generic solution
 			// is to change Feature class and allow frames of different sizes (e.g. with a child class)
 			// Load the attack start events and release end events
 			Double[] attackStarts = null;
@@ -866,7 +866,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize();
 			
 			// Save the data
-			for(int i=0;i<numberOfMaxPartitions;i++) {
+			for(int i=0;i<numberOfMaxClassificatoinWindows;i++) {
 				for(int j=0;j<features.size();j++) {
 				
 					// [0] since the converted features must be single-dimensional!
@@ -875,11 +875,11 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				double sampleRate = new Integer(features.get(0).getSampleRate()).doubleValue();
 				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1"))) {
 					//values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
-						//	(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getPartitionSize()) + sep);
+						//	(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getClassificationWindowSize()) + sep);
 					values_writer.writeBytes("milliseconds," + (i*stepSize) + "," + (i*stepSize + partSize) + sep);
 				} else {
 					
-					// TODO [2/2] For adaptive onset partitions the boundaries are calculated here. A more generic solution
+					// TODO [2/2] For adaptive onset classification windows the boundaries are calculated here. A more generic solution
 					// is to change Feature class and allow frames of different sizes (e.g. with a child class)
 					values_writer.writeBytes("milliseconds," + attackStarts[i] * 1000 + "," + releaseEnds[i] * 1000 + sep);
 					

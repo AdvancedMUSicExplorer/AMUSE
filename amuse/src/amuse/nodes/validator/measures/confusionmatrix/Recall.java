@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures.confusionmatrix;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -48,19 +48,19 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
-		truePositivesCalculator.setSongLevel(true);
+		truePositivesCalculator.setTrackLevel(true);
 		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble tp = truePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false negatives
 		FalseNegatives falseNegativesCalculator = new FalseNegatives();
-		falseNegativesCalculator.setSongLevel(true);
+		falseNegativesCalculator.setTrackLevel(true);
 		falseNegativesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble fn = falseNegativesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
@@ -70,25 +70,25 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recallMeasure = new ValidationMeasureDouble[1];
 		recallMeasure[0] = new ValidationMeasureDouble(false);
 		recallMeasure[0].setId(106);
-		recallMeasure[0].setName("Recall on song level");
+		recallMeasure[0].setName("Recall on track level");
 		recallMeasure[0].setValue(new Double(recall));
 		return recallMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
-		truePositivesCalculator.setPartitionLevel(true);
+		truePositivesCalculator.setWindowLevel(true);
 		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble tp = truePositivesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
 		// Get false negatives
 		FalseNegatives falseNegativesCalculator = new FalseNegatives();
-		falseNegativesCalculator.setPartitionLevel(true);
+		falseNegativesCalculator.setWindowLevel(true);
 		falseNegativesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble fn = falseNegativesCalculator.calculateOneClassMeasure(groundTruthRelationships, predictedRelationships)[0];
 		
@@ -98,42 +98,42 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recallMeasure = new ValidationMeasureDouble[1];
 		recallMeasure[0] = new ValidationMeasureDouble(false);
 		recallMeasure[0].setId(106);
-		recallMeasure[0].setName("Recall on partition level");
+		recallMeasure[0].setName("Recall on classification window level");
 		recallMeasure[0].setValue(new Double(recall));
 		return recallMeasure;
 	}
 
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
-		truePositivesCalculator.setSongLevel(true);
+		truePositivesCalculator.setTrackLevel(true);
 		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble[] tp = truePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
 		
 		// Get false negatives
 		FalseNegatives falseNegativesCalculator = new FalseNegatives();
-		falseNegativesCalculator.setSongLevel(true);
+		falseNegativesCalculator.setTrackLevel(true);
 		falseNegativesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble[] fn = falseNegativesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
 		
@@ -152,7 +152,7 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recallMeasure = new ValidationMeasureDouble[1];
 		recallMeasure[0] = new ValidationMeasureDouble(false);
 		recallMeasure[0].setId(106);
-		recallMeasure[0].setName("Recall on song level");
+		recallMeasure[0].setName("Recall on track level");
 		recallMeasure[0].setValue(new Double(recall));
 		return recallMeasure;
 	}
@@ -160,19 +160,19 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Get true positives
 		TruePositives truePositivesCalculator = new TruePositives();
-		truePositivesCalculator.setPartitionLevel(true);
+		truePositivesCalculator.setWindowLevel(true);
 		truePositivesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble[] tp = truePositivesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
 		
 		// Get false negatives
 		FalseNegatives falseNegativesCalculator = new FalseNegatives();
-		falseNegativesCalculator.setPartitionLevel(true);
+		falseNegativesCalculator.setWindowLevel(true);
 		falseNegativesCalculator.setContinuous(isContinuous());
 		ValidationMeasureDouble[] fn = falseNegativesCalculator.calculateMultiLabelMeasure(groundTruthRelationships, predictedRelationships);
 		
@@ -191,7 +191,7 @@ public class Recall extends ClassificationQualityDoubleMeasureCalculator {
 		ValidationMeasureDouble[] recallMeasure = new ValidationMeasureDouble[1];
 		recallMeasure[0] = new ValidationMeasureDouble(false);
 		recallMeasure[0].setId(106);
-		recallMeasure[0].setName("Recall on partition level");
+		recallMeasure[0].setName("Recall on classification window level");
 		recallMeasure[0].setValue(new Double(recall));
 		return recallMeasure;
 	}

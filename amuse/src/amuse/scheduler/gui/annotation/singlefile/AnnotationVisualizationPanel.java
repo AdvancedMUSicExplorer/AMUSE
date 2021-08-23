@@ -315,7 +315,7 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 						entry.setStart(newStart);
 					} else if (cursorType == Cursor.E_RESIZE_CURSOR) {
 						double difference = (e.getX() - getWidth()) * secsPerPixel;
-						// Bound the Start to the end of the next entry or song duration
+						// Bound the Start to the end of the next entry or track duration
 						double newEnd = Math.min(entry.getEnd() + difference, maxTime); 
 						// No negative duration
 						newEnd = Math.max(newEnd, entry.getStart() + 0.001); 
@@ -426,7 +426,7 @@ public class AnnotationVisualizationPanel extends AnnotationScrollPane {
 				public void mouseDragged(MouseEvent e) {
 					double difference = ((e.getX() - mouseDragStart) * secsPerPixel);
 					double newStart = Math.max(entry.getStart() + difference, 0); // No negative values
-					newStart = Math.min(newStart, annotationController.getDurationInSecs()); // No values longer than the song
+					newStart = Math.min(newStart, annotationController.getDurationInSecs()); // No values longer than the track
 					entry.setStart(newStart);
 
 					annotationController.selectAttributeEntry(entry);

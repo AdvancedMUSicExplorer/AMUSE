@@ -51,7 +51,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 	private static final String inputFeaturesStr = "InputFeatures";
 	private static final String inputFeatureTypeStr = "InputFeatureType";
 	private static final String classificationWindowSizeStr = "ClassificationWindowSize";
-	private static final String classificationWindowOverlapStr = "ClassificationWindowOverlap";
+	private static final String classificationWindowStepSizeStr = "ClassificationWindowStepSize";
     private static final String algorithmIdStr = "AlgorithmId";
     private static final String preprocessingAlgorithmIdStr = "PreprocessingAlgorithmId";
     private static final String groundTruthSourceStr = "GroundTruthSource";
@@ -68,7 +68,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     private final StringAttribute inputFeaturesAttribute;
     private final NominalAttribute inputFeatureTypeAttribute;
     private final NumericAttribute classificationWindowSizeAttribute;
-    private final NumericAttribute classificationWindowOverlapAttribute;
+    private final NumericAttribute classificationWindowStepSizeAttribute;
     private final StringAttribute algorithmIdAttribute;
     private final StringAttribute preprocessingAlgorithmIdAttribute;
     private final StringAttribute groundTruthSourceAttribute;
@@ -95,7 +95,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         checkStringAttribute(inputFeaturesStr);
         checkNominalAttribute(inputFeatureTypeStr);
         checkNumericAttribute(classificationWindowSizeStr);
-        checkNumericAttribute(classificationWindowOverlapStr);
+        checkNumericAttribute(classificationWindowStepSizeStr);
         checkStringAttribute(algorithmIdStr);
         checkStringAttribute(preprocessingAlgorithmIdStr);
         checkStringAttribute(groundTruthSourceStr);
@@ -111,7 +111,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         inputFeaturesAttribute = (StringAttribute) this.getAttribute(inputFeaturesStr);
         inputFeatureTypeAttribute = (NominalAttribute) this.getAttribute(inputFeatureTypeStr);
         classificationWindowSizeAttribute = (NumericAttribute) this.getAttribute(classificationWindowSizeStr);
-        classificationWindowOverlapAttribute = (NumericAttribute) this.getAttribute(classificationWindowOverlapStr);
+        classificationWindowStepSizeAttribute = (NumericAttribute) this.getAttribute(classificationWindowStepSizeStr);
         algorithmIdAttribute = (StringAttribute) this.getAttribute(algorithmIdStr);
         preprocessingAlgorithmIdAttribute = (StringAttribute) this.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) this.getAttribute(groundTruthSourceStr);
@@ -129,7 +129,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     public TrainingConfigSet(String inputFeatures,
     		String inputFeatureType,
     		int classificationWindowSize,
-    		int classificationWindowOverlap,
+    		int classificationWindowStepSize,
     		String algorithmId,
     		String preprocessingAlgorithmId,
     		String groundTruthSource,
@@ -151,7 +151,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 		inputFeatureTypes.add(inputFeatureType);
 		inputFeatureTypeAttribute = new NominalAttribute(inputFeatureTypeStr, inputFeatureTypeValues, inputFeatureTypes);
 		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(classificationWindowSizeStr, classificationWindowSize);
-		classificationWindowOverlapAttribute = NumericAttribute.createFromDouble(classificationWindowOverlapStr, classificationWindowOverlap);
+		classificationWindowStepSizeAttribute = NumericAttribute.createFromDouble(classificationWindowStepSizeStr, classificationWindowStepSize);
 		algorithmIdAttribute = StringAttribute.createFromString(algorithmIdStr, algorithmId);
 		preprocessingAlgorithmIdAttribute = StringAttribute.createFromString(preprocessingAlgorithmIdStr, preprocessingAlgorithmId);
 		groundTruthSourceAttribute = StringAttribute.createFromString(groundTruthSourceStr, groundTruthSource);
@@ -191,7 +191,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
         addAttribute(classificationWindowSizeAttribute);
-        addAttribute(classificationWindowOverlapAttribute);
+        addAttribute(classificationWindowStepSizeAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
@@ -211,7 +211,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         dataSet.checkStringAttribute(algorithmIdStr);
         dataSet.checkNominalAttribute(inputFeatureTypeStr);
         dataSet.checkNumericAttribute(classificationWindowSizeStr);
-        dataSet.checkNumericAttribute(classificationWindowOverlapStr);
+        dataSet.checkNumericAttribute(classificationWindowStepSizeStr);
         dataSet.checkStringAttribute(inputFeaturesStr);
         dataSet.checkStringAttribute(preprocessingAlgorithmIdStr);
         dataSet.checkStringAttribute(groundTruthSourceStr);
@@ -228,7 +228,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
                 (StringAttribute) dataSet.getAttribute(inputFeaturesStr);
         inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(inputFeatureTypeStr);
         classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(classificationWindowSizeStr);
-        classificationWindowOverlapAttribute = (NumericAttribute) dataSet.getAttribute(classificationWindowOverlapStr);
+        classificationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(classificationWindowStepSizeStr);
         algorithmIdAttribute = (StringAttribute) dataSet.getAttribute(algorithmIdStr);
         preprocessingAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(preprocessingAlgorithmIdStr);
         groundTruthSourceAttribute = (StringAttribute) dataSet.getAttribute(groundTruthSourceStr);
@@ -244,7 +244,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         addAttribute(inputFeaturesAttribute);
         addAttribute(inputFeatureTypeAttribute);
         addAttribute(classificationWindowSizeAttribute);
-        addAttribute(classificationWindowOverlapAttribute);
+        addAttribute(classificationWindowStepSizeAttribute);
         addAttribute(algorithmIdAttribute);
         addAttribute(preprocessingAlgorithmIdAttribute);
         addAttribute(groundTruthSourceAttribute);
@@ -278,8 +278,8 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     	return classificationWindowSizeAttribute;
     }
     
-    public NumericAttribute getClassificationWindowOverlapAttribute() {
-    	return classificationWindowOverlapAttribute;
+    public NumericAttribute getClassificationWindowStepSizeAttribute() {
+    	return classificationWindowStepSizeAttribute;
     }
 
     public StringAttribute getPathToOutputModelAttribute() {

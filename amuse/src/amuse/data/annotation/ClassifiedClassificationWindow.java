@@ -27,32 +27,32 @@ package amuse.data.annotation;
  * This class saves the results of a classification task
  * 
  * @author Igor Vatolkin
- * @version $Id: ClassifiedSongPartitions.java 197 2017-08-11 12:15:34Z frederik-h $
+ * @version $Id: ClassifiedClassificationWindows.java 197 2017-08-11 12:15:34Z frederik-h $
  */
-public class ClassifiedSongPartitions extends SongPartitionsDescription {
+public class ClassifiedClassificationWindow extends ClassificationWindowsDescription {
 	
 	/** labels that were classified **/
 	final String[] labels;
 	
-	/** Corresponding relationships for the partitions
-	 * 	First dimension represents the partitions, second dimension the categories.
+	/** Corresponding relationships for the classification windows
+	 * 	First dimension represents the classification windows, second dimension the categories.
 	 * */
 	final Double[][] relationships;
     
 	/**
 	 * Constructor
-	 * @param pathToMusicSong Music song which was classified
-	 * @param startMs Starts of the partitions in ms
-	 * @param endMs Ends of the partitions in ms
+	 * @param pathToMusicTrack Music track which was classified
+	 * @param startMs Starts of the classification windows in ms
+	 * @param endMs Ends of the classification windows in ms
 	 * @param labels names of the categories
-	 * @param relationships Corresponding relationships for the partitions
+	 * @param relationships Corresponding relationships for the classification windows
 	 */
-	public ClassifiedSongPartitions(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs, String[] labels,
+	public ClassifiedClassificationWindow(String pathToMusicTrack, int trackId, Double[] startMs, Double[] endMs, String[] labels,
 			Double[][] relationships) {
-		super(pathToMusicSong, songId, startMs, endMs);
+		super(pathToMusicTrack, trackId, startMs, endMs);
 		if(relationships.length != startMs.length) {
-			throw new RuntimeException("Could not instantiate ClassifiedSongPartitionsDescription: " +
-					"the number of partition starts (" + startMs.length + ") is not equal to the number " +
+			throw new RuntimeException("Could not instantiate ClassifiedClassificationWindowsDescription: " +
+					"the number of classification windows starts (" + startMs.length + ") is not equal to the number " +
 					"of relationships (" + relationships.length + ")");
 		}
 		this.relationships = relationships;

@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -47,13 +47,13 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		// Calculate MSE error
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -71,19 +71,19 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
 		rmsMeasure[0] = new ValidationMeasureDouble();
 		rmsMeasure[0].setId(202);
-		rmsMeasure[0].setName("Mean squared error on song level");
+		rmsMeasure[0].setName("Mean squared error on track level");
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		int overallPartitionNumber = 0;
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		int overallClassificationWindowNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			int currentPartitionNumber = predictedRelationships.get(i).getRelationships().length;
-			overallPartitionNumber += currentPartitionNumber;
+			int currentClassificationWindowNumber = predictedRelationships.get(i).getRelationships().length;
+			overallClassificationWindowNumber += currentClassificationWindowNumber;
 		}
 		
 		// Calculate MSE error
@@ -95,43 +95,43 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 				errorSum += error;
 			}
 		}
-		errorSum = errorSum / overallPartitionNumber;
+		errorSum = errorSum / overallClassificationWindowNumber;
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
 		rmsMeasure[0] = new ValidationMeasureDouble();
 		rmsMeasure[0].setId(202);
-		rmsMeasure[0].setName("Mean squared error on partition level");
+		rmsMeasure[0].setName("Mean squared error on classification window level");
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
 		// Calculate MSE error
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			double[] currentPredictedValue = new double[numberOfCategories];
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
 				for(int category = 0; category < numberOfCategories; category++){
@@ -139,7 +139,7 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 				}
 				
 			}
-			// Calculate the error for the current song
+			// Calculate the error for the current track
 			Double error = 0.0;
 			for(int category = 0; category < numberOfCategories; category++) {
 				currentPredictedValue[category] /= predictedRelationships.get(i).getRelationships().length;
@@ -153,22 +153,22 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
 		rmsMeasure[0] = new ValidationMeasureDouble();
 		rmsMeasure[0].setId(202);
-		rmsMeasure[0].setName("Mean squared error on song level");
+		rmsMeasure[0].setName("Mean squared error on track level");
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
-		int overallPartitionNumber = 0;
+		int overallClassificationWindowNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			int currentPartitionNumber = predictedRelationships.get(i).getRelationships().length;
-			overallPartitionNumber += currentPartitionNumber;
+			int currentClassificationWindowNumber = predictedRelationships.get(i).getRelationships().length;
+			overallClassificationWindowNumber += currentClassificationWindowNumber;
 		}
 		
 		// Calculate MSE error
@@ -182,13 +182,13 @@ public class MeanSquaredError extends ClassificationQualityDoubleMeasureCalculat
 				}
 			}
 		}
-		errorSum = errorSum / overallPartitionNumber;
+		errorSum = errorSum / overallClassificationWindowNumber;
 		
 		// Prepare the result
 		ValidationMeasureDouble[] rmsMeasure = new ValidationMeasureDouble[1];
 		rmsMeasure[0] = new ValidationMeasureDouble();
 		rmsMeasure[0].setId(202);
-		rmsMeasure[0].setName("Mean squared error on partition level");
+		rmsMeasure[0].setName("Mean squared error on classification window level");
 		rmsMeasure[0].setValue(errorSum);
 		return rmsMeasure;
 	}

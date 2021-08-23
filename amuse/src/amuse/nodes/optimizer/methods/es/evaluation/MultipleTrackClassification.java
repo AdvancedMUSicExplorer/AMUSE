@@ -183,9 +183,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
 			strategy.getConfiguration().getConstantParameterByName("Conversion steps").
 				getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
-			strategy.getConfiguration().getConstantParameterByName("Partition size").
+			strategy.getConfiguration().getConstantParameterByName("Classification window size").
 				getAttributes().getNamedItem("intValue").getNodeValue() + "ms_" + 
-			strategy.getConfiguration().getConstantParameterByName("Partition overlap").
+			strategy.getConfiguration().getConstantParameterByName("Classification window step size").
 				getAttributes().getNamedItem("intValue").getNodeValue() + "ms");
 		if(processingDesc != "" && processingDesc != null) {
 			processedModel += "_" + processingDesc;
@@ -303,7 +303,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 					File.separator + "Processed_Features");
 			
 			// ------------------------------------------------------------------------------------------------
-			// (IIIa) Make the complete processing only if the partition size is used as optimization parameter
+			// (IIIa) Make the complete processing only if the classification window size is used as optimization parameter
 			// ------------------------------------------------------------------------------------------------
 			ArrayList<ProcessingConfiguration> processingTasks = new ArrayList<ProcessingConfiguration>();
 				
@@ -328,9 +328,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 						featureTable,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 							getAttributes().getNamedItem("stringValue").getNodeValue(),
-						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition size").
+						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 							getAttributes().getNamedItem("intValue").getNodeValue()),
-						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition overlap").
+						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window step size").
 							getAttributes().getNamedItem("intValue").getNodeValue()),
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Conversion steps").
 							getAttributes().getNamedItem("stringValue").getNodeValue(),"");
@@ -358,9 +358,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 							featureTable,
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),
-							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition size").
+							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
-							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition overlap").
+							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classificaiton window step size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Conversion steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),"");
@@ -388,9 +388,9 @@ public class MultipleTrackClassification implements EvaluationInterface {
 							featureTable,
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),
-							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition size").
+							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
-							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Partition overlap").
+							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window step size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Conversion steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),"");

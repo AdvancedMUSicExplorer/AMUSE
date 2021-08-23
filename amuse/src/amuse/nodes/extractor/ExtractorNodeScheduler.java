@@ -82,7 +82,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	/** If the music file is split into several parts.. */
 	private int numberOfParts = 0;
 	
-	/** currentPartForThisExtractor[i] contains the number of a song part
+	/** currentPartForThisExtractor[i] contains the number of a track part
 	 * which is currently extracted by extractor i */
 	private HashMap<Integer,Integer> currentPartForThisExtractor;
 	
@@ -484,7 +484,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	private void consolidateResults(ExtractorInterface adapter) {
 		
 		// -------------------------------------------------------------------------
-		// (I) If the song was split, create a new arff feature file from several
+		// (I) If the track was split, create a new arff feature file from several
 		// -------------------------------------------------------------------------
 		if(numberOfParts > 1) {
 			File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator + 

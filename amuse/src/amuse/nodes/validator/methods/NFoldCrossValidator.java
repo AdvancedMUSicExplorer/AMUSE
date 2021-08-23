@@ -35,7 +35,7 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.RelationshipType;
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
@@ -76,10 +76,10 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 	/** Ids of measures to calculate */
 	private ArrayList<Integer> measureIds = new ArrayList<Integer>();
 	
-	/** Number of partitions (standard value = 10 for 10-fold cross-validation) */
+	/** Number of classification windows (standard value = 10 for 10-fold cross-validation) */
 	private int n = 10;
 	
-	/** Random seed for partition allocation */
+	/** Random seed for classification window allocation */
 	private long randomSeed = -1;
 	
 	/** Random number generator */
@@ -201,11 +201,11 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				this.measureCalculators.add(vmc);
 				this.measureIds.add(mt.get(i).getID());
 				if(vmc instanceof ClassificationQualityMeasureCalculatorInterface) {
-					if(mt.get(i).isPartitionLevelSelected()) {
-						((ClassificationQualityMeasureCalculatorInterface)vmc).setPartitionLevel(true);
+					if(mt.get(i).isWindowLevelSelected()) {
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setWindowLevel(true);
 					} 
-					if(mt.get(i).isSongLevelSelected()) {
-						((ClassificationQualityMeasureCalculatorInterface)vmc).setSongLevel(true);
+					if(mt.get(i).isTrackLevelSelected()) {
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setTrackLevel(true);
 					}
 				}
 			}
@@ -226,96 +226,96 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 	private void performCrossValidation() throws NodeException {
 		
 		// Set with all data instances
-		DataSet allPartitions = ((DataSetInput)((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).
+		DataSet allClassificationWindows = ((DataSetInput)((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).
 				getInputToValidate()).getDataSet();
 		
-		// Create n song partitions with the equal partition size
-		int partitionSize = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size() / this.n;
-		HashMap<Integer,Integer> songIdToSongNumber = new HashMap<Integer,Integer>();
+		// Create n track classification windows with the equal window size
+		int classificationWindowSize = ((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledTrackRelationships().size() / this.n;
+		HashMap<Integer,Integer> trackIdToTrackNumber = new HashMap<Integer,Integer>();
 		
-		// Shuffle the song sequence for partition building
-		ArrayList<Integer> shuffledSongIdsForCrossValidation = new ArrayList<Integer>(((ValidatorNodeScheduler)this.correspondingScheduler).
-				getLabeledSongRelationships().size());
-		for(int i=0;i<((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().size();i++) {
-			shuffledSongIdsForCrossValidation.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(i).getSongId());
-			songIdToSongNumber.put(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledSongRelationships().get(i).getSongId(), i);
+		// Shuffle the track sequence for classification window building
+		ArrayList<Integer> shuffledTrackIdsForCrossValidation = new ArrayList<Integer>(((ValidatorNodeScheduler)this.correspondingScheduler).
+				getLabeledTrackRelationships().size());
+		for(int i=0;i<((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledTrackRelationships().size();i++) {
+			shuffledTrackIdsForCrossValidation.add(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledTrackRelationships().get(i).getTrackId());
+			trackIdToTrackNumber.put(((ValidatorNodeScheduler)this.correspondingScheduler).getLabeledTrackRelationships().get(i).getTrackId(), i);
 		}
-		Collections.shuffle(shuffledSongIdsForCrossValidation, random);
+		Collections.shuffle(shuffledTrackIdsForCrossValidation, random);
 		
-		// Maps song id to the validation partition after the random shuffle
-		HashMap<Integer,Integer> songIdToValidationPartition = new HashMap<Integer,Integer>();
-		int nextBoundary = partitionSize;
-		int partitionNumber = 0;
-		for(int i=0;i<partitionSize*this.n;i++) {
+		// Maps track id to the validation classification window after the random shuffle
+		HashMap<Integer,Integer> trackIdToValidationClassificationWindow = new HashMap<Integer,Integer>();
+		int nextBoundary = classificationWindowSize;
+		int classificationWindowNumber = 0;
+		for(int i=0;i<classificationWindowSize*this.n;i++) {
 			if(i >= nextBoundary) {
-				nextBoundary += partitionSize;
-				partitionNumber++;
+				nextBoundary += classificationWindowSize;
+				classificationWindowNumber++;
 			}
-			songIdToValidationPartition.put(shuffledSongIdsForCrossValidation.get(i), partitionNumber);
+			trackIdToValidationClassificationWindow.put(shuffledTrackIdsForCrossValidation.get(i), classificationWindowNumber);
 		}
 		
 		// Validation measures are saved in a list (for each run)
 		ArrayList<ArrayList<ValidationMeasure>> measuresOfEveryValidationRun = new ArrayList<ArrayList<ValidationMeasure>>();
 		
-		// Go through all validation runs (equal to partition number), using the current partition as test partition each time
+		// Go through all validation runs (equal to classification window number), using the current classification window as test partition each time
 		for(int i=0;i<this.n;i++) { 
 			
-			// Create the sets with the data of the current partition for training and validation
+			// Create the sets with the data of the current classification window for training and validation
 			DataSet trainingSet = new DataSet("TrainingSet");
 			DataSet validationSet = new DataSet("ValidationSet");
 			
 			// Create the attributes for these sets
-			for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-				if(allPartitions.getAttribute(a) instanceof NumericAttribute) {
-					trainingSet.addAttribute(new NumericAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<Double>()));
-					validationSet.addAttribute(new NumericAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<Double>()));
-				} else if(allPartitions.getAttribute(a) instanceof StringAttribute) {
-					trainingSet.addAttribute(new StringAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<String>()));
-					validationSet.addAttribute(new StringAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<String>()));
+			for(int a = 0; a < allClassificationWindows.getAttributeCount(); a++) {
+				if(allClassificationWindows.getAttribute(a) instanceof NumericAttribute) {
+					trainingSet.addAttribute(new NumericAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<Double>()));
+					validationSet.addAttribute(new NumericAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<Double>()));
+				} else if(allClassificationWindows.getAttribute(a) instanceof StringAttribute) {
+					trainingSet.addAttribute(new StringAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<String>()));
+					validationSet.addAttribute(new StringAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<String>()));
 				} else {
-					trainingSet.addAttribute(new NominalAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<String>()));
-					validationSet.addAttribute(new NominalAttribute(allPartitions.getAttribute(a).getName(),new ArrayList<String>()));
+					trainingSet.addAttribute(new NominalAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<String>()));
+					validationSet.addAttribute(new NominalAttribute(allClassificationWindows.getAttribute(a).getName(),new ArrayList<String>()));
 				}
 			}
 			
 			// Ground truth for the validation set
-			ArrayList<Double> songRelationshipsValidationSet = new ArrayList<Double>(); // If binary classification is applied
-			ArrayList<ClassifiedSongPartitions> songRelationshipsMValidationSet = new ArrayList<ClassifiedSongPartitions>(); // If multiclass classification is applied
-			int currentSongId = -1;
+			ArrayList<Double> trackRelationshipsValidationSet = new ArrayList<Double>(); // If binary classification is applied
+			ArrayList<ClassifiedClassificationWindow> trackRelationshipsMValidationSet = new ArrayList<ClassifiedClassificationWindow>(); // If multiclass classification is applied
+			int currentTrackId = -1;
 			
-			for(int j=0;j<allPartitions.getValueCount();j++) {
+			for(int j=0;j<allClassificationWindows.getValueCount();j++) {
 				
-				// To which validation partition should the current song partition be assigned?
-				int songIdToSearchFor = new Double(allPartitions.getAttribute("Id").getValueAt(j).toString()).intValue();
+				// To which validation classification window should the current track classificaiton window be assigned?
+				int trackIdToSearchFor = new Double(allClassificationWindows.getAttribute("Id").getValueAt(j).toString()).intValue();
 				
-				// Training or validation set? Go through all song partitions assigned to cv
-				if(songIdToValidationPartition.containsKey(songIdToSearchFor)) {
-					if(songIdToValidationPartition.get(songIdToSearchFor) == i) {
+				// Training or validation set? Go through all track classification windows assigned to cv
+				if(trackIdToValidationClassificationWindow.containsKey(trackIdToSearchFor)) {
+					if(trackIdToValidationClassificationWindow.get(trackIdToSearchFor) == i) {
 						
-						// Add the partition to validation set
-						for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-							validationSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(j));
+						// Add the classification window to validation set
+						for(int a = 0; a < allClassificationWindows.getAttributeCount(); a++) {
+							validationSet.getAttribute(a).addValue(allClassificationWindows.getAttribute(a).getValueAt(j));
 						}
 						
 						// Save the ground truth for the validation set
-						// TODO It is assumed that partitions of the same song are coming all together one after each other in the DataSet
-						// - if the ID is changed to the next song, the ground truth of all partitions is then loaded
-						if(currentSongId != songIdToSearchFor) {
-							currentSongId = songIdToSearchFor;
+						// TODO It is assumed that classification windows of the same track are coming all together one after each other in the DataSet
+						// - if the ID is changed to the next track, the ground truth of all classification windows is then loaded
+						if(currentTrackId != trackIdToSearchFor) {
+							currentTrackId = trackIdToSearchFor;
 							if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
-								songRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
-									getLabeledAverageSongRelationships().get(songIdToSongNumber.get(songIdToSearchFor)));
+								trackRelationshipsValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
+									getLabeledAverageTrackRelationships().get(trackIdToTrackNumber.get(trackIdToSearchFor)));
 							} else {
-								songRelationshipsMValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
-									getLabeledSongRelationships().get(songIdToSongNumber.get(songIdToSearchFor)));
+								trackRelationshipsMValidationSet.add(((ValidatorNodeScheduler)this.correspondingScheduler).
+									getLabeledTrackRelationships().get(trackIdToTrackNumber.get(trackIdToSearchFor)));
 							}
 						}
 					
 					} else {
 						
-						// Add the partition to training set
-						for(int a = 0; a < allPartitions.getAttributeCount(); a++) {
-							trainingSet.getAttribute(a).addValue(allPartitions.getAttribute(a).getValueAt(j));
+						// Add the classification window to training set
+						for(int a = 0; a < allClassificationWindows.getAttributeCount(); a++) {
+							trainingSet.getAttribute(a).addValue(allClassificationWindows.getAttribute(a).getValueAt(j));
 						}
 					}
 				}
@@ -360,7 +360,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			cConf.setNumberOfValuesPerWindow(((ValidationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getNumberOfValuesPerWindow());
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
-			ArrayList<ClassifiedSongPartitions> predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
+			ArrayList<ClassifiedClassificationWindow> predictedTracks = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 			
 			// Calculate the classifier evaluation measures for result
 			try {
@@ -371,13 +371,13 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
-								songRelationshipsValidationSet, predictedSongs);
+								trackRelationshipsValidationSet, predictedTracks);
 						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTILABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
-									songRelationshipsMValidationSet, predictedSongs);
+									trackRelationshipsMValidationSet, predictedTracks);
 						} else {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
-								songRelationshipsMValidationSet, predictedSongs);
+								trackRelationshipsMValidationSet, predictedTracks);
 						}
 					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {
 						currMeas = ((DataReductionMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMeasure(

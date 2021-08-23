@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures.confusionmatrix.base;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -46,13 +46,13 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double numberOfTrueNegatives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -78,15 +78,15 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] trueNegativesMeasure = new ValidationMeasureDouble[1];
 		trueNegativesMeasure[0] = new ValidationMeasureDouble();
 		trueNegativesMeasure[0].setId(101);
-		trueNegativesMeasure[0].setName("Number of true negatives on song level");
+		trueNegativesMeasure[0].setName("Number of true negatives on track level");
 		trueNegativesMeasure[0].setValue(new Double(numberOfTrueNegatives));
 		return trueNegativesMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double numberOfTrueNegatives = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
@@ -98,36 +98,36 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] trueNegativesMeasure = new ValidationMeasureDouble[1];
 		trueNegativesMeasure[0] = new ValidationMeasureDouble();
 		trueNegativesMeasure[0].setId(101);
-		trueNegativesMeasure[0].setName("Number of true negatives on partition level");
+		trueNegativesMeasure[0].setName("Number of true negatives on classification window level");
 		trueNegativesMeasure[0].setValue(new Double(numberOfTrueNegatives));
 		return trueNegativesMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificatoinWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double[] numberOfTrueNegatives = new double[groundTruthRelationships.get(0).getLabels().length];
 		
 		for(int i = 0; i < groundTruthRelationships.size(); i++	) {
 			for(int category = 0; category < groundTruthRelationships.get(i).getLabels().length; category ++) {
-				// Calculate the predicted value for this song (averaging among all partitions)
+				// Calculate the predicted value for this track (averaging among all classification windows)
 				Double currentPredictedValue = 0.0d;
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
@@ -154,7 +154,7 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 		for(int i = 0; i < trueNegativesMeasure.length; i++) {
 			trueNegativesMeasure[i] = new ValidationMeasureDouble();
 			trueNegativesMeasure[i].setId(101);
-			trueNegativesMeasure[i].setName("Number of true negatives on song level for category " + groundTruthRelationships.get(0).getLabels()[i]);
+			trueNegativesMeasure[i].setName("Number of true negatives on track level for category " + groundTruthRelationships.get(0).getLabels()[i]);
 			trueNegativesMeasure[i].setValue(new Double(numberOfTrueNegatives[i]));
 		}
 		return trueNegativesMeasure;
@@ -162,9 +162,9 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double[] numberOfTrueNegatives = new double[groundTruthRelationships.get(0).getLabels().length];
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
@@ -179,7 +179,7 @@ public class TrueNegatives extends ClassificationQualityDoubleMeasureCalculator 
 		for(int i = 0; i < numberOfTrueNegatives.length; i++) {
 			trueNegativesMeasure[i] = new ValidationMeasureDouble();
 			trueNegativesMeasure[i].setId(101);
-			trueNegativesMeasure[i].setName("Number of true negatives on partition level for cateogry " + groundTruthRelationships.get(0).getLabels()[i]);
+			trueNegativesMeasure[i].setName("Number of true negatives on classification window level for cateogry " + groundTruthRelationships.get(0).getLabels()[i]);
 			trueNegativesMeasure[i].setValue(new Double(numberOfTrueNegatives[i]));
 		}
 		return trueNegativesMeasure;

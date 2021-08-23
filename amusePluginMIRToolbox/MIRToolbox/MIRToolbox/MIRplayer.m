@@ -3,7 +3,7 @@ function MIRplayer(arg,select)
 %MIRplayer(arg,select)
 %where
 %arg = features extracted with mirtoolbox
-%select = songs indices to display
+%select = tracks indices to display
 %------
 
 %TODO
@@ -23,11 +23,11 @@ if ischar(arg) %session data given in a file
     end
     disp('Loading the session. Please wait...');
     load(strcat(arg,'/featureInfo.mat'));
-    if ~exist('features','var') || ~exist('songNames','var') || ~exist('xlims','var') || ~exist('songSampling','var')
+    if ~exist('features','var') || ~exist('trackNames','var') || ~exist('xlims','var') || ~exist('trackSampling','var')
         error('Session feature data file is not compatible with MIRplayer');
     end
     nBins=size(features.distribution,2);
-    songs=1:length(songNames);
+    tracks=1:length(trackNames);
 else
     %the first argument should be the feature set
     if ~isstruct(arg) && ~iscell(arg) && ~isa(arg,'mirdata')
@@ -35,22 +35,22 @@ else
     end
     
     if nargin>2
-        songs=int8(unique(select));
+        tracks=int8(unique(select));
         
-        %if any(songs)<1 || any(songs)>length(songNames)
-        %    error('The second input argument should be an integer array of songs to be included in the analysis.');
+        %if any(tracks)<1 || any(tracks)>length(trackNames)
+        %    error('The second input argument should be an integer array of tracks to be included in the analysis.');
         %end
     else
-        songs=[];
+        tracks=[];
     end
     
     nBins=100; %resolution of the feature distributions (for visualization)
     smoothingFactor=2;%round(max(3,nBins/10)); %for median filtering the distribution
-    features=getFeatureInfo(arg, nBins,smoothingFactor,songs);
+    features=getFeatureInfo(arg, nBins,smoothingFactor,tracks);
     %clear('arg');
     
     %TODO: Audio could also be shown without features. Just to be able to check
-    %out the songs before extracting features.
+    %out the tracks before extracting features.
     if isempty(features)
         error('Please provide a feature set with at least one mirscalar type of feature.');
     end
@@ -79,8 +79,8 @@ global frameSummary
 global loopingButton
 
 %framediff=0;
-song=0;
-songImage=0;
+track=0;
+trackImage=0;
 playheads=[];
 featureAxes={};
 selectedFeatures=[];
@@ -105,7 +105,7 @@ playheadAlpha=.3;
 %downsample a to save memory when plotting audio
 %downSampleRate=1000; %Could be nice resolution
 
-songColor=[.85,.85,.85];
+trackColor=[.85,.85,.85];
 maxFrameUpdateFrequency=.05; %seconds
 zoomFactorDefault=2/3;
 %feature=cell(nFeatures,1);
@@ -175,13 +175,13 @@ uimenu(menuItems,'Label','Quit session','Separator','on','Accelerator','Q','Call
             return
         else
             mkdir(folderName{1});
-            save(strcat(folderName{1},'/featureInfo'), 'features','songNames','xlims','songSampling');
+            save(strcat(folderName{1},'/featureInfo'), 'features','trackNames','xlims','trackSampling');
         end
         
-        for i=1:length(songs)
-            ind=songs(i);
+        for i=1:length(tracks)
+            ind=tracks(i);
             %if withMiraudio
-            %    wavwrite(songData{ind}{1},songSampling{ind},16,strcat(folderName{1},'/',num2str(i),'.wav'));
+            %    wavwrite(trackData{ind}{1},trackSampling{ind},16,strcat(folderName{1},'/',num2str(i),'.wav'));
             %else
             %    copyfile(strcat(a,'/',num2str(ind),'.wav'), strcat(folderName{1},'/',num2str(i),'.wav'));
             %end
@@ -287,9 +287,9 @@ audioPopupmenuH=   uicontrol(...    % list of available audio
     'Parent', ControlPanel, ...
     'Units','normalized',...
     'Position',[.25 .7 .5 .1],...
-    'Callback', @selectSong, ...
+    'Callback', @selectTrack, ...
     'HandleVisibility','callback', ...
-    'String',features.songNames,...
+    'String',features.trackNames,...
     'TooltipString','Available audio files', ...
     'Style','popupmenu');
 
@@ -379,7 +379,7 @@ loopingButton  =   uicontrol(...
     'TooltipString','Loop play in the selected time limits', ...
     'Position',[.70 .5 .12 .5], ...
     'CallBack',@setLooping);
-songThumbnailH=line( ...
+trackThumbnailH=line( ...
     'Parent',sliderAxes, ...
     'XData',[0,0], ...
     'YData',[0,0], ...
@@ -411,7 +411,7 @@ featureDistPatch=patch(...
     'EdgeAlpha',.4, ...
     'FaceColor','r', ...
     'EdgeColor','r');
-songDistPatch=patch(...
+trackDistPatch=patch(...
     'Parent',distAxes, ...
     'YData',[0,0], ...
     'XData',[0:1/(nBins-1):1,1,0], ...
@@ -421,14 +421,14 @@ songDistPatch=patch(...
     'EdgeColor','g');
 
 text('Parent',distAxes, ...
-    'String','song', ...
+    'String','track', ...
     'FontSize',8, ...
     'FontUnits','normalized',...
     'Units','normalized', ...
     'Position', [0,-.2], ...
     'Color', [0,.5,0]);
 text('Parent',distAxes, ...
-    'String','all songs', ...
+    'String','all tracks', ...
     'FontSize',8, ...
     'FontUnits','normalized',...
     'Units','normalized', ...
@@ -463,14 +463,14 @@ for featureInd=1:nFeatures
         'String',features.names{featureInd}, ...
         'Tag',num2str(featureInd), ...
         'Position',[0 (nFeatures-featureInd)/nFeatures 1 1]);%, ...
-    if features.isSongLevel(featureInd), set(selectFeatureButton{featureInd},'ForegroundColor',[.5,.5,.5], ...
-            'TooltipString',[get(selectFeatureButton{featureInd},'TooltipString'), ' (song-level feature, only distribution shown)']); end %,'Enable','off'); end
+    if features.isTrackLevel(featureInd), set(selectFeatureButton{featureInd},'ForegroundColor',[.5,.5,.5], ...
+            'TooltipString',[get(selectFeatureButton{featureInd},'TooltipString'), ' (track-level feature, only distribution shown)']); end %,'Enable','off'); end
     
     extent=get(selectFeatureButton{featureInd},'Extent');
     set(selectFeatureButton{featureInd},'Position', [0,.94*((nFeatures+1)-featureInd)/nFeatures,1,1.3*extent(4)]);
 end
 
-selectSong();
+selectTrack();
 uistack(fig,'top');
 
 if exist('logo','var')
@@ -767,8 +767,8 @@ end
         
     end
 
-    function selectSong(varargin)
-        % select a song from miraudio struct and plot it in aH. Update also
+    function selectTrack(varargin)
+        % select a track from miraudio struct and plot it in aH. Update also
         % possible curve and peak data.
         
         if not(ishandle(fig))
@@ -776,7 +776,7 @@ end
         end
         
         %prevent distracting pushes of buttons
-        for fi=selectFeatureButton(features.isSongLevel==0)
+        for fi=selectFeatureButton(features.isTrackLevel==0)
             set(fi{1},'Enable','off');
         end
         
@@ -789,18 +789,18 @@ end
             CurrentSample=1;
         end
         
-        songInd=get(audioPopupmenuH, 'Value');
-        song = miraudio(features.songNames{songInd});
+        trackInd=get(audioPopupmenuH, 'Value');
+        track = miraudio(features.trackNames{trackInd});
         
         %start and end in seconds
-        xlim=get(song,'Pos');
+        xlim=get(track,'Pos');
         xlim = xlim{1}{1}([1 end]);
         ylim=get(aH,'YLim');
-        Fs=get(song,'Sampling');
+        Fs=get(track,'Sampling');
         Fs = Fs{1};
         
         try
-            player = audioplayer(mirgetdata(song), Fs);
+            player = audioplayer(mirgetdata(track), Fs);
         catch exception
             fixException(exception)
         end
@@ -815,18 +815,18 @@ end
         end
         set(sliderAxes,'Xlim',[0,1]);
         
-        %songImage=mirgetdata(miraudio(song,'Sampling',downSampleRate));
-        songImage=mirgetdata(song);
-        %songImage=.5+.5*(songImage-mean(songImage))/max(abs(songImage));
+        %trackImage=mirgetdata(miraudio(track,'Sampling',downSampleRate));
+        trackImage=mirgetdata(track);
+        %trackImage=.5+.5*(trackImage-mean(trackImage))/max(abs(trackImage));
         
-        songImage=(songImage-min(songImage))/(max(songImage)-min(songImage)); %normalize to [0,1], mean=0
+        trackImage=(trackImage-min(trackImage))/(max(trackImage)-min(trackImage)); %normalize to [0,1], mean=0
         
-        %songImagePos=(0:length(songImage)-1)./downSampleRate;
+        %trackImagePos=(0:length(trackImage)-1)./downSampleRate;
         
         %could handle stereo wave -> take mean across channels?
         
-        set(songThumbnailH,'XData',(0:length(songImage)-1)/(length(songImage)-1),'YData', songImage, 'Color', songColor);
-        %set(songH,'XData',songImagePos,'YData',.75*(ylim(2)-ylim(1))*songImage+mean(ylim),'Color',songColor);
+        set(trackThumbnailH,'XData',(0:length(trackImage)-1)/(length(trackImage)-1),'YData', trackImage, 'Color', trackColor);
+        %set(trackH,'XData',trackImagePos,'YData',.75*(ylim(2)-ylim(1))*trackImage+mean(ylim),'Color',trackColor);
         %selectedFeatureInds=find(selectedFeatures~=2);  %2 means hidden feature
         CurrentSample=1;
         for featureInd=1:length(selectedFeatures)
@@ -840,14 +840,14 @@ end
         
         
         for selectedFeature=selectedFeatures
-            selectFeature(songInd,selectedFeature);
+            selectFeature(trackInd,selectedFeature);
         end
         if length(selectedFeatures)>0
             showFeatureStats(selectedFeatures(end));
         end
         
         %prevent distracting pushes of buttons
-        for fi=selectFeatureButton(features.isSongLevel==0)
+        for fi=selectFeatureButton(features.isTrackLevel==0)
             set(fi{1},'Enable','on');
         end
         
@@ -859,19 +859,19 @@ end
         for fi=selectFeatureButton
             set(fi{1},'Enable','off');
         end
-        songInd=get(audioPopupmenuH, 'Value');
+        trackInd=get(audioPopupmenuH, 'Value');
         featureState=get(hObject,'Value');
         selectedFeature=str2double(get(hObject,'Tag'));
-        if features.isSongLevel(selectedFeature), set(hObject,'Value',false); end
+        if features.isTrackLevel(selectedFeature), set(hObject,'Value',false); end
         if featureState
-            if features.isSongLevel(selectedFeature)==0,
+            if features.isTrackLevel(selectedFeature)==0,
                 selectedFeatures=[selectedFeatures,selectedFeature];
-                selectFeature(songInd, selectedFeature);
+                selectFeature(trackInd, selectedFeature);
             end
             showFeatureStats(selectedFeature);
         else
             %remove feature
-            if features.isSongLevel(selectedFeature)==0
+            if features.isTrackLevel(selectedFeature)==0
                 removed=find(selectedFeatures==selectedFeature);
                 cla(featureAxes{removed});
                 set(featureAxes{removed},'Visible','off');
@@ -898,7 +898,7 @@ end
         drawnow
     end
 
-    function selectFeature(songInd, selectedFeature)
+    function selectFeature(trackInd, selectedFeature)
         
         
         if not(ishandle(fig))
@@ -916,7 +916,7 @@ end
         scaleAxes(nAxes);
         axes(featureAxes{nAxes});
         if features.cellinds(selectedFeature)>0
-            display(eval(['arg',sprintf('.%s',features.fields{selectedFeature}{1:end}),'{',num2str(features.cellinds(selectedFeature)),'}']),featureAxes{nAxes},songInd);
+            display(eval(['arg',sprintf('.%s',features.fields{selectedFeature}{1:end}),'{',num2str(features.cellinds(selectedFeature)),'}']),featureAxes{nAxes},trackInd);
             framePos_tmp=get(eval(['arg',sprintf('.%s',features.fields{selectedFeature}{1:end}),'{',num2str(features.cellinds(selectedFeature)),'}']),'FramePos');
         elseif features.cellinds(selectedFeature)==0
             tmp=['arg',sprintf('.%s',features.fields{selectedFeature}{1:end})];
@@ -924,25 +924,25 @@ end
             
             
             if features.isMirdata(selectedFeature)
-            display(eval(tmp),featureAxes{nAxes},songInd);
+            display(eval(tmp),featureAxes{nAxes},trackInd);
             framePos_tmp=get(eval(tmp),'FramePos');
             else
                 
                 
                 
-                %display(eval(tmp),featureAxes{nAxes},songInd);
+                %display(eval(tmp),featureAxes{nAxes},trackInd);
                 framePos_tmp=eval([tmp,'.framepos']);
-                plot(mean(framePos_tmp{songInd}),eval([tmp,'.data{songInd}']));
+                plot(mean(framePos_tmp{trackInd}),eval([tmp,'.data{trackInd}']));
             end
         else
             error('Check the feature importing.');
         end
-        if length(framePos_tmp{songInd})>1 %|| isequal(features.types{selectedFeature},'miraudio')
+        if length(framePos_tmp{trackInd})>1 %|| isequal(features.types{selectedFeature},'miraudio')
             framePos(nAxes)={[NaN;NaN]};
-        elseif iscell(framePos_tmp{songInd})
-        framePos(nAxes)=framePos_tmp{songInd};
+        elseif iscell(framePos_tmp{trackInd})
+        framePos(nAxes)=framePos_tmp{trackInd};
         else
-            framePos(nAxes)=framePos_tmp(songInd);
+            framePos(nAxes)=framePos_tmp(trackInd);
         end
         
         set(featureAxes{nAxes},'Visible','on','Xlim',get(aH,'Xlim'));%,'ButtonDownFcn', @startDragFcn);
@@ -1002,7 +1002,7 @@ end
 
 
     function showFeatureStats(featureInd_stats)
-        songInd=get(audioPopupmenuH, 'Value');
+        trackInd=get(audioPopupmenuH, 'Value');
         
         
         ticklabels{1}=num2str(features.valueRange(featureInd_stats,1));
@@ -1019,7 +1019,7 @@ end
             ticklabels{3}=num2str(features.valueRange(featureInd_stats,2),'%1.2e');
         end
         
-        if features.emptysong(songInd)
+        if features.emptytrack(trackInd)
             set(noDataText,'Visible','on')
         else
             set(noDataText,'Visible','off')
@@ -1027,8 +1027,8 @@ end
         set(DistPanel,'Title',upper(regexprep(features.names{featureInd_stats},'.*/','')));
         set(distAxes,'Xtick',[0,.5,1],'XTickLabel',ticklabels);
         set(featureDistPatch,'YData',[features.distribution(featureInd_stats,:),0,0]);
-        if ~isempty(features.songDistributions{featureInd_stats})
-            set(songDistPatch,'YData',[features.songDistributions{featureInd_stats}(songInd,:),0,0]/2);
+        if ~isempty(features.trackDistributions{featureInd_stats})
+            set(trackDistPatch,'YData',[features.trackDistributions{featureInd_stats}(trackInd,:),0,0]/2);
         end
         drawnow
     end

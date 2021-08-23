@@ -24,48 +24,48 @@
 package amuse.data.annotation;
 
 /**
- * This class describes the partitions from the given song
+ * This class describes the classification windows from the given track
  * 
  * @author Igor Vatolkin
- * @version $Id: SongPartitionsDescription.java 197 2017-08-11 12:15:34Z frederik-h $
+ * @version $Id: ClassificationWindowsDescription.java 197 2017-08-11 12:15:34Z frederik-h $
  */
-public class SongPartitionsDescription {
+public class ClassificationWindowsDescription {
 	
-	/** Path to the song */
-	final String pathToMusicSong;
+	/** Path to the track */
+	final String pathToMusicTrack;
 	
-	/** Id of the song */
-	final int songId;
+	/** Id of the track */
+	final int trackId;
 	
-	/** Starts of the partitions in ms */
+	/** Starts of the classification windows in ms */
 	final Double[] startMs;
 	
-	/** Ends of the partitions in ms */
+	/** Ends of the classification windows in ms */
 	final Double[] endMs;
 	
     /**
 	 * Constructor
-	 * @param pathToMusicSong Path to the song
-	 * @param startMs Starts of the partitions in ms
-	 * @param endMs Ends of the partitions in ms
+	 * @param pathToMusicTrack Path to the track
+	 * @param startMs Starts of the classification windows in ms
+	 * @param endMs Ends of the classification windows in ms
 	 */
-	public SongPartitionsDescription(String pathToMusicSong, int songId, Double[] startMs, Double[] endMs) {
+	public ClassificationWindowsDescription(String pathToMusicTrack, int trackId, Double[] startMs, Double[] endMs) {
 		if(startMs.length != endMs.length) {
-			throw new RuntimeException("Could not instantiate SongPartitionsDescription: the number of " +
-					"partition starts (" + startMs.length + ") is not equal to the number of partition ends (" + 
+			throw new RuntimeException("Could not instantiate ClassificationWindowsDescription: the number of " +
+					"classfication window starts (" + startMs.length + ") is not equal to the number of classification window ends (" + 
 					endMs.length + ")");
 		}
-		this.pathToMusicSong = pathToMusicSong;
-		this.songId = songId;
+		this.pathToMusicTrack = pathToMusicTrack;
+		this.trackId = trackId;
 		this.startMs = startMs;
 		this.endMs = endMs;
 	}
 
 	/**
-	 * @return the pathToMusicSong
+	 * @return the pathToMusicTrack
 	 */
-	public String getPathToMusicSong() {
-		return pathToMusicSong;
+	public String getPathToMusicTrack() {
+		return pathToMusicTrack;
 	}
 
 	/**
@@ -83,10 +83,10 @@ public class SongPartitionsDescription {
 	}
 
 	/**
-	 * @return the songId
+	 * @return the trackId
 	 */
-	public int getSongId() {
-		return songId;
+	public int getTrackId() {
+		return trackId;
 	}
 
 }

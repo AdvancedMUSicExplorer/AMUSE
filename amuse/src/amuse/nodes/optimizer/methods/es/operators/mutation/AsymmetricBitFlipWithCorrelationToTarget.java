@@ -174,9 +174,9 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip 
 					getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
 				correspondingStrategy.getConfiguration().getConstantParameterByName("Conversion steps").
 					getAttributes().getNamedItem("stringValue").getNodeValue() + "__" + 
-				correspondingStrategy.getConfiguration().getConstantParameterByName("Partition size").
+				correspondingStrategy.getConfiguration().getConstantParameterByName("Classification window size").
 					getAttributes().getNamedItem("intValue").getNodeValue() + "ms_" + 
-				correspondingStrategy.getConfiguration().getConstantParameterByName("Partition overlap").
+				correspondingStrategy.getConfiguration().getConstantParameterByName("Classification window step size").
 					getAttributes().getNamedItem("intValue").getNodeValue() + "ms");
 		if(processingDesc != "" && processingDesc != null) {
 			processedModel += "_" + processingDesc;
@@ -271,8 +271,8 @@ public class AsymmetricBitFlipWithCorrelationToTarget extends AsymmetricBitFlip 
 	
 	/**
 	 * Calculates the standard correlation coefficient between the given feature and label
-	 * @param feature Feature values for all partitions
-	 * @param label Partition labels
+	 * @param feature Feature values for all classification windows
+	 * @param label classification window labels
 	 * @return Correlation coefficient
 	 */
 	double correlation(amuse.data.io.attributes.Attribute feature, amuse.data.io.attributes.Attribute label) {

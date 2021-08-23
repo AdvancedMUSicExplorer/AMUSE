@@ -81,8 +81,8 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 	private JPanel leftLower;
 	private JPanel matrixToVectorPanel;
 	private JPanel globalSettingsPanel;
-	private JTextField partitionSize;
-	private JTextField partitionOverlap;
+	private JTextField classificationWindowSize;
+	private JTextField classificationWindowStepSize;
 	private JButton addButton = new JButton("Add");
 	private JButton removeButton = new JButton("Remove");
 	private JButton upButton = new JButton("Up");
@@ -210,12 +210,12 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		matrixToVectorPanel.add(mtvComboBox, BorderLayout.CENTER);
 		leftLower.add(matrixToVectorPanel, BorderLayout.CENTER);
 		globalSettingsPanel.add(new JLabel("Window Size:"));
-		partitionSize = new IntegerTextField("5000");
-		globalSettingsPanel.add(partitionSize,
+		classificationWindowSize = new IntegerTextField("5000");
+		globalSettingsPanel.add(classificationWindowSize,
 				"gap rel, w 1.5cm:max, growx");
 		globalSettingsPanel.add(new JLabel("Step Size:"), "gap unrel");
-		partitionOverlap = new IntegerTextField("2500");
-		globalSettingsPanel.add(partitionOverlap,
+		classificationWindowStepSize = new IntegerTextField("2500");
+		globalSettingsPanel.add(classificationWindowStepSize,
 				"gap rel, w 1.5cm:max, growx, wrap");
 		globalSettingsPanel.add(new JLabel("Unit:"), "");
                 boxUnit = new JComboBox(unitOptions);
@@ -293,12 +293,12 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
         }
     }
 
-    void setPartitionSizeStr(int value) {
-        partitionSize.setText(value + "");
+    void setClassificationWindowSizeStr(int value) {
+        classificationWindowSize.setText(value + "");
     }
 
-    void setPartitionOverlapStr(int value) {
-        partitionOverlap.setText(value + "");
+    void setClassificationWindowStepSizeStr(int value) {
+        classificationWindowStepSize.setText(value + "");
     }
 
     String getOptionalModelStr() {
@@ -379,15 +379,15 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 	/**
 	 * @return
 	 */
-	public String getPartitionSizeStr() {
-		return partitionSize.getText();
+	public String getClassificationWindowSizeStr() {
+		return classificationWindowSize.getText();
 	}
 
 	/**
 	 * @return
 	 */
-	public String getOverlapStr() {
-		return partitionOverlap.getText();
+	public String getStepSizeStr() {
+		return classificationWindowStepSize.getText();
 	}
 	
 	public String getModelDescription() {

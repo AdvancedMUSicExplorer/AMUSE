@@ -277,8 +277,8 @@ public class TrainingView extends JPanel {
 		return inputFeaturePanel.getClassificationWindowSize();
 	}
 	
-	public Integer getClassificationWindowOverlap() {
-		return inputFeaturePanel.getClassificationWindowOverlap();
+	public Integer getClassificationWindowStepSize() {
+		return inputFeaturePanel.getClassificationWindowStepSize();
 	}
 
 	public InputFeatureType getInputFeatureType() {
@@ -297,8 +297,8 @@ public class TrainingView extends JPanel {
 		inputFeaturePanel.setClassificationWindowSize(size);
 	}
 
-	public void setClassificationWindowOverlap(Integer overlap) {
-		inputFeaturePanel.setClassificationWindowOverlap(overlap);
+	public void setClassificationWindowStepSize(Integer overlap) {
+		inputFeaturePanel.setClassificationWindowStepSize(overlap);
 	}
 
 }

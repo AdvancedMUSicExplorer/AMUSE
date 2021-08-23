@@ -101,67 +101,67 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 					}
 				}
 				
-				double partitionSizeInWindows;
+				double classificationWindowSizeInWindows;
 				double overlapSizeInWindows;
-				int numberOfAllPartitions;
+				int numberOfAllClassificationWindows;
 				
-				// Aggregate the data over the complete song or build partitions?
+				// Aggregate the data over the complete track or build classfication windows?
 				if(ms == -1) {
 					
-					// In 1st case we have only one "partition" which covers the complete song
-					// ("+ 1" is used because of the exclusive calculation of the partition end window)
-					partitionSizeInWindows = features.get(i).getWindows().get(features.get(i).getWindows().size()-1) + 1;
-					overlapSizeInWindows = partitionSizeInWindows;
-					numberOfAllPartitions = 1;
+					// In 1st case we have only one "classification window" which covers the complete track
+					// ("+ 1" is used because of the exclusive calculation of the classification window end window)
+					classificationWindowSizeInWindows = features.get(i).getWindows().get(features.get(i).getWindows().size()-1) + 1;
+					overlapSizeInWindows = classificationWindowSizeInWindows;
+					numberOfAllClassificationWindows = 1;
 				} else {
 					
-					// In 2nd case we can calculate the number of windows which belong to each partition
-					partitionSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
+					// In 2nd case we can calculate the number of windows which belong to each classification window
+					classificationWindowSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
 					overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
 					
-					// Calculates the last used time window and the number of maximum available partitions from it
-					double numberOfAllPartitionsD = ((features.get(i).getWindows().get(features.get(i).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;
-					numberOfAllPartitions = new Double(Math.ceil(numberOfAllPartitionsD)).intValue();
+					// Calculates the last used time window and the number of maximum available classification windows from it
+					double numberOfAllClassificationWindowsD = ((features.get(i).getWindows().get(features.get(i).getWindows().size()-1)) - classificationWindowSizeInWindows)/(classificationWindowSizeInWindows - overlapSizeInWindows)+1;
+					numberOfAllClassificationWindows = new Double(Math.ceil(numberOfAllClassificationWindowsD)).intValue();
 				}
 				
-				// If the partition size is greater than music song length..
-				if(numberOfAllPartitions == 0) {
-					throw new NodeException("Partition size too large");
+				// If the classification window size is greater than music track length..
+				if(numberOfAllClassificationWindows == 0) {
+					throw new NodeException("Classification window size too large");
 				}
 				
 			    // TODO Consider only the first 6 minutes of a music track; should be a parameter?
 				// FUNKTIONIERT NICHT MIT 30'' PRUNER!!! 
-				/*if(numberOfAllPartitions > 360000/overlap) {
-					//numberOfAllPartitions = 360000/overlap;
+				/*if(numberOfAllClassificationWindows > 360000/overlap) {
+					//numberOfAllClassificationWindows = 360000/overlap;
 				}*/
 				
 				int currentWindow = 0;
 				
-				// Go through all partitions
-				for(int numberOfCurrentPartition=0;numberOfCurrentPartition<numberOfAllPartitions;numberOfCurrentPartition++) {
+				// Go through all classification windows
+				for(int numberOfCurrentClassificationWindow=0;numberOfCurrentClassificationWindow<numberOfAllClassificationWindows;numberOfCurrentClassificationWindow++) {
 					
-					// Calculate the start (inclusive) and end (exclusive) windows for the current partition
-					Double partitionStart = Math.floor(new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition));
-					Double partitionEnd = Math.ceil((new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition)+partitionSizeInWindows));
+					// Calculate the start (inclusive) and end (exclusive) windows for the current classification window
+					Double classificationWindowStart = Math.floor(new Double(classificationWindowSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentClassificationWindow));
+					Double classificationWindowEnd = Math.ceil((new Double(classificationWindowSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentClassificationWindow)+classificationWindowSizeInWindows));
 					
-					// Increment the number of current time window if the lower partition boundary is not achieved
+					// Increment the number of current time window if the lower classification window boundary is not achieved
 					for(int k=currentWindow;k<features.get(i).getWindows().size();k++) {
-						if(features.get(i).getWindows().get(k) >= partitionStart) {
+						if(features.get(i).getWindows().get(k) >= classificationWindowStart) {
 							currentWindow = k;
 							break;
 						}
 					}
 					
-					// If no features are available for the current partition, go to the next partition
-					if(features.get(i).getWindows().get(currentWindow) > partitionEnd) {
+					// If no features are available for the current classification window, go to the next classification window
+					if(features.get(i).getWindows().get(currentWindow) > classificationWindowEnd) {
 						continue;
 					}
 					
-					// Create a list with time windows which are in the current partition
-					ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
-					while(features.get(i).getWindows().get(currentWindow) >= partitionStart && 
-							features.get(i).getWindows().get(currentWindow) < partitionEnd) {
-						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow));
+					// Create a list with time windows which are in the current classification window
+					ArrayList<Double> windowsOfCurrentClassificationWindow = new ArrayList<Double>();
+					while(features.get(i).getWindows().get(currentWindow) >= classificationWindowStart && 
+							features.get(i).getWindows().get(currentWindow) < classificationWindowEnd) {
+						windowsOfCurrentClassificationWindow.add(features.get(i).getWindows().get(currentWindow));
 						
 						// The last existing window is achieved
 						if(currentWindow == features.get(i).getWindows().size() - 1) {
@@ -170,8 +170,8 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						currentWindow++;
 					}
 					
-					// Check if the current partition has any windows
-					if(windowsOfCurrentPartition.size() == 0) {
+					// Check if the current classification window has any windows
+					if(windowsOfCurrentClassificationWindow.size() == 0) {
 						continue;
 					}
 					
@@ -185,14 +185,14 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						// Calculate mean and variance
 						Double mean = 0d;
 						Double variance = 0d;
-						for(Double l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentClassificationWindow) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								mean += features.get(i).getValuesFromWindow(l)[k];
 								valueNumber++;
 							}
 						}
 						mean /= valueNumber;
-						for(Double l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentClassificationWindow) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								variance += Math.pow((Double)features.get(i).getValuesFromWindow(l)[k]-mean,2);
 							}
@@ -200,22 +200,22 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 						variance /= valueNumber;
 								
 						// Add mean and deviation to the new generated features
-						if(numberOfCurrentPartition < numberOfAllPartitions) {
+						if(numberOfCurrentClassificationWindow < numberOfAllClassificationWindows) {
 							Double[] meanD = new Double[1]; meanD[0] = mean;
 							Double[] stddevD = new Double[1]; stddevD[0] = variance;
 							if(saveMeanValues) {
 								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getValues().add(meanD);
-								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getWindows().add(new Double(partitionStart));
+								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getWindows().add(new Double(classificationWindowStart));
 							}
 							if(saveStddevValues) {
 								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getValues().add(stddevD);
-								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getWindows().add(new Double(partitionStart));
+								newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
 							}
 						}
 						
 						// Go with the current window back because of overlap (some time windows used in the
-						// current partition may be also used in the next partition)
-						while(features.get(i).getWindows().get(currentWindow) >= partitionStart + (partitionSizeInWindows - overlapSizeInWindows) && currentWindow > 0) {
+						// current classification window may be also used in the next classification window)
+						while(features.get(i).getWindows().get(currentWindow) >= classificationWindowStart + (classificationWindowSizeInWindows - overlapSizeInWindows) && currentWindow > 0) {
 							currentWindow--;
 						}
 					}

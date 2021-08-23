@@ -178,8 +178,8 @@ public class ValidationView {
 		return trainingView.getClassificaitonWindowSize();
 	}
 
-	public Integer getClassificationWindowOverlap() {
-		return trainingView.getClassificationWindowOverlap();
+	public Integer getClassificationWindowStepSize() {
+		return trainingView.getClassificationWindowStepSize();
 	}
 
 	public FeatureTable getInputFeatures() {
@@ -198,7 +198,7 @@ public class ValidationView {
 		trainingView.setClassificationWindowSize(classificationWindowSize);
 	}
 
-	public void setClassificationWindowOverlap(Integer classificationWindowOverlap) {
-		trainingView.setClassificationWindowOverlap(classificationWindowOverlap);
+	public void setClassificationWindowStepSize(Integer classificationWindowStepSize) {
+		trainingView.setClassificationWindowStepSize(classificationWindowStepSize);
 	}
 }

@@ -155,17 +155,17 @@ public class ProcessingController extends AbstractController {
                 + selectedFile.getName());
         String reductionSteps = pcmController.getReductionSteps();
         String unit = pcmController.getUnit();
-        int partitionSize = pcmController.getPartitionSize();
-        int partitiopnOverlap = pcmController.getPartitionOverlap();
+        int classificationWindowSize = pcmController.getClassificationWindowSize();
+        int classificationWindowStepSize = pcmController.getClassificationWindowStepSize();
         String matrixToVector = pcmController.getConversionStep();
         String optionalModelStr = pcmController.getOptionalModelStr();
         /*ProcessorConfigSet dataSet = new ProcessorConfigSet(musicFilesFile,
-        		featureTableFile, reductionSteps, unit, partitionSize,
-                partitiopnOverlap, matrixToVector, optionalModelStr);*/
+        		featureTableFile, reductionSteps, unit, classificaitonWindowSize,
+                partitiopnStepSize, matrixToVector, optionalModelStr);*/
         // FIXME
         ProcessorConfigSet dataSet = new ProcessorConfigSet(musicFilesFile,
-        		ProcessingConfiguration.InputSourceType.RAW_FEATURE_LIST.toString(),featureTableFile.toString(), reductionSteps, unit, partitionSize,
-                partitiopnOverlap, matrixToVector, optionalModelStr);
+        		ProcessingConfiguration.InputSourceType.RAW_FEATURE_LIST.toString(),featureTableFile.toString(), reductionSteps, unit, classificationWindowSize,
+                classificationWindowStepSize, matrixToVector, optionalModelStr);
         
         // Create folders...
         featureTableFile.getParentFile().mkdirs();
@@ -199,8 +199,8 @@ public class ProcessingController extends AbstractController {
         File featureTableFile = config.getFeatureTables().get(0);
         filesAndFeatures.loadFilesAndFeatures(musicFileList, featureTableFile);
         pcmController.setUnit(config.getUnitAttribute().getValueAt(0));
-        pcmController.setPartitionSize(config.getAggregationWindowSizeAttribute().getValueAt(0).intValue());
-        pcmController.setOverlapSize(config.getAggregationWindowStepSizeAttribute().getValueAt(0).intValue());
+        pcmController.setClassificationWindowSize(config.getAggregationWindowSizeAttribute().getValueAt(0).intValue());
+        pcmController.setStepSize(config.getAggregationWindowStepSizeAttribute().getValueAt(0).intValue());
         pcmController.setMatrixToVector(config.getMatrixToVectorAttribute().getValueAt(0));
         pcmController.setReductionSteps(config.getReductionStepsAttribute().getValueAt(0));
         pcmController.setOptionalModelStr(config.getFeatureDescriptionAttribute().getValueAt(0));
@@ -212,13 +212,13 @@ public class ProcessingController extends AbstractController {
         /* Gather all neccessary information and create variables */
         String reductionSteps = pcmController.getReductionSteps();
         String unit = pcmController.getUnit();
-        int partitionSize = pcmController.getPartitionSize();
-        int partitiopnOverlap = pcmController.getPartitionOverlap();
+        int classificationWindowSize = pcmController.getClassificationWindowSize();
+        int classificationWindowStepSize = pcmController.getClassificationWindowStepSize();
         String matrixToVector = pcmController.getConversionStep();
         String optionalModelStr = pcmController.getOptionalModelStr();
         FileTable files = filesAndFeatures.getFileTable();
         ProcessingConfiguration conf = new ProcessingConfiguration(files, filesAndFeatures.getFeatureTable(),
-                reductionSteps, partitionSize, partitiopnOverlap,
+                reductionSteps, classificationWindowSize, classificationWindowStepSize,
                 matrixToVector, optionalModelStr);
         return conf;
     }
@@ -283,8 +283,8 @@ public class ProcessingController extends AbstractController {
             filesAndFeatures.loadFeatureTable(ex.getInputFeatureList());
 
             // pcmController.setUnit();
-        pcmController.setPartitionSize(ex.getAggregationWindowSize());
-        pcmController.setOverlapSize(ex.getAggregationWindowStepSize());
+        pcmController.setClassificationWindowSize(ex.getAggregationWindowSize());
+        pcmController.setStepSize(ex.getAggregationWindowStepSize());
         pcmController.setMatrixToVector(ex.getConversionStep());
         pcmController.setReductionSteps(ex.getReductionSteps());
         pcmController.setOptionalModelStr(ex.getFeatureDescription());
