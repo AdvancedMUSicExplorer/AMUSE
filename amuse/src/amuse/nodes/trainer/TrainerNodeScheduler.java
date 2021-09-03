@@ -539,14 +539,24 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					}
 					
 					
+					// remember the number of attributes of the first input file to spot potential errors with inconsistent feature processing
+					String firstInputFile = currentInputFile;
+					int numberOfAttributes = classifierInputLoader.getStructure().numAttributes();
 					// Create the labeled data
 					for(int i=0;i<classifierGroundTruthSet.getValueCount();i++) {
 						Integer end = new Double(classifierGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
+						
+						// check if the processing is consistent
+						if(classifierInputLoader.getStructure().numAttributes() != numberOfAttributes) {
+							throw new NodeException("Inconsistent Processing: " + firstInputFile + " has " + numberOfAttributes + " attributes while "
+									+ currentInputFile + " has " + classifierInputLoader.getStructure().numAttributes() + " attributes.");
+						}
+						
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
 								int currentAttribute = 0;
-								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
+ 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
 									
 									//Omit the attributes that are supposed to be ignored
 									if(!attributesToIgnore.contains(j)) {
