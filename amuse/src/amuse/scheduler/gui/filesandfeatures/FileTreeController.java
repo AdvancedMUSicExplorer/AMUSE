@@ -40,6 +40,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import amuse.data.datasets.FileTableSet;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 
 /**
@@ -115,6 +117,7 @@ public class FileTreeController implements ActionListener, KeyListener {
             loadDialog.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
             loadDialog.setAcceptAllFileFilterUsed(false);
             loadDialog.setMultiSelectionEnabled(true);
+            loadDialog.setCurrentDirectory(new File(AmusePreferences.get(KeysStringValue.MULTIPLE_TRACKS_ANNOTATION_DATABASE)));
             loadDialog.setFileFilter(new FileFilter() {
 
                 @Override

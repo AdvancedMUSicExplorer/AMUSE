@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('%AMUSEHOME%/tools/MatlabFeatures');
-addpath('%AMUSEHOME%/tools/MIRToolbox/MIRToolbox');
-addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
+addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MatlabFeatures');
+addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MIRToolbox/MIRToolbox');
+addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
@@ -380,17 +380,31 @@ mirres=mirrms(f);
 		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="209,210" dimensions="12,12">
-	<text>
-		% Strengths of major keys
+
+<amuseEnableTransform>
+<transformContent>
+<text>
+		% Strengths of major/minor keys
 		mirres=mirkeystrength(chroma);
 		res=mirgetdata(mirres);
+</text>
+<amuseEnableFeature id="209" dimensions="12">
+	<text>
+		% strength of major keys
 		major_strengths=res(:,:,1);
-		minor_strengths=res(:,:,2);
 		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
-		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
 	</text>
 </amuseEnableFeature>
+<amuseEnableFeature id="210" dimensions="12">
+	<text>
+		% strength of minor keys
+		minor_strengths=res(:,:,2);
+		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
+	</text>
+</amuseEnableFeature></transformContent>
+</amuseEnableTransform>
+
+
 <amuseEnableFeature id="216" dimensions="6">
 	<text>
 		% Tonal centroid vector

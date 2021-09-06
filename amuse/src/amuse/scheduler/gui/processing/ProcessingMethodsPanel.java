@@ -220,8 +220,8 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		globalSettingsPanel.add(new JLabel("Unit:"), "");
                 boxUnit = new JComboBox(unitOptions);
 		globalSettingsPanel.add(boxUnit, "gap rel, spanx 3, wrap");
-		globalSettingsPanel.add(new JLabel("Optional Model Description:"), "");
-		globalSettingsPanel.add(modelDescriptionTextField, "gap rel, spanx 3, wrap");
+		globalSettingsPanel.add(new JLabel("Optional Processing Description:"), "spanx 2");
+		globalSettingsPanel.add(modelDescriptionTextField, "gap rel, spanx 2, wrap");
 		leftLower.add(globalSettingsPanel, BorderLayout.SOUTH);
 	}
 

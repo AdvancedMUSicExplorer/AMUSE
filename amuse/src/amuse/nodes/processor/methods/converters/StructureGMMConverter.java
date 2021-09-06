@@ -64,7 +64,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on track structure information...");
 		
 		int sampleRate = features.get(0).getSampleRate();
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 		
 		// TODO Fuer Metrik-Berechnung, auslagern!!
 		ArrayList<Double> usedTimeWindows = new ArrayList<Double>();

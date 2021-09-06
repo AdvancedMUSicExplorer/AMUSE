@@ -474,6 +474,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 					}
 						
+					// remember the number of attributes of the first input file to spot potential errors with inconsistent feature processing
+					String firstInputFile = currentInputFile;
+					int numberOfAttributes = classifierInputLoader.getStructure().numAttributes();
 					// Save the processed features for classifier
 					for(int k=0;k<((FileListInput)inputToClassify).getInputFiles().size();k++) {
 						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(k).toString();
@@ -515,6 +518,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						Instance processedFeaturesInstance;
 						processedFeaturesLoader.setFile(new File(currentInputFile));
 						processedFeaturesInstance = processedFeaturesLoader.getNextInstance(processedFeaturesLoader.getStructure());
+						
+						// check if the processing is consistent
+						if(processedFeaturesInstance.numAttributes() != numberOfAttributes) {
+							throw new NodeException("Inconsistent Processing: " + firstInputFile + " has " + numberOfAttributes + " attributes while "
+									+ currentInputFile + " has " + classifierInputLoader.getStructure().numAttributes() + " attributes.");
+						}
+						
 						while(processedFeaturesInstance != null) {
 							double startPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("Start"));
 							double endPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("End"));

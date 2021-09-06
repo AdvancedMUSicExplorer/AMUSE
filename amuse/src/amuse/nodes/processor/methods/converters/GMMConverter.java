@@ -70,7 +70,7 @@ public class GMMConverter extends AmuseTask implements MatrixToVectorConverterIn
 	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 		
 		// Single features used as classifier input vector
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();

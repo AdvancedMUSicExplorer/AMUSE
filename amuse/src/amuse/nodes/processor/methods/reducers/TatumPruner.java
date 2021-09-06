@@ -74,7 +74,7 @@ public class TatumPruner extends AmuseTask implements DimensionProcessorInterfac
 		// for finding the path to tatum times file (ID = 416)
 		Double[] tatumTimes = loadTatumTimes();
 		
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {

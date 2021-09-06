@@ -75,7 +75,7 @@ public class IntervalSelector extends AmuseTask implements DimensionProcessorInt
 		
 		int sampleRate = features.get(0).getSampleRate();
 		Double d = (new Double(sampleRate) / 
-				(double)((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize()) * this.msNumber/1000;
+				(double)((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize()) * this.msNumber/1000;
 		if(this.selectFromTheBeginning) {
 			startWindow = 0;
 			endWindow = d.intValue();
