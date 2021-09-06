@@ -732,12 +732,12 @@ public class AnnotationSelectionPanel extends JSplitPane {
 						int id = (int) featureData[selectedRow][0];
 						
 						// Calculate the path to the feature
-						String songPath = annotationController.getMusicFilePath();
+						String trackPath = annotationController.getMusicFilePath();
 						String relativeName = new String();
-						if(songPath.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
-							relativeName = songPath.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
+						if(trackPath.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+							relativeName = trackPath.substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 						} else {
-							relativeName = songPath;
+							relativeName = trackPath;
 						}
 						if(relativeName.charAt(0) == File.separatorChar) {
 							relativeName = relativeName.substring(1);

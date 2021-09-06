@@ -98,28 +98,28 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 				dataSetToClassify.addAttribute(new NumericAttribute("Predicted_" + trainingDataSet.getAttribute(i).getName(), new ArrayList<Double>()));
 			}
 			
-			//iterate through every partition that has to be classified
-			for(int partitionToClassify = 0; partitionToClassify < dataSetToClassify.getAttribute(0).getValueCount(); partitionToClassify++) {
+			//iterate through every classification window that has to be classified
+			for(int classificationWindowToClassify = 0; classificationWindowToClassify < dataSetToClassify.getAttribute(0).getValueCount(); classificationWindowToClassify++) {
 				
 				//SortedSet of the k nearestNeighbors
 				SortedSet<Example> nearestNeighbors = new TreeSet<Example>();
 				
-				//iterate through all training songs/partitions
-				for(int trainingPartition = 0; trainingPartition < trainingDataSet.getValueCount(); trainingPartition++) {
+				//iterate through all training tracks/clasification windows
+				for(int trainingWindow = 0; trainingWindow < trainingDataSet.getValueCount(); trainingWindow++) {
 					double distance = 0;
 					double classifyValue = 0;
 					double trainValue = 0;
 					boolean nanClassify = false;
 					boolean nanTrain = false;
-					//calculate the distance between test partition and training partition
+					//calculate the distance between test window and training window
 					for(int n = 0; n < trainingDataSet.getAttributeCount() - numberOfCategories - 2; n++) {
-						classifyValue = (Double)dataSetToClassify.getAttribute(n).getValueAt(partitionToClassify);
-						trainValue = (Double)trainingDataSet.getAttribute(n).getValueAt(trainingPartition);
+						classifyValue = (Double)dataSetToClassify.getAttribute(n).getValueAt(classificationWindowToClassify);
+						trainValue = (Double)trainingDataSet.getAttribute(n).getValueAt(trainingWindow);
 						if(Double.isNaN(classifyValue)){
 							try {
-								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in song " + dataSetToClassify.getAttribute("Id").getValueAt(partitionToClassify));
+								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in track " + dataSetToClassify.getAttribute("Id").getValueAt(classificationWindowToClassify));
 							} catch(DataSetException e) {
-								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in an input song");
+								AmuseLogger.write(FKNNAdapter.class.getClass().getName(), Level.WARN,"Not a Number in an input track");
 							}
 							nanClassify = true;
 							break;
@@ -131,20 +131,20 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 						
 						distance += Math.pow(classifyValue - trainValue, 2);
 					}
-					if(nanClassify) {//if there is a NaN in the partition, we want to classify, we cannot properly classify it
+					if(nanClassify) {//if there is a NaN in the window, we want to classify, we cannot properly classify it
 						break;
 					}
-					if(nanTrain) {//if there is a NaN in the training partition, we ignore that partition
+					if(nanTrain) {//if there is a NaN in the training window, we ignore that window
 						continue;
 					}
 					
 					distance = Math.sqrt(distance);
 					
-					//what category has the training partition?
+					//what category has the training window?
 					double[] currentRelationships = new double[numberOfCategories];
 					
 					for(int category = 0; category < numberOfCategories; category++) {
-						currentRelationships[category] = (double)trainingDataSet.getAttribute(positionOfFirstCategory + category).getValueAt(trainingPartition);
+						currentRelationships[category] = (double)trainingDataSet.getAttribute(positionOfFirstCategory + category).getValueAt(trainingWindow);
 					}
 					
 					Example currentExample = new Example(distance, currentRelationships);
@@ -156,8 +156,8 @@ public class FKNNAdapter extends AmuseTask implements ClassifierInterface {
 					}
 				}
 				
-				if(nearestNeighbors.size() == 0) {//If no neighbors were found (probably because of NaN in the partition that has to be classified), the partition cannot be properly classified
-					throw new NodeException("Partition cannot be classified, because no neighbours were found.");
+				if(nearestNeighbors.size() == 0) {//If no neighbors were found (probably because of NaN in the classification window that has to be classified), the window cannot be properly classified
+					throw new NodeException("Classification window cannot be classified, because no neighbours were found.");
 				}
 				
 				//make sure that the distances are not 0

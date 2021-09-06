@@ -34,7 +34,7 @@ import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.RelationshipType;
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.data.InputFeatureType;
 import amuse.data.MeasureTable;
 import amuse.interfaces.nodes.NodeException;
@@ -112,11 +112,11 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				this.measureCalculators.add(vmc);
 				this.measureIds.add(mt.get(i).getID());
 				if(vmc instanceof ClassificationQualityMeasureCalculatorInterface) {
-					if(mt.get(i).isPartitionLevelSelected()) {
-						((ClassificationQualityMeasureCalculatorInterface)vmc).setPartitionLevel(true);
+					if(mt.get(i).isWindowLevelSelected()) {
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setWindowLevel(true);
 					} 
-					if(mt.get(i).isSongLevelSelected()) {
-						((ClassificationQualityMeasureCalculatorInterface)vmc).setSongLevel(true);
+					if(mt.get(i).isTrackLevelSelected()) {
+						((ClassificationQualityMeasureCalculatorInterface)vmc).setTrackLevel(true);
 					}
 				}
 			}
@@ -169,7 +169,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 		for(int i=0;i<modelsToEvaluate.size();i++) { 
 			
 			// Classify the music input with the current model
-			ArrayList<ClassifiedSongPartitions> predictedSongs = new ArrayList<ClassifiedSongPartitions>();
+			ArrayList<ClassifiedClassificationWindow> predictedTracks = new ArrayList<ClassifiedClassificationWindow>();
 			ClassificationConfiguration cConf = null;
 			cConf = new ClassificationConfiguration(
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputToValidate(),
@@ -190,7 +190,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 			ClassifierNodeScheduler cs = new ClassifierNodeScheduler(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId());
 			cs.setCleanInputFolder(false);
 			cConf.setProcessedFeatureDatabase(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getProcessedFeatureDatabase());
-			predictedSongs = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
+			predictedTracks = cs.proceedTask(this.correspondingScheduler.getHomeFolder(), this.correspondingScheduler.getTaskId(), cConf, false);
 			
 			// Calculate the classifier evaluation measures for result
 			try {
@@ -201,13 +201,13 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 						((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).setContinuous(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getRelationshipType() == RelationshipType.CONTINUOUS);
 						if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.SINGLELABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateOneClassMeasure(
-								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageSongRelationships(), predictedSongs);
+								((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledAverageTrackRelationships(), predictedTracks);
 						} else if(((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getLabelType() == LabelType.MULTILABEL) {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiLabelMeasure(
-									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
+									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledTrackRelationships(), predictedTracks);
 						} else {
 							currMeas = ((ClassificationQualityMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMultiClassMeasure(
-									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledSongRelationships(), predictedSongs);
+									((ValidatorNodeScheduler)this.getCorrespondingScheduler()).getLabeledTrackRelationships(), predictedTracks);
 						}
 					} else if(this.measureCalculators.get(currentMeasure) instanceof DataReductionMeasureCalculatorInterface) {
 						currMeas = ((DataReductionMeasureCalculatorInterface)this.measureCalculators.get(currentMeasure)).calculateMeasure(
@@ -432,9 +432,9 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 		return listOfUsedProcessedFeatureFiles;
 	}
 	
-	/*private String listCorrectSongs(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitionsDescription> predictedRelationships) throws NodeException {
+	/*private String listCorrectTracks(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedTrackClassificationWindowsDescription> predictedRelationships) throws NodeException {
 		amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances mc = new amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances();
-		mc.setSongLevel(true);
+		mc.setTrackLevel(true);
 		ValidationMeasureDouble[] list = mc.calculateMeasure(groundTruthRelationships, predictedRelationships);
 		StringBuffer b = new StringBuffer();
 		for(int i=0;i<list.length;i++) {

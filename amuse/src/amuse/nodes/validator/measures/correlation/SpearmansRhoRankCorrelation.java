@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -48,16 +48,16 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Sort labeled and predicted values
 		ArrayList<Double> sortedPredictedRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 		ArrayList<Double> sortedLabeledRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -121,7 +121,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		double p = groundTruthRelationships.size() * Math.pow((groundTruthRelationships.size()+1d)/2d, 2);
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -142,20 +142,20 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[1];
 		correlationMeasure[0] = new ValidationMeasureDouble(false);
 		correlationMeasure[0].setId(301);
-		correlationMeasure[0].setName("Speraman's rank correlation coefficient on song level");
+		correlationMeasure[0].setName("Speraman's rank correlation coefficient on track level");
 		correlationMeasure[0].setValue(corrCoef);
 		return correlationMeasure;
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
-		// Calculate the number of all partitions
-		int overallPartitionNumber = 0;
+		// Calculate the number of all classification windows
+		int overallClassificationWindowNumber = 0;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			overallPartitionNumber += predictedRelationships.get(i).getRelationships().length;
+			overallClassificationWindowNumber += predictedRelationships.get(i).getRelationships().length;
 		}
 		
 		// Sort labeled and predicted values
@@ -219,7 +219,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		double sumOfRankMultiplications = 0.0d;
 		double sumOfSquaredPredictedRanks = 0.0d;
 		double sumOfSquaredLabeledRanks = 0.0d;
-		double p = overallPartitionNumber * Math.pow((overallPartitionNumber+1d)/2d, 2);
+		double p = overallClassificationWindowNumber * Math.pow((overallClassificationWindowNumber+1d)/2d, 2);
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				sumOfRankMultiplications += predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][0]) * labeledValueToRang.get(groundTruthRelationships.get(i));
@@ -236,31 +236,31 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[1];
 		correlationMeasure[0] = new ValidationMeasureDouble(false);
 		correlationMeasure[0].setId(301);
-		correlationMeasure[0].setName("Speraman's rank correlation coefficient on partition level");
+		correlationMeasure[0].setName("Speraman's rank correlation coefficient on classification window level");
 		correlationMeasure[0].setValue(corrCoef);
 		return correlationMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
 		double[] corrCoef = new double[numberOfCategories];
@@ -270,7 +270,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 			ArrayList<Double> sortedLabeledRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 			for(int i=0;i<groundTruthRelationships.size();i++) {
 				
-				// Calculate the predicted value for this song (averaging among all partitions)
+				// Calculate the predicted value for this track (averaging among all classification windows)
 				Double currentPredictedValue = 0.0d;
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
@@ -334,7 +334,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 			double p = groundTruthRelationships.size() * Math.pow((groundTruthRelationships.size()+1d)/2d, 2);
 			for(int i=0;i<groundTruthRelationships.size();i++) {
 				
-				// Calculate the predicted value for this song (averaging among all partitions)
+				// Calculate the predicted value for this track (averaging among all classification windows)
 				Double currentPredictedValue = 0.0d;
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
@@ -357,7 +357,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		for(int category = 0; category < numberOfCategories; category++) {
 			correlationMeasure[category] = new ValidationMeasureDouble(false);
 			correlationMeasure[category].setId(301);
-			correlationMeasure[category].setName("Speraman's rank correlation coefficient on song level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setName("Speraman's rank correlation coefficient on track level for category " + groundTruthRelationships.get(0).getLabels()[category]);
 			correlationMeasure[category].setValue(corrCoef[category]);
 		}
 		return correlationMeasure;
@@ -366,17 +366,17 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificatoinWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
 		double[] corrCoef = new double[numberOfCategories];
 		for(int category = 0; category < numberOfCategories; category++) {
-			// Calculate the number of all partitions
-			int overallPartitionNumber = 0;
+			// Calculate the number of all classification windows
+			int overallClassificationWindowNumber = 0;
 			for(int i=0;i<groundTruthRelationships.size();i++) {
-				overallPartitionNumber += predictedRelationships.get(i).getRelationships().length;
+				overallClassificationWindowNumber += predictedRelationships.get(i).getRelationships().length;
 			}
 			
 			// Sort labeled and predicted values
@@ -440,7 +440,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 			double sumOfRankMultiplications = 0.0d;
 			double sumOfSquaredPredictedRanks = 0.0d;
 			double sumOfSquaredLabeledRanks = 0.0d;
-			double p = overallPartitionNumber * Math.pow((overallPartitionNumber+1d)/2d, 2);
+			double p = overallClassificationWindowNumber * Math.pow((overallClassificationWindowNumber+1d)/2d, 2);
 			for(int i=0;i<groundTruthRelationships.size();i++) {
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 					sumOfRankMultiplications += predictedValueToRang.get(predictedRelationships.get(i).getRelationships()[j][category]) * labeledValueToRang.get(groundTruthRelationships.get(i).getRelationships()[j][category]);
@@ -459,7 +459,7 @@ public class SpearmansRhoRankCorrelation extends ClassificationQualityDoubleMeas
 		for(int category = 0; category < numberOfCategories; category++) {
 			correlationMeasure[category] = new ValidationMeasureDouble(false);
 			correlationMeasure[category].setId(301);
-			correlationMeasure[category].setName("Speraman's rank correlation coefficient on partition level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setName("Speraman's rank correlation coefficient on classification window level for category " + groundTruthRelationships.get(0).getLabels()[category]);
 			correlationMeasure[category].setValue(corrCoef[category]);
 		}
 		return correlationMeasure;

@@ -319,8 +319,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		inputSelectionPanel.setInputSourceType(inputSourceType);
 	}
 
-	public void setMergeSongResults(Integer mergeSongResults) {
-		selectAverageCalculation.setSelected(mergeSongResults == 1);
+	public void setMergeTrackResults(Integer mergeTrackResults) {
+		selectAverageCalculation.setSelected(mergeTrackResults == 1);
 	}
 
 	public void setOutputResult(String classificationOutput) {
@@ -367,8 +367,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		return inputFeaturePanel.getClassificationWindowSize();
 	}
 
-	public Integer getClassificationWindowOverlap() {
-		return inputFeaturePanel.getClassificationWindowOverlap();
+	public Integer getClassificationWindowStepSize() {
+		return inputFeaturePanel.getClassificationWindowStepSize();
 	}
 
 	public FeatureTable getInputFeatures() {
@@ -387,8 +387,8 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 		inputFeaturePanel.setClassificationWindowSize(classificationWindowSize);
 	}
 
-	public void setClassificationWindowOverlap(Integer classificationWindowOverlap) {
-		inputFeaturePanel.setClassificationWindowOverlap(classificationWindowOverlap);
+	public void setClassificationWindowStepSize(Integer classificationWindowStepSize) {
+		inputFeaturePanel.setClassificationWindowStepSize(classificationWindowStepSize);
 	}
 
 }

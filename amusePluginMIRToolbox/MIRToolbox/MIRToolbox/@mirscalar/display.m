@@ -1,4 +1,4 @@
-function display(s,ax,songs,suffix)
+function display(s,ax,tracks,suffix)
 % SCALAR/DISPLAY display the values of a scalar object
 
 ST = dbstack;
@@ -21,12 +21,12 @@ leg = get(s,'Legend');
 legm = get(s,'MultiData');
 cha = get(s,'Channels');
 
-if nargin<3 || isempty(songs)
-    songs=1:length(v);
+if nargin<3 || isempty(tracks)
+    tracks=1:length(v);
 end
 
-for song = 1:length(songs)  %For each audio file
-    i=songs(song);
+for track = 1:length(tracks)  %For each audio file
+    i=tracks(track);
 
     vi = v{i};
     if isempty(m)

@@ -78,8 +78,8 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Size of classification window in milliseconds */
 	private final Integer classificationWindowSize;
 	
-	/** Size of classification window overlap in milliseconds */
-	private final Integer classificationWindowOverlap;
+	/** Size of classification window step size in milliseconds */
+	private final Integer classificationWindowStepSize;
 	
 	/** Input to validate */
 	private DataInputInterface inputToValidate;
@@ -133,7 +133,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of methods used for feature processing
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
+	 * @param classificaitonWindowStepSize step size of the classificaiton windows
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -151,7 +151,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
 			DataInputInterface inputToValidate,
 			GroundTruthSourceType groundTruthSourceType,
@@ -178,7 +178,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
@@ -199,7 +199,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of methods used for feature processing
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
+	 * @param classificaitonWindowStepSize step size of the classificaiton windows
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -216,7 +216,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			MeasureTable measures, 
 			FeatureTable inputFeatures,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
 			DataInputInterface inputToValidate,
 			GroundTruthSourceType groundTruthSourceType,
@@ -238,7 +238,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 		}
 		this.inputFeaturesDescription = description;
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
@@ -261,7 +261,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of methods used for feature processing
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificaitonWindowOverlap overlap of the classificaiton windows
+	 * @param classificaitonWindowStepSize step size of the classificaiton windows
 	 * @param classificationAlgorithmDescription ID of classification algorithm from classifierTable.arff
  	 * @param groundTruthSource Source with input to validate. Can be either
 	 * - Id of the music category from $AMUSEHOME$/config/categoryTable.arff or
@@ -274,7 +274,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
 			DataSetInput inputToValidate,
 			GroundTruthSourceType groundTruthSourceType) {
@@ -297,7 +297,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
 		this.inputToValidate = inputToValidate;
 		this.groundTruthSourceType = groundTruthSourceType;
@@ -340,7 +340,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
 			}
 			Integer currentClassificationWindowSize = validatorConfig.getClassificationWindowSizeAttribute().getValueAt(i).intValue();
-			Integer currentClassificationWindowOverlap = validatorConfig.getClassificationWindowOverlapAttribute().getValueAt(i).intValue();
+			Integer currentClassificationWindowStepSize = validatorConfig.getClassificationWindowStepSizeAttribute().getValueAt(i).intValue();
 			String currentClassificationAlgorithmDescription = validatorConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			String currentInputToValidate = validatorConfig.getInputToValidateAttribute().getValueAt(i).toString();
 			GroundTruthSourceType gtst;
@@ -420,7 +420,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
-		    		currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowOverlap,
+		    		currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowStepSize,
 		    		currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
 		    		gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
@@ -481,10 +481,10 @@ public class ValidationConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * @return the classificationWindowOverlap
+	 * @return the classificationWindowStepSize
 	 */
-	public Integer getClassificationWindowOverlap() {
-		return classificationWindowOverlap;
+	public Integer getClassificationWindowStepSize() {
+		return classificationWindowStepSize;
 	}
 
 	/**
@@ -594,15 +594,15 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 * @see amuse.interfaces.nodes.TaskConfiguration#getDescription()
 	 */
 	public String getDescription() {
-            int songLevel = 0;
-            int partitionLevel = 0;
+            int trackLevel = 0;
+            int classificationWindowLevel = 0;
             for (Measure m: measures) {
-                if (m.isPartitionLevelSelected())
-                    partitionLevel++;
-                if (m.isSongLevelSelected())
-                    songLevel++;
+                if (m.isWindowLevelSelected())
+                    classificationWindowLevel++;
+                if (m.isTrackLevelSelected())
+                    trackLevel++;
             }
-        return new String("Input: " + inputToValidate.toString() + " Number of measures: " + songLevel +"(Songlevel) " + partitionLevel+"(Partitionlevel)");
+        return new String("Input: " + inputToValidate.toString() + " Number of measures: " + trackLevel +"(Tracklevel) " + classificationWindowLevel+"(Classificationwindowlevel)");
 	}
 
 	/**

@@ -55,7 +55,7 @@ public class SelectedFeaturesConcrete extends BinaryVector {
 	/**
 	 * Standard constructor
 	 * @param esConfiguration Corresponding ES configuration
-	 * @param value Partition size
+	 * @param value Classification window size
 	 */
 	public SelectedFeaturesConcrete(ESConfiguration esConfiguration, Boolean[] vector) {
 		super(esConfiguration, vector);

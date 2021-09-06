@@ -108,7 +108,7 @@ public class TrainingController extends AbstractController {
             		inputFeatureDescription,
             		trainingView.getInputFeatureType().toString(),
             		trainingView.getClassificaitonWindowSize(), 
-            		trainingView.getClassificationWindowOverlap(),
+            		trainingView.getClassificationWindowStepSize(),
             		trainingView.getSelectedTrainingAlgorithmStr(),
             		trainingView.getPreprocessingAlgorithmStr(),
             		trainingView.getGroundTruthSource(),
@@ -159,7 +159,7 @@ public class TrainingController extends AbstractController {
         	FeatureTable inputFeatures = new FeatureTable(new File(ttSet.getInputFeatureAttribute().getValueAt(0)));
         	trainingView.setInputFeatures(inputFeatures);
         	trainingView.setClassificationWindowSize(ttSet.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
-        	trainingView.setClassificationWindowOverlap(ttSet.getClassificationWindowOverlapAttribute().getValueAt(0).intValue());
+        	trainingView.setClassificationWindowStepSize(ttSet.getClassificationWindowStepSizeAttribute().getValueAt(0).intValue());
         } else {
         	trainingView.setInputFeatureType(InputFeatureType.PROCESSED_FEATURES);
         	trainingView.setProcessingModelString(ttSet.getInputFeatureAttribute().getValueAt(0));
@@ -350,7 +350,7 @@ public class TrainingController extends AbstractController {
 	    	conf = new TrainingConfiguration(
 	    			trainingView.getInputFeatures(),
 	    			trainingView.getClassificaitonWindowSize(),
-	    			trainingView.getClassificationWindowOverlap(),
+	    			trainingView.getClassificationWindowStepSize(),
 	    			trainingView.getSelectedTrainingAlgorithmStr(),
 	    			trainingView.getPreprocessingAlgorithmStr(), 
 	    			new FileInput(trainingView.getGroundTruthSource()),
@@ -365,7 +365,7 @@ public class TrainingController extends AbstractController {
 	    			trainingView.getProcessingModelString(),
 	    			trainingView.getInputFeatureType(),
 	    			trainingView.getClassificaitonWindowSize(),
-	    			trainingView.getClassificationWindowOverlap(),
+	    			trainingView.getClassificationWindowStepSize(),
 	    			trainingView.getSelectedTrainingAlgorithmStr(),
 	    			trainingView.getPreprocessingAlgorithmStr(), 
 	    			new FileInput(trainingView.getGroundTruthSource()),

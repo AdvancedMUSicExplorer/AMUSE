@@ -44,7 +44,7 @@ import amuse.data.InputFeatureType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.ModelType.RelationshipType;
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
@@ -88,8 +88,8 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	/** Personal user category id and name separated by '-', e.g. "15-Music_for_Inspiration" */
 	private String categoryDescription = null;
 	
-	/** Ground truth relationships for given songs*/
-	private ArrayList<ClassifiedSongPartitions> labeledSongRelationships = null;
+	/** Ground truth relationships for given tracks*/
+	private ArrayList<ClassifiedClassificationWindow> labeledTrackRelationships = null;
 	
 	/** Used for calculation of data reduction measures */ 
 	private ArrayList<String> listOfAllProcessedFiles = null;
@@ -392,11 +392,11 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	
 	/**
 	 * Converts feature vectors + descriptions to labeled classifier input for validation and loads 
-	 * the information about song structure
+	 * the information about track structure
 	 * @throws NodeException
 	 */
 	private void prepareValidatorInput() throws NodeException {
-		labeledSongRelationships = new ArrayList<ClassifiedSongPartitions>();
+		labeledTrackRelationships = new ArrayList<ClassifiedClassificationWindow>();
 		
 		//check if the settings are supported
 		if(((ValidationConfiguration)this.taskConfiguration).getMethodType() != MethodType.SUPERVISED){
@@ -459,14 +459,14 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							}
 						}
 					}
-					//if the classification is multiclass only the highest relationship of each partition is 1
+					//if the classification is multiclass only the highest relationship of each classification window is 1
 					if(((ValidationConfiguration)this.taskConfiguration).getLabelType() == LabelType.MULTICLASS) {
 						int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
-						for(int partition = 0; partition < completeInput.getValueCount(); partition++) {
+						for(int classificationWindow = 0; classificationWindow < completeInput.getValueCount(); classificationWindow++) {
 							double max = 0;
 							int maxCategory = 0;
 							for(int category = 0; category < numberOfCategories; category++) {
-								double newValue = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(partition);
+								double newValue = (double)labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getValueAt(classificationWindow);
 								if(newValue > max) {
 									max = newValue;
 									maxCategory = category;
@@ -536,7 +536,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					validatorInputLoader.setFile(new File(currentInputFile));
 					inputInstance = validatorInputLoader.getNextInstance(validatorInputLoader.getStructure());
 					
-					// Create the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
+					// Create the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
 					for(int i=0;i<validatorInputLoader.getStructure().numAttributes()-3;i++) {
 						//also omit the attributes that are supposed to be ignored
 						if(!attributesToIgnore.contains(i)) {
@@ -555,14 +555,14 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					// Create the labeled data
 					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
-						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
+						Integer trackId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
 						String[] labels = new String[numberOfCategories];
 						Double[] confidences = new Double[numberOfCategories];
 						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
 						String path = validatorGroundTruthSet.getAttribute("Path").getValueAt(i).toString();
 						
-						ArrayList<Double> partitionStarts = new ArrayList<Double>();
-						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowStarts = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowEnds = new ArrayList<Double>();
 						
 						int currentPosition = 0;
 						for(int category : attributesToPredict) {
@@ -570,7 +570,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							currentPosition++;
 						}
 						
-						// If the complete song should be read
+						// If the complete track should be read
 						if(end == -1) {
 							while(inputInstance != null) {
 								int currentAttribute = 0;
@@ -616,7 +616,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 										confidences[category] = category == positionOfMax ? 1.0 : 0.0;
 									}
 								}
-								// Write the ID attribute (from what song the features are saved)
+								// Write the ID attribute (from what track the features are saved)
 								// IMPORTANT: --------------------------------------------------- 
 								// This attribute must not be used for classification model training! 
 								// If any new classification algorithms are integrated into AMUSE, they must
@@ -628,27 +628,27 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								
 								double startPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("Start"));
 								double endPosition = inputInstance.value(validatorInputLoader.getStructure().attribute("End"));
-								partitionStarts.add(startPosition);
-								partitionEnds.add(endPosition);
+								classificationWindowStarts.add(startPosition);
+								classificationWindowEnds.add(endPosition);
 								
 								inputInstance = validatorInputLoader.getNextInstance(validatorInputLoader.getStructure());
 							}
 							
-							// Add descriptions of the partitions of the current song
-							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
-							Double[][] relationships = new Double[partitionStarts.size()][numberOfCategories];
-							for(int l=0;l<partitionStarts.size();l++) {
-								partitionStartsAsArray[l] = partitionStarts.get(l);
-								partitionEndsAsArray[l] = partitionEnds.get(l);
+							// Add descriptions of the classification windows of the current track
+							Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+							Double[] classificationWindowEndsAsArray = new Double[classificationWindowEnds.size()];
+							Double[][] relationships = new Double[classificationWindowStarts.size()][numberOfCategories];
+							for(int l=0;l<classificationWindowStarts.size();l++) {
+								classificationWindowStartsAsArray[l] = classificationWindowStarts.get(l);
+								classificationWindowEndsAsArray[l] = classificationWindowEnds.get(l);
 								for(int category=0;category<numberOfCategories;category++) {
 									relationships[l][category] = confidences[category];
 								}
 							} 
 							
-							ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions(path, 
-										songId, partitionStartsAsArray, partitionEndsAsArray, labels, relationships);
-							labeledSongRelationships.add(newSongDesc);
+							ClassifiedClassificationWindow newTrackDesc = new ClassifiedClassificationWindow(path, 
+										trackId, classificationWindowStartsAsArray, classificationWindowEndsAsArray, labels, relationships);
+							labeledTrackRelationships.add(newTrackDesc);
 						} else {
 							// TODO Consider Vocals/Piano-Recognition-Scenario!
 							/*for (Enumeration attrs = classifierInputLoader.getStructure().enumerateAttributes() ; attrs.hasMoreElements() ;) {
@@ -781,18 +781,18 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					}
 					
 					int partSize = ((ValidationConfiguration)this.getConfiguration()).getClassificationWindowSize();
-					int partStep = partSize - ((ValidationConfiguration)this.getConfiguration()).getClassificationWindowOverlap();
+					int partStep = partSize - ((ValidationConfiguration)this.getConfiguration()).getClassificationWindowStepSize();
 					
 					// Create the labeled data
 					for(int i=0;i<validatorGroundTruthSet.getValueCount();i++) {
-						Integer songId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
+						Integer trackId = new Double(validatorGroundTruthSet.getAttribute("Id").getValueAt(i).toString()).intValue();
 						String[] labels = new String[numberOfCategories];
 						Double[] confidences = new Double[numberOfCategories];
 						Integer end = new Double(validatorGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
 						String path = validatorGroundTruthSet.getAttribute("Path").getValueAt(i).toString();
 						
-						ArrayList<Double> partitionStarts = new ArrayList<Double>();
-						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowStarts = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowEnds = new ArrayList<Double>();
 						
 						int currentPosition = 0;
 						for(int category : attributesToPredict) {
@@ -800,30 +800,30 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							currentPosition++;
 						}
 						
-						// If the complete song should be read
+						// If the complete track should be read
 						if(end == -1) {
 							
-							// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
-							int numberOfMaxPartitions = features.get(0).getValues().size();
+							// TODO Consider only the classification windows up to 6 minutes of a music track; should be a parameter?
+							int numberOfMaxClassificationWindows = features.get(0).getValues().size();
 							for(int j=1;j<features.size();j++) {
-								if(features.get(j).getValues().size() < numberOfMaxPartitions) {
-									numberOfMaxPartitions = features.get(j).getValues().size();
+								if(features.get(j).getValues().size() < numberOfMaxClassificationWindows) {
+									numberOfMaxClassificationWindows = features.get(j).getValues().size();
 								}
 							}
-							if((numberOfMaxPartitions * (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
-									((ValidationConfiguration)this.taskConfiguration).getClassificationWindowOverlap())) > 360000) {
-								numberOfMaxPartitions = 360000 / (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
-										((ValidationConfiguration)this.taskConfiguration).getClassificationWindowOverlap());
+							if((numberOfMaxClassificationWindows * (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+									((ValidationConfiguration)this.taskConfiguration).getClassificationWindowStepSize())) > 360000) {
+								numberOfMaxClassificationWindows = 360000 / (((ValidationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+										((ValidationConfiguration)this.taskConfiguration).getClassificationWindowStepSize());
 								AmuseLogger.write(this.getClass().getName(), Level.WARN, 
-						   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
-						   				" to " + numberOfMaxPartitions);
+						   				"Number of classification windows after processing reduced from " + features.get(0).getValues().size() + 
+						   				" to " + numberOfMaxClassificationWindows);
 							}
 							
-							for(int j = 0; j < numberOfMaxPartitions; j++) {
+							for(int j = 0; j < numberOfMaxClassificationWindows; j++) {
 								double startPosition = j*partStep;
 								double endPosition = j*partStep+partSize;
-								partitionStarts.add(startPosition);
-								partitionEnds.add(endPosition);
+								classificationWindowStarts.add(startPosition);
+								classificationWindowEnds.add(endPosition);
 								int currentAttribute = 0;
 								for(int k = 0; k < features.size(); k++) {
 									// Omit the attributes that are supposed to be ignored
@@ -869,7 +869,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								}
 								
 									
-								// Write the ID attribute (from what song the features are saved)
+								// Write the ID attribute (from what track the features are saved)
 								// IMPORTANT: --------------------------------------------------- 
 								// This attribute must not be used for classification model training! 
 								// If any new classification algorithms are integrated into AMUSE, they must
@@ -880,21 +880,21 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 								
 								labeledInputForValidation.getAttribute("NumberOfCategories").addValue(new Double(numberOfCategories));								
 							}
-							// Add descriptions of the partitions of the current song
-							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
-							Double[][] relationships = new Double[partitionStarts.size()][numberOfCategories];
-							for(int l=0;l<partitionStarts.size();l++) {
-								partitionStartsAsArray[l] = partitionStarts.get(l);
-								partitionEndsAsArray[l] = partitionEnds.get(l);
+							// Add descriptions of the classification windows of the current track
+							Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+							Double[] classificationWindowEndsAsArray = new Double[classificationWindowEnds.size()];
+							Double[][] relationships = new Double[classificationWindowStarts.size()][numberOfCategories];
+							for(int l=0;l<classificationWindowStarts.size();l++) {
+								classificationWindowStartsAsArray[l] = classificationWindowStarts.get(l);
+								classificationWindowEndsAsArray[l] = classificationWindowEnds.get(l);
 								for(int category=0;category<numberOfCategories;category++) {
 									relationships[l][category] = confidences[category];
 								}
 							} 
 							
-							ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions(path, 
-										songId, partitionStartsAsArray, partitionEndsAsArray, labels, relationships);
-							labeledSongRelationships.add(newSongDesc);
+							ClassifiedClassificationWindow newTrackDesc = new ClassifiedClassificationWindow(path, 
+										trackId, classificationWindowStartsAsArray, classificationWindowEndsAsArray, labels, relationships);
+							labeledTrackRelationships.add(newTrackDesc);
 						} else {
 							// TODO Consider Vocals/Piano-Recognition-Scenario!
 						}
@@ -925,7 +925,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				
 			
 			
-			Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
+			Integer currentTrackId = new Double(idAttribute.getValueAt(0).toString()).intValue();
 			ArrayList<Double[]> relationships = new ArrayList<Double[]>();
 			String[] labels = new String[numberOfCategories];
 			int positionOfFirstCategory = labeledInputForValidation.getAttributeCount() - numberOfCategories;
@@ -933,19 +933,19 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				labels[category] = labeledInputForValidation.getAttribute(positionOfFirstCategory + category).getName();
 			}
 			for(int i=0;i<idAttribute.getValueCount();i++) {
-				Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
+				Integer newTrackId = new Double(idAttribute.getValueAt(i).toString()).intValue();
 				
-				// New song is reached
-				if(!newSongId.equals(currentSongId)) {
+				// New track is reached
+				if(!newTrackId.equals(currentTrackId)) {
 					Double[][] relationshipsAsArray = new Double[relationships.size()][numberOfCategories];
 					for(int k=0;k<relationships.size();k++) {
 						relationshipsAsArray[k] = relationships.get(k);
 					} 
 						
-					ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions("", 
-								currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
-					labeledSongRelationships.add(newSongDesc);
-					currentSongId = newSongId;
+					ClassifiedClassificationWindow newTrackDesc = new ClassifiedClassificationWindow("", 
+								currentTrackId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
+					labeledTrackRelationships.add(newTrackDesc);
+					currentTrackId = newTrackId;
 					relationships = new ArrayList<Double[]>();
 					labels = new String[numberOfCategories];
 				} 
@@ -979,15 +979,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				}
 			}
 				
-			// For the last song
+			// For the last track
 			Double[][] relationshipsAsArray = new Double[relationships.size()][numberOfCategories];
 			for(int k=0;k<relationships.size();k++) {
 				relationshipsAsArray[k] = relationships.get(k);
 			} 
 			
-			ClassifiedSongPartitions newSongDesc = new ClassifiedSongPartitions("", 
-						currentSongId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
-			labeledSongRelationships.add(newSongDesc);
+			ClassifiedClassificationWindow newTrackDesc = new ClassifiedClassificationWindow("", 
+						currentTrackId, new Double[relationshipsAsArray.length], new Double[relationshipsAsArray.length], labels, relationshipsAsArray);
+			labeledTrackRelationships.add(newTrackDesc);
 		} 
 	}
 	
@@ -1005,7 +1005,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 				((ValidationConfiguration)this.getConfiguration()).getInputFeatureList(),
 				"",
 				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
-				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowOverlap(),
+				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowStepSize(),
 				"6",
 				"");
 		
@@ -1152,7 +1152,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							categoryDescription + 
 							File.separator;
 					
-					String[] labels = labeledSongRelationships.get(0).getLabels();
+					String[] labels = labeledTrackRelationships.get(0).getLabels();
 					
 					for(int i=0;i<labels.length;i++) {
 						if(i!=0) {
@@ -1196,18 +1196,18 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 	}
 	
 	/**
-	 * @return the labeledSongRelationships
+	 * @return the labeledTrackRelationships
 	 */
-	public ArrayList<ClassifiedSongPartitions> getLabeledSongRelationships() {
-		return labeledSongRelationships;
+	public ArrayList<ClassifiedClassificationWindow> getLabeledTrackRelationships() {
+		return labeledTrackRelationships;
 	}
 	
 	/**
-	 * @return the labeledSongRelationships
+	 * @return the labeledTrackRelationships
 	 */
-	public ArrayList<Double> getLabeledAverageSongRelationships() {
-		ArrayList<Double> a = new ArrayList<Double>(labeledSongRelationships.size());
-		for(ClassifiedSongPartitions d : labeledSongRelationships) {
+	public ArrayList<Double> getLabeledAverageTrackRelationships() {
+		ArrayList<Double> a = new ArrayList<Double>(labeledTrackRelationships.size());
+		for(ClassifiedClassificationWindow d : labeledTrackRelationships) {
 			a.add(d.getMeanRelationship(0));
 		}
 		return a;

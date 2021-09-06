@@ -262,7 +262,7 @@ public class DataSet extends DataSetAbstract implements Serializable {
 			    		//that being the index of the label attribute
 					    offSet += numberOfCategories;
 		    		}
-		    		//Otherwise the label attribute gets the name of the category of the current partition as its name.
+		    		//Otherwise the label attribute gets the name of the category of the current classification window as its name.
 		    		//the number of categories and the number of the current category is saved before the name
 		    		else {
 		    			for(int i = 0; i < numberOfCategories; i++) {

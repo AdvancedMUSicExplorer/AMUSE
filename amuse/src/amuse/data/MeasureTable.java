@@ -57,11 +57,11 @@ public class MeasureTable implements List<Measure>, Serializable {
             String measureClass = measureTableSet.getMeasureClassAttribute().getValueAt(i);
             if (!measureClass.equalsIgnoreCase("?")) {
             	Measure newMeasure = new Measure(id, name, category, optimalValue, measureClass);
-            	if(measureTableSet.getCalculateForSongs().getValueAt(i).equalsIgnoreCase(new String("false"))) {
-            		newMeasure.setSongLevelSelected(false);
+            	if(measureTableSet.getCalculateForTracks().getValueAt(i).equalsIgnoreCase(new String("false"))) {
+            		newMeasure.setTrackLevelSelected(false);
             	}
-            	if(measureTableSet.getCalculateForPartitions().getValueAt(i).equalsIgnoreCase(new String("false"))) {
-            		newMeasure.setPartitionLevelSelected(false);
+            	if(measureTableSet.getCalculateForWindows().getValueAt(i).equalsIgnoreCase(new String("false"))) {
+            		newMeasure.setWindowLevelSelected(false);
             	}
                 measures.add(newMeasure);
             }
@@ -201,8 +201,8 @@ public class MeasureTable implements List<Measure>, Serializable {
         private static final String strMeasureClass = "MeasureClass";
         private static final String strCategory = "Category";
         private static final String strDataSetName = "Category";
-        private String strCalculateForSongs = "CalculateForSongs";
-        private String strCalculateForPartitions = "CalculateForPartitions";
+        private String strCalculateForTracks = "CalculateForTracks";
+        private String strCalculateForWindows = "CalculateForWindows";
 
         private MeasureTableSet(File measureTable) throws IOException {
             super(measureTable);
@@ -211,8 +211,8 @@ public class MeasureTable implements List<Measure>, Serializable {
             checkNumericAttribute(strOptimalValue);
             checkStringAttribute(strMeasureClass);
             checkNominalAttribute(strCategory);
-            checkNominalAttribute(strCalculateForSongs);
-            checkNominalAttribute(strCalculateForPartitions);
+            checkNominalAttribute(strCalculateForTracks);
+            checkNominalAttribute(strCalculateForWindows);
         }
 
         private MeasureTableSet(List<Measure> measures) {
@@ -222,24 +222,24 @@ public class MeasureTable implements List<Measure>, Serializable {
             List<Double> optimalValue = new ArrayList<Double>();
             List<String> categories = new ArrayList<String>();
             List<String> measureClasses = new ArrayList<String>();
-            List<Boolean> calculateForSongs = new ArrayList<Boolean>();
-            List<Boolean> calculateForPartitions = new ArrayList<Boolean>();
+            List<Boolean> calculateForTracks = new ArrayList<Boolean>();
+            List<Boolean> calculateForWindows = new ArrayList<Boolean>();
             for (Measure m: measures) {
                 ids.add((double)m.getID());
                 names.add(m.getName());
                 optimalValue.add(m.getOptimalValue());
                 categories.add(m.getCategory());
                 measureClasses.add(m.getMeasureClass());
-                calculateForSongs.add(m.isSongLevelSelected());
-                calculateForPartitions.add(m.isPartitionLevelSelected());
+                calculateForTracks.add(m.isTrackLevelSelected());
+                calculateForWindows.add(m.isWindowLevelSelected());
             }
             addAttribute(new NumericAttribute(strId, ids));
             addAttribute(new StringAttribute(strName, names));
             addAttribute(new NumericAttribute(strOptimalValue, optimalValue));
             addAttribute(new NominalAttribute(strCategory, categories));
             addAttribute(new StringAttribute(strMeasureClass, measureClasses));
-            addAttribute(NominalAttribute.createFromBooleans(strCalculateForSongs, calculateForSongs));
-            addAttribute(NominalAttribute.createFromBooleans(strCalculateForPartitions, calculateForPartitions));
+            addAttribute(NominalAttribute.createFromBooleans(strCalculateForTracks, calculateForTracks));
+            addAttribute(NominalAttribute.createFromBooleans(strCalculateForWindows, calculateForWindows));
         }
 
         private NumericAttribute getIdAttribute() {
@@ -258,12 +258,12 @@ public class MeasureTable implements List<Measure>, Serializable {
             return (NominalAttribute) this.getAttribute(strCategory);
         }
 
-        private NominalAttribute getCalculateForSongs() {
-            return (NominalAttribute) this.getAttribute(strCalculateForSongs);
+        private NominalAttribute getCalculateForTracks() {
+            return (NominalAttribute) this.getAttribute(strCalculateForTracks);
         }
         
-        private NominalAttribute getCalculateForPartitions() {
-            return (NominalAttribute) this.getAttribute(strCalculateForPartitions);
+        private NominalAttribute getCalculateForWindows() {
+            return (NominalAttribute) this.getAttribute(strCalculateForWindows);
         }
         
         private StringAttribute getMeasureClassAttribute() {

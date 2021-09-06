@@ -84,9 +84,9 @@ public class InputFeaturePanel extends JPanel {
 		}
 	}
 	
-	public Integer getClassificationWindowOverlap() {
+	public Integer getClassificationWindowStepSize() {
 		if(inputFeatureTypeComboBox.getSelectedItem() == InputFeatureType.RAW_FEATURES) {
-			return rawInputFeaturePanel.getClassificaitonWindowOverlap();
+			return rawInputFeaturePanel.getClassificaitonWindowStepSize();
 		} else {
 			return -1;
 		}
@@ -112,7 +112,7 @@ public class InputFeaturePanel extends JPanel {
 		rawInputFeaturePanel.setClassificationWindowSize(size);
 	}
 
-	public void setClassificationWindowOverlap(Integer overlap) {
-		rawInputFeaturePanel.setClassificationWindowOverlap(overlap);
+	public void setClassificationWindowStepSize(Integer stepSize) {
+		rawInputFeaturePanel.setClassificationWindowStepSize(stepSize);
 	}
 }

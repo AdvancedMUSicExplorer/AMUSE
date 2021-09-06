@@ -516,8 +516,8 @@ mirres=mirrms(f);
 		% Rhythmic clarity
 		% Default settings: time window of 3 seconds with 3 second overlap -> means 66150 samples for sampling rate = 22050Hz
 		% WARNING: it seems to be that this feature is calculated from frames started from the first onset event. It means
-		% that e.g. for a 60sec song only 19 feature values may be calculated, and the features do not correspond exactly to
-		% time windows which start directly from the song beginning!
+		% that e.g. for a 60sec track only 19 feature values may be calculated, and the features do not correspond exactly to
+		% time windows which start directly from the track beginning!
 		mirres=mirpulseclarity(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
 		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res,66150,66150);
@@ -529,8 +529,8 @@ mirres=mirrms(f);
 		% Tempo based on onset time
 		% Default settings: time window of 3 seconds with 3 second overlap -> means 66150 samples for sampling rate = 22050Hz
 		% WARNING: it seems to be that this feature is calculated from frames started from the first onset event. It means
-		% that e.g. for a 60sec song only 19 feature values may be calculated, and the features do not correspond exactly to
-		% time windows which start directly from the song beginning!
+		% that e.g. for a 60sec track only 19 feature values may be calculated, and the features do not correspond exactly to
+		% time windows which start directly from the track beginning!
 		mirres=mirtempo(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
 		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res,66150,66150);

@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures.correlation;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -47,22 +47,22 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
 		// Rank calculation is not required, since the numeric values can be compared directly!
-		// Calculate the predicted song relationships (averaged over all partitions)
-		ArrayList<Double> predictedSongRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+		// Calculate the predicted track relationships (averaged over all classification windows)
+		ArrayList<Double> predictedTrackRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classificatoin windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
 			}
 			currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
-			predictedSongRelationships.add(currentPredictedValue);
+			predictedTrackRelationships.add(currentPredictedValue);
 		}
 		
 		// Calculate all ordered pairs of instances for ground truth and the number of tied (similar) values for ground truth
@@ -83,11 +83,11 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		// Calculate all ordered pairs of instances for predicted values and the number of tied (similar) values for predicted values
 		int tied_predicted = 0;
 		ArrayList<Integer[]> orderedPairsPredicted = new ArrayList<Integer[]>();
-		for(int i=0;i<predictedSongRelationships.size();i++) {
-			for(int j=i+1;j<predictedSongRelationships.size();j++) {
-				if(predictedSongRelationships.get(i) > predictedSongRelationships.get(j)) {
+		for(int i=0;i<predictedTrackRelationships.size();i++) {
+			for(int j=i+1;j<predictedTrackRelationships.size();j++) {
+				if(predictedTrackRelationships.get(i) > predictedTrackRelationships.get(j)) {
 					orderedPairsPredicted.add(new Integer[]{i,j}); 
-				} else if(predictedSongRelationships.get(i) < predictedSongRelationships.get(j)) {
+				} else if(predictedTrackRelationships.get(i) < predictedTrackRelationships.get(j)) {
 					orderedPairsPredicted.add(new Integer[]{j,i});
 				} else {
 					tied_predicted++;
@@ -120,40 +120,40 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[1];
 		correlationMeasure[0] = new ValidationMeasureDouble(false);
 		correlationMeasure[0].setId(302);
-		correlationMeasure[0].setName("Kendall's tau rank correlation coefficient on song level");
+		correlationMeasure[0].setName("Kendall's tau rank correlation coefficient on track level");
 		correlationMeasure[0].setValue(corrCoef);
 		return correlationMeasure;
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		
-		// Save the ground truth values for each partition
-		ArrayList<Double> groundTruthPartitionRelationships = new ArrayList<Double>();
+		// Save the ground truth values for each classification window
+		ArrayList<Double> groundTruthClassificationWindowRelationships = new ArrayList<Double>();
 		for(int i=0;i<predictedRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				groundTruthPartitionRelationships.add(new Double(groundTruthRelationships.get(i)));
+				groundTruthClassificationWindowRelationships.add(new Double(groundTruthRelationships.get(i)));
 			}
 		}
 		
-		// Save the predicted values for each partition
-		ArrayList<Double> predictedPartitionRelationships = new ArrayList<Double>();
+		// Save the predicted values for each classification window
+		ArrayList<Double> predictedClassificationWindowRelationships = new ArrayList<Double>();
 		for(int i=0;i<predictedRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-				predictedPartitionRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j][0]));
+				predictedClassificationWindowRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j][0]));
 			}
 		}
 		
 		// Calculate all ordered pairs of instances for ground truth and the number of tied (similar) values for ground truth
 		int tied_gt = 0;
 		ArrayList<Integer[]> orderedPairsGroundTruth = new ArrayList<Integer[]>();
-		for(int i=0;i<groundTruthPartitionRelationships.size();i++) {
-			for(int j=i+1;j<groundTruthPartitionRelationships.size();j++) {
-				if(groundTruthPartitionRelationships.get(i) > groundTruthPartitionRelationships.get(j)) {
+		for(int i=0;i<groundTruthClassificationWindowRelationships.size();i++) {
+			for(int j=i+1;j<groundTruthClassificationWindowRelationships.size();j++) {
+				if(groundTruthClassificationWindowRelationships.get(i) > groundTruthClassificationWindowRelationships.get(j)) {
 					orderedPairsGroundTruth.add(new Integer[]{i,j}); 
-				} else if(groundTruthPartitionRelationships.get(i) < groundTruthPartitionRelationships.get(j)){
+				} else if(groundTruthClassificationWindowRelationships.get(i) < groundTruthClassificationWindowRelationships.get(j)){
 					orderedPairsGroundTruth.add(new Integer[]{j,i});
 				} else {
 					tied_gt++;
@@ -164,11 +164,11 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		// Calculate all ordered pairs of instances for predicted values and the number of tied (similar) values for predicted values
 		int tied_predicted = 0;
 		ArrayList<Integer[]> orderedPairsPredicted = new ArrayList<Integer[]>();
-		for(int i=0;i<predictedPartitionRelationships.size();i++) {
-			for(int j=i+1;j<predictedPartitionRelationships.size();j++) {
-				if(predictedPartitionRelationships.get(i) > predictedPartitionRelationships.get(j)) {
+		for(int i=0;i<predictedClassificationWindowRelationships.size();i++) {
+			for(int j=i+1;j<predictedClassificationWindowRelationships.size();j++) {
+				if(predictedClassificationWindowRelationships.get(i) > predictedClassificationWindowRelationships.get(j)) {
 					orderedPairsPredicted.add(new Integer[]{i,j}); 
-				} else if(predictedPartitionRelationships.get(i) < predictedPartitionRelationships.get(j)) {
+				} else if(predictedClassificationWindowRelationships.get(i) < predictedClassificationWindowRelationships.get(j)) {
 					orderedPairsPredicted.add(new Integer[]{j,i});
 				} else {
 					tied_predicted++;
@@ -201,47 +201,47 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		ValidationMeasureDouble[] correlationMeasure = new ValidationMeasureDouble[1];
 		correlationMeasure[0] = new ValidationMeasureDouble(false);
 		correlationMeasure[0].setId(302);
-		correlationMeasure[0].setName("Kendall's tau rank correlation coefficient on partition level");
+		correlationMeasure[0].setName("Kendall's tau rank correlation coefficient on classification window level");
 		correlationMeasure[0].setValue(corrCoef);
 		return correlationMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
 		double[] corrCoef = new double[numberOfCategories];
 		for(int category = 0; category < numberOfCategories; category++) {
 			// Rank calculation is not required, since the numeric values can be compared directly!
-			// Calculate the predicted song relationships (averaged over all partitions)
-			ArrayList<Double> predictedSongRelationships = new ArrayList<Double>(groundTruthRelationships.size());
+			// Calculate the predicted track relationships (averaged over all classification windows)
+			ArrayList<Double> predictedTrackRelationships = new ArrayList<Double>(groundTruthRelationships.size());
 			for(int i=0;i<groundTruthRelationships.size();i++) {
 				
-				// Calculate the predicted value for this song (averaging among all partitions)
+				// Calculate the predicted value for this track (averaging among all classification windows)
 				Double currentPredictedValue = 0.0d;
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 					currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][category];
 				}
 				currentPredictedValue /= predictedRelationships.get(i).getRelationships().length;
-				predictedSongRelationships.add(currentPredictedValue);
+				predictedTrackRelationships.add(currentPredictedValue);
 			}
 			
 			// Calculate all ordered pairs of instances for ground truth and the number of tied (similar) values for ground truth
@@ -262,11 +262,11 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 			// Calculate all ordered pairs of instances for predicted values and the number of tied (similar) values for predicted values
 			int tied_predicted = 0;
 			ArrayList<Integer[]> orderedPairsPredicted = new ArrayList<Integer[]>();
-			for(int i=0;i<predictedSongRelationships.size();i++) {
-				for(int j=i+1;j<predictedSongRelationships.size();j++) {
-					if(predictedSongRelationships.get(i) > predictedSongRelationships.get(j)) {
+			for(int i=0;i<predictedTrackRelationships.size();i++) {
+				for(int j=i+1;j<predictedTrackRelationships.size();j++) {
+					if(predictedTrackRelationships.get(i) > predictedTrackRelationships.get(j)) {
 						orderedPairsPredicted.add(new Integer[]{i,j}); 
-					} else if(predictedSongRelationships.get(i) < predictedSongRelationships.get(j)) {
+					} else if(predictedTrackRelationships.get(i) < predictedTrackRelationships.get(j)) {
 						orderedPairsPredicted.add(new Integer[]{j,i});
 					} else {
 						tied_predicted++;
@@ -301,7 +301,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		for(int category = 0; category < numberOfCategories; category++) {
 			correlationMeasure[category] = new ValidationMeasureDouble(false);
 			correlationMeasure[category].setId(302);
-			correlationMeasure[category].setName("Kendall's tau rank correlation coefficient on song level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setName("Kendall's tau rank correlation coefficient on track level for category " + groundTruthRelationships.get(0).getLabels()[category]);
 			correlationMeasure[category].setValue(corrCoef[category]);
 		}
 		return correlationMeasure;
@@ -309,37 +309,37 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		int numberOfCategories = groundTruthRelationships.get(0).getLabels().length;
 		
 		double[] corrCoef = new double[numberOfCategories];
 		for(int category = 0; category < numberOfCategories; category++) {
-			// Save the ground truth values for each partition
-			ArrayList<Double> groundTruthPartitionRelationships = new ArrayList<Double>();
+			// Save the ground truth values for each classification window
+			ArrayList<Double> groundTruthClassificationWindowRelationships = new ArrayList<Double>();
 			for(int i=0;i<predictedRelationships.size();i++) {
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-					groundTruthPartitionRelationships.add(new Double(groundTruthRelationships.get(i).getRelationships()[0][category]));
+					groundTruthClassificationWindowRelationships.add(new Double(groundTruthRelationships.get(i).getRelationships()[0][category]));
 				}
 			}
 			
-			// Save the predicted values for each partition
-			ArrayList<Double> predictedPartitionRelationships = new ArrayList<Double>();
+			// Save the predicted values for each classification window
+			ArrayList<Double> predictedClassificationWindowRelationships = new ArrayList<Double>();
 			for(int i=0;i<predictedRelationships.size();i++) {
 				for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
-					predictedPartitionRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j][category]));
+					predictedClassificationWindowRelationships.add(new Double(predictedRelationships.get(i).getRelationships()[j][category]));
 				}
 			}
 			
 			// Calculate all ordered pairs of instances for ground truth and the number of tied (similar) values for ground truth
 			int tied_gt = 0;
 			ArrayList<Integer[]> orderedPairsGroundTruth = new ArrayList<Integer[]>();
-			for(int i=0;i<groundTruthPartitionRelationships.size();i++) {
-				for(int j=i+1;j<groundTruthPartitionRelationships.size();j++) {
-					if(groundTruthPartitionRelationships.get(i) > groundTruthPartitionRelationships.get(j)) {
+			for(int i=0;i<groundTruthClassificationWindowRelationships.size();i++) {
+				for(int j=i+1;j<groundTruthClassificationWindowRelationships.size();j++) {
+					if(groundTruthClassificationWindowRelationships.get(i) > groundTruthClassificationWindowRelationships.get(j)) {
 						orderedPairsGroundTruth.add(new Integer[]{i,j}); 
-					} else if(groundTruthPartitionRelationships.get(i) < groundTruthPartitionRelationships.get(j)){
+					} else if(groundTruthClassificationWindowRelationships.get(i) < groundTruthClassificationWindowRelationships.get(j)){
 						orderedPairsGroundTruth.add(new Integer[]{j,i});
 					} else {
 						tied_gt++;
@@ -350,11 +350,11 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 			// Calculate all ordered pairs of instances for predicted values and the number of tied (similar) values for predicted values
 			int tied_predicted = 0;
 			ArrayList<Integer[]> orderedPairsPredicted = new ArrayList<Integer[]>();
-			for(int i=0;i<predictedPartitionRelationships.size();i++) {
-				for(int j=i+1;j<predictedPartitionRelationships.size();j++) {
-					if(predictedPartitionRelationships.get(i) > predictedPartitionRelationships.get(j)) {
+			for(int i=0;i<predictedClassificationWindowRelationships.size();i++) {
+				for(int j=i+1;j<predictedClassificationWindowRelationships.size();j++) {
+					if(predictedClassificationWindowRelationships.get(i) > predictedClassificationWindowRelationships.get(j)) {
 						orderedPairsPredicted.add(new Integer[]{i,j}); 
-					} else if(predictedPartitionRelationships.get(i) < predictedPartitionRelationships.get(j)) {
+					} else if(predictedClassificationWindowRelationships.get(i) < predictedClassificationWindowRelationships.get(j)) {
 						orderedPairsPredicted.add(new Integer[]{j,i});
 					} else {
 						tied_predicted++;
@@ -389,7 +389,7 @@ public class KendallsTauRankCorrelation extends ClassificationQualityDoubleMeasu
 		for(int category = 0; category < numberOfCategories; category++) {
 			correlationMeasure[category] = new ValidationMeasureDouble(false);
 			correlationMeasure[category].setId(302);
-			correlationMeasure[category].setName("Kendall's tau rank correlation coefficient on partition level for category " + groundTruthRelationships.get(0).getLabels()[category]);
+			correlationMeasure[category].setName("Kendall's tau rank correlation coefficient on classification window level for category " + groundTruthRelationships.get(0).getLabels()[category]);
 			correlationMeasure[category].setValue(corrCoef[category]);
 		}
 		return correlationMeasure;

@@ -127,61 +127,61 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 				newFeatures.add(stdDevOfCurrentSingleFeature);
 			}
 			
-			double partitionSizeInWindows;
+			double classificationWindowSizeInWindows;
 			double overlapSizeInWindows;
-			int numberOfAllPartitions;
+			int numberOfAllClassificationWindows;
 				
-			// Aggregate the data over the complete song or build partitions?
+			// Aggregate the data over the complete track or build classification windows?
 			if(ms == -1) {
 					
-				// In 1st case we have only one "partition" which covers the complete song
-				// ("+ 1" is used because of the exclusive calculation of the partition end window)
-				partitionSizeInWindows = features.get(0).getWindows().get(features.get(0).getWindows().size()-1) + 1;
-				overlapSizeInWindows = partitionSizeInWindows;
-				numberOfAllPartitions = 1;
+				// In 1st case we have only one "classification window" which covers the complete track
+				// ("+ 1" is used because of the exclusive calculation of the classification window end window)
+				classificationWindowSizeInWindows = features.get(0).getWindows().get(features.get(0).getWindows().size()-1) + 1;
+				overlapSizeInWindows = classificationWindowSizeInWindows;
+				numberOfAllClassificationWindows = 1;
 			} else {
 					
-				// In 2nd case we can calculate the number of windows which belong to each partition
-				partitionSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
+				// In 2nd case we can calculate the number of windows which belong to each classification window
+				classificationWindowSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
 				overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
 				
-				// Calculates the last used time window and the number of maximum available partitions from it
-				double numberOfAllPartitionsD = ((features.get(0).getWindows().get(features.get(0).getWindows().size()-1)) - partitionSizeInWindows)/(partitionSizeInWindows - overlapSizeInWindows)+1;
-				// Round down since the complete partitions are required!
-				numberOfAllPartitions = new Double(Math.floor(numberOfAllPartitionsD)).intValue();
+				// Calculates the last used time window and the number of maximum available classification windows from it
+				double numberOfAllClassificationWindowsD = ((features.get(0).getWindows().get(features.get(0).getWindows().size()-1)) - classificationWindowSizeInWindows)/(classificationWindowSizeInWindows - overlapSizeInWindows)+1;
+				// Round down since the complete classification windows are required!
+				numberOfAllClassificationWindows = new Double(Math.floor(numberOfAllClassificationWindowsD)).intValue();
 			}
 				
-			// If the partition size is greater than music song length..
-			if(numberOfAllPartitions == 0) {
-				throw new NodeException("Partition size too large");
+			// If the classification window size is greater than music track length..
+			if(numberOfAllClassificationWindows == 0) {
+				throw new NodeException("Classification window size too large");
 			}
 				
-		    // Go through all partitions
-			for(int numberOfCurrentPartition=0;numberOfCurrentPartition<numberOfAllPartitions;numberOfCurrentPartition++) {
+		    // Go through all classification windows
+			for(int numberOfCurrentClassificationWindow=0;numberOfCurrentClassificationWindow<numberOfAllClassificationWindows;numberOfCurrentClassificationWindow++) {
 				int currentWindow = 0;
 				
-				// Calculate the start (inclusive) and end (exclusive) windows for the current partition
-				Double partitionStartWindow = Math.floor(new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition));
-				Double partitionEndWindow = Math.ceil((new Double(partitionSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentPartition)+partitionSizeInWindows));
+				// Calculate the start (inclusive) and end (exclusive) windows for the current classification window
+				Double classificationWindowStartWindow = Math.floor(new Double(classificationWindowSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentClassificationWindow));
+				Double classificaotinWindowEndWindow = Math.ceil((new Double(classificationWindowSizeInWindows - overlapSizeInWindows)*new Double(numberOfCurrentClassificationWindow)+classificationWindowSizeInWindows));
 				
-				// Increment the number of current time window if the lower partition boundary is not achieved
+				// Increment the number of current time window if the lower classification window boundary is not achieved
 				for(int k=currentWindow;k<features.get(0).getWindows().size();k++) {
-					if(features.get(0).getWindows().get(k) >= partitionStartWindow) {
+					if(features.get(0).getWindows().get(k) >= classificationWindowStartWindow) {
 						currentWindow = k;
 						break;
 					}
 				}
 					
-				// If no features are available for the current partition, go to the next partition
-				if(features.get(0).getWindows().get(currentWindow) > partitionEndWindow) {
+				// If no features are available for the current classification window, go to the next classification window
+				if(features.get(0).getWindows().get(currentWindow) > classificaotinWindowEndWindow) {
 					continue;
 				}
 					
-				// Create a list with time windows which are in the current partition
-				ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
-				while(features.get(0).getWindows().get(currentWindow) >= partitionStartWindow && 
-						features.get(0).getWindows().get(currentWindow) < partitionEndWindow) {
-					windowsOfCurrentPartition.add(features.get(0).getWindows().get(currentWindow));
+				// Create a list with time windows which are in the current classification window
+				ArrayList<Double> windowsOfCurrentClassificationWindow = new ArrayList<Double>();
+				while(features.get(0).getWindows().get(currentWindow) >= classificationWindowStartWindow && 
+						features.get(0).getWindows().get(currentWindow) < classificaotinWindowEndWindow) {
+					windowsOfCurrentClassificationWindow.add(features.get(0).getWindows().get(currentWindow));
 					
 					// The last existing window is achieved
 					if(currentWindow == features.get(0).getWindows().size() - 1) {
@@ -190,8 +190,8 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 					currentWindow++;
 				}
 					
-				// Check if the current partition has any windows
-				if(windowsOfCurrentPartition.size() == 0) {
+				// Check if the current classification window has any windows
+				if(windowsOfCurrentClassificationWindow.size() == 0) {
 					continue;
 				}
 					
@@ -203,12 +203,12 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 					double seconds = timeScales.get(s);
 					int windowNumber = new Double(sampleRate * seconds / (double)windowSize).intValue();
 						
-					// Go through all windows of the current partition
-					for(Double l:windowsOfCurrentPartition) {
+					// Go through all windows of the current classification window
+					for(Double l:windowsOfCurrentClassificationWindow) {
 							
 						// Complexity can be only calculated if w_j windows before and after the current window
-						// belong to this partition (see the paper)
-						if(l - windowNumber < partitionStartWindow+1 || l + windowNumber >= partitionEndWindow) {
+						// belong to this classification window (see the paper)
+						if(l - windowNumber < classificationWindowStartWindow+1 || l + windowNumber >= classificaotinWindowEndWindow) {
 							continue;
 						} else {
 							ArrayList<Double> s1 = new ArrayList<Double>();
@@ -221,15 +221,15 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 									int numberOfValues1 = 0;
 									double sum2 = 0d;
 									int numberOfValues2 = 0;
-									for(int cWin=0;cWin<windowsOfCurrentPartition.size();cWin++) {
-										if(!features.get(i).getValuesFromWindow(windowsOfCurrentPartition.get(cWin))[j].isNaN()) {
-											if(windowsOfCurrentPartition.get(cWin) > l - windowNumber && windowsOfCurrentPartition.get(cWin) <= l) {
-												sum1 += features.get(i).getValuesFromWindow(windowsOfCurrentPartition.get(cWin))[j];
+									for(int cWin=0;cWin<windowsOfCurrentClassificationWindow.size();cWin++) {
+										if(!features.get(i).getValuesFromWindow(windowsOfCurrentClassificationWindow.get(cWin))[j].isNaN()) {
+											if(windowsOfCurrentClassificationWindow.get(cWin) > l - windowNumber && windowsOfCurrentClassificationWindow.get(cWin) <= l) {
+												sum1 += features.get(i).getValuesFromWindow(windowsOfCurrentClassificationWindow.get(cWin))[j];
 												numberOfValues1++;
-											} else if(windowsOfCurrentPartition.get(cWin) > l && windowsOfCurrentPartition.get(cWin) <= l + windowNumber) {
-												sum2 += features.get(i).getValuesFromWindow(windowsOfCurrentPartition.get(cWin))[j];
+											} else if(windowsOfCurrentClassificationWindow.get(cWin) > l && windowsOfCurrentClassificationWindow.get(cWin) <= l + windowNumber) {
+												sum2 += features.get(i).getValuesFromWindow(windowsOfCurrentClassificationWindow.get(cWin))[j];
 												numberOfValues2++;
-											} else if(windowsOfCurrentPartition.get(cWin) > l + windowNumber) {
+											} else if(windowsOfCurrentClassificationWindow.get(cWin) > l + windowNumber) {
 												break;
 											}
 										}
@@ -247,7 +247,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 					}
 						 
 					// Add complexity mean and deviation to the new generated features
-					if(numberOfCurrentPartition < numberOfAllPartitions) {
+					if(numberOfCurrentClassificationWindow < numberOfAllClassificationWindows) {
 							
 						// Calculate different statistics for the complexity vector
 						Collections.sort(distances);
@@ -278,7 +278,7 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 						}
 						stddevD[0] /= valuesNumber;
 							
-						if(numberOfCurrentPartition < numberOfAllPartitions) {
+						if(numberOfCurrentClassificationWindow < numberOfAllClassificationWindows) {
 							if(distances.size() > 0) {
 								minD[0] = (Double)distances.get(0);
 								int indexOfFirstBoundary = new Double(distances.size()*0.25).intValue();
@@ -300,19 +300,19 @@ public class StructuralComplexityConverter extends AmuseTask implements MatrixTo
 						}
 							
 						newFeatures.get(7*s).getValues().add(minD);
-						newFeatures.get(7*s).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+1).getValues().add(firstQD);
-						newFeatures.get(7*s+1).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+1).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+2).getValues().add(secondQD);
-						newFeatures.get(7*s+2).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+2).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+3).getValues().add(thirdQD);
-						newFeatures.get(7*s+3).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+3).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+4).getValues().add(maxD);
-						newFeatures.get(7*s+4).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+4).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+5).getValues().add(meanD);
-						newFeatures.get(7*s+5).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+5).getWindows().add(new Double(classificationWindowStartWindow));
 						newFeatures.get(7*s+6).getValues().add(stddevD);
-						newFeatures.get(7*s+6).getWindows().add(new Double(partitionStartWindow));
+						newFeatures.get(7*s+6).getWindows().add(new Double(classificationWindowStartWindow));
 					}
 						
 				}

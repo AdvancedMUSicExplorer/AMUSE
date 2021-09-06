@@ -24,38 +24,38 @@
 package amuse.data.annotation;
 
 /**
- * This class describes the partitions from the given song
+ * This class describes the events from the given track
  * 
  * @author Igor Vatolkin
  * @version $Id $
  */
 public class EventsDescription {
 	
-	/** Path to the song */
-	final String pathToMusicSong;
+	/** Path to the track */
+	final String pathToMusicTrack;
 	
-	/** Id of the song */
-	final int songId;
+	/** Id of the track */
+	final int trackId;
 	
 	/** Event positions in ms */
 	final Double[] eventMs;
 	
     /**
 	 * Constructor
-	 * @param pathToMusicSong Path to the song
+	 * @param pathToMusicTrack Path to the track
 	 * @param eventMs Positions of the events in ms
 	 */
-	public EventsDescription(String pathToMusicSong, int songId, Double[] eventMs) {
-		this.pathToMusicSong = pathToMusicSong;
-		this.songId = songId;
+	public EventsDescription(String pathToMusicTrack, int trackId, Double[] eventMs) {
+		this.pathToMusicTrack = pathToMusicTrack;
+		this.trackId = trackId;
 		this.eventMs = eventMs;
 	}
 
 	/**
-	 * @return the pathToMusicSong
+	 * @return the pathToMusicTrack
 	 */
-	public String getPathToMusicSong() {
-		return pathToMusicSong;
+	public String getPathToMusicTrack() {
+		return pathToMusicTrack;
 	}
 
 	/**
@@ -66,10 +66,10 @@ public class EventsDescription {
 	}
 
 	/**
-	 * @return the songId
+	 * @return the trackId
 	 */
-	public int getSongId() {
-		return songId;
+	public int getTrackId() {
+		return trackId;
 	}
 
 }

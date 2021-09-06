@@ -10,15 +10,15 @@
 % Measure name
 @ATTRIBUTE Name STRING
 % Measure category
-@ATTRIBUTE Category {"Data reduction", "Standard measures", "Confusion matrix", "Recall and specificity combinations", "Correlation-based measures", "Measured error", "Song list", "Events", "?"}
+@ATTRIBUTE Category {"Data reduction", "Standard measures", "Confusion matrix", "Recall and specificity combinations", "Correlation-based measures", "Measured error", "Track list", "Events", "?"}
 % Optimal value (e.g. 0 if this measure should be minimized)
 @ATTRIBUTE OptimalValue NUMERIC
 % Class for measure calculation
 @ATTRIBUTE MeasureClass STRING
-% Should this measure be calculated for complete songs?
-@ATTRIBUTE CalculateForSongs {true,false}
-% Should this measure be calculated for each song partition?
-@ATTRIBUTE CalculateForPartitions {true,false}
+% Should this measure be calculated for complete tracks?
+@ATTRIBUTE CalculateForTracks {true,false}
+% Should this measure be calculated for each classification window?
+@ATTRIBUTE CalculateForWindows {true,false}
 
 @DATA
 
@@ -43,7 +43,7 @@
 111, "Likelihoods", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.Likelihoods, true, true
 112, "Discriminant power", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.DiscriminantPower, true, true
 113, "Geometric means", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.GeometricMeans, true, true
-114, "List of correctly predicted instances", "Song list", -1, amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances, true, false
+114, "List of correctly predicted instances", "Track list", -1, amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances, true, false
 115, "Balanced relative error", "Standard measures", 0, amuse.nodes.validator.measures.confusionmatrix.BalancedRelativeError, true, true
 
 % Numeric prediction measured errors

@@ -112,18 +112,18 @@ public class ProcessingMethodsController {
     }
 
     /**
-     * @return the selected partition size.
+     * @return the selected classification window size.
      */
-    public int getPartitionSize() {
-        int ret = new Integer(view.getPartitionSizeStr());
+    public int getClassificationWindowSize() {
+        int ret = new Integer(view.getClassificationWindowSizeStr());
         return ret;
     }
 
     /**
-     * @return the selected partition overlap.
+     * @return the selected classificaiton window step size.
      */
-    public int getPartitionOverlap() {
-        int ret = new Integer(view.getOverlapStr());
+    public int getClassificationWindowStepSize() {
+        int ret = new Integer(view.getStepSizeStr());
         return ret;
     }
 
@@ -154,7 +154,7 @@ public class ProcessingMethodsController {
 
     /**
      *
-     * @return the selected unit for partition size and partition overlap.
+     * @return the selected unit for classification window size and classification window step size.
      */
     public String getUnit() {
         return view.getUnit().toLowerCase();
@@ -164,12 +164,12 @@ public class ProcessingMethodsController {
         view.setUnit(value);
     }
 
-    public void setPartitionSize(int value) {
-        view.setPartitionSizeStr(value);
+    public void setClassificationWindowSize(int value) {
+        view.setClassificationWindowSizeStr(value);
     }
 
-    public void setOverlapSize(int value) {
-        view.setPartitionOverlapStr(value);
+    public void setStepSize(int value) {
+        view.setClassificationWindowStepSizeStr(value);
     }
 
     public void setMatrixToVector(String value) {

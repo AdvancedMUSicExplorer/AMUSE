@@ -51,8 +51,8 @@ public class IntervalSelector extends AmuseTask implements DimensionProcessorInt
 	public void setParameters(String parameterString) throws NodeException {
 		
 		// Examples:
-		// 30000_m -> select 30000 milliseconds from the middle of a song
-		// 30000_b -> select 30000 milliseconds from the beginning of a song
+		// 30000_m -> select 30000 milliseconds from the middle of a track
+		// 30000_b -> select 30000 milliseconds from the beginning of a track
 		
 		// Set the number of milliseconds to select
 		this.msNumber = new Integer(parameterString.substring(0,parameterString.indexOf("_")));
@@ -83,10 +83,10 @@ public class IntervalSelector extends AmuseTask implements DimensionProcessorInt
 			// TODO better: read the last window from the file!!!
 			int lastWindow = features.get(0).getWindows().get(features.get(0).getWindows().size()-1).intValue();
 			
-			// If the song is shorter than the given ms interval, no reduction is required
+			// If the track is shorter than the given ms interval, no reduction is required
 			if(lastWindow < d) {
 				AmuseLogger.write(this.getClass().getName(), Level.WARN, "...interval selection not applied since " + 
-						"the current song is not long enough");
+						"the current track is not long enough");
 				return;
 			} else {
 				int middleWindow = lastWindow / 2;

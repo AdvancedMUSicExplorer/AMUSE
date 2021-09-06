@@ -44,8 +44,8 @@ import amuse.data.InputFeatureType;
 import amuse.data.ModelType.LabelType;
 import amuse.data.ModelType.MethodType;
 import amuse.data.ModelType.RelationshipType;
-import amuse.data.annotation.ClassifiedSongPartitions;
-import amuse.data.annotation.SongPartitionsDescription;
+import amuse.data.annotation.ClassifiedClassificationWindow;
+import amuse.data.annotation.ClassificationWindowsDescription;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
@@ -87,7 +87,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	private String categoryDescription = null;
 	
 	/** Here the description of data instances (from what music files and intervals) is saved */
-	private ArrayList<SongPartitionsDescription> descriptionOfClassifierInput = null;
+	private ArrayList<ClassificationWindowsDescription> descriptionOfClassifierInput = null;
 	
 	//** Number of categories that are classified */
 	private int numberOfCategories;
@@ -132,11 +132,11 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	}
 	
 	/**
-	 * Proceeds classification task and returns the results as ArrayList<ClassifiedSongPartitionsDescription>
+	 * Proceeds classification task and returns the results as ArrayList<ClassifiedClassificatoinWindowsDescription>
 	 * OR saves them to file
 	 * TODO sollte einheitlich sein: Ergebnisse sollen in ClassificationConfiguration gespeichert werden
 	 */
-	public ArrayList<ClassifiedSongPartitions> proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration,
+	public ArrayList<ClassifiedClassificationWindow> proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration,
 			boolean saveToFile) throws NodeException {
 		
 		// --------------------------------------------
@@ -179,10 +179,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		// -------------------------------------
 		// (IV): Start the classification method
 		// -------------------------------------
-		ArrayList<ClassifiedSongPartitions> classifierResult = null;
+		ArrayList<ClassifiedClassificationWindow> classifierResult = null;
 		try {
 			this.classify();
-			classifierResult = createClassifiedSongPartitionDescriptions();
+			classifierResult = createClassifiedClassificationWindowDescriptions();
 			if(saveToFile) {
 				saveClassifierResultToFile(classifierResult);
 			}
@@ -213,7 +213,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	 */
 	public void proceedTask(String nodeHome, long jobId, TaskConfiguration classificationConfiguration) {
 		
-		// Since ClassifierNodeScheduler may output the result as ArrayList<ClassifiedSongPartitionsDescription>
+		// Since ClassifierNodeScheduler may output the result as ArrayList<ClassifiedClassificationWindowsDescription>
 		// and not only as file output, here the file output is set
 		try {
 			proceedTask(nodeHome, jobId, classificationConfiguration, true);
@@ -267,7 +267,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	 * @throws NodeException
 	 */
 	private void prepareClassifierInput() throws NodeException {
-		descriptionOfClassifierInput = new ArrayList<SongPartitionsDescription>();
+		descriptionOfClassifierInput = new ArrayList<ClassificationWindowsDescription>();
 		
 		if(! (((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput)) {
 			
@@ -358,8 +358,8 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						AmuseLogger.write(ClassifierNodeScheduler.class.getName(), Level.WARN, "Missing Start and/or End attributes.");
 					}
 					int id = (int)((double)completeInput.getAttribute("Id").getValueAt(0));
-					List<Double> partitionStarts = new ArrayList<Double>();
-					List<Double> partitionEnds = new ArrayList<Double>();
+					List<Double> classificationWindowStarts = new ArrayList<Double>();
+					List<Double> classificationWindowEnds = new ArrayList<Double>();
 					for(int i = 0; i<completeInput.getValueCount(); i++) {
 						int newId = (int)((double)completeInput.getAttribute("Id").getValueAt(i));
 						
@@ -372,31 +372,31 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						}
 						
 						if(newId != id) {
-							Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-							Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+							Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+							Double[] classificatoinWindowEndsAsArray = new Double[classificationWindowEnds.size()];
 							
-							for(int j = 0; j < partitionStarts.size(); j++) {
-								partitionStartsAsArray[j] = partitionStarts.get(j);
-								partitionEndsAsArray[j] = partitionEnds.get(j);
+							for(int j = 0; j < classificationWindowStarts.size(); j++) {
+								classificationWindowStartsAsArray[j] = classificationWindowStarts.get(j);
+								classificatoinWindowEndsAsArray[j] = classificationWindowEnds.get(j);
 							}						
-							descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
-							partitionStarts = new ArrayList<Double>();
-							partitionEnds = new ArrayList<Double>();
+							descriptionOfClassifierInput.add(new ClassificationWindowsDescription("", id, classificationWindowStartsAsArray, classificatoinWindowEndsAsArray));
+							classificationWindowStarts = new ArrayList<Double>();
+							classificationWindowEnds = new ArrayList<Double>();
 						}
 						
 						id = newId;
-						partitionStarts.add(start);
-						partitionEnds.add(end);						
+						classificationWindowStarts.add(start);
+						classificationWindowEnds.add(end);						
 					}
 					
-					Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-					Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
+					Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+					Double[] classificationWindowEndsAsArray = new Double[classificationWindowEnds.size()];
 					
-					for(int j = 0; j < partitionStarts.size(); j++) {
-						partitionStartsAsArray[j] = partitionStarts.get(j);
-						partitionEndsAsArray[j] = partitionEnds.get(j);
+					for(int j = 0; j < classificationWindowStarts.size(); j++) {
+						classificationWindowStartsAsArray[j] = classificationWindowStarts.get(j);
+						classificationWindowEndsAsArray[j] = classificationWindowEnds.get(j);
 					}						
-					descriptionOfClassifierInput.add(new SongPartitionsDescription("", id, partitionStartsAsArray, partitionEndsAsArray));
+					descriptionOfClassifierInput.add(new ClassificationWindowsDescription("", id, classificationWindowStartsAsArray, classificationWindowEndsAsArray));
 					
 				} else if(((ClassificationConfiguration)this.getConfiguration()).getInputFeatureType() == InputFeatureType.PROCESSED_FEATURES) {
 					
@@ -463,7 +463,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					classifierInputLoader.setFile(new File(currentInputFile));
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 						
-					// Save the attributes omitting UNIT, START and END attributes (they describe the partition for modeled features)
+					// Save the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
 						
 						//Also omit the attributes that are supposed to be ignored
@@ -480,11 +480,11 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					// Save the processed features for classifier
 					for(int k=0;k<((FileListInput)inputToClassify).getInputFiles().size();k++) {
 						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(k).toString();
-						ArrayList<Double> partitionStarts = new ArrayList<Double>();
-						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowStarts = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowEnds = new ArrayList<Double>();
 						
 						// Save the name of music file for later conversion of classification output
-						String currentInputSong = new String(currentInputFile);
+						String currentInputTrack = new String(currentInputFile);
 						if(currentInputFile.startsWith(musicDatabasePath)) {
 							currentInputFile = 
 								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
@@ -528,11 +528,11 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						while(processedFeaturesInstance != null) {
 							double startPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("Start"));
 							double endPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("End"));
-							partitionStarts.add(startPosition);
-							partitionEnds.add(endPosition);
+							classificationWindowStarts.add(startPosition);
+							classificationWindowEnds.add(endPosition);
 							
 							// Save the processed features (attributes) omitting UNIT, START and END attributes 
-							// (they describe the partition for modeled features)
+							// (they describe the classification windows for modeled features)
 							int currentAttribute = 0;
 							for(int i=0;i<processedFeaturesInstance.numAttributes()-3;i++) {
 								Double val = processedFeaturesInstance.value(i);
@@ -546,16 +546,16 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							processedFeaturesInstance = processedFeaturesLoader.getNextInstance(processedFeaturesLoader.getStructure());
 						}
 						
-						// Add descriptions of the partitions of the current song
-						Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-						Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
-						for(int l=0;l<partitionStarts.size();l++) {
-							partitionStartsAsArray[l] = partitionStarts.get(l);
-							partitionEndsAsArray[l] = partitionEnds.get(l);
+						// Add descriptions of the classification windows of the current track
+						Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+						Double[] classificationWindowEndsAsArray = new Double[classificationWindowEnds.size()];
+						for(int l=0;l<classificationWindowStarts.size();l++) {
+							classificationWindowStartsAsArray[l] = classificationWindowStarts.get(l);
+							classificationWindowEndsAsArray[l] = classificationWindowEnds.get(l);
 						}
-						int currentInputSongId = ((FileListInput)inputToClassify).getInputFileIds().get(k);
-						descriptionOfClassifierInput.add(new SongPartitionsDescription(currentInputSong,currentInputSongId,
-								partitionStartsAsArray,partitionEndsAsArray));
+						int currentInputTrackId = ((FileListInput)inputToClassify).getInputFileIds().get(k);
+						descriptionOfClassifierInput.add(new ClassificationWindowsDescription(currentInputTrack,currentInputTrackId,
+								classificationWindowStartsAsArray,classificationWindowEndsAsArray));
 					}
 				} else {
 					// load the raw features
@@ -615,41 +615,41 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					}
 					
 					int partSize = ((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowSize();
-					int partStep = partSize - ((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowOverlap();
+					int partStep = partSize - ((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowStepSize();
 							
 					// Create the labeled data
 					for(int i=0;i<((FileListInput)inputToClassify).getInputFiles().size();i++) {
 						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(i).toString();
-						ArrayList<Double> partitionStarts = new ArrayList<Double>();
-						ArrayList<Double> partitionEnds = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowStarts = new ArrayList<Double>();
+						ArrayList<Double> classificationWindowEnds = new ArrayList<Double>();
 						// load the next features
 						if(i != 0) {
 							features = getHarmonizedFeatures(currentInputFile);
 						}
 						// Save the name of music file for later conversion of classification output
-						String currentInputSong = new String(currentInputFile);
+						String currentInputTrack = new String(currentInputFile);
 						
-						// TODO Consider only the partitions up to 6 minutes of a music track; should be a parameter?
-						int numberOfMaxPartitions = features.get(0).getValues().size();
+						// TODO Consider only the classification windows up to 6 minutes of a music track; should be a parameter?
+						int numberOfMaxClassificationWindows = features.get(0).getValues().size();
 						for(int j=1;j<features.size();j++) {
-							if(features.get(j).getValues().size() < numberOfMaxPartitions) {
-								numberOfMaxPartitions = features.get(j).getValues().size();
+							if(features.get(j).getValues().size() < numberOfMaxClassificationWindows) {
+								numberOfMaxClassificationWindows = features.get(j).getValues().size();
 							}
 						}
-						if((numberOfMaxPartitions * (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
-								((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowOverlap())) > 360000) {
-							numberOfMaxPartitions = 360000 / (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
-									((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowOverlap());
+						if((numberOfMaxClassificationWindows * (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+								((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowStepSize())) > 360000) {
+							numberOfMaxClassificationWindows = 360000 / (((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowSize() - 
+									((ClassificationConfiguration)this.taskConfiguration).getClassificationWindowStepSize());
 							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
-					   				"Number of partitions after processing reduced from " + features.get(0).getValues().size() + 
-					   				" to " + numberOfMaxPartitions);
+					   				"Number of classification windows after processing reduced from " + features.get(0).getValues().size() + 
+					   				" to " + numberOfMaxClassificationWindows);
 						}
 						
-						for(int j = 0; j < numberOfMaxPartitions; j++) {
+						for(int j = 0; j < numberOfMaxClassificationWindows; j++) {
 							double startPosition = j*partStep;
 							double endPosition = j*partStep+partSize;
-							partitionStarts.add(startPosition);
-							partitionEnds.add(endPosition);
+							classificationWindowStarts.add(startPosition);
+							classificationWindowEnds.add(endPosition);
 							int currentAttribute = 0;
 							for(int k = 0; k < features.size(); k++) {
 								// Omit the attributes that are supposed to be ignored
@@ -661,16 +661,16 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 							}
 						}
 						
-						// Add descriptions of the partitions of the current song
-						Double[] partitionStartsAsArray = new Double[partitionStarts.size()];
-						Double[] partitionEndsAsArray = new Double[partitionEnds.size()];
-						for(int l=0;l<partitionStarts.size();l++) {
-							partitionStartsAsArray[l] = partitionStarts.get(l);
-							partitionEndsAsArray[l] = partitionEnds.get(l);
+						// Add descriptions of the classification windows of the current track
+						Double[] classificationWindowStartsAsArray = new Double[classificationWindowStarts.size()];
+						Double[] classificationWindowEndsAsArray = new Double[classificationWindowEnds.size()];
+						for(int l=0;l<classificationWindowStarts.size();l++) {
+							classificationWindowStartsAsArray[l] = classificationWindowStarts.get(l);
+							classificationWindowEndsAsArray[l] = classificationWindowEnds.get(l);
 						}
-						int currentInputSongId = ((FileListInput)inputToClassify).getInputFileIds().get(i);
-						descriptionOfClassifierInput.add(new SongPartitionsDescription(currentInputSong,currentInputSongId,
-								partitionStartsAsArray,partitionEndsAsArray));
+						int currentInputTrackId = ((FileListInput)inputToClassify).getInputFileIds().get(i);
+						descriptionOfClassifierInput.add(new ClassificationWindowsDescription(currentInputTrack,currentInputTrackId,
+								classificationWindowStartsAsArray,classificationWindowEndsAsArray));
 						
 					}
 				}
@@ -682,33 +682,33 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			((ClassificationConfiguration)this.taskConfiguration).setInputToClassify(new DataSetInput(inputForClassification));
 		}
 		
-		// Load only the song information if the data is already prepared
+		// Load only the track information if the data is already prepared
 		else {
 			if(((ClassificationConfiguration)this.getConfiguration()).getInputToClassify() instanceof DataSetInput) {
 				// TODO v0.2: input sets to classify may be without ids!
 				amuse.data.io.attributes.Attribute idAttribute = ((DataSetInput)((ClassificationConfiguration)this.getConfiguration()).
 						getInputToClassify()).getDataSet().getAttribute("Id");
 				
-				Integer currentSongId = new Double(idAttribute.getValueAt(0).toString()).intValue();
-				Integer numberOfPartitionsInCurrentSong = 0;
+				Integer currentTrackId = new Double(idAttribute.getValueAt(0).toString()).intValue();
+				Integer numberOfClassificationWindowInCurrentTrack = 0;
 				for(int i=0;i<idAttribute.getValueCount();i++) {
-					Integer newSongId = new Double(idAttribute.getValueAt(i).toString()).intValue();
+					Integer newTrackId = new Double(idAttribute.getValueAt(i).toString()).intValue();
 					
-					// New song is reached
-					if(!newSongId.equals(currentSongId)) {
-						SongPartitionsDescription newSongDesc = new SongPartitionsDescription("", 
-								currentSongId, new Double[numberOfPartitionsInCurrentSong], new Double[numberOfPartitionsInCurrentSong]);
-						descriptionOfClassifierInput.add(newSongDesc);
-						currentSongId = newSongId;
-						numberOfPartitionsInCurrentSong = 0;
+					// New track is reached
+					if(!newTrackId.equals(currentTrackId)) {
+						ClassificationWindowsDescription newTrackDesc = new ClassificationWindowsDescription("", 
+								currentTrackId, new Double[numberOfClassificationWindowInCurrentTrack], new Double[numberOfClassificationWindowInCurrentTrack]);
+						descriptionOfClassifierInput.add(newTrackDesc);
+						currentTrackId = newTrackId;
+						numberOfClassificationWindowInCurrentTrack = 0;
 					}
-					numberOfPartitionsInCurrentSong++;
+					numberOfClassificationWindowInCurrentTrack++;
 				}
 				
-				// For the last song
-				SongPartitionsDescription newSongDesc = new SongPartitionsDescription("", 
-						currentSongId, new Double[numberOfPartitionsInCurrentSong], new Double[numberOfPartitionsInCurrentSong]);
-				descriptionOfClassifierInput.add(newSongDesc);
+				// For the last track
+				ClassificationWindowsDescription newTrackDesc = new ClassificationWindowsDescription("", 
+						currentTrackId, new Double[numberOfClassificationWindowInCurrentTrack], new Double[numberOfClassificationWindowInCurrentTrack]);
+				descriptionOfClassifierInput.add(newTrackDesc);
 			} 
 		}
 	}
@@ -727,7 +727,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				((ClassificationConfiguration)this.getConfiguration()).getInputFeatureList(),
 				"",
 				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
-				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowOverlap(),
+				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowStepSize(),
 				"6",
 				"");
 		
@@ -989,33 +989,33 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	    }
 	}
 	
-	private ArrayList<ClassifiedSongPartitions> createClassifiedSongPartitionDescriptions() {
-		ArrayList<ClassifiedSongPartitions> classificationResults = new ArrayList<ClassifiedSongPartitions>();
+	private ArrayList<ClassifiedClassificationWindow> createClassifiedClassificationWindowDescriptions() {
+		ArrayList<ClassifiedClassificationWindow> classificationResults = new ArrayList<ClassifiedClassificationWindow>();
 		
 		DataSet d = ((DataSetInput)((ClassificationConfiguration)taskConfiguration).getInputToClassify()).getDataSet();
 		
 		int positionOfFirstCategory = d.getAttributeCount() - numberOfCategories;
 		
-		// Go through all songs
-		int currentPartition = 0;
+		// Go through all tracks
+		int currentClassificationWindow = 0;
 		for(int i=0;i<descriptionOfClassifierInput.size();i++) {
-			int numberOfCorrespondingPartitions = descriptionOfClassifierInput.get(i).getStartMs().length;
+			int numberOfCorrespondingClassificationWindow = descriptionOfClassifierInput.get(i).getStartMs().length;
 			
-			// Gather the partition data for this song	
-			Double[][] relationships = new Double[numberOfCorrespondingPartitions][numberOfCategories];
+			// Gather the classification window data for this track	
+			Double[][] relationships = new Double[numberOfCorrespondingClassificationWindow][numberOfCategories];
 			String[] labels = new String[numberOfCategories];
 			
-			for(int j=0;j<numberOfCorrespondingPartitions;j++) {
+			for(int j=0;j<numberOfCorrespondingClassificationWindow;j++) {
 				for(int category=0;category<numberOfCategories;category++) {
-					relationships[j][category] = (double)d.getAttribute(positionOfFirstCategory + category).getValueAt(currentPartition);
+					relationships[j][category] = (double)d.getAttribute(positionOfFirstCategory + category).getValueAt(currentClassificationWindow);
 					if(j==0)labels[category] = d.getAttribute(positionOfFirstCategory + category).getName().substring(10);
 				}
-				currentPartition++;
+				currentClassificationWindow++;
 			}
 			
-			// Save the partition data for this song
-			classificationResults.add(new ClassifiedSongPartitions(descriptionOfClassifierInput.get(i).getPathToMusicSong(), 
-			descriptionOfClassifierInput.get(i).getSongId(),
+			// Save the classificatoin window data for this track
+			classificationResults.add(new ClassifiedClassificationWindow(descriptionOfClassifierInput.get(i).getPathToMusicTrack(), 
+			descriptionOfClassifierInput.get(i).getTrackId(),
 			descriptionOfClassifierInput.get(i).getStartMs(), 
 			descriptionOfClassifierInput.get(i).getEndMs(), labels, relationships));
 		}
@@ -1026,7 +1026,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 	/**
 	 * Saves the results of classification to the given output file
 	 */
-	private void saveClassifierResultToFile(ArrayList<ClassifiedSongPartitions> classifierResult) throws NodeException {
+	private void saveClassifierResultToFile(ArrayList<ClassifiedClassificationWindow> classifierResult) throws NodeException {
 		try {
 			String classificationOutput = ((ClassificationConfiguration)taskConfiguration).getClassificationOutput();
 			File classifierResultFile = new File(((ClassificationConfiguration)taskConfiguration).getClassificationOutput());
@@ -1066,20 +1066,20 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			values_writer.writeBytes("@DATA");
 			values_writer.writeBytes(sep);
 	        
-			// If the partition classifications should be combined
-			if(((ClassificationConfiguration)taskConfiguration).getMergeSongResults().equals(new Integer("1"))) {
+			// If the window classifications should be combined
+			if(((ClassificationConfiguration)taskConfiguration).getMergeTrackResults().equals(new Integer("1"))) {
 				
-				// Go through all songs
+				// Go through all tracks
 				for(int i=0;i<classifierResult.size();i++) {
-					String currentSongName = classifierResult.get(i).getPathToMusicSong();
+					String currentTrackName = classifierResult.get(i).getPathToMusicTrack();
 					
 					// Save the results
-					values_writer.writeBytes(descriptionOfClassifierInput.get(i).getSongId() + ",'" + currentSongName + "',-1,-1");
+					values_writer.writeBytes(descriptionOfClassifierInput.get(i).getTrackId() + ",'" + currentTrackName + "',-1,-1");
 					
 					//go through all categories
 					for(int category=0;category<numberOfCategories;category++) {
 						double meanRelationship = 0d;
-						// Go through all partitions of the current song
+						// Go through all classification windows of the current track
 						for(int j=0;j<classifierResult.get(i).getRelationships().length;j++) {
 							meanRelationship += classifierResult.get(i).getRelationships()[j][category];
 						}
@@ -1090,17 +1090,17 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					values_writer.writeBytes(sep);
 				}
 			}
-			// If the classification results for each partition should be saved
+			// If the classification results for each classification windows should be saved
 			else {
-				// Go through all songs
+				// Go through all tracks
 				for(int i=0;i<classifierResult.size();i++) {
-					String currentSongName = classifierResult.get(i).getPathToMusicSong();
+					String currentTrackName = classifierResult.get(i).getPathToMusicTrack();
 					
-					// Go through all partitions of the current song
+					// Go through all classification windows of the current track
 					for(int j=0;j<classifierResult.get(i).getRelationships().length;j++) {
 						
 						// Save the results
-						values_writer.writeBytes(descriptionOfClassifierInput.get(i).getSongId() + "," + currentSongName + "," + 
+						values_writer.writeBytes(descriptionOfClassifierInput.get(i).getTrackId() + "," + currentTrackName + "," + 
 								classifierResult.get(i).getStartMs()[j] + "," + 
 								classifierResult.get(i).getEndMs()[j]);
 						

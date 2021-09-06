@@ -83,8 +83,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Size of classification window in milliseconds */
 	private final Integer classificationWindowSize;
 	
-	/** Size of classification window overlap in milliseconds */
-	private final Integer classificationWindowOverlap;
+	/** Size of classification window step size in milliseconds */
+	private final Integer classificationWindowStepSize;
 	
 	/** Id of classification algorithm from classifierTable.arff 
 	 * (optionally with parameters listed in brackets) */
@@ -99,8 +99,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Type of the model that is used for classification*/
 	private final ModelType modelType;
 	
-	/** Flag if song relationship grade should be averaged over all partitions (="1") */
-	private final Integer mergeSongResults;
+	/** Flag if track relationship grade should be averaged over all classificatoin windows (="1") */
+	private final Integer mergeTrackResults;
 	
 	/** Destination for classification output */
 	private final String classificationOutput;
@@ -135,12 +135,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of the input features
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificationWindowOverlap overlap of the classification windows
+	 * @param classificationWindowStepSize step size of the classification windows
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
+	 * @param mergeTrackResults Flag if track relationship grade should be averaged over all classificatoin windows (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(
@@ -150,11 +150,11 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String algorithmDescription,
 			List<Integer> attributesToPredict,
 			ModelType modelType,
-			Integer mergeSongResults,
+			Integer mergeTrackResults,
 			String classificationOutput) {
 		this.inputToClassify = inputToClassify;
 		this.inputSourceType = inputSourceType;
@@ -175,31 +175,31 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
 		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
-		this.mergeSongResults = mergeSongResults;
+		this.mergeTrackResults = mergeTrackResults;
 		this.classificationOutput = classificationOutput;
 		this.groundTruthCategoryId = -1;
 	}
 	
 	/**
-	 * Alternative constructor if the song list to classify is loaded by the category id or path to filelist
+	 * Alternative constructor if the track list to classify is loaded by the category id or path to filelist
 	 * @param inputSourceType Defines the input source type
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
 	 * @param inputSource Input for classification
 	 * @param inputFeatures Description of the input features
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificationWindowOverlap overlap of the classification windows
+	 * @param classificationWindowStepSize step size of the classification windows
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
 	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
+	 * @param mergeTrackResults Flag if track relationship grade should be averaged over all classificatoin windows (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(
@@ -209,12 +209,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String algorithmDescription,
 			int groundTruthSource,
 			List<Integer> attributesToPredict,
 			ModelType modelType,
-			Integer mergeSongResults,
+			Integer mergeTrackResults,
 			String classificationOutput,
 			String pathToInputModel,
 			String trainingDescription) throws IOException{
@@ -261,13 +261,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputFeaturesDescription = inputFeatures;
 		}
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthCategoryId = groundTruthSource;
 		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
-		this.mergeSongResults = mergeSongResults;
+		this.mergeTrackResults = mergeTrackResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.pathToInputModel = pathToInputModel;
@@ -275,7 +275,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * Alternative constructor if the song list to classify is loaded by the category id or path to filelist
+	 * Alternative constructor if the track list to classify is loaded by the category id or path to filelist
 	 * input features are given as FeatureTalbe (only used for raw input features)
 	 * @param inputSourceType Defines the input source type
 	 * @param attributesToIgnore features of the processed feature files or the ready input that should not be used for the classification
@@ -283,13 +283,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 * @param inputFeatures Description of the input features
 	 * @param inputFeatureType type of the input features
 	 * @param classificationWindowSize size of the classification windows
-	 * @param classificationWindowOverlap overlap of the classification windows
+	 * @param classificationWindowStepSize step size of the classification windows
 	 * @param algorithmDescription Id and parameters of the classification algorithm from classifierTable.arff
 	 * @param groundTruthSource Id of the music category
 	 * @param attributesToPredict the categories of the category file of the annotation database
 	 * @param classificationType is the classification unsupervised, binary, multilabel or multiclass?
 	 * @param fuzzy should the classification be fuzzy?
-	 * @param mergeSongResults Flag if song relationship grade should be averaged over all partitions (="1")
+	 * @param mergeTrackResults Flag if track relationship grade should be averaged over all classification windows (="1")
 	 * @param classificationOutput Destination for classification output
 	 */
 	public ClassificationConfiguration(
@@ -298,12 +298,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			List <Integer> attributesToIgnore,
 			FeatureTable inputFeatures,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String algorithmDescription,
 			int groundTruthSource,
 			List<Integer> attributesToPredict,
 			ModelType modelType,
-			Integer mergeSongResults,
+			Integer mergeTrackResults,
 			String classificationOutput,
 			String pathToInputModel,
 			String trainingDescription) throws IOException{
@@ -345,13 +345,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 		}
 		this.inputFeaturesDescription = description;
 		this.classificationWindowSize = classificationWindowSize;
-		this.classificationWindowOverlap = classificationWindowOverlap;
+		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
 		this.groundTruthCategoryId = groundTruthSource;
 		this.attributesToPredict = attributesToPredict;
 		this.attributesToIgnore = attributesToIgnore;
 		this.modelType = modelType;
-		this.mergeSongResults = mergeSongResults;
+		this.mergeTrackResults = mergeTrackResults;
 		this.classificationOutput = classificationOutput;
 		this.processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
 		this.pathToInputModel = pathToInputModel;
@@ -377,7 +377,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
 			}
 			Integer currentClassificationWindowSize = new Double(classifierConfig.getClassificationWindowSizeAttribute().getValueAt(i)).intValue();
-			Integer currentClassificationWindowOverlap = new Double(classifierConfig.getClassificationWindowOverlapAttribute().getValueAt(i)).intValue();
+			Integer currentClassificationWindowStepSize = new Double(classifierConfig.getClassificationWindowStepSizeAttribute().getValueAt(i)).intValue();
 			String currentAlgorithmDescription = classifierConfig.getClassificationAlgorithmIdAttribute().getValueAt(i).toString();
 			int currentGroundTruthSource = classifierConfig.getGroundTruthSourceAttribute().getValueAt(i).intValue();
 			String attributesToPredictString = classifierConfig.getAttributesToPredictAttribute().getValueAt(i).toString();
@@ -446,7 +446,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentPathToInputModel = classifierConfig.getPathToInputModelAttribute().getValueAt(i);
 			
 			
-			Integer currentMergeSongResults = (new Double(classifierConfig.getMergeSongResultsAttribute().getValueAt(i).toString())).intValue();
+			Integer currentMergeTrackResults = (new Double(classifierConfig.getMergeTrackResultsAttribute().getValueAt(i).toString())).intValue();
 			String currentOutputResult = classifierConfig.getOutputResultAttribute().getValueAt(i).toString();
 			InputSourceType ist;
 			if(classifierConfig.getInputSourceTypeAttribute().getValueAt(i).toString().equals(new String("FILE_LIST"))) {
@@ -460,8 +460,8 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
 			
 			// Create a classification task
-		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowOverlap,
-		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeSongResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
+		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowStepSize,
+		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeTrackResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
 		
@@ -555,10 +555,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 
 	/**
-	 * @return the mergeSongResults
+	 * @return the mergeTrackResults
 	 */
-	public Integer getMergeSongResults() {
-		return mergeSongResults;
+	public Integer getMergeTrackResults() {
+		return mergeTrackResults;
 	}
 
 	/**
@@ -649,10 +649,10 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * @return the classificationWindowOverlap
+	 * @return the classificationWindowStepSize
 	 */
-	public Integer getClassificationWindowOverlap()	{
-		return classificationWindowOverlap;
+	public Integer getClassificationWindowStepSize()	{
+		return classificationWindowStepSize;
 	}
 
 	public FeatureTable getInputFeatureList() {

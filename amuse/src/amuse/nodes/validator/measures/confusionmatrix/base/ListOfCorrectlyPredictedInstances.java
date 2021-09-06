@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures.confusionmatrix.base;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityStringMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -47,14 +47,14 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
+	public ValidationMeasureString[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		ArrayList<Integer> listOfCorrectlyPredictedTracks = new ArrayList<Integer>();
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -77,7 +77,7 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 			
 			if(currentGroundTruthValue.doubleValue() == 1.0 && currentPredictedValue.doubleValue() == 1.0 ||
 					currentGroundTruthValue.doubleValue() == 0.0 && currentPredictedValue.doubleValue() == 0.0) {
-				listOfCorrectlyPredictedSongs.add(i);
+				listOfCorrectlyPredictedTracks.add(i);
 			}
 			
 		}
@@ -86,32 +86,32 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		list[0] = new ValidationMeasureString();
 		StringBuffer buff = new StringBuffer();
 		buff.append("\"");
-		for(int i=0;i<listOfCorrectlyPredictedSongs.size();i++) {
-			buff.append(listOfCorrectlyPredictedSongs.get(i) + " ");
+		for(int i=0;i<listOfCorrectlyPredictedTracks.size();i++) {
+			buff.append(listOfCorrectlyPredictedTracks.get(i) + " ");
 		}
 		buff.append("\"");
 		list[0].setValue(buff.toString());
 		list[0].setId(114);
-		list[0].setName("List of correctly predicted instances on song level");
+		list[0].setName("List of correctly predicted instances on track level");
 		
 		return list;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
-		int currentPartitionNumber = 0;
+	public ValidationMeasureString[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		ArrayList<Integer> listOfCorrectlyPredictedClassificationWindows = new ArrayList<Integer>();
+		int currentClassificationWindowNumber = 0;
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				int currentGroundTruthValue = groundTruthRelationships.get(i).doubleValue() >= 0.5 ? 1 : 0;
 				int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][0].doubleValue() >= 0.5 ? 1 : 0;
 				if(currentGroundTruthValue == currentPredictedValue) {
-					listOfCorrectlyPredictedPartitions.add(currentPartitionNumber);
+					listOfCorrectlyPredictedClassificationWindows.add(currentClassificationWindowNumber);
 				}
-				currentPartitionNumber++;
+				currentClassificationWindowNumber++;
 			}
 		}
 			
@@ -119,41 +119,41 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		list[0] = new ValidationMeasureString();
 		StringBuffer buff = new StringBuffer();
 		buff.append("\"");
-		for(int i=0;i<listOfCorrectlyPredictedPartitions.size();i++) {
-			buff.append(listOfCorrectlyPredictedPartitions.get(i) + " ");
+		for(int i=0;i<listOfCorrectlyPredictedClassificationWindows.size();i++) {
+			buff.append(listOfCorrectlyPredictedClassificationWindows.get(i) + " ");
 		}
 		buff.append("\"");
 		list[0].setValue(buff.toString());
 		list[0].setId(114);
-		list[0].setName("List of correctly predicted instances on partition level");
+		list[0].setName("List of correctly predicted instances on classification window level");
 		
 		return list;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureString[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		return calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+	public ValidationMeasureString[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		return calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		ArrayList<Integer> listOfCorrectlyPredictedSongs = new ArrayList<Integer>();
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		ArrayList<Integer> listOfCorrectlyPredictedTracks = new ArrayList<Integer>();
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			boolean currentSongPredictedCorrectly = true;
+			boolean currentTrackPredictedCorrectly = true;
 			double[] currentPredictedRelationships = new double[predictedRelationships.get(i).getLabels().length];
 			double[] currentGroundTruthRelationships = new double[groundTruthRelationships.get(i).getLabels().length];
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
@@ -166,11 +166,11 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 				currentPredictedRelationships[category] = (currentPredictedRelationships[category] / predictedRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
 				currentGroundTruthRelationships[category] = (currentGroundTruthRelationships[category] / groundTruthRelationships.get(i).getRelationships().length) >= 0.5 ? 1.0 : 0.0;
 				if(currentPredictedRelationships[category] != currentGroundTruthRelationships[category]) {
-					currentSongPredictedCorrectly = false; break;
+					currentTrackPredictedCorrectly = false; break;
 				}
 			}
-			if(currentSongPredictedCorrectly) {
-				listOfCorrectlyPredictedSongs.add(i);
+			if(currentTrackPredictedCorrectly) {
+				listOfCorrectlyPredictedTracks.add(i);
 			}
 		}
 			
@@ -178,39 +178,39 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		list[0] = new ValidationMeasureString();
 		StringBuffer buff = new StringBuffer();
 		buff.append("\"");
-		for(int i=0;i<listOfCorrectlyPredictedSongs.size();i++) {
-			buff.append(listOfCorrectlyPredictedSongs.get(i) + " ");
+		for(int i=0;i<listOfCorrectlyPredictedTracks.size();i++) {
+			buff.append(listOfCorrectlyPredictedTracks.get(i) + " ");
 		}
 		buff.append("\"");
 		list[0].setValue(buff.toString());
 		list[0].setId(114);
-		list[0].setName("List of correctly predicted instances on song level");
+		list[0].setName("List of correctly predicted instances on track level");
 		
 		return list;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		ArrayList<Integer> listOfCorrectlyPredictedPartitions = new ArrayList<Integer>();
-		int currentPartitionNumber = 0;
+	public ValidationMeasureString[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		ArrayList<Integer> listOfCorrectlyPredictedClassficationWindows = new ArrayList<Integer>();
+		int currentClassificationWindowNumber = 0;
 		
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				boolean currentPartitionPredictedCorrectly = true;
+				boolean currentClassificationWindowPredictedCorrectly = true;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					int currentGroundTruthValue = groundTruthRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
 					int currentPredictedValue = predictedRelationships.get(i).getRelationships()[j][category] >= 0.5 ? 1 : 0;
 					if(currentGroundTruthValue != currentPredictedValue) {
-						currentPartitionPredictedCorrectly = false; break;
+						currentClassificationWindowPredictedCorrectly = false; break;
 					}
 				}
-				if(currentPartitionPredictedCorrectly) {
-					listOfCorrectlyPredictedPartitions.add(currentPartitionNumber);
+				if(currentClassificationWindowPredictedCorrectly) {
+					listOfCorrectlyPredictedClassficationWindows.add(currentClassificationWindowNumber);
 				}
-				currentPartitionNumber++;
+				currentClassificationWindowNumber++;
 			}
 		}
 			
@@ -218,13 +218,13 @@ public class ListOfCorrectlyPredictedInstances extends ClassificationQualityStri
 		list[0] = new ValidationMeasureString();
 		StringBuffer buff = new StringBuffer();
 		buff.append("\"");
-		for(int i=0;i<listOfCorrectlyPredictedPartitions.size();i++) {
-			buff.append(listOfCorrectlyPredictedPartitions.get(i) + " ");
+		for(int i=0;i<listOfCorrectlyPredictedClassficationWindows.size();i++) {
+			buff.append(listOfCorrectlyPredictedClassficationWindows.get(i) + " ");
 		}
 		buff.append("\"");
 		list[0].setValue(buff.toString());
 		list[0].setId(114);
-		list[0].setName("List of correctly predicted instances on partition level");
+		list[0].setName("List of correctly predicted instances on classification window level");
 		
 		return list;
 	}

@@ -143,14 +143,14 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
      * @param fileList The file list of previously extracted music files.
      * @param featureTable The feature table containing previously extracted features.
      * @param reductionSteps The String representing the reduction steps and their configuration.
-     * @param unit The unit for partition size and partition overlap.
-     * @param partitionSize The partition size.
-     * @param partitionOverlap The partition overlap.
+     * @param unit The unit for classification window size and step size.
+     * @param classificatinWindowSize The classification window size.
+     * @param classificationWindowStepSize The classification window step size.
      * @param matrixToVectorMethod The matrix to vector method and configuration as String.
      */
     public ProcessorConfigSet(File fileList, String inputSourceType, String input,
             String reductionSteps, String unit,
-            int partitionSize, int partitionOverlap,
+            int classificationWindowSize, int classificationWindowStepSize,
             String matrixToVectorMethod, String featureDescription) {
         super("ProcessorConfig");
         List<String> fileL = new ArrayList<String>();
@@ -173,13 +173,13 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
         unitList.add(unit);
         unitAttribute = new NominalAttribute(strUnit, unitList);
 
-        ArrayList<Double> partitionSizes = new ArrayList<Double>();
-        partitionSizes.add(((Integer)partitionSize).doubleValue());
-        aggregationWindowSizeAttribute = new NumericAttribute(strAggregationWindowSize, new ArrayList<Double>(partitionSizes));
+        ArrayList<Double> classificationWindowSizes = new ArrayList<Double>();
+        classificationWindowSizes.add(((Integer)classificationWindowSize).doubleValue());
+        aggregationWindowSizeAttribute = new NumericAttribute(strAggregationWindowSize, new ArrayList<Double>(classificationWindowSizes));
 
-        ArrayList<Double> overlapList = new ArrayList<Double>();
-        overlapList.add(((Integer)partitionOverlap).doubleValue());
-        aggregationWindowStepSizeAttribute = new NumericAttribute(strAggregationWindowStepSize, overlapList);
+        ArrayList<Double> stepSizeList = new ArrayList<Double>();
+        stepSizeList.add(((Integer)classificationWindowStepSize).doubleValue());
+        aggregationWindowStepSizeAttribute = new NumericAttribute(strAggregationWindowStepSize, stepSizeList);
 
         List<String> matrixToVectorMethodsList = new ArrayList<String>();
         matrixToVectorMethodsList.add(matrixToVectorMethod);

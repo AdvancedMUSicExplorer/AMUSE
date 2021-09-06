@@ -54,7 +54,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private static final String strInputFeatures = "InputFeatures";
 	private static final String strInputFeatureType = "InputFeatureType";
 	private static final String strClassificationWindowSize = "ClassificationWindowSize";
-	private static final String strClassificationWindowOverlap = "ClassificationWindowOverlap";
+	private static final String strClassificationWindowStepSize = "ClassificationWindowStepSize";
 	private static final String strTrainingAlgorithmID = "AlgorithmId";
 	private static final String strGroundTruthCategoryId = "GroundTruthCategoryId";
 	private static final String strAttributesToPredict = "AttributesToPredict";
@@ -62,7 +62,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private static final String strRelationshipType = "RelationshipType";
 	private static final String strLabelType = "LabelType";
 	private static final String strMethodType = "MethodType";
-	private static final String strMergeSongResults = "MergeSongResults";
+	private static final String strMergeTrackResults = "MergeTrackResults";
 	private static final String strOutputResult = "OutputResult";
 	private static final String strTrainingDescription = "TrainingDescription";
 	
@@ -75,7 +75,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute inputFeaturesAttribute;
 	private final NominalAttribute inputFeatureTypeAttribute;
 	private final NumericAttribute classificationWindowSizeAttribute;
-	private final NumericAttribute classificationWindowOverlapAttribute;
+	private final NumericAttribute classificationWindowStepSizeAttribute;
 	private final StringAttribute classificationAlgorithmIdAttribute;
 	private final NumericAttribute groundTruthCategoryIdAttribute;
 	private final StringAttribute attributesToPredictAttribute;
@@ -83,7 +83,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 	private final NominalAttribute relationshipTypeAttribute;
 	private final NominalAttribute labelTypeAttribute;
 	private final NominalAttribute methodTypeAttribute;
-	private final NumericAttribute mergeSongResultsAttribute;
+	private final NumericAttribute mergeTrackResultsAttribute;
 	private final StringAttribute outputResultAttribute;
 	private final StringAttribute trainingDescriptionAttribute;
 
@@ -101,7 +101,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strInputFeatures);
 		dataSet.checkNominalAttribute(strInputFeatureType);
 		dataSet.checkNumericAttribute(strClassificationWindowSize);
-		dataSet.checkNumericAttribute(strClassificationWindowOverlap);
+		dataSet.checkNumericAttribute(strClassificationWindowStepSize);
 		dataSet.checkStringAttribute(strTrainingAlgorithmID);
 		dataSet.checkStringAttribute(strAttributesToPredict);
 		dataSet.checkStringAttribute(strAttributesToIgnore);
@@ -110,7 +110,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkNominalAttribute(strMethodType);
 		dataSet.checkStringAttribute(strPathToInputModel);
 		dataSet.checkNumericAttribute(strGroundTruthCategoryId);
-		dataSet.checkNumericAttribute(strMergeSongResults);
+		dataSet.checkNumericAttribute(strMergeTrackResults);
 		dataSet.checkStringAttribute(strOutputResult);
 		dataSet.checkStringAttribute(strTrainingDescription);
 		
@@ -119,7 +119,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		inputFeaturesAttribute = (StringAttribute) dataSet.getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputFeatureType);
 		classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowSize);
-		classificationWindowOverlapAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowOverlap);
+		classificationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowStepSize);
 		classificationAlgorithmIdAttribute = (StringAttribute) dataSet.getAttribute(strTrainingAlgorithmID);
 		groundTruthCategoryIdAttribute = (NumericAttribute) dataSet.getAttribute(strGroundTruthCategoryId);
 		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
@@ -128,7 +128,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		labelTypeAttribute = (NominalAttribute) dataSet.getAttribute(strLabelType);
 		methodTypeAttribute = (NominalAttribute) dataSet.getAttribute(strMethodType);
 		pathToInputModelAttribute = (StringAttribute) dataSet.getAttribute(strPathToInputModel);
-		mergeSongResultsAttribute = (NumericAttribute) dataSet.getAttribute(strMergeSongResults);
+		mergeTrackResultsAttribute = (NumericAttribute) dataSet.getAttribute(strMergeTrackResults);
 		outputResultAttribute = (StringAttribute) dataSet.getAttribute(strOutputResult);
 		trainingDescriptionAttribute = (StringAttribute) dataSet.getAttribute(strTrainingDescription);
 		
@@ -138,10 +138,10 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
 		addAttribute(classificationWindowSizeAttribute);
-		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
-		addAttribute(mergeSongResultsAttribute);
+		addAttribute(mergeTrackResultsAttribute);
 		addAttribute(attributesToPredictAttribute);
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
@@ -164,7 +164,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strInputFeatures);
 		checkNominalAttribute(strInputFeatureType);
 		checkNumericAttribute(strClassificationWindowSize);
-		checkNumericAttribute(strClassificationWindowOverlap);
+		checkNumericAttribute(strClassificationWindowStepSize);
 		checkStringAttribute(strTrainingAlgorithmID);
 		checkNumericAttribute(strGroundTruthCategoryId);
 		checkStringAttribute(strAttributesToPredict);
@@ -173,7 +173,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		checkNominalAttribute(strLabelType);
 		checkNominalAttribute(strMethodType);
 		checkStringAttribute(strPathToInputModel);
-		checkNumericAttribute(strMergeSongResults);
+		checkNumericAttribute(strMergeTrackResults);
 		checkStringAttribute(strOutputResult);
 		checkStringAttribute(strTrainingDescription);
 		
@@ -182,7 +182,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		inputFeaturesAttribute = (StringAttribute) getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) getAttribute(strInputFeatureType);
 		classificationWindowSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowSize);
-		classificationWindowOverlapAttribute = (NumericAttribute) getAttribute(strClassificationWindowOverlap);
+		classificationWindowStepSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowStepSize);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strTrainingAlgorithmID);
 		groundTruthCategoryIdAttribute = (NumericAttribute) getAttribute(strGroundTruthCategoryId);
 		attributesToPredictAttribute = (StringAttribute) this.getAttribute(strAttributesToPredict);
@@ -191,7 +191,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		labelTypeAttribute = (NominalAttribute) this.getAttribute(strLabelType);
 		methodTypeAttribute = (NominalAttribute) this.getAttribute(strMethodType);
 		pathToInputModelAttribute = (StringAttribute) this.getAttribute(strPathToInputModel);
-		mergeSongResultsAttribute = (NumericAttribute) getAttribute(strMergeSongResults);
+		mergeTrackResultsAttribute = (NumericAttribute) getAttribute(strMergeTrackResults);
 		outputResultAttribute = (StringAttribute) getAttribute(strOutputResult);
 		trainingDescriptionAttribute = (StringAttribute) getAttribute(strTrainingDescription);
 	}
@@ -202,14 +202,14 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			List<String> inputFeatures,
 			List<String> inputFeatureTypes,
 			List<Integer> classificationWindowSizes,
-			List<Integer> classificationWindowOverlaps,
+			List<Integer> classificationWindowStepSizes,
 			List<String> algorithmIDs,
 			List<Integer> groundTruthSources,
 			List<String> attributesToPredict,
 			List<String> relationshipTypes,
 			List<String> labelTypes,
 			List<String> methodTypes,
-			List<Integer> mergeSongResults,
+			List<Integer> mergeTrackResults,
 			List<String> outputResultPaths,
 			List<String> pathToInputModel,
 			List<String> trainingDescriptions) {
@@ -226,7 +226,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		}
 		inputFeatureTypeAttribute = new NominalAttribute(strInputFeatureType, inputFeatureTypeValues, inputFeatureTypes);
 		classificationWindowSizeAttribute = NumericAttribute.createFromIntList(strClassificationWindowSize, classificationWindowSizes);
-		classificationWindowOverlapAttribute = NumericAttribute.createFromIntList(strClassificationWindowOverlap, classificationWindowOverlaps);
+		classificationWindowStepSizeAttribute = NumericAttribute.createFromIntList(strClassificationWindowStepSize, classificationWindowStepSizes);
 		classificationAlgorithmIdAttribute = new StringAttribute(strTrainingAlgorithmID, algorithmIDs);
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromIntList(strGroundTruthCategoryId, groundTruthSources);
 		attributesToPredictAttribute = new StringAttribute(strAttributesToPredict, attributesToPredict);
@@ -248,7 +248,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
 		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
 		pathToInputModelAttribute = new StringAttribute(strPathToInputModel, pathToInputModel);
-		mergeSongResultsAttribute = NumericAttribute.createFromIntList(strMergeSongResults, mergeSongResults);
+		mergeTrackResultsAttribute = NumericAttribute.createFromIntList(strMergeTrackResults, mergeTrackResults);
 		outputResultAttribute = new StringAttribute(strOutputResult, outputResultPaths);
 		trainingDescriptionAttribute = new StringAttribute(strTrainingDescription, trainingDescriptions);
 		
@@ -258,7 +258,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
 		addAttribute(classificationWindowSizeAttribute);
-		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToPredictAttribute);
@@ -266,7 +266,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
-		addAttribute(mergeSongResultsAttribute);
+		addAttribute(mergeTrackResultsAttribute);
 		addAttribute(outputResultAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
@@ -277,14 +277,14 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 			String inputFeatures,
 			String inputFeatureType,
 			int classificationWindowSize,
-			int classificationWindowOverlap,
+			int classificationWindowStepSize,
 			String algorithmId,
 			int groundTruthSource,
 			String attributesToPredict,
 			String relationshipType,
 			String labelType,
 			String methodType,
-			int mergeSongResults,
+			int mergeTrackResults,
 			String outputResultPath,
 			String pathToInputModel,
 			String trainingDescription) {
@@ -302,7 +302,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		inputFeatureTypes.add(inputFeatureType);
 		inputFeatureTypeAttribute = new NominalAttribute(strInputFeatureType, inputFeatureTypeValues, inputFeatureTypes);
 		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowSize, classificationWindowSize);
-		classificationWindowOverlapAttribute = NumericAttribute.createFromDouble(strClassificationWindowOverlap, classificationWindowOverlap);
+		classificationWindowStepSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowStepSize, classificationWindowStepSize);
 		classificationAlgorithmIdAttribute = StringAttribute.createFromString(strTrainingAlgorithmID, algorithmId);
 		groundTruthCategoryIdAttribute = NumericAttribute.createFromDouble(strGroundTruthCategoryId, groundTruthSource);
 		attributesToPredictAttribute = StringAttribute.createFromString(strAttributesToPredict, attributesToPredict);
@@ -329,7 +329,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		labelTypeAttribute = new NominalAttribute(strLabelType, labelTypeValues, labelTypes);
 		methodTypeAttribute = new NominalAttribute(strMethodType, methodTypeValues, methodTypes);
 		pathToInputModelAttribute = StringAttribute.createFromString(strPathToInputModel, pathToInputModel);
-		mergeSongResultsAttribute = NumericAttribute.createFromDouble(strMergeSongResults, mergeSongResults);
+		mergeTrackResultsAttribute = NumericAttribute.createFromDouble(strMergeTrackResults, mergeTrackResults);
 		outputResultAttribute = StringAttribute.createFromString(strOutputResult, outputResultPath);
 		trainingDescriptionAttribute = StringAttribute.createFromString(strTrainingDescription, trainingDescription);
 		
@@ -339,7 +339,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
 		addAttribute(classificationWindowSizeAttribute);
-		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(classificationAlgorithmIdAttribute);
 		addAttribute(groundTruthCategoryIdAttribute);
 		addAttribute(attributesToPredictAttribute);
@@ -347,7 +347,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		addAttribute(relationshipTypeAttribute);
 		addAttribute(labelTypeAttribute);
 		addAttribute(methodTypeAttribute);
-		addAttribute(mergeSongResultsAttribute);
+		addAttribute(mergeTrackResultsAttribute);
 		addAttribute(outputResultAttribute);
 		addAttribute(trainingDescriptionAttribute);
 	}
@@ -385,8 +385,8 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		return groundTruthCategoryIdAttribute;
 	}
 
-	public NumericAttribute getMergeSongResultsAttribute() {
-		return mergeSongResultsAttribute;
+	public NumericAttribute getMergeTrackResultsAttribute() {
+		return mergeTrackResultsAttribute;
 	}
 
 	public StringAttribute getOutputResultAttribute() {
@@ -451,7 +451,7 @@ public class ClassifierConfigSet extends AbstractArffExperimentSet {
 		return this.classificationWindowSizeAttribute;
 	}
 	
-	public NumericAttribute getClassificationWindowOverlapAttribute() {
-		return this.classificationWindowOverlapAttribute;
+	public NumericAttribute getClassificationWindowStepSizeAttribute() {
+		return this.classificationWindowStepSizeAttribute;
 	}
 }

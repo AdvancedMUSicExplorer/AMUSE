@@ -42,7 +42,7 @@ import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 
 /**
- * Performs GMM conversion of the given feature matrix for partitions spanned between attack interval start events and 
+ * Performs GMM conversion of the given feature matrix for classification windows spanned between attack interval start events and 
  * release interval end events.
  * 
  * @author Igor Vatolkin
@@ -74,7 +74,7 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 		}
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer overlap, String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
@@ -123,31 +123,31 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 				
 			    int currentWindow = 0;
 				
-				// Go through all onset partitions
-				for(int numberOfCurrentPartition=0;numberOfCurrentPartition<attackStarts.length;numberOfCurrentPartition++) {
+				// Go through all onset classificatoin windows
+				for(int numberOfCurrentClassificationWindow=0;numberOfCurrentClassificationWindow<attackStarts.length;numberOfCurrentClassificationWindow++) {
 					
-					// Calculate the start and end windows for the current onset partition
-					Double partitionStart = Math.ceil((attackStarts[numberOfCurrentPartition] * (double)features.get(i).getSampleRate()) / windowSize); 
-					Double partitionEnd = Math.ceil((releaseEnds[numberOfCurrentPartition] * (double)features.get(i).getSampleRate()) / windowSize) + 1;
+					// Calculate the start and end windows for the current onset classification window
+					Double classificationWindowStart = Math.ceil((attackStarts[numberOfCurrentClassificationWindow] * (double)features.get(i).getSampleRate()) / windowSize); 
+					Double classificationWindowEnd = Math.ceil((releaseEnds[numberOfCurrentClassificationWindow] * (double)features.get(i).getSampleRate()) / windowSize) + 1;
 					
-					// Increment the number of current time window if the lower partition boundary is not achieved
+					// Increment the number of current time window if the lower classification window boundary is not achieved
 					for(int k=currentWindow;k<features.get(i).getWindows().size();k++) {
-						if(features.get(i).getWindows().get(k) >= partitionStart) {
+						if(features.get(i).getWindows().get(k) >= classificationWindowStart) {
 							currentWindow = k;
 							break;
 						}
 					}
 					
-					// If no features are available for the current partition, go to the next partition
-					if(features.get(i).getWindows().get(currentWindow) > partitionEnd) {
+					// If no features are available for the current classification window, go to the next classification window
+					if(features.get(i).getWindows().get(currentWindow) > classificationWindowEnd) {
 						continue;
 					}
 					
-					// Create a list with time windows which are in the current partition
-					ArrayList<Double> windowsOfCurrentPartition = new ArrayList<Double>();
-					while(features.get(i).getWindows().get(currentWindow) >= partitionStart && 
-							features.get(i).getWindows().get(currentWindow) < partitionEnd) {
-						windowsOfCurrentPartition.add(features.get(i).getWindows().get(currentWindow));
+					// Create a list with time windows which are in the current classification window
+					ArrayList<Double> windowsOfCurrentClassificationWindow = new ArrayList<Double>();
+					while(features.get(i).getWindows().get(currentWindow) >= classificationWindowStart && 
+							features.get(i).getWindows().get(currentWindow) < classificationWindowEnd) {
+						windowsOfCurrentClassificationWindow.add(features.get(i).getWindows().get(currentWindow));
 						
 						// The last existing window is achieved
 						if(currentWindow == features.get(i).getWindows().size() - 1) {
@@ -156,8 +156,8 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 						currentWindow++;
 					}
 					
-					// Check if the current partition has any windows
-					if(windowsOfCurrentPartition.size() == 0) {
+					// Check if the current classification window has any windows
+					if(windowsOfCurrentClassificationWindow.size() == 0) {
 						continue;
 					}
 					
@@ -171,14 +171,14 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 						// Calculate mean and variance
 						Double mean = 0d;
 						Double variance = 0d;
-						for(Double l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentClassificationWindow) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								mean += features.get(i).getValuesFromWindow(l)[k];
 								valueNumber++;
 							}
 						}
 						mean /= valueNumber;
-						for(Double l:windowsOfCurrentPartition) {
+						for(Double l:windowsOfCurrentClassificationWindow) {
 							if(!Double.isNaN(features.get(i).getValuesFromWindow(l)[k])) {
 								variance += Math.pow((Double)features.get(i).getValuesFromWindow(l)[k]-mean,2);
 							}
@@ -190,11 +190,11 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 						Double[] stddevD = new Double[1]; stddevD[0] = variance;
 						if(saveMeanValues) {
 							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getValues().add(meanD);
-							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getWindows().add(new Double(partitionStart));
+							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k).getWindows().add(new Double(classificationWindowStart));
 						}
 						if(saveStddevValues) {
 							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getValues().add(stddevD);
-							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getWindows().add(new Double(partitionStart));
+							newFeatures.get(((saveMeanValues ? 1 : 0) + (saveStddevValues ? 1 : 0))*k+(saveMeanValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
 						}
 					}
 					

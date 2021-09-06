@@ -53,7 +53,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private static final String strInputFeatures = "InputFeatures";
 	private static final String strInputFeatureType = "InputFeatureType";
 	private static final String strClassificationWindowSize = "ClassificationWindowSize";
-	private static final String strClassificationWindowOverlap = "ClassificationWindowOverlap";
+	private static final String strClassificationWindowStepSize = "ClassificationWindowStepSize";
 	private static final String strInputToValidate = "InputToValidate";
 	private static final String strGroundTruthSourceType = "GroundTruthSourceType";
 	private static final String strClassificationAlgorithmId = "ClassificationAlgorithmId";
@@ -70,7 +70,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute measureListAttribute;
 	private final StringAttribute inputFeaturesAttribute;
 	private final NominalAttribute inputFeatureTypeAttribute;
-	private final NumericAttribute classificationWindowOverlapAttribute;
+	private final NumericAttribute classificationWindowStepSizeAttribute;
 	private final NumericAttribute classificationWindowSizeAttribute;
 	private final StringAttribute inputToValidateAttribute;
 	private final NominalAttribute groundTruthSourceTypeAttribute;
@@ -97,7 +97,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strMeasureList);
 		checkStringAttribute(strInputFeatures);
 		checkNominalAttribute(strInputFeatureType);
-		checkNumericAttribute(strClassificationWindowOverlap);
+		checkNumericAttribute(strClassificationWindowStepSize);
 		checkNumericAttribute(strClassificationWindowSize);
 		checkStringAttribute(strInputToValidate);
 		checkNominalAttribute(strGroundTruthSourceType);
@@ -115,7 +115,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		inputFeaturesAttribute = (StringAttribute) getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) getAttribute(strInputFeatureType);
 		classificationWindowSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowSize);
-		classificationWindowOverlapAttribute = (NumericAttribute) getAttribute(strClassificationWindowOverlap);
+		classificationWindowStepSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowStepSize);
 		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) getAttribute(strGroundTruthSourceType);
 		classificationAlgorithmIdAttribute = (StringAttribute) getAttribute(strClassificationAlgorithmId);
@@ -133,7 +133,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 			String inputFeatures,
 			String inputFeatureType,
 			Integer classificationWindowSize,
-			Integer classificationWindowOverlap,
+			Integer classificationWindowStepSize,
 			String inputToValidate,
 			String groundTruthSourceType,
 			String attributesToPredict,
@@ -156,7 +156,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		inputFeatureTypeAttribute = new NominalAttribute(strInputFeatureType, inputFeatureTypeValues, inputFeatureTypes);
 		inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
 		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowSize, classificationWindowSize);
-		classificationWindowOverlapAttribute = NumericAttribute.createFromDouble(strClassificationWindowOverlap, classificationWindowOverlap);
+		classificationWindowStepSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowStepSize, classificationWindowStepSize);
 		List <String> values = new ArrayList<String>();
 		values.add(groundTruthSourceType);
 		groundTruthSourceTypeAttribute = new NominalAttribute(strGroundTruthSourceType, getAllowedValues(), values);
@@ -191,7 +191,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
 		addAttribute(classificationWindowSizeAttribute);
-		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(inputToValidateAttribute); 
 		addAttribute(groundTruthSourceTypeAttribute);
 		addAttribute(attributesToPredictAttribute);
@@ -211,7 +211,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strInputFeatures);
 		dataSet.checkNominalAttribute(strInputFeatureType);
 		dataSet.checkNumericAttribute(strClassificationWindowSize);
-		dataSet.checkNumericAttribute(strClassificationWindowOverlap);
+		dataSet.checkNumericAttribute(strClassificationWindowStepSize);
 		dataSet.checkStringAttribute(strInputToValidate);
 		dataSet.checkNominalAttribute(strGroundTruthSourceType);
 		dataSet.checkStringAttribute(strAttributesToPredict);
@@ -227,7 +227,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		inputFeaturesAttribute = (StringAttribute) dataSet.getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputFeatureType);
 		classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowSize);
-		classificationWindowOverlapAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowOverlap);
+		classificationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowStepSize);
 		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
 		groundTruthSourceTypeAttribute = (NominalAttribute) dataSet.getAttribute(strGroundTruthSourceType);
 		attributesToPredictAttribute = (StringAttribute) dataSet.getAttribute(strAttributesToPredict);
@@ -242,7 +242,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(measureListAttribute);
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
-		addAttribute(classificationWindowOverlapAttribute);
+		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(classificationWindowSizeAttribute);
 		addAttribute(inputToValidateAttribute);
 		addAttribute(groundTruthSourceTypeAttribute);
@@ -334,8 +334,8 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		return classificationWindowSizeAttribute;
 	}
 	
-	public NumericAttribute getClassificationWindowOverlapAttribute() {
-		return classificationWindowOverlapAttribute;
+	public NumericAttribute getClassificationWindowStepSizeAttribute() {
+		return classificationWindowStepSizeAttribute;
 	}
 
 	private static List<String> getAllowedValues() {

@@ -25,7 +25,7 @@ package amuse.nodes.validator.measures;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.validator.interfaces.ClassificationQualityDoubleMeasureCalculator;
 import amuse.nodes.validator.interfaces.ValidationMeasureDouble;
@@ -46,12 +46,12 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnSongLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnTrackLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			// Calculate the predicted value for this song (averaging among all partitions)
+			// Calculate the predicted value for this track (averaging among all classification windows)
 			Double currentPredictedValue = 0.0d;
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
 				currentPredictedValue += predictedRelationships.get(i).getRelationships()[j][0];
@@ -67,15 +67,15 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setName("Absolute error on track level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
 	
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateOneClassMeasureOnClassficationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateOneClassMeasureOnPartitionLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateOneClassMeasureOnClassficationWindowLevel(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<predictedRelationships.get(i).getRelationships().length;j++) {
@@ -88,61 +88,61 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setName("Absolute error on classification window level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		//TODO: check if it should be calculated like that
-		// Go through all songs
+		// Go through all tracks
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			// Calculate the error for the current song
-			double songError = 0.0d;
+			// Calculate the error for the current track
+			double trackError = 0.0d;
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//calculate the error for the current partition
+				//calculate the error for the current classification window
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
-				//divide the error by two because otherwise wrong partitions are counted twice
-				songError += error/2;
+				//divide the error by two because otherwise wrong classification windows are counted twice
+				trackError += error/2;
 			}
 			
-			songError /= groundTruthRelationships.get(i).getRelationships().length;
+			trackError /= groundTruthRelationships.get(i).getRelationships().length;
 			
 			// Calculate error
-			errorSum += songError;
+			errorSum += trackError;
 		}
 		
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setName("Absolute error on track level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
 
 
 	/**
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMulticlassMeasureOnClassificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiClassMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
-		// Go through all partitions
+	public ValidationMeasureDouble[] calculateMultiClassMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
+		// Go through all classification windows
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//Calculate the error of the partition
+				//Calculate the error of the classification window
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.abs(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category]);
 				}
-				//Divide the error by two, because otherwise wrong partitions are counted twice
+				//Divide the error by two, because otherwise wrong classification windows are counted twice
 				errorSum += error/2;
 			}
 		}
@@ -151,57 +151,57 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setName("Absolute error on classification window level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnSongLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnTrackLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnSongLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnTrackLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		//TODO: check if it should be calculated like that
-		// Go through all songs
+		// Go through all tracks
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
-			// Calculate the error for the current song
-			double songError = 0.0d;
+			// Calculate the error for the current track
+			double trackError = 0.0d;
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//Calculate the error for the current partition
+				//Calculate the error for the current classification window
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);
 				}
-				songError += Math.sqrt(error);
+				trackError += Math.sqrt(error);
 			}
 			
-			songError /= groundTruthRelationships.get(i).getRelationships().length;
+			trackError /= groundTruthRelationships.get(i).getRelationships().length;
 			
 			// Calculate error
-			errorSum += songError;
+			errorSum += trackError;
 		}
 		
 		// Prepare the result
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on song level");
+		absMeasure[0].setName("Absolute error on track level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnPartitionLevel(java.util.ArrayList, java.util.ArrayList)
+	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasureOnClasificationWindowLevel(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnPartitionLevel(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureDouble[] calculateMultiLabelMeasureOnWindowLevel(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		//TODO: check if it should be calculated like that
-		// Go through all partitions
+		// Go through all classification windows
 		double errorSum = 0.0d;
 		for(int i=0;i<groundTruthRelationships.size();i++) {
 			for(int j=0;j<groundTruthRelationships.get(i).getRelationships().length;j++) {
-				//Calculate the error of the partition
+				//Calculate the error of the classification window
 				double error = 0;
 				for(int category=0;category<groundTruthRelationships.get(i).getLabels().length;category++) {
 					error += Math.pow(groundTruthRelationships.get(i).getRelationships()[j][category] - predictedRelationships.get(i).getRelationships()[j][category], 2);
@@ -214,7 +214,7 @@ public class AbsoluteError extends ClassificationQualityDoubleMeasureCalculator 
 		ValidationMeasureDouble[] absMeasure = new ValidationMeasureDouble[1];
 		absMeasure[0] = new ValidationMeasureDouble();
 		absMeasure[0].setId(200);
-		absMeasure[0].setName("Absolute error on partition level");
+		absMeasure[0].setName("Absolute error on classification window level");
 		absMeasure[0].setValue(errorSum);
 		return absMeasure;
 	}

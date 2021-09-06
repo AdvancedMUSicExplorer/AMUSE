@@ -36,8 +36,8 @@ public class Measure implements Serializable {
 	private final int id;
     private final String name;
     private final Double optimalValue;
-    private boolean extractSongLevel;
-    private boolean extractPartitionLevel;
+    private boolean extractTrackLevel;
+    private boolean extractWindowLevel;
     private final String category;
     private final String measureClass;
 
@@ -46,8 +46,8 @@ public class Measure implements Serializable {
         this.id = id;
         this.name = name;
         this.optimalValue = optimalValue;
-        this.extractSongLevel = true;
-        this.extractPartitionLevel = true;
+        this.extractTrackLevel = true;
+        this.extractWindowLevel = true;
         this.category = category;
         this.measureClass = measureClass;
     }
@@ -64,12 +64,12 @@ public class Measure implements Serializable {
         return this.optimalValue;
     }
 
-    public boolean isSongLevelSelected() {
-        return this.extractSongLevel;
+    public boolean isTrackLevelSelected() {
+        return this.extractTrackLevel;
     }
 
-    public boolean isPartitionLevelSelected() {
-        return this.extractPartitionLevel;
+    public boolean isWindowLevelSelected() {
+        return this.extractWindowLevel;
     }
 
     public String getCategory() {
@@ -80,11 +80,11 @@ public class Measure implements Serializable {
         return this.measureClass;
     }
 
-    public void setPartitionLevelSelected(boolean partitionLevel) {
-        extractPartitionLevel = partitionLevel;
+    public void setWindowLevelSelected(boolean windowLevel) {
+        extractWindowLevel = windowLevel;
     }
     
-     public void setSongLevelSelected(boolean songLevel) {
-        extractSongLevel = songLevel;
+     public void setTrackLevelSelected(boolean trackLevel) {
+        extractTrackLevel = trackLevel;
     }
 }

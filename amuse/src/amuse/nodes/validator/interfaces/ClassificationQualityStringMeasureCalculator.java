@@ -25,7 +25,7 @@ package amuse.nodes.validator.interfaces;
 
 import java.util.ArrayList;
 
-import amuse.data.annotation.ClassifiedSongPartitions;
+import amuse.data.annotation.ClassifiedClassificationWindow;
 import amuse.interfaces.nodes.NodeException;
 
 /**
@@ -36,21 +36,21 @@ import amuse.interfaces.nodes.NodeException;
  */
 public abstract class ClassificationQualityStringMeasureCalculator implements ClassificationQualityMeasureCalculatorInterface {
 	
-	/** True if this measure will be calculated on song level*/
-	private boolean calculateForSongLevel = false;
+	/** True if this measure will be calculated on track level*/
+	private boolean calculateForTrackLevel = false;
 	
-	/** True if this measure will be calculated on partition level */
-	private boolean calculateForPartitionLevel = false;
+	/** True if this measure will be calculated on classification window level */
+	private boolean calculateForWindowLevel = false;
 	
 	/** True if this measure will be calculated in a fuzzy way */
 	private boolean fuzzy = false;
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#getSongLevel()
+	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#getTrackLevel()
 	 */
-	public boolean getSongLevel() {
-		return calculateForSongLevel;
+	public boolean getTrackLevel() {
+		return calculateForTrackLevel;
 	}
 	
 	/*
@@ -63,26 +63,26 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#setSongLevel(boolean)
+	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#setTrackLevel(boolean)
 	 */
-	public void setSongLevel(boolean forSongLevel) {
-		this.calculateForSongLevel = forSongLevel;
+	public void setTrackLevel(boolean forTrackLevel) {
+		this.calculateForTrackLevel = forTrackLevel;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#getPartitionLevel()
+	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#getWindowLevel()
 	 */
-	public boolean getPartitionLevel() {
-		return calculateForPartitionLevel;
+	public boolean getWindowLevel() {
+		return calculateForWindowLevel;
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#setPartitionLevel(boolean)
+	 * @see amuse.nodes.validator.interfaces.ValidationMeasureCalculatorInterface#setWindowLevel(boolean)
 	 */
-	public void setPartitionLevel(boolean forPartitionLevel) {
-		this.calculateForPartitionLevel = forPartitionLevel;
+	public void setWindowLevel(boolean forWindowLevel) {
+		this.calculateForWindowLevel = forWindowLevel;
 	}
 	
 	/*
@@ -96,29 +96,29 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	/**
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMeasure(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateOneClassMeasure(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureString[] calculateOneClassMeasure(ArrayList<Double> groundTruthRelationships, ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		if(groundTruthRelationships.size() != predictedRelationships.size()) {
 			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
 		}
 		
-		ValidationMeasureString[] measureOnSongLev = null;
+		ValidationMeasureString[] measureOnTrackLev = null;
 		ValidationMeasureString[] measureOnPartLev = null;
 		
-		if(this.getSongLevel()) {
-			measureOnSongLev = (ValidationMeasureString[])calculateOneClassMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getTrackLevel()) {
+			measureOnTrackLev = (ValidationMeasureString[])calculateOneClassMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 		} 
-		if(this.getPartitionLevel()) {
-			measureOnPartLev = (ValidationMeasureString[])calculateOneClassMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getWindowLevel()) {
+			measureOnPartLev = (ValidationMeasureString[])calculateOneClassMeasureOnClassficationWindowLevel(groundTruthRelationships, predictedRelationships);
 		}
 		
 		// Return the corresponding number of measure values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return measureOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
+		if(this.getTrackLevel() && !this.getWindowLevel()) {
+			return measureOnTrackLev;
+		} else if(!this.getTrackLevel() && this.getWindowLevel()) {
 			return measureOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
+		} else if(this.getTrackLevel() && this.getWindowLevel()) {
 			ValidationMeasureString[] measures = new ValidationMeasureString[2];
-			measures[0] = measureOnSongLev[0];
+			measures[0] = measureOnTrackLev[0];
 			measures[1] = measureOnPartLev[0];
 			return measures;
 		} else {
@@ -130,30 +130,30 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiClassMeasure(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiClassMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, 
-			ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureString[] calculateMultiClassMeasure(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, 
+			ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		if(groundTruthRelationships.size() != predictedRelationships.size()) {
 			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
 		}
 		
-		ValidationMeasureString[] measureOnSongLev = null;
+		ValidationMeasureString[] measureOnTrackLev = null;
 		ValidationMeasureString[] measureOnPartLev = null;
 		
-		if(this.getSongLevel()) {
-			measureOnSongLev = (ValidationMeasureString[])calculateMultiClassMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getTrackLevel()) {
+			measureOnTrackLev = (ValidationMeasureString[])calculateMultiClassMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 		} 
-		if(this.getPartitionLevel()) {
-			measureOnPartLev = (ValidationMeasureString[])calculateMultiClassMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getWindowLevel()) {
+			measureOnPartLev = (ValidationMeasureString[])calculateMultiClassMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 		}
 		
 		// Return the corresponding number of measure values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return measureOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
+		if(this.getTrackLevel() && !this.getWindowLevel()) {
+			return measureOnTrackLev;
+		} else if(!this.getTrackLevel() && this.getWindowLevel()) {
 			return measureOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
+		} else if(this.getTrackLevel() && this.getWindowLevel()) {
 			ValidationMeasureString[] measures = new ValidationMeasureString[2];
-			measures[0] = measureOnSongLev[0];
+			measures[0] = measureOnTrackLev[0];
 			measures[1] = measureOnPartLev[0];
 			return measures;
 		} else {
@@ -165,30 +165,30 @@ public abstract class ClassificationQualityStringMeasureCalculator implements Cl
 	 * (non-Javadoc)
 	 * @see amuse.nodes.validator.interfaces.ClassificationQualityMeasureCalculatorInterface#calculateMultiLabelMeasure(java.util.ArrayList, java.util.ArrayList)
 	 */
-	public ValidationMeasureString[] calculateMultiLabelMeasure(ArrayList<ClassifiedSongPartitions> groundTruthRelationships, 
-			ArrayList<ClassifiedSongPartitions> predictedRelationships) throws NodeException {
+	public ValidationMeasureString[] calculateMultiLabelMeasure(ArrayList<ClassifiedClassificationWindow> groundTruthRelationships, 
+			ArrayList<ClassifiedClassificationWindow> predictedRelationships) throws NodeException {
 		if(groundTruthRelationships.size() != predictedRelationships.size()) {
 			throw new NodeException("The number of labeled instances must be equal to the number of predicted instances!");
 		}
 		
-		ValidationMeasureString[] measureOnSongLev = null;
+		ValidationMeasureString[] measureOnTrackLev = null;
 		ValidationMeasureString[] measureOnPartLev = null;
 		
-		if(this.getSongLevel()) {
-			measureOnSongLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnSongLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getTrackLevel()) {
+			measureOnTrackLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnTrackLevel(groundTruthRelationships, predictedRelationships);
 		} 
-		if(this.getPartitionLevel()) {
-			measureOnPartLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnPartitionLevel(groundTruthRelationships, predictedRelationships);
+		if(this.getWindowLevel()) {
+			measureOnPartLev = (ValidationMeasureString[])calculateMultiLabelMeasureOnWindowLevel(groundTruthRelationships, predictedRelationships);
 		}
 		
 		// Return the corresponding number of measure values
-		if(this.getSongLevel() && !this.getPartitionLevel()) {
-			return measureOnSongLev;
-		} else if(!this.getSongLevel() && this.getPartitionLevel()) {
+		if(this.getTrackLevel() && !this.getWindowLevel()) {
+			return measureOnTrackLev;
+		} else if(!this.getTrackLevel() && this.getWindowLevel()) {
 			return measureOnPartLev;
-		} else if(this.getSongLevel() && this.getPartitionLevel()) {
+		} else if(this.getTrackLevel() && this.getWindowLevel()) {
 			ValidationMeasureString[] measures = new ValidationMeasureString[2];
-			measures[0] = measureOnSongLev[0];
+			measures[0] = measureOnTrackLev[0];
 			measures[1] = measureOnPartLev[0];
 			return measures;
 		} else {
