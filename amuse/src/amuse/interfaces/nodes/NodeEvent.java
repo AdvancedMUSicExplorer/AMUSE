@@ -69,6 +69,12 @@ public class NodeEvent {
 	
 	/** Indicates that the optimization has been failed */
 	public static int OPTIMIZATION_FAILED = 11;
+	
+	/** Indicates that the tool has been successfully finished */
+	public static int TOOL_COMPLETED = 12;
+	
+	/** Indicates that the tool start has been failed */
+	public static int TOOL_FAILED = 13;
 
 	/** The type of this event */
 	private int eventType;

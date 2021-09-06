@@ -86,6 +86,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	 * which is currently extracted by extractor i */
 	private HashMap<Integer,Integer> currentPartForThisExtractor;
 	
+	/** Optional settings which can be used in tool node */
+	public boolean copyDirectlyToDatabase = false;
+	
 	/**
 	 * Constructor
 	 */
@@ -156,9 +159,13 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			}
 		}
 		
+		
 		// Set the music file name without music database directory path 
 		String relativeName = new String();
-		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+		String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+		// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+		musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath)) {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
@@ -661,22 +668,28 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		
 		// Go through the paths till the file name
 		StringBuffer path2Create = new StringBuffer();
-		for(int i=0;i<pathsArray.size();i++) {
-			path2Create = new StringBuffer();
+		
+		// The first option can be used in a tool node for a more flexible storage of features
+		if(copyDirectlyToDatabase) {
 			path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
-			for(int j=0;j<i+1;j++) {
-				path2Create.append(File.separator);
-				
-				// Cut the extension for the folder with music file name
-				if(i == pathsArray.size()-1 && j == i) {
-					int l = pathsArray.get(j).lastIndexOf(".");
-					path2Create.append(pathsArray.get(j).substring(0,l));
-				} else {
-					path2Create.append(pathsArray.get(j));
+		} else {
+			for(int i=0;i<pathsArray.size();i++) {
+				path2Create = new StringBuffer();
+				path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
+				for(int j=0;j<i+1;j++) {
+					path2Create.append(File.separator);
+					
+					// Cut the extension for the folder with music file name
+					if(i == pathsArray.size()-1 && j == i) {
+						int l = pathsArray.get(j).lastIndexOf(".");
+						path2Create.append(pathsArray.get(j).substring(0,l));
+					} else {
+						path2Create.append(pathsArray.get(j));
+					}
 				}
 			}
 		}
-		
+	
 		// Move the extracted features
 		try {
 			if(numberOfParts > 1) {

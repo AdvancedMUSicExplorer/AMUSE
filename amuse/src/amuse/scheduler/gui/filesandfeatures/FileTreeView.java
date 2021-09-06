@@ -114,7 +114,7 @@ public class FileTreeView {
             // saveFileListButton.setToolTipText("Save this FileList");
             saveFileListButton.setActionCommand("save");
             loadFileListButton = new JButton();
-            loadFileListButton.setText("<html>Add<br>List</html>");
+            loadFileListButton.setText("<html>Add<br>List(s)</html>");
             // loadFileListButton.setToolTipText("Add FileFist");
             loadFileListButton.setActionCommand("load");
             buttonPanel.add(addButton);

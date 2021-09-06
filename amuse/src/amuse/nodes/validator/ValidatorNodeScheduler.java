@@ -502,7 +502,10 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					
 					// Load the first classifier input for attributes information
 					String currentInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
-					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+					if(currentInputFile.startsWith(musicDatabasePath)) {
 						currentInputFile = 
 							((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 							+ File.separator 
@@ -659,10 +662,15 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		
 						}
 						
+						// Do not go to the next description if this was already the last description
+						if(i == validatorGroundTruthSet.getValueCount() - 1) {
+							break;
+						}
+						
 						// Go to the next description
 						String newInputFile = validatorGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
 						
-						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						if(newInputFile.startsWith(musicDatabasePath)) {
 							newInputFile = 
 								((ValidationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 
@@ -689,7 +697,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
 						// Go to the next music file?
-						if(!newInputFile.equals(currentInputFile)) {
+						if(!newInputFile.equals(currentInputFile) || (Double)validatorGroundTruthSet.getAttribute("Start").getValueAt(i+1) == 0) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							validatorInputLoader = new ArffLoader();

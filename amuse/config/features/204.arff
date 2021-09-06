@@ -2,7 +2,7 @@
 @RELATION features
 
 % Unique configuration ID
-@ATTRIBUTE Id STRING
+@ATTRIBUTE Id NUMERIC
 % Feature description
 @ATTRIBUTE Description STRING
 % ID of tool to extract the feature (see extractorTable.arff)
@@ -27,5 +27,5 @@
 
 % Timbre features
 
-1024, "Chroma vector", 1, 1024, 1024, 24, WindowedNumeric, "yaleBase_1024.xml", "yaleBase_1024_modified.xml"
-256, "Chroma vector", 1, 256, 256, 24, WindowedNumeric, "yaleBase_256.xml", "yaleBase_256_modified.xml"
+1, "Chroma vector | windowsize = 1024", 1, 1024, 1024, 24, WindowedNumeric, "yaleBase_1024.xml", "yaleBase_1024_modified.xml"
+2, "Chroma vector | windowsize = 256", 1, 256, 256, 24, WindowedNumeric, "yaleBase_256.xml", "yaleBase_256_modified.xml"

@@ -462,8 +462,10 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					
 					// Load the first classifier input for attributes information
 					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
-					
-					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+					if(currentInputFile.startsWith(musicDatabasePath)) {
 						String processedFeatureDatabase = ((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase();
 
 						if(processedFeatureDatabase.endsWith(File.separator)){
@@ -537,14 +539,24 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					}
 					
 					
+					// remember the number of attributes of the first input file to spot potential errors with inconsistent feature processing
+					String firstInputFile = currentInputFile;
+					int numberOfAttributes = classifierInputLoader.getStructure().numAttributes();
 					// Create the labeled data
 					for(int i=0;i<classifierGroundTruthSet.getValueCount();i++) {
 						Integer end = new Double(classifierGroundTruthSet.getAttribute("End").getValueAt(i).toString()).intValue();
+						
+						// check if the processing is consistent
+						if(classifierInputLoader.getStructure().numAttributes() != numberOfAttributes) {
+							throw new NodeException("Inconsistent Processing: " + firstInputFile + " has " + numberOfAttributes + " attributes while "
+									+ currentInputFile + " has " + classifierInputLoader.getStructure().numAttributes() + " attributes.");
+						}
+						
 						// If the complete song should be read
 						if(end == -1) {
 							while(inputInstance != null) {
 								int currentAttribute = 0;
-								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
+ 								for(int j=0;j<classifierInputLoader.getStructure().numAttributes()-3;j++) {
 									
 									//Omit the attributes that are supposed to be ignored
 									if(!attributesToIgnore.contains(j)) {
@@ -613,10 +625,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		
 						}
 						
+						// Do not go the next description if this was already the last description
+						if(i == classifierGroundTruthSet.getValueCount() - 1) {
+							break;
+						}
+						
 						// Go to the next description
 						String newInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(i+1).toString();
-						
-						if(newInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						if(newInputFile.startsWith(musicDatabasePath)) {
 							newInputFile = 
 								((TrainingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 
@@ -645,7 +661,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						
 						
 						// Go to the next music file?
-						if(!newInputFile.equals(currentInputFile)) {
+						if(!newInputFile.equals(currentInputFile) || (Double)classifierGroundTruthSet.getAttribute("Start").getValueAt(i + 1) == 0) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							classifierInputLoader = new ArffLoader();
@@ -665,7 +681,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 					}
 				} catch(IOException e) {
-					e.printStackTrace();
 					throw new NodeException(e.getMessage());
 				}
 			} else {

@@ -46,7 +46,7 @@ public class MeasuresTableModel extends DefaultTableModel {
         super();
         measureTable = new MeasureTable(measureTableFile);
         Object[][] data = new Object[measureTable.size()][5];
-        String[] columnHeaders = {"ID", "Name", "Category", "Song Level", "Partition Level"};
+        String[] columnHeaders = {"ID", "Name", "Category", "Track Level", "Window Level"};
         int index = 0;
         for (Object[] column:data) {
             amuse.data.Measure m = measureTable.get(index);

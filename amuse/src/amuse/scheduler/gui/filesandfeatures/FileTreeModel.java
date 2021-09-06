@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
+
+import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -56,6 +58,10 @@ public class FileTreeModel extends DefaultTreeModel {
         this.relativeToNode = new DefaultMutableTreeNode(label, true);
         this.fileEndings = fileEndings;
         if (!this.relativeToFolder.isDirectory()) {
+        	JOptionPane.showMessageDialog(null,
+                    this.relativeToFolder.getPath() + "is not a folder!",
+                    "Music database is not a folder",
+                    JOptionPane.ERROR_MESSAGE);
             throw new IllegalArgumentException(this.relativeToFolder.getName() + " is not a folder!");
         }
     }

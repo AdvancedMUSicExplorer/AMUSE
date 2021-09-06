@@ -47,20 +47,25 @@ public class FeatureTableModel implements TableModel {
      * @param featureTable The feature table of all Features to be displayed in this table.
      */
     public FeatureTableModel(FeatureTable featureTable) {
-        this.featureTable = featureTable;
+        setFeatureTable(featureTable);
+    }
+
+    private void setFeatureTable(FeatureTable featureTable) {
+    	this.featureTable = featureTable;
         List<Feature> features = this.featureTable.getFeatures();
-        this.table = new Object[features.size()][4];
+        this.table = new Object[features.size()][5];
         int tableIndex = 0;
         for (Feature f : features) {
             this.table[tableIndex][0] = f.isSelectedForExtraction();
             this.table[tableIndex][1] = f.getId();
-            this.table[tableIndex][2] = f.getDescription();
-            this.table[tableIndex][3] = f.getDimension();
+            this.table[tableIndex][2] = f.getConfigurationId();
+            this.table[tableIndex][3] = f.getDescription();
+            this.table[tableIndex][4] = f.getDimension();
             tableIndex++;
         }
-    }
+	}
 
-    @Override
+	@Override
     public void addTableModelListener(TableModelListener l) {
         listeners.add(l);
     }
@@ -69,15 +74,17 @@ public class FeatureTableModel implements TableModel {
         listeners.remove(l);
     }
 
-    void selectFeaturesByID(List<Integer> ids) {
+    void selectFeaturesByID(List<Integer> ids, List<Integer> confIds) {
         for (int i = 0; i < featureTable.size(); i++) {
-            if (ids.contains(featureTable.getFeatureAt(i).getId())) {
-                table[i][0] = true;
-                notifyListeners(i);
-            } else {
-                table[i][0] = false;
-                notifyListeners(i);
-            }
+        	table[i][0] = false;
+        	for(int j = 0; j < ids.size(); j++) {
+        		Feature feature = featureTable.getFeatureAt(i);
+        		if(feature.getId() == ids.get(j) && feature.getConfigurationId() == confIds.get(j)) {
+        			table[i][0] = true;
+        			break;
+        		}
+        	}
+        	notifyListeners(i);
         }
     }
 
@@ -86,6 +93,12 @@ public class FeatureTableModel implements TableModel {
             l.tableChanged(new TableModelEvent(this, row));
         }
     }
+    
+    private void notifyListeners() {
+    	for (TableModelListener l :listeners) {
+            l.tableChanged(new TableModelEvent(this));
+        }
+	}
 
     @Override
     public int getRowCount() {
@@ -94,7 +107,7 @@ public class FeatureTableModel implements TableModel {
 
     @Override
     public int getColumnCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -105,8 +118,10 @@ public class FeatureTableModel implements TableModel {
             case 1:
                 return "ID";
             case 2:
-                return "Feature Description";
+            	return "ConfID";
             case 3:
+                return "Feature Description";
+            case 4:
                 return "Value Count";
             default:
                 throw new UnsupportedOperationException("Not supported yet.");
@@ -121,8 +136,10 @@ public class FeatureTableModel implements TableModel {
             case 1:
                 return java.lang.Integer.class;
             case 2:
-                return java.lang.String.class;
+            	return java.lang.Integer.class;
             case 3:
+                return java.lang.String.class;
+            case 4:
                 return java.lang.Integer.class;
             default:
                 throw new UnsupportedOperationException("Not supported yet.");
@@ -137,8 +154,10 @@ public class FeatureTableModel implements TableModel {
             case 1:
                 return false;
             case 2:
-                return false;
+            	return false;
             case 3:
+                return false;
+            case 4:
                 return false;
             default:
                 return false;
@@ -172,5 +191,25 @@ public class FeatureTableModel implements TableModel {
         }
         // Return the FretureTable:
         return this.featureTable;
+    }
+    
+    private void updateSelectedForExtraction() {
+    	for(int i = 0; i < featureTable.size(); i++) {
+    		featureTable.getFeatureAt(i).setSelectedForExtraction((boolean)table[i][0]);
+    	}
+    }
+    
+    public void addCustomFeatures(){
+    	updateSelectedForExtraction();
+    	featureTable.addCustomFeatures();
+    	setFeatureTable(featureTable);
+    	notifyListeners();
+    }
+
+	public void removeCustomFeatures() {
+    	updateSelectedForExtraction();
+    	featureTable.removeCustomFeatures();
+    	setFeatureTable(featureTable);
+    	notifyListeners();
     }
 }

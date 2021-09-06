@@ -31,19 +31,18 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 
-import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
+import amuse.data.io.attributes.Attribute;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
+import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.optimizer.interfaces.OptimizerInterface;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
-
-import weka.core.Attribute;
-import weka.core.Instance;
-import weka.core.converters.ArffLoader;
 
 /**
  * OptimizerNodeScheduler is responsible for the optimizer node. 
@@ -226,44 +225,43 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 		}
 		boolean algorithmFound = false;
 		try {
-	    	ArffLoader optimizerTableLoader = new ArffLoader();
+			DataSetAbstract optimizerTableSet;
 	    	if(this.directStart) {
-	    		optimizerTableLoader.setFile(new File(AmusePreferences.getOptimizerAlgorithmTablePath()));
+	    		optimizerTableSet = new ArffDataSet(new File(AmusePreferences.getOptimizerAlgorithmTablePath()));
 	    	} else {
-	    		optimizerTableLoader.setFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "optimizerAlgorithmTable.arff"));
+	    		optimizerTableSet = new ArffDataSet(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "optimizerAlgorithmTable.arff"));
 	    	}
-			Instance currentInstance = optimizerTableLoader.getNextInstance(optimizerTableLoader.getStructure());
-			Attribute idAttribute = optimizerTableLoader.getStructure().attribute("Id");
-			Attribute nameAttribute = optimizerTableLoader.getStructure().attribute("Name");
-			Attribute optimizerAdapterClassAttribute = optimizerTableLoader.getStructure().attribute("OptimizerAdapterClass");
-			while(currentInstance != null) {
-				Integer idOfCurrentAlgorithm = new Double(currentInstance.value(idAttribute)).intValue();
+			Attribute idAttribute = optimizerTableSet.getAttribute("Id");
+			Attribute nameAttribute = optimizerTableSet.getAttribute("Name");
+			Attribute optimizerAdapterClassAttribute = optimizerTableSet.getAttribute("OptimizerAdapterClass");
+			for(int i=0;i<optimizerTableSet.getValueCount();i++) {
+				Integer idOfCurrentAlgorithm = new Double(idAttribute.getValueAt(i).toString()).intValue();
 				if(idOfCurrentAlgorithm.equals(requiredAlgorithm)) {
 					
 					// Configure the adapter class
 					try {
-						Class<?> adapter = Class.forName(currentInstance.stringValue(optimizerAdapterClassAttribute));
+						Class<?> adapter = Class.forName((String)optimizerAdapterClassAttribute.getValueAt(i));
 						this.oad = (OptimizerInterface)adapter.newInstance();
 						Properties optimizerProperties = new Properties();
-						Integer id = new Double(currentInstance.value(idAttribute)).intValue();
+						Integer id = new Double(idAttribute.getValueAt(i).toString()).intValue();
 						optimizerProperties.setProperty("id",id.toString());
-						optimizerProperties.setProperty("name",currentInstance.stringValue(nameAttribute));
+						optimizerProperties.setProperty("name",(String)nameAttribute.getValueAt(i));
 						((AmuseTask)this.oad).configure(optimizerProperties,this,this.requiredParameters);
 						
 						AmuseLogger.write(this.getClass().getName(), Level.INFO, 
-								"Optimizer is configured: " + currentInstance.stringValue(optimizerAdapterClassAttribute));
+								"Optimizer is configured: " + optimizerAdapterClassAttribute.getValueAt(i));
 					} catch(ClassNotFoundException e) {
 						e.printStackTrace();
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Optimizer class cannot be located: " + currentInstance.stringValue(optimizerAdapterClassAttribute));
+								"Optimizer class cannot be located: " + optimizerAdapterClassAttribute.getValueAt(i));
 						System.exit(1);
 					} catch(IllegalAccessException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Optimizer class or its nullary constructor is not accessible: " + currentInstance.stringValue(optimizerAdapterClassAttribute));
+								"Optimizer class or its nullary constructor is not accessible: " + optimizerAdapterClassAttribute.getValueAt(i));
 						System.exit(1);
 					} catch(InstantiationException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
-								"Instantiation failed for optimizer class: " + currentInstance.stringValue(optimizerAdapterClassAttribute));
+								"Instantiation failed for optimizer class: " + optimizerAdapterClassAttribute.getValueAt(i));
 						System.exit(1);
 					} catch(NodeException e) {
 						AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
@@ -274,7 +272,6 @@ public class OptimizerNodeScheduler extends NodeScheduler {
 					algorithmFound = true;
 					break;
 				} 
-				currentInstance = optimizerTableLoader.getNextInstance(optimizerTableLoader.getStructure());
 			}
 			
 			if(!algorithmFound) {

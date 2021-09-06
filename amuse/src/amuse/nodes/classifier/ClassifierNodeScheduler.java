@@ -429,8 +429,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					// Load the first classifier input for attributes information
 					String currentInputFile = ((FileListInput)inputToClassify).
 						getInputFiles().get(0).toString();
-					
-					if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
+					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
+					if(currentInputFile.startsWith(musicDatabasePath)) {
 						currentInputFile = 
 							((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 							+ File.separator 
@@ -472,6 +474,9 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 					}
 						
+					// remember the number of attributes of the first input file to spot potential errors with inconsistent feature processing
+					String firstInputFile = currentInputFile;
+					int numberOfAttributes = classifierInputLoader.getStructure().numAttributes();
 					// Save the processed features for classifier
 					for(int k=0;k<((FileListInput)inputToClassify).getInputFiles().size();k++) {
 						currentInputFile = ((FileListInput)inputToClassify).getInputFiles().get(k).toString();
@@ -480,7 +485,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						
 						// Save the name of music file for later conversion of classification output
 						String currentInputSong = new String(currentInputFile);
-						if(currentInputFile.startsWith(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE))) {
+						if(currentInputFile.startsWith(musicDatabasePath)) {
 							currentInputFile = 
 								((ClassificationConfiguration)this.getConfiguration()).getProcessedFeatureDatabase()
 								+ File.separator 
@@ -513,6 +518,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						Instance processedFeaturesInstance;
 						processedFeaturesLoader.setFile(new File(currentInputFile));
 						processedFeaturesInstance = processedFeaturesLoader.getNextInstance(processedFeaturesLoader.getStructure());
+						
+						// check if the processing is consistent
+						if(processedFeaturesInstance.numAttributes() != numberOfAttributes) {
+							throw new NodeException("Inconsistent Processing: " + firstInputFile + " has " + numberOfAttributes + " attributes while "
+									+ currentInputFile + " has " + classifierInputLoader.getStructure().numAttributes() + " attributes.");
+						}
+						
 						while(processedFeaturesInstance != null) {
 							double startPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("Start"));
 							double endPosition = processedFeaturesInstance.value(processedFeaturesLoader.getStructure().attribute("End"));
@@ -1102,7 +1114,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 			}
 			values_writer.close();
 		} catch(Exception e) {
-			e.printStackTrace();
+			throw new NodeException(e.getMessage());
 		}
 		
 	}

@@ -32,6 +32,7 @@ import java.awt.event.KeyListener;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -50,6 +51,7 @@ public class FeatureTableView {
     private JButton loadSelectionButton;
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
+    private JCheckBox customFeatureCheckBox;
 
     /**
      * Creates a new Feature Table View.
@@ -75,12 +77,14 @@ public class FeatureTableView {
 
     void setModel(FeatureTableModel model) {
         this.table.setModel(model);
-        table.getColumnModel().getColumn(0).setMinWidth(30);
+        table.getColumnModel().getColumn(0).setMinWidth(25);
         table.getColumnModel().getColumn(0).setMaxWidth(25);
         table.getColumnModel().getColumn(1).setMinWidth(35);
         table.getColumnModel().getColumn(1).setMaxWidth(35);
-        table.getColumnModel().getColumn(3).setMinWidth(75);
-        table.getColumnModel().getColumn(3).setMaxWidth(75);
+        table.getColumnModel().getColumn(2).setMinWidth(50);
+        table.getColumnModel().getColumn(2).setMaxWidth(50);
+        table.getColumnModel().getColumn(4).setMinWidth(95);
+        table.getColumnModel().getColumn(4).setMaxWidth(95);
         table.setDragEnabled(false);
         table.setRowSorter(new TableRowSorter<FeatureTableModel>(model));
     }
@@ -104,6 +108,7 @@ public class FeatureTableView {
             jPanelFeatureExtractionButtons.setLayout(layout);
             jPanelFeatureExtractionButtons.add(getJButtonSelectAll());
             jPanelFeatureExtractionButtons.add(getJButtonDeselectAll());
+            jPanelFeatureExtractionButtons.add(getCustomFeatureCheckBox());
             jPanelFeatureExtractionButtons.add(Box.createHorizontalGlue());
             jPanelFeatureExtractionButtons.add(getLoadButton());
             jPanelFeatureExtractionButtons.add(getSaveButton());
@@ -148,6 +153,22 @@ public class FeatureTableView {
         }
         return jButtonDeselectAll;
     }
+    
+    private JCheckBox getCustomFeatureCheckBox() {
+    	if(customFeatureCheckBox == null) {
+    		customFeatureCheckBox = new JCheckBox();
+    		customFeatureCheckBox.setText("Show custom features");
+    		customFeatureCheckBox.addActionListener(l -> {
+    			FeatureTableModel model = (FeatureTableModel)table.getModel();
+    			if(customFeatureCheckBox.isSelected()) {
+    				model.addCustomFeatures();
+    			} else {
+    				model.removeCustomFeatures();
+    			}
+    		});
+    	}
+    	return customFeatureCheckBox;
+    }
 
     private void initGUI() {
         BorderLayout layout = new BorderLayout();
@@ -177,5 +198,9 @@ public class FeatureTableView {
         view.add(getJPanelFeatureExtractionButtons(), BorderLayout.SOUTH);
         // Add Titled Border
         view.setBorder(new TitledBorder("Select Features"));
+    }
+    
+    public void showCustomFeatures(boolean show) {
+    	getCustomFeatureCheckBox().setSelected(show);
     }
 }

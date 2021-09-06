@@ -610,7 +610,6 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 		try {
 			Class<?> evaluationClass = Class.forName(evalString);
 			fitnessEvaluator = (EvaluationInterface)evaluationClass.newInstance();
-			fitnessEvaluator.initialize(this, isIndependentTestSetUsed);
 		} catch (Exception e) {
 			throw new NodeException("Could not set up evaluation: " + e.getMessage());
 		}
@@ -730,6 +729,7 @@ public class EvolutionaryStrategy extends AmuseTask implements OptimizerInterfac
 			}
 			population[i] = ind;
 		}
+		fitnessEvaluator.initialize(this, isIndependentTestSetUsed);
 		
 		if(((OptimizationConfiguration)this.getCorrespondingScheduler().getConfiguration()).getContinueOldExperimentFrom().
 				equals("-1")) {

@@ -1,13 +1,12 @@
-|---------------------------------------------------|
 |AMUSE framework (Advanced MUsic Explorer) v0.3 beta|
 |---------------------------------------------------|
 
 Copyright 2006-2021 by code authors
 
-For more details see the manual
+For more details see the manual:
 <https://github.com/AdvancedMUSicExplorer/AMUSE/blob/master/amuse/docs/user_manual.pdf>
 
-Created at TU Dortmund, Chair of Algorithm Engineering
+Created at TU Dortmund, Chair of Algorithm Engineering:
 <http://ls11-www.cs.tu-dortmund.de>
 
 Contact:
@@ -26,6 +25,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with AMUSE. If not, see <http://www.gnu.org/licenses/>.
 
+-------------
+Citing AMUSE:
+-------------
+I. Vatolkin, P. Ginsel, and G. Rudolph: Advancements in the Music Information Retrieval Framework AMUSE over the Last Decade. Accepted for Proceedings of the 44th International ACM SIGIR Conference on Research and Development in Information Retrieval, 2021
+
+I. Vatolkin, W. Theimer, and M.Botteck: AMUSE (Advanced MUSic Explorer) – A Multitool Framework for Music Data Analysis. Proceedings of the 11th International Society for Music Information Retrieval Conference (ISMIR), pp. 33-38, 2010
+
 ------------
 Please note:
 ------------
@@ -40,4 +46,3 @@ Please note:
   interested in a different license, e.g. an OEM license for
   integrating AMUSE into a proprietary software product
   not licensed under the AGPL.
- 

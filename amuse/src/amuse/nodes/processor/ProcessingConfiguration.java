@@ -78,6 +78,9 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	/** Feature description, if required */	
 	private final String featureDescription;
 	
+	/** Folder to load the raw features; can be currently configured only with the set method, not with a constructor (can be used in a tool node) */
+	private String featureDatabase;
+	
 	/** Folder to store the processed features (default: Amuse processed feature database) */
 	private String processedFeatureDatabase;
 	
@@ -298,6 +301,20 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 */
 	public String getDescription() {
 		return new String("Number of files: " + musicFileList.getFiles().size() + " Number of features: " + inputFeatureList.getSelectedIds().size());
+	}
+	
+	/**
+	 * @return Feature database
+	 */
+	public String getFeatureDatabase() {
+		return featureDatabase;
+	}
+
+	/**
+	 * @param featureDatabase Feature database
+	 */
+	public void setFeatureDatabase(String featureDatabase) {
+		this.featureDatabase = featureDatabase;
 	}
 	
 }

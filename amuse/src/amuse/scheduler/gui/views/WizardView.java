@@ -102,16 +102,16 @@ public class WizardView {
 		experimentsPanel.setBorder(new TitledBorder("Experiments"));
 		
 		// Adding buttons to the main screen
-		JButton buttonCreateExperiment = new JButton("Create Amuse Experiment");
+		JButton buttonCreateExperiment = new JButton("Create AMUSE Experiment");
 		buttonCreateExperiment.addActionListener(e -> showCreateExperimentPane());
 
-	    JButton buttonLoadExperiment = new JButton("Load Amuse Experiment");
+	    JButton buttonLoadExperiment = new JButton("Load AMUSE Experiment");
 	    buttonLoadExperiment.addActionListener(e -> {
 	    	TaskManagerView.getInstance().loadButtonClicked();
 	    	buttonCreateExperiment.doClick();
 	    });
 	    
-	    JButton buttonAmuseSettings = new JButton("Edit Amuse Settings");
+	    JButton buttonAmuseSettings = new JButton("Edit AMUSE Settings");
 	    buttonAmuseSettings.addActionListener(e -> wizardController.goToSettings());
 
 	    // Panel for annotation buttons
@@ -145,11 +145,11 @@ public class WizardView {
 	    annotationPanel.add(Box.createRigidArea(new Dimension(panelWidth, 5)));
 	    
 	    startButtonsPanel.add(Box.createHorizontalGlue());
-	    startButtonsPanel.add(experimentsPanel);
-	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    startButtonsPanel.add(buttonAmuseSettings);
 	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    startButtonsPanel.add(annotationPanel);
+	    startButtonsPanel.add(Box.createHorizontalGlue());
+	    startButtonsPanel.add(experimentsPanel);
 	    startButtonsPanel.add(Box.createHorizontalGlue());
 	    
 	    

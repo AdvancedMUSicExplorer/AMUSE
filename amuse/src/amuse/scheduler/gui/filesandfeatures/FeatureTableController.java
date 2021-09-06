@@ -33,6 +33,7 @@ import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
@@ -159,13 +160,62 @@ public class FeatureTableController implements ActionListener {
     }
 
     private void loadFeatureTableSelection(DataSetAbstract set) {
+    		boolean containsCustomFeatures = false;
             List<Integer> ids = new ArrayList<Integer>(set.getValueCount());
+            List<Integer> confIds = new ArrayList<Integer>(set.getValueCount());
             StringAttribute idAttribute = (StringAttribute) set.getAttribute("Id");
-            for (String id : idAttribute.getValues()) {
-                ids.add(new Double(id).intValue());
+            for (String idString : idAttribute.getValues()) {
+            	Integer id = null;
+            	Integer confId = null;
+                if(idString.contains("_")) {
+                	id = new Double(idString.substring(0, idString.indexOf("_"))).intValue();
+                	confId = new Double(idString.substring(idString.indexOf("_") + 1)).intValue();
+                	containsCustomFeatures = true;
+                } else {
+                	id = new Double(idString).intValue();
+                }
+                ids.add(id);
+                confIds.add(confId);
             }
-            model.selectFeaturesByID(ids);
-
+            if(containsCustomFeatures) {
+            	model.addCustomFeatures();
+            	view.showCustomFeatures(true);
+            }
+            model.selectFeaturesByID(ids, confIds);
+            FeatureTable featureTable = model.getCurrentFeatureTable();
+            List<Integer> missingIds = new ArrayList<Integer>();
+            List<Integer> missingConfIds = new ArrayList<Integer>();
+            for(int i = 0; i < ids.size(); i++) {
+            	Integer id = ids.get(i);
+            	Integer confId = confIds.get(i);
+            	boolean found = false;
+            	for(Feature feature : featureTable.getFeatures()) {
+            		if(feature.getId() == id && feature.getConfigurationId() == confId) {
+            			found = true;
+            			break;
+            		}
+            	}
+            	if(!found) {
+            		missingIds.add(id);
+            		missingConfIds.add(confId);
+            	}
+            }
+            if(!missingIds.isEmpty()) {
+            	String missingString = "";
+            	for(int i = 0; i < missingIds.size(); i++) {
+            		Integer id = missingIds.get(i);
+            		Integer confId = missingConfIds.get(i);
+            		if(i != 0) {
+            			missingString += ", ";
+            		}
+            		missingString += id + (confId == null ? "" : ("_" + confId));
+            	}
+            	if(missingIds.size() == 1) {
+            		JOptionPane.showMessageDialog(view.getView(), "Unable to load feature with id " + missingString , "Error Loading FeatureList", JOptionPane.ERROR_MESSAGE);
+            	} else {
+            		JOptionPane.showMessageDialog(view.getView(), "Unable to load features with ids " + missingString , "Error Loading FeatureList", JOptionPane.ERROR_MESSAGE);
+            	}
+            }
     }
 
     void loadFeatureTableSelection(FeatureTable featureTable) {
