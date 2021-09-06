@@ -101,7 +101,7 @@ public class AORSplitter extends AmuseTask implements DimensionProcessorInterfac
 		Double[] attackBeginTimes = loadEventTimes("attack");
 		Double[] releaseEndTimes = loadEventTimes("release");
 		
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 		ArrayList<Feature> newFeatures = new ArrayList<Feature>();
 			
 	    // Go through features

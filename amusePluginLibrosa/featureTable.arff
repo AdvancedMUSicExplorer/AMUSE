@@ -14,6 +14,8 @@
 @ATTRIBUTE ExtractorId NUMERIC
 % Window size in samples
 @ATTRIBUTE WindowSize NUMERIC
+% Step size in samples
+@ATTRIBUTE StepSize NUMERIC
 % Number of feature dimensions
 @ATTRIBUTE Dimensions NUMERIC
 % Type of feature:
@@ -23,4 +25,4 @@
 @ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
-263, "Mel spectrum", 8, 2048, 128, WindowedNumeric
+263, "Mel spectrum", 8, 2048, 2048, 128, WindowedNumeric

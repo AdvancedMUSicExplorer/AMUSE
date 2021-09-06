@@ -521,6 +521,8 @@ public class PluginRemover {
 			values_writer.writeBytes("@ATTRIBUTE ExtractorId NUMERIC" + sep);
 			values_writer.writeBytes("% Window size in samples" + sep);
 			values_writer.writeBytes("@ATTRIBUTE WindowSize NUMERIC" + sep);
+			values_writer.writeBytes("% Step size in samples" + sep);
+			values_writer.writeBytes("@ATTRIBUTE StepSize NUMERIC" + sep);
 			values_writer.writeBytes("% Number of feature dimensions" + sep);
 			values_writer.writeBytes("@ATTRIBUTE Dimensions NUMERIC" + sep);
 			values_writer.writeBytes("% Type of feature:" + sep);
@@ -561,13 +563,15 @@ public class PluginRemover {
 					String extractorIdString = extractorId.isNaN() ? "?" : new Integer(extractorId.intValue()).toString(); 
 					Double windowSize = new Double(installedFeatureSet.getAttribute("WindowSize").getValueAt(i).toString());
 					String windowSizeString = windowSize.isNaN() ? "?" : new Integer(windowSize.intValue()).toString();
+					Double stepSize = new Double(installedFeatureSet.getAttribute("StepSize").getValueAt(i).toString());
+					String stepSizeString = stepSize.isNaN() ? "?" : new Integer(stepSize.intValue()).toString();
 					Double dimensions = new Double(installedFeatureSet.getAttribute("Dimensions").getValueAt(i).toString());
 					String dimensionsString = dimensions.isNaN() ? "?" : new Integer(dimensions.intValue()).toString();
 					String featureTypeString = installedFeatureSet.getAttribute("FeatureType").getValueAt(i).toString();
 					
 					values_writer.writeBytes(idOfInstalledFeature + ", \"" + 
 							installedFeatureSet.getAttribute("Description").getValueAt(i).toString() + "\", " + 
-						extractorIdString + ", " + windowSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
+						extractorIdString + ", " + windowSizeString + ", " + stepSizeString + ", " + dimensionsString + ", " + featureTypeString + sep);
 				}
 			}
 			

@@ -74,7 +74,7 @@ public class BeatPruner extends AmuseTask implements DimensionProcessorInterface
 		// for finding the path to beat times file (ID = 408)
 		Double[] beatTimes = loadBeatTimes();
 
-		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalFrameSize();
+		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
 			
 		// Go through features
 		for(int j=0;j<features.size();j++) {
