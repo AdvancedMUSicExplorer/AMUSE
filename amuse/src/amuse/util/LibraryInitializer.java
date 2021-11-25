@@ -71,7 +71,7 @@ public class LibraryInitializer {
 				pathToRapidMinerHome = pathToRapidMinerHome.replaceAll(File.separator + "+", File.separator); // Make sure there are no consecutive separators
 				System.setProperty("rapidminer.home", pathToRapidMinerHome);
 				System.setProperty("rapidminer.init.weka", "true");
-				System.setProperty("rapidminer.init.plugins", "false");
+				System.setProperty("rapidminer.init.plugins", "true");
 				System.setProperty("rapidminer.init.jdbc.lib", "false");
 				System.setProperty("rapidminer.init.jdbc.classpath", "false");
 				RapidMiner.setExecutionMode(ExecutionMode.COMMAND_LINE);
