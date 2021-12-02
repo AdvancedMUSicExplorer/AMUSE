@@ -177,6 +177,7 @@ public class SingleEvaluator extends AmuseTask implements ValidatorInterface {
 				new ArrayList<Integer>(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
 				InputFeatureType.PROCESSED_FEATURES,
+				null,
 				-1,
 				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),

@@ -27,6 +27,7 @@ import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.algorithm.Algorithm;
@@ -299,6 +300,14 @@ public class TrainingView extends JPanel {
 
 	public void setClassificationWindowStepSize(Integer overlap) {
 		inputFeaturePanel.setClassificationWindowStepSize(overlap);
+	}
+
+	public Unit getUnit() {
+		return inputFeaturePanel.getUnit();
+	}
+	
+	public void setUnit(Unit unit) {
+		inputFeaturePanel.setUnit(unit);
 	}
 
 }

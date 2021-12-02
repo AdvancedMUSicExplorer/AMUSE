@@ -326,6 +326,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 			TrainingConfiguration tConf = new TrainingConfiguration(
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
 				InputFeatureType.PROCESSED_FEATURES,
+				null,
 				-1,
 				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),
@@ -349,6 +350,7 @@ public class NFoldCrossValidator extends AmuseTask implements ValidatorInterface
 				new ArrayList<Integer>(),
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getInputFeaturesDescription(), 
 				InputFeatureType.PROCESSED_FEATURES,
+				null,
 				-1,
 				-1,
 				((ValidationConfiguration)this.correspondingScheduler.getConfiguration()).getClassificationAlgorithmDescription(),

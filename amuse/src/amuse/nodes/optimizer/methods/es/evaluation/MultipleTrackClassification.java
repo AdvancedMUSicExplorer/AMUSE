@@ -52,6 +52,7 @@ import amuse.nodes.optimizer.methods.es.EvolutionaryStrategy;
 import amuse.nodes.optimizer.methods.es.evaluation.interfaces.EvaluationInterface;
 import amuse.nodes.optimizer.methods.es.parameters.processing.SelectedFeatures;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.trainer.TrainerNodeScheduler;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -328,6 +329,8 @@ public class MultipleTrackClassification implements EvaluationInterface {
 						featureTable,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 							getAttributes().getNamedItem("stringValue").getNodeValue(),
+						Unit.valueOf(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Unit").
+								getAttributes().getNamedItem("stringValue").getNodeValue().toString()),
 						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 							getAttributes().getNamedItem("intValue").getNodeValue()),
 						new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window step size").
@@ -358,6 +361,8 @@ public class MultipleTrackClassification implements EvaluationInterface {
 							featureTable,
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),
+							Unit.valueOf(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Unit").
+									getAttributes().getNamedItem("stringValue").getNodeValue().toString()),
 							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
 							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classificaiton window step size").
@@ -388,6 +393,8 @@ public class MultipleTrackClassification implements EvaluationInterface {
 							featureTable,
 							individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Processing steps").
 								getAttributes().getNamedItem("stringValue").getNodeValue(),
+							Unit.valueOf(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Unit").
+									getAttributes().getNamedItem("stringValue").getNodeValue().toString()),
 							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window size").
 								getAttributes().getNamedItem("intValue").getNodeValue()),
 							new Integer(individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classification window step size").
@@ -456,6 +463,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				vConf = new ValidationConfiguration("1[" + categoryForOptimizationDescription.substring(1,categoryForOptimizationDescription.length()) + "_0]",measureTable, 
 						processedModel, 
 						InputFeatureType.PROCESSED_FEATURES,
+						null,
 						-1,
 						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
@@ -501,7 +509,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 			
 				TrainingConfiguration tConf = new TrainingConfiguration(
-						processedModel, InputFeatureType.PROCESSED_FEATURES, 0, 0,
+						processedModel, InputFeatureType.PROCESSED_FEATURES, null, -1, -1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 							getAttributes().getNamedItem("stringValue").getNodeValue(), 
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
@@ -542,6 +550,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						InputFeatureType.PROCESSED_FEATURES,
+						null,
 						-1,
 						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
@@ -587,7 +596,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 			trainingDataWithOnlySelectedFeatures.addAttribute(trainingData.getAttribute(trainingData.getAttributeCount()-1));
 	
 			
-			TrainingConfiguration tConf = new TrainingConfiguration(processedModel, InputFeatureType.PROCESSED_FEATURES, 0, 0,
+			TrainingConfiguration tConf = new TrainingConfiguration(processedModel, InputFeatureType.PROCESSED_FEATURES, null, -1, -1,
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
 						getAttributes().getNamedItem("stringValue").getNodeValue(), 
 					individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier preprocessing").
@@ -641,6 +650,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						InputFeatureType.PROCESSED_FEATURES,
+						null,
 						-1,
 						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").
@@ -650,6 +660,7 @@ public class MultipleTrackClassification implements EvaluationInterface {
 				vConf = new ValidationConfiguration("0[" + pathToModels+ File.separator +"model.mod" + "]",measureTable,
 						processedModel, 
 						InputFeatureType.PROCESSED_FEATURES,
+						null,
 						-1,
 						-1,
 						individual.getCorrespondingES().getConfiguration().getConstantParameterByName("Classifier configuration").

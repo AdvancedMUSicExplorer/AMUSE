@@ -37,6 +37,7 @@ import amuse.data.io.DataSetException;
 import amuse.data.datasets.ProcessorConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
@@ -154,7 +155,7 @@ public class ProcessingController extends AbstractController {
         File musicFilesFile = new File(selectedFile.getParent() + File.separator + "filelists" + File.separator
                 + selectedFile.getName());
         String reductionSteps = pcmController.getReductionSteps();
-        String unit = pcmController.getUnit();
+        String unit = pcmController.getUnit().toString();
         int classificationWindowSize = pcmController.getClassificationWindowSize();
         int classificationWindowStepSize = pcmController.getClassificationWindowStepSize();
         String matrixToVector = pcmController.getConversionStep();
@@ -211,14 +212,14 @@ public class ProcessingController extends AbstractController {
     public ProcessingConfiguration getExperimentConfiguration() {
         /* Gather all neccessary information and create variables */
         String reductionSteps = pcmController.getReductionSteps();
-        String unit = pcmController.getUnit();
+        Unit unit = pcmController.getUnit();
         int classificationWindowSize = pcmController.getClassificationWindowSize();
         int classificationWindowStepSize = pcmController.getClassificationWindowStepSize();
         String matrixToVector = pcmController.getConversionStep();
         String optionalModelStr = pcmController.getOptionalModelStr();
         FileTable files = filesAndFeatures.getFileTable();
         ProcessingConfiguration conf = new ProcessingConfiguration(files, filesAndFeatures.getFeatureTable(),
-                reductionSteps, classificationWindowSize, classificationWindowStepSize,
+                reductionSteps, unit, classificationWindowSize, classificationWindowStepSize,
                 matrixToVector, optionalModelStr);
         return conf;
     }

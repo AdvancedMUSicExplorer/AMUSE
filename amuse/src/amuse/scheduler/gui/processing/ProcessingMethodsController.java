@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.scheduler.gui.algorithm.AlgorithmInterface;
 import amuse.scheduler.gui.algorithm.AlgorithmView;
 import amuse.scheduler.gui.controller.ProcessingController;
@@ -156,8 +157,8 @@ public class ProcessingMethodsController {
      *
      * @return the selected unit for classification window size and classification window step size.
      */
-    public String getUnit() {
-        return view.getUnit().toLowerCase();
+    public Unit getUnit() {
+        return view.getUnit();
     }
 
     public void setUnit(String value) {

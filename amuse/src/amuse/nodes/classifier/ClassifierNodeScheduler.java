@@ -726,6 +726,7 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
 				((ClassificationConfiguration)this.getConfiguration()).getInputFeatureList(),
 				"",
+				((ClassificationConfiguration)this.getConfiguration()).getUnit(),
 				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
 				((ClassificationConfiguration)this.getConfiguration()).getClassificationWindowStepSize(),
 				"6",

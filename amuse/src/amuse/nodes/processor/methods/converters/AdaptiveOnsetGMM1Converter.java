@@ -35,6 +35,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.preferences.AmusePreferences;
@@ -74,7 +75,7 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 		}
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer aggregationWindowSize, Integer stepSize, String nameOfProcessorModel, Unit unit) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
@@ -225,7 +226,7 @@ public class AdaptiveOnsetGMM1Converter extends AmuseTask implements MatrixToVec
 	/**
 	 * Loads the event times TODO this function exists also in AORSplitter and ProcessorNodeScheduler and should be removed sometime!
 	 * @param string Event description (onset, attack or release)
-	 * @return Double array with time values in ms
+	 * @return Double array with time values in s
 	 */
 	private Double[] loadEventTimes(String string) throws NodeException {
 		Double[] eventTimes = null;

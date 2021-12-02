@@ -12,6 +12,7 @@ import javax.swing.border.TitledBorder;
 
 import amuse.data.FeatureTable;
 import amuse.data.InputFeatureType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import net.miginfocom.swing.MigLayout;
 
 public class InputFeaturePanel extends JPanel {
@@ -114,5 +115,13 @@ public class InputFeaturePanel extends JPanel {
 
 	public void setClassificationWindowStepSize(Integer stepSize) {
 		rawInputFeaturePanel.setClassificationWindowStepSize(stepSize);
+	}
+	
+	public Unit getUnit() {
+		return rawInputFeaturePanel.getUnit();
+	}
+	
+	public void setUnit(Unit unit) {
+		rawInputFeaturePanel.setUnit(unit);
 	}
 }

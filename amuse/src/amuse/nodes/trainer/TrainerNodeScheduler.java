@@ -845,6 +845,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
 				((TrainingConfiguration)this.getConfiguration()).getInputFeatureList(),
 				"",
+				((TrainingConfiguration)this.getConfiguration()).getUnit(),
 				((TrainingConfiguration)this.getConfiguration()).getClassificationWindowSize(),
 				((TrainingConfiguration)this.getConfiguration()).getClassificationWindowStepSize(),
 				"6",

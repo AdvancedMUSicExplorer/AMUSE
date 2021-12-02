@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -18,6 +19,7 @@ import org.apache.log4j.Level;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.scheduler.gui.dialogs.AttributeSelector;
 import amuse.scheduler.gui.filesandfeatures.FeatureTableController;
@@ -33,10 +35,12 @@ public class RawInputFeaturePanel extends JPanel {
     private TitledBorder title = new TitledBorder("Select Raw Input Features");
     private FeatureTable featureTable = new FeatureTable();
     private JButton featureButton;
-    private JLabel windowSizeLabel = new JLabel("Window Size (ms):");
-    private JLabel windowStepSizeLabel = new JLabel("Window Step Size (ms):");
+    private JLabel windowSizeLabel = new JLabel("Window Size:");
+    private JLabel windowStepSizeLabel = new JLabel("Window Step Size:");
+    private JLabel unitLabel = new JLabel("Unit:");
     private JTextField windowSizeTextField = new JTextField(10);
     private JTextField windowStepSizeTextField = new JTextField(10);
+	private JComboBox<Unit> unitComboBox;
     
     public RawInputFeaturePanel() {
     	super(new MigLayout("fillx"));
@@ -47,6 +51,8 @@ public class RawInputFeaturePanel extends JPanel {
 			RawFeatureSelector featureSelector = new RawFeatureSelector(featureTable);
 			featureTable = featureSelector.getFeatureTable();
 		});
+    	unitComboBox = new JComboBox<Unit>(Unit.values());
+    	unitComboBox.setSelectedItem(Unit.MILLISECONDS);
     	windowSizeTextField.setText("5000");
     	windowStepSizeTextField.setText("2500");
     	this.add(featureButton, "wrap");
@@ -54,6 +60,8 @@ public class RawInputFeaturePanel extends JPanel {
     	this.add(windowSizeTextField, "pushx, wrap");
     	this.add(windowStepSizeLabel);
     	this.add(windowStepSizeTextField, "pushx, wrap");
+    	this.add(unitLabel);
+    	this.add(unitComboBox, "pushx, wrap");
     	this.add(attributesToIgnoreLabel, "pushx, wrap");
         this.add(attributesToIgnoreTextField, "growx, wrap");
     }
@@ -172,4 +180,13 @@ public class RawInputFeaturePanel extends JPanel {
 		this.windowStepSizeTextField.setText(stepSize.toString());
 	}
 
+
+
+	public Unit getUnit() {
+		return (Unit)unitComboBox.getSelectedItem();
+	}
+
+	public void setUnit(Unit unit) {
+		unitComboBox.setSelectedItem(unit);
+	}
 }

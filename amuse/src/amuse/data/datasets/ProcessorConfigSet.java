@@ -35,6 +35,8 @@ import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.InputSourceType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 
 /**
  * This class represents a list of processing tasks as used in AMUSE. Serialization to ARFF is supported.
@@ -159,7 +161,11 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
 
         List<String> inputSourceTypeL = new ArrayList<String>();
         inputSourceTypeL.add(inputSourceType);
-        inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, inputSourceTypeL);
+        List<String> inputSourceValues = new ArrayList<String>();
+        for(InputSourceType value : InputSourceType.values()) {
+        	inputSourceValues.add(value.toString());
+        }
+        inputSourceTypeAttribute = new NominalAttribute(strInputSourceType, inputSourceValues, inputSourceTypeL);
         
         List<String> inputsL = new ArrayList<String>();
         inputsL.add(input);
@@ -171,7 +177,11 @@ public class ProcessorConfigSet extends AbstractArffExperimentSet {
 
         List<String> unitList = new ArrayList<String>();
         unitList.add(unit);
-        unitAttribute = new NominalAttribute(strUnit, unitList);
+        List<String> unitValues = new ArrayList<String>();
+        for(Unit value : Unit.values()) {
+        	unitValues.add(value.toString());
+        }
+        unitAttribute = new NominalAttribute(strUnit, unitValues, unitList);
 
         ArrayList<Double> classificationWindowSizes = new ArrayList<Double>();
         classificationWindowSizes.add(((Integer)classificationWindowSize).doubleValue());

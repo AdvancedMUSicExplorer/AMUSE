@@ -47,6 +47,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.validator.interfaces.ValidationMeasure;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -75,10 +76,13 @@ public class ValidationConfiguration extends TaskConfiguration {
 	/** Type of input features for classfication */
 	private final InputFeatureType inputFeatureType;
 	
-	/** Size of classification window in milliseconds */
+	/** Unit of window and step size */
+	private final Unit unit;
+	
+	/** Size of classification window */
 	private final Integer classificationWindowSize;
 	
-	/** Size of classification window step size in milliseconds */
+	/** Size of classification window step size */
 	private final Integer classificationWindowStepSize;
 	
 	/** Input to validate */
@@ -150,6 +154,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			MeasureTable measures, 
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
@@ -177,6 +182,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
@@ -215,6 +221,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 	public ValidationConfiguration(String validationAlgorithmDescription,
 			MeasureTable measures, 
 			FeatureTable inputFeatures,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
@@ -237,6 +244,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			description += "_" + features.get(i).getId();
 		}
 		this.inputFeaturesDescription = description;
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
@@ -273,6 +281,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			MeasureTable measures,
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String classificationAlgorithmDescription,
@@ -296,6 +305,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.classificationAlgorithmDescription = classificationAlgorithmDescription;
@@ -338,6 +348,12 @@ public class ValidationConfiguration extends TaskConfiguration {
 				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
 			} else {
 				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Unit currentUnit;
+			if(validatorConfig.getUnitAttribute().getValueAt(i).toString().equals(new String("SAMPLES"))) {
+				currentUnit = Unit.SAMPLES;
+			} else {
+				currentUnit = Unit.MILLISECONDS;
 			}
 			Integer currentClassificationWindowSize = validatorConfig.getClassificationWindowSizeAttribute().getValueAt(i).intValue();
 			Integer currentClassificationWindowStepSize = validatorConfig.getClassificationWindowStepSizeAttribute().getValueAt(i).intValue();
@@ -420,7 +436,7 @@ public class ValidationConfiguration extends TaskConfiguration {
 			
 			// Create a classification task
 		    taskConfigurations.add(new ValidationConfiguration(currentValidationMethodId, currentMeasureTable, 
-		    		currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowStepSize,
+		    		currentInputFeatureDescription, currentInputFeatureType, currentUnit, currentClassificationWindowSize, currentClassificationWindowStepSize,
 		    		currentClassificationAlgorithmDescription, new FileInput(currentInputToValidate),
 		    		gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentOutputPath));
 			AmuseLogger.write(ValidationConfiguration.class.getName(), Level.DEBUG, "Validation task(s) for validation input " + 
@@ -663,5 +679,12 @@ public class ValidationConfiguration extends TaskConfiguration {
 	 */
 	public int getNumberOfValuesPerWindow() {
 		return this.numberOfValuesPerWindow;
+	}
+
+	/**
+	 * @return the unit of classification window and step size
+	 */
+	public Unit getUnit() {
+		return unit;
 	}
 }

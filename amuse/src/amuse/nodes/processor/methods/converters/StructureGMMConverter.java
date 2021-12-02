@@ -36,6 +36,7 @@ import amuse.data.Feature;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.nodes.NodeException;
 import amuse.nodes.processor.ProcessingConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.preferences.AmusePreferences;
@@ -60,7 +61,7 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 		this.numberOfClassificationWindowsToSelect = new Integer(parameterString);
 	}
 	
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer aggregationWindowSize, Integer stepSize, String nameOfProcessorModel, Unit unit) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the GMM conversion based on track structure information...");
 		
 		int sampleRate = features.get(0).getSampleRate();
@@ -135,8 +136,15 @@ public class StructureGMMConverter extends AmuseTask implements MatrixToVectorCo
 					newFeatures.add(stdDevOfCurrentSingleFeature);
 				}
 				
-				double classificationWindowSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
-				double overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
+				double classificationWindowSizeInWindows;
+				double overlapSizeInWindows;
+				if(unit == Unit.SAMPLES) {
+					classificationWindowSizeInWindows = aggregationWindowSize;
+					overlapSizeInWindows = aggregationWindowSize - stepSize;
+				} else {
+					classificationWindowSizeInWindows = (Double)(sampleRate*(aggregationWindowSize/1000d)/windowSize);
+					overlapSizeInWindows = (Double)(sampleRate*((aggregationWindowSize-stepSize)/1000d)/windowSize);
+				}
 				
 				// FIXME evtl. check! Calculates the last used time window and the number of maximum available classificatoin windows from it
 				double numberOfAllClassificationWindowsD = ((features.get(i).getWindows().get(features.get(i).getWindows().size()-1)) - classificationWindowSizeInWindows)/(classificationWindowSizeInWindows - overlapSizeInWindows)+1;

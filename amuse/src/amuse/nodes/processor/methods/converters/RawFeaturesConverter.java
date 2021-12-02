@@ -30,6 +30,7 @@ import org.apache.log4j.Level;
 import amuse.data.Feature;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.processor.ProcessorNodeScheduler;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.util.AmuseLogger;
@@ -54,8 +55,8 @@ public class RawFeaturesConverter extends AmuseTask implements MatrixToVectorCon
 	}
 
 	@Override
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize,
-			String nameOfProcessorModel) throws NodeException {
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer aggregationWindowSize, Integer stepSize,
+			String nameOfProcessorModel, Unit unit) throws NodeException {
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the raw feature conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
@@ -71,7 +72,7 @@ public class RawFeaturesConverter extends AmuseTask implements MatrixToVectorCon
 			int sampleRate = features.get(0).getSampleRate();
 			
 			// Aggregate the data over the complete track or build classification windows?
-			if(ms == -1) {
+			if(aggregationWindowSize == -1) {
 				
 				// In 1st case we have only one "classification window" which covers the complete track
 				classificationWindowSizeInWindows = features.get(0).getWindows().get(features.get(0).getWindows().size()-1);
@@ -80,8 +81,13 @@ public class RawFeaturesConverter extends AmuseTask implements MatrixToVectorCon
 			} else {
 				
 				// In 2nd case we can calculate the number of windows which belong to each classification window
-				classificationWindowSizeInWindows = (Double)(sampleRate*(ms/1000d)/windowSize);
-				overlapSizeInWindows = (Double)(sampleRate*((ms-stepSize)/1000d)/windowSize);
+				if(unit == Unit.SAMPLES) {
+					classificationWindowSizeInWindows = aggregationWindowSize;
+					overlapSizeInWindows = aggregationWindowSize - stepSize;
+				} else {
+					classificationWindowSizeInWindows = (Double)(sampleRate*(aggregationWindowSize/1000d)/windowSize);
+					overlapSizeInWindows = (Double)(sampleRate*((aggregationWindowSize-stepSize)/1000d)/windowSize);
+				}
 				
 				// FIXME evtl. check! Calculates the last used time window and the number of maximum available classification windows from it
 				double numberOfAllClassificationWindowsD = ((features.get(0).getWindows().get(features.get(0).getWindows().size()-1)) - classificationWindowSizeInWindows)/(classificationWindowSizeInWindows - overlapSizeInWindows)+1;

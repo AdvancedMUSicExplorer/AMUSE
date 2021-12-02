@@ -66,6 +66,12 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	/** Processing steps (feature or time dimension processing) */
 	private final String reductionSteps;
 	
+	/** Unit */
+	public enum Unit {MILLISECONDS, SAMPLES};
+	
+	/** Unit of window and step size */
+	private final Unit unit;
+	
 	/** Aggregation window size (each window -> input for classification) */
 	private final Integer aggregationWindowSize;
 	
@@ -95,7 +101,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
 	 */
-	public ProcessingConfiguration(FileTable musicFileList, InputSourceType inputSourceType, String inputFeatures, String reductionSteps,
+	public ProcessingConfiguration(FileTable musicFileList, InputSourceType inputSourceType, String inputFeatures, String reductionSteps, Unit unit,
 			Integer aggregationWindowSize, Integer aggregationWindowStepSize, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputSourceType = inputSourceType;
@@ -106,6 +112,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 		}
 		this.inputFeatures = inputFeatures;
 		this.reductionSteps = reductionSteps;
+		this.unit = unit;
 		this.aggregationWindowSize = aggregationWindowSize;
 		this.aggregationWindowStepSize = aggregationWindowStepSize;
 		this.conversionStep = conversionStep;
@@ -125,13 +132,14 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * 
 	 * @deprecated Old constructor when only raw features are used as input
 	 */
-	public ProcessingConfiguration(FileTable musicFileList, String inputFeatureList, String reductionSteps,
+	public ProcessingConfiguration(FileTable musicFileList, String inputFeatureList, String reductionSteps, Unit unit,
 			Integer classificationWindowSize, Integer classificationWindowStepSize, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
 		this.inputFeatures = null;
 		this.inputFeatureList = new FeatureTable(new File(inputFeatureList));
 		this.reductionSteps = reductionSteps;
+		this.unit = unit;
 		this.aggregationWindowSize = classificationWindowSize;
 		this.aggregationWindowStepSize = classificationWindowStepSize;
 		this.conversionStep = conversionStep;
@@ -151,13 +159,14 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * 
 	 * @deprecated Old constructor when only raw features are used as input
 	 */
-	public ProcessingConfiguration(FileTable musicFileList, FeatureTable inputFeatureList, String reductionSteps,
+	public ProcessingConfiguration(FileTable musicFileList, FeatureTable inputFeatureList, String reductionSteps, Unit unit,
 			Integer classificationWindowSize, Integer classificationWindowStepSize, String conversionStep, String featureDescription) {
 		this.musicFileList = musicFileList;
 		this.inputSourceType = InputSourceType.RAW_FEATURE_LIST;
 		this.inputFeatures = null;
 		this.inputFeatureList = inputFeatureList;
 		this.reductionSteps = reductionSteps;
+		this.unit = unit;
 		this.aggregationWindowSize = classificationWindowSize;
 		this.aggregationWindowStepSize = classificationWindowStepSize;
 		this.conversionStep = conversionStep;
@@ -179,6 +188,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 			String currentInputSourceType = processingConfig.getInputSourceTypeAttribute().getValueAt(i).toString();
 			String currentInput = processingConfig.getInputAttribute().getValueAt(i).toString();
 			String currentReductionSteps = processingConfig.getReductionStepsAttribute().getValueAt(i).toString();
+			Unit currentUnit = Unit.valueOf(processingConfig.getUnitAttribute().getValueAt(i).toString());
 			Integer currentAggregationWindowSize = (new Double(processingConfig.getAggregationWindowSizeAttribute().getValueAt(i).toString())).intValue();
 			Integer currentAggregationWindowStepSize = (new Double(processingConfig.getAggregationWindowStepSizeAttribute().getValueAt(i).toString())).intValue();
 			String currentMatrixToVectorMethod = processingConfig.getMatrixToVectorMethodAttribute().getValueAt(i).toString();
@@ -186,7 +196,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	
 			// Proceed music files from the current file list
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
-		    taskConfigurations.add(new ProcessingConfiguration(currentFileTable, InputSourceType.valueOf(currentInputSourceType), currentInput, currentReductionSteps,
+		    taskConfigurations.add(new ProcessingConfiguration(currentFileTable, InputSourceType.valueOf(currentInputSourceType), currentInput, currentReductionSteps, currentUnit,
 	    		currentAggregationWindowSize, currentAggregationWindowStepSize, currentMatrixToVectorMethod, currentFeatureDescription));
 			AmuseLogger.write(ProcessingConfiguration.class.getName(), Level.DEBUG, taskConfigurations.size() + " processing task(s) for " + currentMusicFileList + " loaded");
 		}
@@ -315,6 +325,10 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 */
 	public void setFeatureDatabase(String featureDatabase) {
 		this.featureDatabase = featureDatabase;
+	}
+
+	public Unit getUnit() {
+		return unit;
 	}
 	
 }

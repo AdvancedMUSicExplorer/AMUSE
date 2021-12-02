@@ -41,6 +41,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.classifier.ClassifierView;
@@ -99,6 +100,7 @@ public class ClassifierController extends AbstractController {
         	inputFeatureDescription = classifierView.getProcessingModelString();
         }
         String inputFeatureType = classifierView.getInputFeatureType().toString();
+        String unit = classifierView.getUnit().toString();
         Integer classificationWindowSize = classifierView.getClassificationWindowSize();
         Integer classificationWindowStepSize = classifierView.getClassificationWindowStepSize();
         String algorithmId = classifierView.getSelectedTrainingAlgorithmStr();
@@ -123,6 +125,7 @@ public class ClassifierController extends AbstractController {
 	        		attributesToIgnore,
 	        		inputFeatureDescription, 
 	        		inputFeatureType,
+	        		unit,
 	        		classificationWindowSize,
 	        		classificationWindowStepSize,
 	        		algorithmId, 
@@ -199,6 +202,7 @@ public class ClassifierController extends AbstractController {
     	classifierView.setInputFeatureType(inputFeatureType);
         if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
         	classifierView.setInputFeatures(conf.getInputFeatureList());
+        	classifierView.setUnit(conf.getUnit());
         	classifierView.setClassificationWindowSize(conf.getClassificationWindowSize());
         	classifierView.setClassificationWindowStepSize(conf.getClassificationWindowStepSize());
         } else {
@@ -246,6 +250,7 @@ public class ClassifierController extends AbstractController {
             }
             String inputSourceType = classifierView.getInputSourceType().toString();
             InputFeatureType inputFeatureType = classifierView.getInputFeatureType();
+            Unit unit = classifierView.getUnit();
             Integer classificationWindowSize = classifierView.getClassificationWindowSize();
             Integer classificationWindowStepSize = classifierView.getClassificationWindowStepSize();
             String algorithmStr = classifierView.getSelectedTrainingAlgorithmStr();
@@ -276,7 +281,8 @@ public class ClassifierController extends AbstractController {
 	            		InputSourceType.valueOf(inputSourceType),
 	            		inputSource,
 	            		attributesToIgnore,
-	            		inputFeatures, 
+	            		inputFeatures,
+	            		unit,
 	            		classificationWindowSize,
 	            		classificationWindowStepSize,
 	            		algorithmStr, 
@@ -296,6 +302,7 @@ public class ClassifierController extends AbstractController {
 	            		attributesToIgnore,
 	            		processedFeatureDescription, 
 	            		inputFeatureType,
+	            		unit,
 	            		classificationWindowSize,
 	            		classificationWindowStepSize,
 	            		algorithmStr, 

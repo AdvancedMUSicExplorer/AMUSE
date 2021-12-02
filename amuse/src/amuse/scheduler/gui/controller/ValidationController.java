@@ -50,6 +50,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -127,6 +128,7 @@ public class ValidationController extends AbstractController {
         	inputFeatureDescription = validationView.getProcessingModelString();
         }
         String inputFeatureType = validationView.getInputFeatureType().toString();
+        String unit = validationView.getUnit().toString();
         Integer classificationWindowSize = validationView.getClassificationWindowSize();
         Integer classificationWindowStepSize = validationView.getClassificationWindowStepSize();
         String groundTruthSource = validationView.getGroundTruthSource();
@@ -143,6 +145,7 @@ public class ValidationController extends AbstractController {
                 measureTableFile, 
                 inputFeatureDescription, 
                 inputFeatureType,
+                unit,
                 classificationWindowSize,
                 classificationWindowStepSize,
                 groundTruthSource, 
@@ -216,6 +219,7 @@ public class ValidationController extends AbstractController {
             	validationView.setInputFeatureType(InputFeatureType.RAW_FEATURES);
             	FeatureTable inputFeatures = new FeatureTable(new File(set.getInputFeaturesAttribute().getValueAt(0)));
             	validationView.setInputFeatures(inputFeatures);
+            	validationView.setUnit(Unit.valueOf(set.getUnitAttribute().getValueAt(0).toString()));
             	validationView.setClassificationWindowSize(set.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
             	validationView.setClassificationWindowStepSize(set.getClassificationWindowStepSizeAttribute().getValueAt(0).intValue());
             } else {
@@ -284,6 +288,7 @@ public class ValidationController extends AbstractController {
         }
         MeasureTable measureTable = measuresView.getMeasureTable();
         InputFeatureType inputFeatureType = validationView.getInputFeatureType();
+        Unit unit = validationView.getUnit();
         Integer classificationWindowSize = validationView.getClassificationWindowSize();
         Integer classificationWindowStepSize = validationView.getClassificationWindowStepSize();
         FileInput groundTruthSource = new FileInput(validationView.getGroundTruthSource());
@@ -298,7 +303,8 @@ public class ValidationController extends AbstractController {
         	conf = new ValidationConfiguration(
 	        		validationMethodStr, 
 	        		measureTable,
-	                inputFeatures, 
+	                inputFeatures,
+	                unit,
 	                classificationWindowSize,
 	                classificationWindowStepSize,
 	                classificationAlgorithmStr, 
@@ -315,6 +321,7 @@ public class ValidationController extends AbstractController {
 	        		measureTable,
 	                processedFeatureDescription, 
 	                inputFeatureType,
+	                unit,
 	                classificationWindowSize,
 	                classificationWindowStepSize,
 	                classificationAlgorithmStr, 

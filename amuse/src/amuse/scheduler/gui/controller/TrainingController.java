@@ -48,6 +48,7 @@ import amuse.data.GroundTruthSourceType;
 import amuse.data.InputFeatureType;
 import amuse.data.datasets.TrainingConfigSet;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -107,6 +108,7 @@ public class TrainingController extends AbstractController {
             TrainingConfigSet dataSet = new TrainingConfigSet(
             		inputFeatureDescription,
             		trainingView.getInputFeatureType().toString(),
+            		trainingView.getUnit().toString(),
             		trainingView.getClassificaitonWindowSize(), 
             		trainingView.getClassificationWindowStepSize(),
             		trainingView.getSelectedTrainingAlgorithmStr(),
@@ -158,6 +160,7 @@ public class TrainingController extends AbstractController {
         	trainingView.setInputFeatureType(InputFeatureType.RAW_FEATURES);
         	FeatureTable inputFeatures = new FeatureTable(new File(ttSet.getInputFeatureAttribute().getValueAt(0)));
         	trainingView.setInputFeatures(inputFeatures);
+        	trainingView.setUnit(Unit.valueOf(ttSet.getUnitAttribute().getValueAt(0).toString()));
         	trainingView.setClassificationWindowSize(ttSet.getClassificationWindowSizeAttribute().getValueAt(0).intValue());
         	trainingView.setClassificationWindowStepSize(ttSet.getClassificationWindowStepSizeAttribute().getValueAt(0).intValue());
         } else {
@@ -349,6 +352,7 @@ public class TrainingController extends AbstractController {
     	if(trainingView.getInputFeatureType() == InputFeatureType.RAW_FEATURES) {
 	    	conf = new TrainingConfiguration(
 	    			trainingView.getInputFeatures(),
+	    			trainingView.getUnit(),
 	    			trainingView.getClassificaitonWindowSize(),
 	    			trainingView.getClassificationWindowStepSize(),
 	    			trainingView.getSelectedTrainingAlgorithmStr(),
@@ -364,6 +368,7 @@ public class TrainingController extends AbstractController {
     		conf = new TrainingConfiguration(
 	    			trainingView.getProcessingModelString(),
 	    			trainingView.getInputFeatureType(),
+	    			trainingView.getUnit(),
 	    			trainingView.getClassificaitonWindowSize(),
 	    			trainingView.getClassificationWindowStepSize(),
 	    			trainingView.getSelectedTrainingAlgorithmStr(),

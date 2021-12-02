@@ -38,6 +38,7 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.validator.ValidationConfiguration;
 
 /**
@@ -52,6 +53,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private static final String strMeasureList = "MeasureList";
 	private static final String strInputFeatures = "InputFeatures";
 	private static final String strInputFeatureType = "InputFeatureType";
+	private static final String strUnit = "Unit";
 	private static final String strClassificationWindowSize = "ClassificationWindowSize";
 	private static final String strClassificationWindowStepSize = "ClassificationWindowStepSize";
 	private static final String strInputToValidate = "InputToValidate";
@@ -70,6 +72,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	private final StringAttribute measureListAttribute;
 	private final StringAttribute inputFeaturesAttribute;
 	private final NominalAttribute inputFeatureTypeAttribute;
+	private final NominalAttribute unitAttribute;
 	private final NumericAttribute classificationWindowStepSizeAttribute;
 	private final NumericAttribute classificationWindowSizeAttribute;
 	private final StringAttribute inputToValidateAttribute;
@@ -97,6 +100,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		checkStringAttribute(strMeasureList);
 		checkStringAttribute(strInputFeatures);
 		checkNominalAttribute(strInputFeatureType);
+		checkNominalAttribute(strUnit);
 		checkNumericAttribute(strClassificationWindowStepSize);
 		checkNumericAttribute(strClassificationWindowSize);
 		checkStringAttribute(strInputToValidate);
@@ -114,6 +118,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		measureListAttribute = (StringAttribute) getAttribute(strMeasureList);
 		inputFeaturesAttribute = (StringAttribute) getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) getAttribute(strInputFeatureType);
+		unitAttribute = (NominalAttribute) getAttribute(strUnit);
 		classificationWindowSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowSize);
 		classificationWindowStepSizeAttribute = (NumericAttribute) getAttribute(strClassificationWindowStepSize);
 		inputToValidateAttribute = (StringAttribute) getAttribute(strInputToValidate);
@@ -132,6 +137,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 			File measureListFile,
 			String inputFeatures,
 			String inputFeatureType,
+			String unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String inputToValidate,
@@ -155,6 +161,13 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		inputFeatureTypes.add(inputFeatureType);
 		inputFeatureTypeAttribute = new NominalAttribute(strInputFeatureType, inputFeatureTypeValues, inputFeatureTypes);
 		inputToValidateAttribute = StringAttribute.createFromString(strInputToValidate, inputToValidate);
+		List<String> unitValues = new ArrayList<String>();
+		for(Unit value : Unit.values()) {
+			unitValues.add(value.toString());
+		}
+		List<String> units = new ArrayList<String>();
+		units.add(unit);
+		unitAttribute = new NominalAttribute(strUnit, unitValues, units);
 		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowSize, classificationWindowSize);
 		classificationWindowStepSizeAttribute = NumericAttribute.createFromDouble(strClassificationWindowStepSize, classificationWindowStepSize);
 		List <String> values = new ArrayList<String>();
@@ -190,6 +203,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		addAttribute(measureListAttribute);
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
+		addAttribute(unitAttribute);
 		addAttribute(classificationWindowSizeAttribute);
 		addAttribute(classificationWindowStepSizeAttribute);
 		addAttribute(inputToValidateAttribute); 
@@ -210,6 +224,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		dataSet.checkStringAttribute(strMeasureList);
 		dataSet.checkStringAttribute(strInputFeatures);
 		dataSet.checkNominalAttribute(strInputFeatureType);
+		dataSet.checkNominalAttribute(strUnit);
 		dataSet.checkNumericAttribute(strClassificationWindowSize);
 		dataSet.checkNumericAttribute(strClassificationWindowStepSize);
 		dataSet.checkStringAttribute(strInputToValidate);
@@ -226,6 +241,7 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 		measureListAttribute = (StringAttribute) dataSet.getAttribute(strMeasureList);
 		inputFeaturesAttribute = (StringAttribute) dataSet.getAttribute(strInputFeatures);
 		inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(strInputFeatureType);
+		unitAttribute = (NominalAttribute) dataSet.getAttribute(strUnit);
 		classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowSize);
 		classificationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(strClassificationWindowStepSize);
 		inputToValidateAttribute = (StringAttribute) dataSet.getAttribute(strInputToValidate);
@@ -328,6 +344,10 @@ public class ValidatorConfigSet extends AbstractArffExperimentSet {
 	
 	public NominalAttribute getInputFeatureTypeAttribute() {
 		return inputFeatureTypeAttribute;
+	}
+	
+	public NominalAttribute getUnitAttribute() {
+		return unitAttribute;
 	}
 	
 	public NumericAttribute getClassificationWindowSizeAttribute() {

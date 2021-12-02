@@ -52,6 +52,7 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.nodes.classifier.ClassificationConfiguration.InputSourceType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
@@ -389,6 +390,14 @@ public class ClassifierView extends JPanel implements HasCaption, NextButtonUsab
 
 	public void setClassificationWindowStepSize(Integer classificationWindowStepSize) {
 		inputFeaturePanel.setClassificationWindowStepSize(classificationWindowStepSize);
+	}
+
+	public Unit getUnit() {
+		return inputFeaturePanel.getUnit();
+	}
+	
+	public void setUnit(Unit unit) {
+		inputFeaturePanel.setUnit(unit);
 	}
 
 }

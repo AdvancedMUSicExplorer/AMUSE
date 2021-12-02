@@ -284,6 +284,7 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 						new ArrayList<Integer>(),
 						processedFeaturesDescription, 
 						InputFeatureType.PROCESSED_FEATURES,
+						null,
 						-1,
 						-1,
 						currentClassifierTok.nextToken(),

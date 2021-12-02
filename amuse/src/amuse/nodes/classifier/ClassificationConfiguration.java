@@ -44,6 +44,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.FileInput;
 import amuse.data.io.FileListInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -80,10 +81,13 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	/** Type of input features for classfication */
 	private final InputFeatureType inputFeatureType;
 	
-	/** Size of classification window in milliseconds */
+	/** Unit of window and step size */
+	private final Unit unit;
+	
+	/** Size of classification window */
 	private final Integer classificationWindowSize;
 	
-	/** Size of classification window step size in milliseconds */
+	/** Size of classification window step size */
 	private final Integer classificationWindowStepSize;
 	
 	/** Id of classification algorithm from classifierTable.arff 
@@ -149,6 +153,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			List <Integer> attributesToIgnore,
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String algorithmDescription,
@@ -174,6 +179,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -208,6 +214,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			List <Integer> attributesToIgnore,
 			String inputFeatures,
 			InputFeatureType inputFeatureType,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String algorithmDescription,
@@ -260,6 +267,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -297,6 +305,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String inputSource,
 			List <Integer> attributesToIgnore,
 			FeatureTable inputFeatures,
+			Unit unit,
 			Integer classificationWindowSize,
 			Integer classificationWindowStepSize,
 			String algorithmDescription,
@@ -344,6 +353,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			description += "_" + features.get(i).getId();
 		}
 		this.inputFeaturesDescription = description;
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -375,6 +385,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
 			} else {
 				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Unit currentUnit;
+			if(classifierConfig.getUnitAttribute().getValueAt(i).toString().equals(new String("SAMPLES"))) {
+				currentUnit = Unit.SAMPLES;
+			} else {
+				currentUnit = Unit.MILLISECONDS;
 			}
 			Integer currentClassificationWindowSize = new Double(classifierConfig.getClassificationWindowSizeAttribute().getValueAt(i)).intValue();
 			Integer currentClassificationWindowStepSize = new Double(classifierConfig.getClassificationWindowStepSizeAttribute().getValueAt(i)).intValue();
@@ -460,7 +476,7 @@ public class ClassificationConfiguration extends TaskConfiguration {
 			String currentTrainingDescription = classifierConfig.getTrainingDescriptionAttribute().getValueAt(i);
 			
 			// Create a classification task
-		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentInputFeatureDescription, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowStepSize,
+		    taskConfigurations.add(new ClassificationConfiguration(ist, currentInputSource, currentAttributesToIgnore, currentInputFeatureDescription, currentInputFeatureType, currentUnit, currentClassificationWindowSize, currentClassificationWindowStepSize,
 		    		currentAlgorithmDescription, currentGroundTruthSource, currentAttributesToPredict, currentModelType, currentMergeTrackResults, currentOutputResult, currentPathToInputModel, currentTrainingDescription));
 			AmuseLogger.write(ClassificationConfiguration.class.getName(), Level.DEBUG, "Classification task loaded");
 		}
@@ -671,5 +687,12 @@ public class ClassificationConfiguration extends TaskConfiguration {
 	 */
 	public int getNumberOfValuesPerWindow() {
 		return this.numberOfValuesPerWindow;
+	}
+
+	/**
+	 * @return the unit of classification window and step size
+	 */
+	public Unit getUnit() {
+		return unit;
 	}
 }

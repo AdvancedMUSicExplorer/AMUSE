@@ -52,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
@@ -88,9 +89,7 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 	private JButton upButton = new JButton("Up");
 	private JButton downButton = new JButton("Down");
 	private JTextField modelDescriptionTextField = new JTextField(30);
-        private JComboBox boxUnit;
-
-        private final static String[] unitOptions = { "Milliseconds" };
+    private JComboBox<Unit> boxUnit;
 
 	/** Creates new form ProcessingMethodsPanel */
 	public ProcessingMethodsPanel(ProcessingMethodsListModel pcmListModel,
@@ -218,7 +217,8 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		globalSettingsPanel.add(classificationWindowStepSize,
 				"gap rel, w 1.5cm:max, growx, wrap");
 		globalSettingsPanel.add(new JLabel("Unit:"), "");
-                boxUnit = new JComboBox(unitOptions);
+        boxUnit = new JComboBox(Unit.values());
+        boxUnit.setSelectedItem(Unit.MILLISECONDS);
 		globalSettingsPanel.add(boxUnit, "gap rel, spanx 3, wrap");
 		globalSettingsPanel.add(new JLabel("Optional Processing Description:"), "spanx 2");
 		globalSettingsPanel.add(modelDescriptionTextField, "gap rel, spanx 2, wrap");
@@ -281,16 +281,12 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
         controller.saveButtonClicked();
     }
 
-    String getUnit() {
-        return boxUnit.getSelectedItem().toString();
+    Unit getUnit() {
+        return (Unit)boxUnit.getSelectedItem();
     }
 
     void setUnit(String value) {
-        for (String option : unitOptions) {
-            if (option.equalsIgnoreCase(value)) {
-                boxUnit.setSelectedItem(option);
-            }
-        }
+        boxUnit.setSelectedItem(Unit.valueOf(value));
     }
 
     void setClassificationWindowSizeStr(int value) {

@@ -43,6 +43,7 @@ import amuse.data.io.DataInputInterface;
 import amuse.data.io.DataSetInput;
 import amuse.data.io.FileInput;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -67,10 +68,13 @@ public class TrainingConfiguration extends TaskConfiguration {
 	/** Type of input features for classfication */
 	private final InputFeatureType inputFeatureType;
 	
-	/** Size of classification window in milliseconds */
+	/** Unit of window and step size */
+	private final Unit unit;
+	
+	/** Size of classification window */
 	private final Integer classificationWindowSize;
 	
-	/** Size of classification window steps in milliseconds */
+	/** Size of classification window steps */
 	private final Integer classificationWindowStepSize;
 	
 	/** Id of classification algorithm from classificatorTable.arff 
@@ -131,7 +135,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
-	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription,
+	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Unit unit, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription,
 			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
@@ -149,6 +153,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -184,7 +189,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
-	public TrainingConfiguration(FeatureTable inputFeatures, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription,
+	public TrainingConfiguration(FeatureTable inputFeatures, Unit unit, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription,
 			DataInputInterface groundTruthSource, GroundTruthSourceType groundTruthSourceType, List<Integer> attributesToPredict, List<Integer> attributesToIgnore, ModelType modelType, String trainingDescription, String pathToOutputModel) {
 		List<Feature> features = inputFeatures.getFeatures();
 		String description = "";
@@ -197,6 +202,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 		this.inputFeaturesDescription = description;
 		this.inputFeatureList = inputFeatures;
 		this.inputFeatureType = InputFeatureType.RAW_FEATURES;
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -230,7 +236,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 	 * @param pathToOutputModel optional path to where the model should be saved 
 	 * (three possibilities are given above) 
 	 */
-	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
+	public TrainingConfiguration(String inputFeatures, InputFeatureType inputFeatureType, Unit unit, Integer classificationWindowSize, Integer classificationWindowStepSize, String algorithmDescription, String preprocessingAlgorithmDescription, DataSetInput groundTruthSource,
 			GroundTruthSourceType groundTruthSourceType, String pathToOutputModel) {
 		this.inputFeatureType = inputFeatureType;
 		if(inputFeatureType == InputFeatureType.RAW_FEATURES) {
@@ -248,6 +254,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 			this.inputFeatureList = null;
 			this.inputFeaturesDescription = inputFeatures;
 		}
+		this.unit = unit;
 		this.classificationWindowSize = classificationWindowSize;
 		this.classificationWindowStepSize = classificationWindowStepSize;
 		this.algorithmDescription = algorithmDescription;
@@ -286,6 +293,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 				currentInputFeatureType = InputFeatureType.RAW_FEATURES;
 			} else {
 				currentInputFeatureType = InputFeatureType.PROCESSED_FEATURES;
+			}
+			Unit currentUnit;
+			if(trainingConfig.getUnitAttribute().getValueAt(i).toString().equals(new String("SAMPLES"))) {
+				currentUnit = Unit.SAMPLES;
+			} else {
+				currentUnit = Unit.MILLISECONDS;
 			}
 			Integer currentClassificationWindowSize = trainingConfig.getClassificationWindowSizeAttribute().getValueAt(i).intValue();
 			Integer currentClassificationWindowStepSize = trainingConfig.getClassificationWindowStepSizeAttribute().getValueAt(i).intValue();
@@ -371,7 +384,7 @@ public class TrainingConfiguration extends TaskConfiguration {
 			
 				
 			// Create a training task
-			TrainingConfiguration trConfig = new TrainingConfiguration(currentInputFeatures, currentInputFeatureType, currentClassificationWindowSize, currentClassificationWindowStepSize, currentAlgorithmDescription,
+			TrainingConfiguration trConfig = new TrainingConfiguration(currentInputFeatures, currentInputFeatureType, currentUnit, currentClassificationWindowSize, currentClassificationWindowStepSize, currentAlgorithmDescription,
 		    		currentPreprocessingAlgorithmDescription, new FileInput(currentGroundTruthSource),gtst, currentAttributesToPredict, currentAttributesToIgnore, currentModelType, currentTrainingDescription, currentPathToOutputModel);
 			taskConfigurations.add(trConfig);
 
@@ -528,9 +541,9 @@ public class TrainingConfiguration extends TaskConfiguration {
 	public TrainingConfiguration clone(){
 		TrainingConfiguration conf;
 		if(inputFeatureType == InputFeatureType.PROCESSED_FEATURES) {
-				conf = new TrainingConfiguration(inputFeaturesDescription, inputFeatureType, classificationWindowSize, classificationWindowStepSize, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
+				conf = new TrainingConfiguration(inputFeaturesDescription, inputFeatureType, unit, classificationWindowSize, classificationWindowStepSize, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
 		} else {
-			conf = new TrainingConfiguration(inputFeatureList, classificationWindowSize, classificationWindowStepSize, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
+			conf = new TrainingConfiguration(inputFeatureList, unit, classificationWindowSize, classificationWindowStepSize, algorithmDescription, preprocessingAlgorithmDescription, groundTruthSource, groundTruthSourceType, attributesToPredict, attributesToIgnore, modelType, trainingDescription, pathToOutputModel);
 		}
 		return conf;
 	}
@@ -603,5 +616,12 @@ public class TrainingConfiguration extends TaskConfiguration {
 	  */
 	public int getNumberOfValuesPerWindow() {
 		return this.numberOfValuesPerWindow;
+	}
+
+	/**
+	 * @return unit of classification window and step size
+	 */
+	public Unit getUnit() {
+		return unit;
 	}
 }

@@ -1004,6 +1004,7 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 		ProcessingConfiguration pConf = new ProcessingConfiguration(new FileTable(currentInputFileList),
 				((ValidationConfiguration)this.getConfiguration()).getInputFeatureList(),
 				"",
+				((ValidationConfiguration)this.getConfiguration()).getUnit(),
 				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowSize(),
 				((ValidationConfiguration)this.getConfiguration()).getClassificationWindowStepSize(),
 				"6",

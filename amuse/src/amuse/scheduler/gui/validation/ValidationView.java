@@ -39,6 +39,7 @@ import amuse.data.FeatureTable;
 import amuse.data.GroundTruthSourceType;
 import amuse.data.InputFeatureType;
 import amuse.data.ModelType;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.scheduler.gui.algorithm.AlgorithmConfigurationFacade;
 import amuse.scheduler.gui.training.TrainingView;
 import net.miginfocom.swing.MigLayout;
@@ -200,5 +201,13 @@ public class ValidationView {
 
 	public void setClassificationWindowStepSize(Integer classificationWindowStepSize) {
 		trainingView.setClassificationWindowStepSize(classificationWindowStepSize);
+	}
+
+	public Unit getUnit() {
+		return trainingView.getUnit();
+	}
+	
+	public void setUnit(Unit unit) {
+		trainingView.setUnit(unit);
 	}
 }

@@ -38,6 +38,7 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.trainer.TrainingConfiguration;
 
 /**
@@ -50,6 +51,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 	// Strings which describe ARFF attributes
 	private static final String inputFeaturesStr = "InputFeatures";
 	private static final String inputFeatureTypeStr = "InputFeatureType";
+	private static final String unitStr = "Unit";
 	private static final String classificationWindowSizeStr = "ClassificationWindowSize";
 	private static final String classificationWindowStepSizeStr = "ClassificationWindowStepSize";
     private static final String algorithmIdStr = "AlgorithmId";
@@ -67,6 +69,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     // ARFF attributes
     private final StringAttribute inputFeaturesAttribute;
     private final NominalAttribute inputFeatureTypeAttribute;
+    private final NominalAttribute unitAttribute;
     private final NumericAttribute classificationWindowSizeAttribute;
     private final NumericAttribute classificationWindowStepSizeAttribute;
     private final StringAttribute algorithmIdAttribute;
@@ -94,6 +97,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         // Check preconditions:
         checkStringAttribute(inputFeaturesStr);
         checkNominalAttribute(inputFeatureTypeStr);
+        checkNominalAttribute(unitStr);
         checkNumericAttribute(classificationWindowSizeStr);
         checkNumericAttribute(classificationWindowStepSizeStr);
         checkStringAttribute(algorithmIdStr);
@@ -110,6 +114,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         
         inputFeaturesAttribute = (StringAttribute) this.getAttribute(inputFeaturesStr);
         inputFeatureTypeAttribute = (NominalAttribute) this.getAttribute(inputFeatureTypeStr);
+        unitAttribute = (NominalAttribute) this.getAttribute(unitStr);
         classificationWindowSizeAttribute = (NumericAttribute) this.getAttribute(classificationWindowSizeStr);
         classificationWindowStepSizeAttribute = (NumericAttribute) this.getAttribute(classificationWindowStepSizeStr);
         algorithmIdAttribute = (StringAttribute) this.getAttribute(algorithmIdStr);
@@ -128,6 +133,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 
     public TrainingConfigSet(String inputFeatures,
     		String inputFeatureType,
+    		String unit,
     		int classificationWindowSize,
     		int classificationWindowStepSize,
     		String algorithmId,
@@ -150,6 +156,13 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 		List<String> inputFeatureTypes = new ArrayList<String>();
 		inputFeatureTypes.add(inputFeatureType);
 		inputFeatureTypeAttribute = new NominalAttribute(inputFeatureTypeStr, inputFeatureTypeValues, inputFeatureTypes);
+		List<String> unitValues = new ArrayList<String>();
+		for(Unit unitValue : Unit.values()) {
+			unitValues.add(unitValue.toString());
+		}
+		List<String> units = new ArrayList<String>();
+		units.add(unit);
+		unitAttribute = new NominalAttribute(unitStr, unitValues, units);
 		classificationWindowSizeAttribute = NumericAttribute.createFromDouble(classificationWindowSizeStr, classificationWindowSize);
 		classificationWindowStepSizeAttribute = NumericAttribute.createFromDouble(classificationWindowStepSizeStr, classificationWindowStepSize);
 		algorithmIdAttribute = StringAttribute.createFromString(algorithmIdStr, algorithmId);
@@ -190,6 +203,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
 		
 		addAttribute(inputFeaturesAttribute);
 		addAttribute(inputFeatureTypeAttribute);
+		addAttribute(unitAttribute);
         addAttribute(classificationWindowSizeAttribute);
         addAttribute(classificationWindowStepSizeAttribute);
         addAttribute(algorithmIdAttribute);
@@ -210,6 +224,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         // Check preconditions:
         dataSet.checkStringAttribute(algorithmIdStr);
         dataSet.checkNominalAttribute(inputFeatureTypeStr);
+        dataSet.checkNominalAttribute(unitStr);
         dataSet.checkNumericAttribute(classificationWindowSizeStr);
         dataSet.checkNumericAttribute(classificationWindowStepSizeStr);
         dataSet.checkStringAttribute(inputFeaturesStr);
@@ -227,6 +242,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         inputFeaturesAttribute =
                 (StringAttribute) dataSet.getAttribute(inputFeaturesStr);
         inputFeatureTypeAttribute = (NominalAttribute) dataSet.getAttribute(inputFeatureTypeStr);
+        unitAttribute = (NominalAttribute) dataSet.getAttribute(unitStr);
         classificationWindowSizeAttribute = (NumericAttribute) dataSet.getAttribute(classificationWindowSizeStr);
         classificationWindowStepSizeAttribute = (NumericAttribute) dataSet.getAttribute(classificationWindowStepSizeStr);
         algorithmIdAttribute = (StringAttribute) dataSet.getAttribute(algorithmIdStr);
@@ -243,6 +259,7 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
         
         addAttribute(inputFeaturesAttribute);
         addAttribute(inputFeatureTypeAttribute);
+        addAttribute(unitAttribute);
         addAttribute(classificationWindowSizeAttribute);
         addAttribute(classificationWindowStepSizeAttribute);
         addAttribute(algorithmIdAttribute);
@@ -272,6 +289,10 @@ public class TrainingConfigSet extends AbstractArffExperimentSet {
     
     public NominalAttribute getInputFeatureTypeAttribute() {
     	return inputFeatureTypeAttribute;
+    }
+    
+    public NominalAttribute getUnitAttribute() {
+    	return unitAttribute;
     }
     
     public NumericAttribute getClassificationWindowSizeAttribute() {

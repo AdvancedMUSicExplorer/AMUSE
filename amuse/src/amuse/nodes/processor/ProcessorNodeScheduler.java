@@ -49,6 +49,7 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.NodeScheduler;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 import amuse.nodes.processor.interfaces.DimensionProcessorInterface;
 import amuse.nodes.processor.interfaces.MatrixToVectorConverterInterface;
 import amuse.preferences.AmusePreferences;
@@ -729,12 +730,19 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	    }
 		
 		// Start the adapter
+		String unitString;
+		if(((ProcessingConfiguration)this.taskConfiguration).getUnit().toString().equals("SAMPLES")) {
+			unitString = "samples";
+		} else {
+			unitString = "ms";
+		}
 		return mtvci.runConversion(features, ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize(), 
 				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize(), 
 				((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "_" + 
 				((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
-				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms");
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + unitString + "_" + 
+				((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + unitString,
+				((ProcessingConfiguration)this.taskConfiguration).getUnit());
 	}
 	
 	/**
@@ -763,27 +771,33 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		}
 		
 		// Can be used in tool node
+		String unitString;
+		if(((ProcessingConfiguration)this.taskConfiguration).getUnit().toString().equals("SAMPLES")) {
+			unitString = "samples";
+		} else {
+			unitString = "ms";
+		}
 		if(saveDirectlyToDatabase) {
 			relativeName = relativeName.substring(relativeName.lastIndexOf(File.separator)+1,relativeName.length());
 			relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName + "_" + 
 					((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
 					((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
-					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + unitString + "_" + 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + unitString + featureDesc + ".arff";
 		} else {
 			if(relativeName.lastIndexOf(File.separator) != -1) {
 				relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
 					relativeName.substring(relativeName.lastIndexOf(File.separator)) + "_" +
 					((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" + 
 					((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
-					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + unitString + "_" + 
+					((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + unitString + featureDesc + ".arff";
 			} else {
 				relativeName = ((ProcessingConfiguration)this.getConfiguration()).getProcessedFeatureDatabase() + File.separator + relativeName +
 						File.separator + relativeName + "_" + ((ProcessingConfiguration)this.taskConfiguration).getReductionSteps() + "__" +
 						((ProcessingConfiguration)this.taskConfiguration).getConversionStep() + "__" + 
-						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + "ms_" + 
-						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + "ms" + featureDesc + ".arff";
+						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize() + unitString + "_" + 
+						((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize() + unitString + featureDesc + ".arff";
 			}
 		}
 		
@@ -831,7 +845,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				values_writer.writeBytes(features.get(i).getHistoryAsString());
 				values_writer.writeBytes("' NUMERIC" + sep);
 			}
-			values_writer.writeBytes("@ATTRIBUTE Unit {milliseconds,samples}");
+			values_writer.writeBytes("@ATTRIBUTE Unit {MILLISECONDS, SAMPLES}");
 			values_writer.writeBytes(sep);
 			values_writer.writeBytes("@ATTRIBUTE Start NUMERIC");
 			values_writer.writeBytes(sep);
@@ -870,6 +884,8 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 			double partSize = ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowSize();
 			double stepSize = ((ProcessingConfiguration)this.taskConfiguration).getAggregationWindowStepSize();
 			
+			String unit = ((ProcessingConfiguration)this.taskConfiguration).getUnit().toString();
+			
 			// Save the data
 			for(int i=0;i<numberOfMaxClassificatoinWindows;i++) {
 				for(int j=0;j<features.size();j++) {
@@ -881,12 +897,18 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 				if(!((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1"))) {
 					//values_writer.writeBytes("milliseconds," + features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d) + "," + 
 						//	(features.get(0).getWindows().get(i)*((double)minimalFrameSize/sampleRate*1000d)+((ProcessingConfiguration)this.taskConfiguration).getClassificationWindowSize()) + sep);
-					values_writer.writeBytes("milliseconds," + (i*stepSize) + "," + (i*stepSize + partSize) + sep);
+					values_writer.writeBytes(unit + "," + (i*stepSize) + "," + (i*stepSize + partSize) + sep);
 				} else {
 					
 					// TODO [2/2] For adaptive onset classification windows the boundaries are calculated here. A more generic solution
 					// is to change Feature class and allow frames of different sizes (e.g. with a child class)
-					values_writer.writeBytes("milliseconds," + attackStarts[i] * 1000 + "," + releaseEnds[i] * 1000 + sep);
+					if(unit.equals(Unit.SAMPLES.toString())) {
+						Double classificationWindowStart = Math.ceil((attackStarts[i] * sampleRate) / this.minimalStepSize); 
+						Double classificationWindowEnd = Math.ceil((releaseEnds[i] * sampleRate) / this.minimalStepSize) + 1;
+						values_writer.writeBytes(unit + "," + classificationWindowStart + "," + classificationWindowEnd + sep);
+					} else {
+						values_writer.writeBytes(unit + "," + attackStarts[i] * 1000 + "," + releaseEnds[i] * 1000 + sep);
+					}
 					
 				}
 			} 
@@ -1032,7 +1054,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	/**
 	 * Loads the event times TODO this function exists also in AORSplitter!
 	 * @param string Event description (onset, attack or release)
-	 * @return Double array with time values in ms
+	 * @return Double array with time values in s
 	 */
 	private Double[] loadEventTimes(String string) throws NodeException {
 		Double[] eventTimes = null;

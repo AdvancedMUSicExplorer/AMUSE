@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import amuse.data.Feature;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.processor.ProcessingConfiguration.Unit;
 
 /**
  * This interface defines the operations which should be supported by all feature matrix to vector converters.
@@ -47,12 +48,12 @@ public interface MatrixToVectorConverterInterface  {
 	 * Runs the conversion of feature matrix to vector (using some model like GMM or ARMA) or
 	 * several vectors (partitioning of input matrix)
 	 * @param features Features to run conversion on
-	 * @param ms Aggregation window size
+	 * @param aggregationWindowSize Aggregation window size
 	 * @param stepSize Aggregation window step size
 	 * @param nameOfProcessorModel Optional string which describes the processor model
 	 * @return Converted features
 	 * @throws NodeException
 	 */
-	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer ms, Integer stepSize, String nameOfProcessorModel) throws NodeException;
+	public ArrayList<Feature> runConversion(ArrayList<Feature> features, Integer aggregationWindowSize, Integer stepSize, String nameOfProcessorModel, Unit unit) throws NodeException;
 
 }
