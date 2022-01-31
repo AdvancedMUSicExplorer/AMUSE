@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -55,12 +56,23 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
     private final Color invalidColor = WizardView.INVALID_COLOR;
     private final Color validColor = WizardView.VALID_COLOR;
 	private String toolTip = "";
+	
+	private String basePath;
+	private String relativePath;
+	private boolean createFolder;
+	
+	JLabel jLabel;
 
     /**
      * @param label
      * @param stringKey
      */
     public PathSelectionPanel(String label, KeysStringValue stringKey) {
+    	this(label, stringKey, (String)null);
+    }
+    
+    public PathSelectionPanel(String label, KeysStringValue stringKey, String relativePath) {
+    	this.relativePath = relativePath;
     	this.toolTip = KeysStringValue.getCommentFor(stringKey.toString());
         // Copy values.
         this.key = stringKey;
@@ -82,7 +94,8 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
         jFileChooserSelect.setDialogTitle("Select " + label);
         jFileChooserSelect.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
         // Add Components.
-        panel.add(new JLabel(label + ": "), BorderLayout.WEST);
+        jLabel = new JLabel(label + ": ");
+        panel.add(jLabel, BorderLayout.WEST);
         panel.add(textField, BorderLayout.CENTER);
         panel.add(getBrowseButton(), BorderLayout.EAST);
         // Listen to changes.
@@ -143,6 +156,15 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
             savedPath = textField.getText();
             AmusePreferences.put(key, savedPath);
         }
+        
+        if(createFolder) {
+        	File baseFolder = new File(basePath);
+        	File folderToCreate = new File(this.textField.getText());
+        	if(baseFolder.exists() && !folderToCreate.exists()) {
+        		folderToCreate.mkdirs();
+        	}
+        }
+        
         notifyListenersAndUpdateColor(false);
     }
 
@@ -167,4 +189,36 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
             textField.setForeground(invalidColor);
         }
     }
+    
+    public String getText()	{
+    	return this.textField.getText();
+    }
+    
+    public String getSavedPath() {
+    	return savedPath;
+    }
+    
+    public String getRelativePath() {
+    	return relativePath;
+    }
+    
+    public void setBasePath(String basePath) {
+    	this.basePath = basePath;
+    	this.textField.setText(basePath + File.separator + relativePath);
+    }
+
+	public void setEnabled(boolean enabled) {
+		this.textField.setEnabled(enabled);
+		this.browseButton.setEnabled(enabled);
+	}
+	
+	public void setVisible(boolean visible) {
+		this.textField.setVisible(visible);
+		this.browseButton.setVisible(visible);
+		this.jLabel.setVisible(visible);
+	}
+	
+	public void setCreateFolder(boolean createFolder) {
+		this.createFolder = createFolder;
+	}
 }

@@ -85,7 +85,7 @@ public class Scheduler implements Runnable {
 	private Scheduler() {
 		this.jobCounter = 0l;
 		try {
-			File jobCounterFile = new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt");
+			File jobCounterFile = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/config/jobcounter.txt");
 			if(!jobCounterFile.exists()) {
 				FileOutputStream values_toTest = new FileOutputStream(jobCounterFile);
 				DataOutputStream values_writerTest = new DataOutputStream(values_toTest);

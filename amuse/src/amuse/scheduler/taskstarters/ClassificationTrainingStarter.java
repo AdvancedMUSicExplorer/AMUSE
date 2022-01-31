@@ -102,7 +102,7 @@ public class ClassificationTrainingStarter extends AmuseTaskStarter {
 				
 				// Update the counter of batch jobs
 				try {
-					FileOutputStream values_toTest = new FileOutputStream(new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt"));
+					FileOutputStream values_toTest = new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/config/jobcounter.txt"));
 					DataOutputStream values_writerTest = new DataOutputStream(values_toTest);
 					values_writerTest.writeBytes(new Long(jobCounter+1).toString());
 					values_toTest.close();

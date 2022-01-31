@@ -25,7 +25,10 @@ package amuse.scheduler.gui.settings;
 
 
 import amuse.preferences.KeysBooleanValue;
+
+import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.io.File;
 import java.util.Vector;
 
 import javax.swing.BoxLayout;
@@ -46,7 +49,7 @@ import amuse.scheduler.gui.settings.panels.TextFieldWithValidation;
  * 
  */
 public class GeneralAmuseSettings extends AmuseSettingsPageBody {
-
+	
 	public GeneralAmuseSettings() {
 		panel.setLayout(new MigLayout("fillx"));
 		panel.setBorder(new TitledBorder(this.toString()));
@@ -55,25 +58,79 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		BoxLayout layout = new BoxLayout(internalPanel, BoxLayout.Y_AXIS);
 		internalPanel.setLayout(layout);
 		internalPanel.setBorder(new TitledBorder("Path Settings"));
-		Vector<EditableAmuseSettingInterface> settings = new Vector<EditableAmuseSettingInterface>();
+		
+		BooleanSelectionPanel advancedPathPanel = new BooleanSelectionPanel("Show Advanced Path Settings", KeysBooleanValue.ADVANCED_PATHS);
+		PathSelectionPanel workspacePanel = new PathSelectionPanel("AMUSE Workspace", KeysStringValue.WORKSPACE);
+		PathSelectionPanel amuseFolderPanel = new PathSelectionPanel("AMUSE Folder", KeysStringValue.AMUSE_PATH);
+		
+		Vector<EditableAmuseSettingInterface> pathSettings = new Vector<EditableAmuseSettingInterface>();
 		// Add Grid Components:
-		settings.add(new PathSelectionPanel("AMUSE Folder", KeysStringValue.AMUSE_PATH));
-		settings.add(new PathSelectionPanel("Music Database", KeysStringValue.MUSIC_DATABASE));
-		settings.add(new PathSelectionPanel("Feature Database", KeysStringValue.FEATURE_DATABASE));
-		settings.add(new PathSelectionPanel("Single Track Annotation Database", KeysStringValue.SINGLE_TRACK_ANNOTATION_DATABASE));
-		settings.add(new PathSelectionPanel("Multiple Tracks Annotation Database", KeysStringValue.MULTIPLE_TRACKS_ANNOTATION_DATABASE));
-		settings.add(new PathSelectionPanel("Processed Feature Database", KeysStringValue.PROCESSED_FEATURE_DATABASE));
-		settings.add(new PathSelectionPanel("Model Database", KeysStringValue.MODEL_DATABASE));
-		settings.add(new PathSelectionPanel("Measure Database", KeysStringValue.MEASURE_DATABASE));
-		settings.add(new PathSelectionPanel("Optimization Database", KeysStringValue.OPTIMIZATION_DATABASE));
-		for (EditableAmuseSettingInterface singlePref : settings) {
-			internalPanel.add(singlePref.getPanel());
+		pathSettings.add(new PathSelectionPanel("Music Database", KeysStringValue.MUSIC_DATABASE, "Database"));
+		pathSettings.add(new PathSelectionPanel("Feature Database", KeysStringValue.FEATURE_DATABASE, "Features"));
+		pathSettings.add(new PathSelectionPanel("Single Track Annotation Database", KeysStringValue.SINGLE_TRACK_ANNOTATION_DATABASE, "Annotations" + File.separator + "Single_Track"));
+		pathSettings.add(new PathSelectionPanel("Multiple Tracks Annotation Database", KeysStringValue.MULTIPLE_TRACKS_ANNOTATION_DATABASE, "Annotations" + File.separator + "Multiple_Tracks"));
+		pathSettings.add(new PathSelectionPanel("Processed Feature Database", KeysStringValue.PROCESSED_FEATURE_DATABASE, "Processed_Features"));
+		pathSettings.add(new PathSelectionPanel("Model Database", KeysStringValue.MODEL_DATABASE, "Models"));
+		pathSettings.add(new PathSelectionPanel("Measure Database", KeysStringValue.MEASURE_DATABASE, "Measures"));
+		pathSettings.add(new PathSelectionPanel("Optimization Database", KeysStringValue.OPTIMIZATION_DATABASE, "Optimization_Results"));
+		
+		internalPanel.add(advancedPathPanel.getPanel());
+		watchForChanges(advancedPathPanel);
+		internalPanel.add(workspacePanel.getPanel());
+		watchForChanges(workspacePanel);
+		internalPanel.add(amuseFolderPanel.getPanel());
+		watchForChanges(amuseFolderPanel);
+		
+		for (EditableAmuseSettingInterface singlePref : pathSettings) {
 			watchForChanges(singlePref);
+			internalPanel.add(singlePref.getPanel());
+			if(!advancedPathPanel.isSelected()) {
+				((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
+				((PathSelectionPanel)singlePref).setEnabled(false);
+				((PathSelectionPanel)singlePref).setVisible(false);
+				((PathSelectionPanel)singlePref).setCreateFolder(true);
+			} else {
+				((PathSelectionPanel)singlePref).setEnabled(true);
+				((PathSelectionPanel)singlePref).setVisible(true);
+				((PathSelectionPanel)singlePref).setCreateFolder(false);
+			}
 		}
+		
+		advancedPathPanel.addChangeListener(new SettingsChangedListener() {
+			public void settingsStateChanged(EditableAmuseSettingInterface source, boolean changed) {
+				for (EditableAmuseSettingInterface singlePref : pathSettings) {
+					if(!advancedPathPanel.isSelected()) {
+						((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
+						((PathSelectionPanel)singlePref).setEnabled(false);
+						((PathSelectionPanel)singlePref).setVisible(false);
+						((PathSelectionPanel)singlePref).setCreateFolder(true);
+					} else {
+						((PathSelectionPanel)singlePref).setEnabled(true);
+						((PathSelectionPanel)singlePref).setVisible(true);
+						((PathSelectionPanel)singlePref).setCreateFolder(false);
+					}
+				}
+			}
+		});
+		
+		workspacePanel.addChangeListener(new SettingsChangedListener(){
+			public void settingsStateChanged(EditableAmuseSettingInterface source, boolean changed) {
+				if(!advancedPathPanel.isSelected()) {
+					for (EditableAmuseSettingInterface singlePref : pathSettings) {
+						((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
+						((PathSelectionPanel)singlePref).setEnabled(false);
+						((PathSelectionPanel)singlePref).setCreateFolder(true);
+					}
+				}
+			}
+		});
+		
 		internalPanel.setMaximumSize(new Dimension(internalPanel.getMaximumSize().height, internalPanel.getPreferredSize().width));
 		panel.add(internalPanel, "grow x, wrap");
                 // New Section:
-		settings.clear();
+		
+		Vector<EditableAmuseSettingInterface> settings = new Vector<EditableAmuseSettingInterface>();
+		
 		internalPanel = new JPanel(new MigLayout("fillx"));
 		internalPanel.setBorder(new TitledBorder("External Tools"));
 		internalPanel.setLayout(new BoxLayout(internalPanel, BoxLayout.Y_AXIS));

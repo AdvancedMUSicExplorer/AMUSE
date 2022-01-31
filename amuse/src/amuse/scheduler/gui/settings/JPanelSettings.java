@@ -63,7 +63,7 @@ public class JPanelSettings extends JPanel implements NextButtonUsable,
     private final JPanel rightSidePanel = new JPanel();
     private JPanel currentView = new JPanel();
     private List<EditableAmuseSettingInterface> availableSettingPagesList = EditableAmuseSettingsFactory.getInstance().getEditableAmuseSettings();
-    ;
+    
     private final JSplitPane splitPane = new JSplitPane(
             JSplitPane.HORIZONTAL_SPLIT);
     private final JButton applyButton = new JButton("Apply");

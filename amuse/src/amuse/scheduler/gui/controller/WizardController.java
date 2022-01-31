@@ -23,6 +23,7 @@
  */
 package amuse.scheduler.gui.controller;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Level;
@@ -50,6 +52,9 @@ import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysBooleanValue;
+import amuse.preferences.KeysStringValue;
 import amuse.scheduler.Scheduler;
 import amuse.scheduler.gui.annotation.singlefile.AnnotationView;
 import amuse.scheduler.gui.navigation.TitleUpdater;
@@ -159,6 +164,14 @@ public final class WizardController implements WizardControllerInterface {
 		setFrameSizeAndPosition();
 		wizardFrame.setVisible(true);
 		scheduler = Scheduler.getInstance();
+		
+		// check amuse workspace
+		if(!AmusePreferences.getBoolean(KeysBooleanValue.ADVANCED_PATHS) && !new File(AmusePreferences.get(KeysStringValue.WORKSPACE)).exists()) {
+			int result = JOptionPane.showConfirmDialog(wizardFrame, "The path to AMUSE workspace is not set properly.\nDo you want to go to the settings to chose an AMUSE\nworkspace and set all paths and folders accordingly?", "Workspace is not set", JOptionPane.YES_NO_OPTION);
+    		if(result == JOptionPane.YES_OPTION){
+    			goToSettings();
+    		}
+		}
 	}
 
 	@Override

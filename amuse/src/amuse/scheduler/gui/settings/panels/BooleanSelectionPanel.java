@@ -103,5 +103,9 @@ public class BooleanSelectionPanel extends EditableAmuseSettingBody {
 		}
 		notifyListeners(hasChanges());
 	}
+	
+	public boolean isSelected() {
+		return this.checkBox.isSelected();
+	}
 
 }

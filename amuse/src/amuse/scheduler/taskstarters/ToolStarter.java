@@ -130,7 +130,7 @@ public class ToolStarter extends AmuseTaskStarter {
 				// FIXME As different tools may use very different grid scripts, set up the path to them in toolConfig.arff individually and remove KeysStringValue.GRID_SCRIPT_TOOL from properties!!
 				System.out.println(AmusePreferences.get(KeysStringValue.GRID_SCRIPT_TOOL) + " " + parameterString);
 				try {
-					FileOutputStream values_toTest = new FileOutputStream(new File(System.getenv("AMUSEHOME") + "/config/jobcounter.txt"));
+					FileOutputStream values_toTest = new FileOutputStream(new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/config/jobcounter.txt"));
 					DataOutputStream values_writerTest = new DataOutputStream(values_toTest);
 					values_writerTest.writeBytes(new Long(jobCounter+1).toString());
 					values_toTest.close();

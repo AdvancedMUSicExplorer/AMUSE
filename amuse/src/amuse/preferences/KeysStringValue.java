@@ -37,9 +37,9 @@ import amuse.util.AmuseLogger;
  * @version $Id$
  */
 public enum KeysStringValue {
-
     AMUSE_PATH,
     AMUSE_VERSION,
+    WORKSPACE,
     MUSIC_DATABASE,
     SINGLE_TRACK_ANNOTATION_DATABASE,
     MULTIPLE_TRACKS_ANNOTATION_DATABASE,
@@ -95,6 +95,7 @@ public enum KeysStringValue {
             case GRID_SCRIPT_TRAINER:
             case GRID_SCRIPT_VALIDATOR:
                 return !value.equalsIgnoreCase("NO_VALUE");
+            case WORKSPACE:
             case MEASURE_DATABASE:
             case MUSIC_DATABASE:
             case MULTIPLE_TRACKS_ANNOTATION_DATABASE:
@@ -183,6 +184,7 @@ public enum KeysStringValue {
 		map.put(MATLAB_PATH.toString(), "Path to your local Matlab executable:");
 		map.put(PYTHON_PATH.toString(), "Path to your local Python3 executable:");
 		map.put(LD_LIBRARY_PATH.toString(), "Python library path:");
+		map.put(WORKSPACE.toString(), "Absolute path to amuse workspace");
 		return map;
 	}
 }

@@ -230,7 +230,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 					Node node = nList.item(i);
 					String content = node.getTextContent();
 					if(content.contains("%AMUSEHOME%")) {
-						content = content.replace("%AMUSEHOME%", System.getenv("AMUSEHOME"));
+						content = content.replace("%AMUSEHOME%", AmusePreferences.get(KeysStringValue.AMUSE_PATH));
 					}
 					out.write(content);
 				}

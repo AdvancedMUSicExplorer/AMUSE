@@ -28,5 +28,5 @@ package amuse.scheduler.gui.settings;
  *
  */
 public interface SettingsChangedListener {
-	void settingsStateChanged(EditableAmuseSettingInterface source,boolean changed);
+	void settingsStateChanged(EditableAmuseSettingInterface source, boolean changed);
 }
