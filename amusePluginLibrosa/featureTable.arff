@@ -25,4 +25,5 @@
 @ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
-263, "Mel spectrum", 8, 2048, 2048, 128, WindowedNumeric
+263, "Mel spectrum", 8, 2048, 1024, 128, WindowedNumeric
+264, "Magnitude spectrum", 8, 2048, 1024, 1025, WindowedNumeric
