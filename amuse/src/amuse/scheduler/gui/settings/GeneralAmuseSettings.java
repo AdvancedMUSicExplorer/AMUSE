@@ -88,11 +88,11 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 				((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
 				((PathSelectionPanel)singlePref).setEnabled(false);
 				((PathSelectionPanel)singlePref).setVisible(false);
-				((PathSelectionPanel)singlePref).setCreateFolder(true);
+				((PathSelectionPanel)singlePref).setChoosePathRelativeToBasePath(true);
 			} else {
 				((PathSelectionPanel)singlePref).setEnabled(true);
 				((PathSelectionPanel)singlePref).setVisible(true);
-				((PathSelectionPanel)singlePref).setCreateFolder(false);
+				((PathSelectionPanel)singlePref).setChoosePathRelativeToBasePath(false);
 			}
 		}
 		
@@ -100,14 +100,12 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 			public void settingsStateChanged(EditableAmuseSettingInterface source, boolean changed) {
 				for (EditableAmuseSettingInterface singlePref : pathSettings) {
 					if(!advancedPathPanel.isSelected()) {
-						((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
 						((PathSelectionPanel)singlePref).setEnabled(false);
 						((PathSelectionPanel)singlePref).setVisible(false);
-						((PathSelectionPanel)singlePref).setCreateFolder(true);
 					} else {
 						((PathSelectionPanel)singlePref).setEnabled(true);
 						((PathSelectionPanel)singlePref).setVisible(true);
-						((PathSelectionPanel)singlePref).setCreateFolder(false);
+						((PathSelectionPanel)singlePref).setChoosePathRelativeToBasePath(false);
 					}
 				}
 			}
@@ -115,11 +113,11 @@ public class GeneralAmuseSettings extends AmuseSettingsPageBody {
 		
 		workspacePanel.addChangeListener(new SettingsChangedListener(){
 			public void settingsStateChanged(EditableAmuseSettingInterface source, boolean changed) {
-				if(!advancedPathPanel.isSelected()) {
+				if(workspacePanel.hasChanges() && !advancedPathPanel.isSelected()) {
 					for (EditableAmuseSettingInterface singlePref : pathSettings) {
 						((PathSelectionPanel)singlePref).setBasePath(workspacePanel.getText());
 						((PathSelectionPanel)singlePref).setEnabled(false);
-						((PathSelectionPanel)singlePref).setCreateFolder(true);
+						((PathSelectionPanel)singlePref).setChoosePathRelativeToBasePath(true);
 					}
 				}
 			}

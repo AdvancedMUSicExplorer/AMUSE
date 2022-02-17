@@ -59,7 +59,7 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
 	
 	private String basePath;
 	private String relativePath;
-	private boolean createFolder;
+	private boolean choosePathRelativeToBasePath;
 	
 	JLabel jLabel;
 
@@ -132,7 +132,7 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
         return browseButton;
     }
 
-    private boolean hasChanges() {
+    public boolean hasChanges() {
         return (savedPath.compareTo(textField.getText()) != 0);
     }
 
@@ -152,17 +152,18 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
 
     @Override
     public void saveChanges() {
-        if (hasChanges()) {
-            savedPath = textField.getText();
-            AmusePreferences.put(key, savedPath);
-        }
-        
-        if(createFolder) {
+    	if(choosePathRelativeToBasePath) {
+    		this.textField.setText(basePath + File.separator + relativePath);
         	File baseFolder = new File(basePath);
         	File folderToCreate = new File(this.textField.getText());
         	if(baseFolder.exists() && !folderToCreate.exists()) {
         		folderToCreate.mkdirs();
         	}
+        }
+ 
+        if (hasChanges()) {
+            savedPath = textField.getText();
+            AmusePreferences.put(key, savedPath);
         }
         
         notifyListenersAndUpdateColor(false);
@@ -204,7 +205,6 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
     
     public void setBasePath(String basePath) {
     	this.basePath = basePath;
-    	this.textField.setText(basePath + File.separator + relativePath);
     }
 
 	public void setEnabled(boolean enabled) {
@@ -218,7 +218,7 @@ public class PathSelectionPanel extends EditableAmuseSettingBody {
 		this.jLabel.setVisible(visible);
 	}
 	
-	public void setCreateFolder(boolean createFolder) {
-		this.createFolder = createFolder;
+	public void setChoosePathRelativeToBasePath(boolean createFolder) {
+		this.choosePathRelativeToBasePath = createFolder;
 	}
 }
