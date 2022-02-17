@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MatlabFeatures');
-addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MIRToolbox/MIRToolbox');
-addpath('/home/ginsel/workspace/AMUSE/amuse//tools/MIRToolbox/AuditoryToolbox');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MatlabFeatures');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MIRToolbox/MIRToolbox');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
@@ -380,31 +380,17 @@ mirres=mirrms(f);
 		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res,wlength,woffset);
 	</text>
 </amuseEnableFeature>
-
-<amuseEnableTransform>
-<transformContent>
-<text>
-		% Strengths of major/minor keys
+<amuseEnableFeature id="209,210" dimensions="12,12">
+	<text>
+		% Strengths of major keys
 		mirres=mirkeystrength(chroma);
 		res=mirgetdata(mirres);
-</text>
-<amuseEnableFeature id="209" dimensions="12">
-	<text>
-		% strength of major keys
 		major_strengths=res(:,:,1);
-		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
-	</text>
-</amuseEnableFeature>
-<amuseEnableFeature id="210" dimensions="12">
-	<text>
-		% strength of minor keys
 		minor_strengths=res(:,:,2);
+		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
 		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
 	</text>
-</amuseEnableFeature></transformContent>
-</amuseEnableTransform>
-
-
+</amuseEnableFeature>
 <amuseEnableFeature id="216" dimensions="6">
 	<text>
 		% Tonal centroid vector
@@ -502,6 +488,15 @@ mirres=mirrms(f);
 	</text>
 </amuseEnableFeature>
 
+<amuseEnableFeature id="428" dimensions="1">
+	<text>
+		% Rise times
+		mirres=mirattacktime(onsets);
+		res = mirgetdata(mirres);
+		arff_saver([output_file_prefix,'428.arff'],'Rise times',res,-1);
+	</text>
+</amuseEnableFeature>
+
 <amuseEnableFeature id="424" dimensions="1">
 	<text>
 		% Release times
@@ -516,8 +511,8 @@ mirres=mirrms(f);
 		% Rhythmic clarity
 		% Default settings: time window of 3 seconds with 3 second overlap -> means 66150 samples for sampling rate = 22050Hz
 		% WARNING: it seems to be that this feature is calculated from frames started from the first onset event. It means
-		% that e.g. for a 60sec track only 19 feature values may be calculated, and the features do not correspond exactly to
-		% time windows which start directly from the track beginning!
+		% that e.g. for a 60sec song only 19 feature values may be calculated, and the features do not correspond exactly to
+		% time windows which start directly from the song beginning!
 		mirres=mirpulseclarity(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
 		arff_saver_with_windows_number([output_file_prefix,'418.arff'],'Rhythmic clarity',res,66150,66150);
@@ -529,8 +524,8 @@ mirres=mirrms(f);
 		% Tempo based on onset time
 		% Default settings: time window of 3 seconds with 3 second overlap -> means 66150 samples for sampling rate = 22050Hz
 		% WARNING: it seems to be that this feature is calculated from frames started from the first onset event. It means
-		% that e.g. for a 60sec track only 19 feature values may be calculated, and the features do not correspond exactly to
-		% time windows which start directly from the track beginning!
+		% that e.g. for a 60sec song only 19 feature values may be calculated, and the features do not correspond exactly to
+		% time windows which start directly from the song beginning!
 		mirres=mirtempo(onsets,'Frame',3,1);
 		res=mirgetdata(mirres);
 		arff_saver_with_windows_number([output_file_prefix,'425.arff'],'Tempo based on onset times',res,66150,66150);

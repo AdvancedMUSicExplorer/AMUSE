@@ -52,7 +52,7 @@ if __name__ == '__main__':
         file.close()
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="500" dimensions="1025">
+<amuseEnableFeature id="264" dimensions="1025">
 	<text>
         n_fft = 2048
         dim = 1 + n_fft/2
@@ -70,7 +70,7 @@ if __name__ == '__main__':
             os.makedirs(outputFolder)
         
         # Save the feature file
-        file = open(outputFolder + os.sep + musicFile[musicFile.rfind(os.sep):len(musicFile)-4] + "_500.arff", "w")
+        file = open(outputFolder + os.sep + musicFile[musicFile.rfind(os.sep):len(musicFile)-4] + "_264.arff", "w")
         file.write("@RELATION 'Music feature'\n")
         file.write("%rows=" + str(dim) + "\n")
         file.write("%columns=" + str(len(features[0])) + "\n")

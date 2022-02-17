@@ -19,5 +19,5 @@
 
 @DATA
 4, "MIRToolbox", "amuse.nodes.extractor.methods.MIRToolboxAdapter", "MIRToolbox", "MIRToolboxStart.sh", "MIRToolboxBase.xml", "MIRToolboxBaseModified.m"
-
-
+9, "AttackSlopes", "amuse.nodes.extractor.methods.WindowedAttackSlopesAdapter", "AttackSlopes", "-1", "-1", "-1"
+10, "RiseTimes", "amuse.nodes.extractor.methods.WindowedRiseTimesAdapter", "RiseTimes", "-1", "-1", "-1"

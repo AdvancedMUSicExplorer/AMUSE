@@ -34,6 +34,8 @@ import org.apache.log4j.Level;
 
 import amuse.interfaces.plugins.PluginException;
 import amuse.interfaces.plugins.PluginInstallerInterface;
+import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 
@@ -59,8 +61,8 @@ public class MIRToolboxPluginManager implements PluginInstallerInterface {
 	public void runInstallationRoutines(Properties properties) throws PluginException {
 		
 		// Set the path to AMUSE folder in feature extraction base script
-		File baseScript = new File(System.getenv("AMUSEHOME") + "/tools/MIRToolbox/MIRToolboxBase.xml");
-		File updatedBaseScript = new File(System.getenv("AMUSEHOME") + "/tools/MIRToolbox/MIRToolboxBaseUpdated.xml");
+		File baseScript = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/tools/MIRToolbox/MIRToolboxBase.xml");
+		File updatedBaseScript = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + "/tools/MIRToolbox/MIRToolboxBaseUpdated.xml");
 		
 		try {
 			BufferedReader baseScriptReader = new BufferedReader(new FileReader(baseScript));
@@ -70,7 +72,7 @@ public class MIRToolboxPluginManager implements PluginInstallerInterface {
 			while ((line = baseScriptReader.readLine()) != null) {
 				if(line.startsWith(new String("addpath('%AMUSEHOME%"))) {
 					AmuseLogger.write(this.getClass().getName(), Level.INFO, "Setting the AMUSE path for MIR Toolbox folders in base extractor script..");
-					values_writer.writeBytes(line.replace("%AMUSEHOME%", System.getenv("AMUSEHOME")) + System.getProperty("line.separator"));
+					values_writer.writeBytes(line.replace("%AMUSEHOME%", AmusePreferences.get(KeysStringValue.AMUSE_PATH)) + System.getProperty("line.separator"));
 				} else {
 					values_writer.writeBytes(line + System.getProperty("line.separator"));
 				}

@@ -60,3 +60,6 @@
 425, "Tempo based on onset times", 4, 66150, 66150, 1, WindowedNumeric
 426, "Attack slopes", 4, -1, -1, 1, Event
 427, "Five peaks of fluctuation curves summed across all bands", 4, 229376, 229376, 5, WindowedNumeric
+428, "Rise times", 4, -1, -1, 1, Event
+429, "Attack slopes as windowed numeric", 9, 512, 512, 1, WindowedNumeric
+430, "Rise times as windowed numeric", 10, 512, 512, 1, WindowedNumeric
