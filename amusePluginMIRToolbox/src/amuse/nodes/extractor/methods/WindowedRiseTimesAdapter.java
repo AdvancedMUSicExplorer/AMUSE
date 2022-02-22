@@ -175,7 +175,7 @@ public class WindowedRiseTimesAdapter extends AmuseTask implements ExtractorInte
 		extractors = new ArrayList<ExtractorInterface>();
 		String featureTablePath = AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "tools" + File.separator + "RiseTimes" + File.separator + "featureTable.arff";
 		featureTableBase = new FeatureTable(new File(featureTablePath));
-		try {
+		try {	
 			DataSetAbstract toolTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 			Attribute idAttribute = toolTableSet.getAttribute("Id");
 			Attribute extractorNameAttribute = toolTableSet.getAttribute("Name");
