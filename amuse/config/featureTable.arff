@@ -52,7 +52,7 @@
 32, "Angles in phase domain", 1, 512, 512, 1, WindowedNumeric
 33, "Distances in phase domain", 1, 512, 512, 1, WindowedNumeric
 45, "CMRARE cepstral modulation features with polynomial order 3", 2, 110250, 110250, 8, WindowedNumeric
-46, "CMRARE cepstral modulation features with polynomial order 5", 2, 110250, 110250 12, WindowedNumeric
+46, "CMRARE cepstral modulation features with polynomial order 5", 2, 110250, 110250, 12, WindowedNumeric
 47, "CMRARE cepstral modulation features with polynomial order 10", 2, 110250, 110250, 22, WindowedNumeric
 
 % Harmony and melody features
@@ -75,4 +75,3 @@
 405, "First periodicity peak in bpm", 1, 512, 512, 1, WindowedNumeric
 406, "Second periodicity peak in bpm", 1, 512, 512, 1, WindowedNumeric
 407, "Sum of correlated components", 0, 512, 512, 1, WindowedNumeric
-500, "Mir-Chromagram", 4, 22050, 22050, 12, WindowedNumeric

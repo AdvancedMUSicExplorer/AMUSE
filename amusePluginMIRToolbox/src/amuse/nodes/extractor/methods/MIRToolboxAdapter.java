@@ -27,7 +27,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
@@ -37,6 +39,7 @@ import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +54,7 @@ import org.apache.log4j.Level;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.io.DataSet;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -59,6 +63,7 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
 import amuse.util.ExternalProcessBuilder;
+import amuse.util.FileOperations;
 
 /**
  * Adapter to MIR Toolbox as feature extractor
@@ -73,6 +78,10 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
+	
+	private boolean convertAttackSlopes;
+	
+	private boolean convertRiseTimes;
 	
 	/*
 	 * (non-Javadoc)
@@ -90,15 +99,39 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void convertBaseScript(HashMap<Integer,Integer> feature2Tool, FeatureTable featureTable) throws NodeException {
 		
-		// First of all, a mapping from Amuse feature ID to its description is loaded
-		HashMap<Integer,String> featureId2Description = new HashMap<Integer,String>();
-
-		for(int i=0;i<featureTable.size();i++) {
-			featureId2Description.put(featureTable.getFeatureAt(i).getId(),
-					featureTable.getFeatureAt(i).getDescription());
+		// the features 429 and 430 are not extracted directly but converted from base features
+		// one of the base features (duration of music piece) needs to be extracted with the matlab adapter
+		boolean extractDurationWithMatlab = false;
+		if(feature2Tool.containsKey(429)) {
+			feature2Tool.put(400, 2);
+			feature2Tool.put(423, 4);
+			feature2Tool.put(426, 4);
+			extractDurationWithMatlab = true;
+		}
+		if(feature2Tool.containsKey(430)) {
+			feature2Tool.put(400, 2);
+			feature2Tool.put(423, 4);
+			feature2Tool.put(428, 4);
+			extractDurationWithMatlab = true;
 		}
 		
-		// Load Matlab base script
+		if(extractDurationWithMatlab) {
+			// create matlab adapter
+			MatlabAdapter matlabAdapter = new MatlabAdapter();
+			Properties properties = new Properties();
+			properties.setProperty("id", "2");
+			properties.setProperty("extractorName", "Matlab");
+			properties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
+			properties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
+			properties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
+			properties.setProperty("extractorFolderName", "MIRToolbox");
+			matlabAdapter.configure(properties, correspondingScheduler, "");
+			
+			// convert matlab base script
+			matlabAdapter.convertBaseScript(feature2Tool, featureTable);
+		}
+		
+		// Load MIRToolbox base script
 		Document currentBaseScript = null;
 		try {
 			String inputBaseBatchPath = properties.getProperty("inputExtractorBaseBatch");
@@ -244,11 +277,11 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 				+ this.correspondingScheduler.getTaskId() + 
 				"/" + this.currentPart + "/" + properties.getProperty("extractorFolderName"));
 		if(!folder.exists() && !folder.mkdirs()) {
-			throw new NodeException("Extraction with Matlab failed: could not create temp folder " + 
+			throw new NodeException("Extraction with MIRToolbox failed: could not create temp folder " + 
 					folder.toString());
 		}
 				
-		// Start MIR Toolbox
+		// Start Matlab
 		try {
 			List<String> commands = new ArrayList<String>();
 			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
@@ -367,6 +400,29 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 				e.printStackTrace();
 			}
 			
+			// see if attack slopes or rise times need to be converted
+			// convert attack, slopes and rise times if needed
+			String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
+			String windowedAttackSlopesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_429.arff";
+			String windowedRiseTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_430.arff";
+			convertAttackSlopes = new File(windowedAttackSlopesPath).exists();
+			convertRiseTimes = new File(windowedRiseTimesPath).exists();
+			
+			// for conversion the matlab feature duration of music piece is needed
+			if(convertAttackSlopes || convertRiseTimes) {
+				MatlabAdapter matlabAdapter = new MatlabAdapter();
+				Properties properties = new Properties();
+				properties.setProperty("id", "2");
+				properties.setProperty("extractorName", "Matlab");
+				properties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
+				properties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
+				properties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
+				properties.setProperty("extractorFolderName", "MIRToolbox");
+				matlabAdapter.configure(properties, correspondingScheduler, "");
+				matlabAdapter.setFilenames(musicFile, null, currentPart);
+				matlabAdapter.extractFeatures();
+			}
+			
 			convertOutput();
 			
 		} catch (IOException e) {
@@ -379,9 +435,15 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	 * @see amuse.nodes.extractor.interfaces.ExtractorInterface#convertOutput()
 	 */
 	public void convertOutput() throws NodeException {
-		// Conversion is not needed, since Matlab script writes output as Amuse ARFF
-		// but files might need to be renamed, Matlab does not know which custom configurations were used
+		// convert attack, slopes and rise times if needed
+		if(convertAttackSlopes) {
+			convertAttackSlopes();
+		}
+		if(convertRiseTimes) {
+			convertRiseTimes();
+		}
 		
+		// convert custom features
 		// list of ids of custom features
 		List<Integer> ids = new ArrayList<Integer>();
 		// maps feature id to configuration id
@@ -391,7 +453,7 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 		for(Feature feature : featureTable.getFeatures()) {
 			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
 				ids.add(feature.getId());
-				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId().toString());
 			}
 		}
 		
@@ -423,6 +485,152 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 					}
 				}
 			}
+		}
+	}
+	
+	private void convertAttackSlopes() throws NodeException {
+		AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Starting feature conversion...");
+		// convert the base features
+		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
+		
+		String durationOfMusicPiecePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_400.arff";
+		String attackTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_423.arff";
+		String attackSlopesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() +
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_426.arff";
+		
+		DataSet durationOfMusicPieceDataSet = null;
+		DataSet attackTimesDataSet = null;
+		DataSet attackSlopesDataSet = null;
+		try {
+			durationOfMusicPieceDataSet = new DataSet(new File(durationOfMusicPiecePath));
+			attackTimesDataSet = new DataSet(new File(attackTimesPath));
+			attackSlopesDataSet = new DataSet(new File(attackSlopesPath));
+		} catch (IOException e) {
+			throw new NodeException(e.getLocalizedMessage());
+		}
+		
+		double durationOfMusicPiece = (double)durationOfMusicPieceDataSet.getAttribute(0).getValueAt(0);
+		int windowSize = 512;
+		int stepSize = 512;
+		int sampleRate = 22050;
+		int numberOfWindows = (int)Math.ceil((durationOfMusicPiece*sampleRate - windowSize) / stepSize + 1);
+		System.out.println(numberOfWindows);
+		
+		double[] attackSlopeWindows = new double[numberOfWindows];
+		int currentAttack = -1;
+		double currentSlope = Double.NaN;
+		for(int i = 0; i < numberOfWindows; i++) {
+			double middleOfWindow = i * ((double)stepSize/sampleRate) + ((double)windowSize/sampleRate)/2;
+			while(currentAttack + 1 < attackTimesDataSet.getValueCount() && middleOfWindow >= (double)attackTimesDataSet.getAttribute(0).getValueAt(currentAttack + 1)) {
+				currentAttack++;
+				currentSlope = (double)attackSlopesDataSet.getAttribute(0).getValueAt(currentAttack);
+			}
+			attackSlopeWindows[i] = currentSlope;
+		}
+		
+		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_429.arff";
+		File featureFile = new File(featureFilePath);
+		try {
+			FileOutputStream fileOutputStream = new FileOutputStream(featureFile);
+			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+			
+			bufferedWriter.write("@RELATION 'Music feature'\n");
+			bufferedWriter.write("%rows=1\n");
+			bufferedWriter.write("%columns=" + numberOfWindows + "\n");
+			bufferedWriter.write("%sample_rate=" + sampleRate +"\n");
+			bufferedWriter.write("%window_size=" + windowSize + "\n");
+			bufferedWriter.write("%step_size=" + stepSize + "\n");
+			bufferedWriter.write("\n");
+			bufferedWriter.write("@ATTRIBUTE 'Attack slopes as windowed numeric' NUMERIC\n");
+			bufferedWriter.write("@ATTRIBUTE WindowNumber NUMERIC\n");
+			bufferedWriter.write("\n");
+			bufferedWriter.write("@DATA\n");
+			
+			for(int i = 0; i < attackSlopeWindows.length; i++) {
+				bufferedWriter.write(attackSlopeWindows[i] + "," + (i+1));
+				if(i < attackSlopeWindows.length - 1) {
+					bufferedWriter.write("\n");
+				}
+			}
+			bufferedWriter.close();
+			System.out.println("Closed the buffered reader.");
+			
+		} catch (IOException e) {
+			throw new NodeException(e.getLocalizedMessage());
+		}
+	}
+	
+	private void convertRiseTimes() throws NodeException {
+		AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Starting feature conversion...");
+		// convert the base features
+		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
+		
+		String durationOfMusicPiecePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_400.arff";
+		String attackTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_423.arff";
+		String riseTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() +
+				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_428.arff";
+		
+		DataSet durationOfMusicPieceDataSet = null;
+		DataSet attackTimesDataSet = null;
+		DataSet riseTimesDataSet = null;
+		try {
+			durationOfMusicPieceDataSet = new DataSet(new File(durationOfMusicPiecePath));
+			attackTimesDataSet = new DataSet(new File(attackTimesPath));
+			riseTimesDataSet = new DataSet(new File(riseTimesPath));
+		} catch (IOException e) {
+			throw new NodeException(e.getLocalizedMessage());
+		}
+		
+		double durationOfMusicPiece = (double)durationOfMusicPieceDataSet.getAttribute(0).getValueAt(0);
+		int windowSize = 512;
+		int stepSize = 512;
+		int sampleRate = 22050;
+		int numberOfWindows = (int)Math.ceil((durationOfMusicPiece*sampleRate - windowSize) / stepSize + 1);
+		
+		double[] riseTimeWindows = new double[numberOfWindows];
+		int currentAttack = -1;
+		double currentRiseTime = Double.NaN;
+		for(int i = 0; i < numberOfWindows; i++) {
+			double middleOfWindow = i * ((double)stepSize/sampleRate) + ((double)windowSize/sampleRate)/2;
+			while(currentAttack + 1 < attackTimesDataSet.getValueCount() && middleOfWindow >= (double)attackTimesDataSet.getAttribute(0).getValueAt(currentAttack + 1)) {
+				currentAttack++;
+				currentRiseTime = (double)riseTimesDataSet.getAttribute(0).getValueAt(currentAttack);
+			}
+			riseTimeWindows[i] = currentRiseTime;
+		}
+		
+		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_430.arff";
+		File featureFile = new File(featureFilePath);
+		try {
+			FileOutputStream fileOutputStream = new FileOutputStream(featureFile);
+			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream));
+			
+			bufferedWriter.write("@RELATION 'Music feature'\n");
+			bufferedWriter.write("%rows=1\n");
+			bufferedWriter.write("%columns=" + numberOfWindows + "\n");
+			bufferedWriter.write("%sample_rate=" + sampleRate +"\n");
+			bufferedWriter.write("%window_size=" + windowSize + "\n");
+			bufferedWriter.write("%step_size=" + stepSize + "\n");
+			bufferedWriter.write("\n");
+			bufferedWriter.write("@ATTRIBUTE 'Rise times as windowed numeric' NUMERIC\n");
+			bufferedWriter.write("@ATTRIBUTE WindowNumber NUMERIC\n");
+			bufferedWriter.write("\n");
+			bufferedWriter.write("@DATA\n");
+			
+			for(int i = 0; i < riseTimeWindows.length; i++) {
+				bufferedWriter.write(riseTimeWindows[i] + "," + (i+1));
+				if(i < riseTimeWindows.length - 1) {
+					bufferedWriter.write("\n");
+				}
+			}
+			bufferedWriter.close();
+			
+		} catch (IOException e) {
+			throw new NodeException(e.getLocalizedMessage());
 		}
 	}
 

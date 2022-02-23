@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('%AMUSEHOME%/tools/MatlabFeatures');
-addpath('%AMUSEHOME%/tools/MIRToolbox/MIRToolbox');
-addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MatlabFeatures');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MIRToolbox/MIRToolbox');
+addpath('/home/ginsel/workspace_master/AMUSE/amuse/tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
@@ -545,6 +545,26 @@ mirres=mirrms(f);
 		arff_saver_with_windows_number([output_file_prefix,'427.arff'],'Five peaks of fluctuation curves summed across all bands',res, 229376, 229376);
 		clear('s');
 		clear('fluct');
+	</text>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="429" dimensions="1">
+	<text>
+		% Attack Slopes as windowed numeric
+		% Create dummy file, that tells MIRToolboxAdapter that attack slopes need to be converted
+		file = fopen([output_file_prefix,'429.arff'],'w');
+		fprintf(file,['Attack slopes need to be converted']);
+		fclose(file);
+	</text>
+</amuseEnableFeature>
+
+<amuseEnableFeature id="430" dimensions="1">
+	<text>
+		% Attack Slopes as windowed numeric
+		% Create dummy file, that tells MIRToolboxAdapter that rise times need to be converted
+		file = fopen([output_file_prefix,'430.arff'],'w');
+		fprintf(file,['Rise times need to be converted']);
+		fclose(file);
 	</text>
 </amuseEnableFeature>
 
