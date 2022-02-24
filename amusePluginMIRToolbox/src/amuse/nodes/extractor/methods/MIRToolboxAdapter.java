@@ -118,14 +118,13 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 		if(extractDurationWithMatlab) {
 			// create matlab adapter
 			MatlabAdapter matlabAdapter = new MatlabAdapter();
-			Properties properties = new Properties();
-			properties.setProperty("id", "2");
-			properties.setProperty("extractorName", "Matlab");
-			properties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
-			properties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
-			properties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
-			properties.setProperty("extractorFolderName", "MIRToolbox");
-			matlabAdapter.configure(properties, correspondingScheduler, "");
+			Properties matlabProperties = new Properties();
+			matlabProperties.setProperty("id", "2");
+			matlabProperties.setProperty("extractorName", "Matlab");
+			matlabProperties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
+			matlabProperties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
+			matlabProperties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
+			matlabAdapter.configure(matlabProperties, correspondingScheduler, "");
 			
 			// convert matlab base script
 			matlabAdapter.convertBaseScript(feature2Tool, featureTable);
@@ -403,22 +402,22 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			// see if attack slopes or rise times need to be converted
 			// convert attack, slopes and rise times if needed
 			String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
-			String windowedAttackSlopesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_429.arff";
-			String windowedRiseTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_430.arff";
+			String windowedAttackSlopesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_429.arff";
+			String windowedRiseTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_430.arff";
 			convertAttackSlopes = new File(windowedAttackSlopesPath).exists();
 			convertRiseTimes = new File(windowedRiseTimesPath).exists();
 			
 			// for conversion the matlab feature duration of music piece is needed
 			if(convertAttackSlopes || convertRiseTimes) {
 				MatlabAdapter matlabAdapter = new MatlabAdapter();
-				Properties properties = new Properties();
-				properties.setProperty("id", "2");
-				properties.setProperty("extractorName", "Matlab");
-				properties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
-				properties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
-				properties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
-				properties.setProperty("extractorFolderName", "MIRToolbox");
-				matlabAdapter.configure(properties, correspondingScheduler, "");
+				Properties matlabProperties = new Properties();
+				matlabProperties.setProperty("id", "2");
+				matlabProperties.setProperty("extractorName", "Matlab");
+				matlabProperties.setProperty("extractorFolder", AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator +"tools" + File.separator + "MatlabFeatures");
+				matlabProperties.setProperty("inputExtractorBaseBatch", "matlabBase.xml");
+				matlabProperties.setProperty("inputExtractorBatch", "matlabBaseModified_for_MIRToolbox.m");
+				matlabProperties.setProperty("extractorFolderName", this.properties.getProperty("extractorFolderName"));
+				matlabAdapter.configure(matlabProperties, correspondingScheduler, "");
 				matlabAdapter.setFilenames(musicFile, null, currentPart);
 				matlabAdapter.extractFeatures();
 			}
@@ -494,11 +493,11 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
 		
 		String durationOfMusicPiecePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_400.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_400.arff";
 		String attackTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_423.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_423.arff";
 		String attackSlopesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() +
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_426.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_426.arff";
 		
 		DataSet durationOfMusicPieceDataSet = null;
 		DataSet attackTimesDataSet = null;
@@ -530,7 +529,7 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			attackSlopeWindows[i] = currentSlope;
 		}
 		
-		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_429.arff";
+		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_429.arff";
 		File featureFile = new File(featureFilePath);
 		try {
 			FileOutputStream fileOutputStream = new FileOutputStream(featureFile);
@@ -555,7 +554,6 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 				}
 			}
 			bufferedWriter.close();
-			System.out.println("Closed the buffered reader.");
 			
 		} catch (IOException e) {
 			throw new NodeException(e.getLocalizedMessage());
@@ -568,11 +566,11 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 		String musicFileName = this.musicFile.substring(musicFile.lastIndexOf(File.separator) + 1, musicFile.lastIndexOf("."));
 		
 		String durationOfMusicPiecePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_400.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_400.arff";
 		String attackTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + 
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_423.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_423.arff";
 		String riseTimesPath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() +
-				File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_428.arff";
+				File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_428.arff";
 		
 		DataSet durationOfMusicPieceDataSet = null;
 		DataSet attackTimesDataSet = null;
@@ -603,7 +601,7 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			riseTimeWindows[i] = currentRiseTime;
 		}
 		
-		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + "MIRToolbox" + File.separator + musicFileName + "_430.arff";
+		String featureFilePath = this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + this.correspondingScheduler.getTaskId() + File.separator + this.currentPart + File.separator + properties.getProperty("extractorFolderName") + File.separator + musicFileName + "_430.arff";
 		File featureFile = new File(featureFilePath);
 		try {
 			FileOutputStream fileOutputStream = new FileOutputStream(featureFile);
