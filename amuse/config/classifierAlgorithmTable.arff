@@ -60,7 +60,5 @@
 
 6, "FKNN", "Supervised", amuse.nodes.trainer.methods.supervised.FKNNAdapter, 'amuse.nodes.classifier.methods.supervised.FKNNAdapter', "", "-1", "-1", "-1", "-1", "-1", "fuzzy k-nearest neighbours", "Number of neighbours:", "[%i]", "[1]", "The number of neighbours", 1, 1, 1, 1, 1, 1, 0, 0
 
-7, "KerasNN", "Supervised", amuse.nodes.trainer.methods.supervised.KerasAdapter, 'amuse.nodes.classifier.methods.supervised.KerasAdapter', "Keras", "-1", "-1", "-1", "-1", "-1", "keras neural network", "Net:|Epochs:|Batch Size:|Optimizer:|Loss:", "[%c%i%i%s%s]", "[|/home/ginsel/workspace_git/AMUSE/amuse//tools/Keras/nets/nn.py|_100_100_|rmsprop|_|binary_crossentropy|]", "Path to a python script that describes the nueral network|The number of epochs for which the NN is trained|The batch size for training of the NN|Optimizer used for training|Loss function used for training", 1, 1, 1, 1, 1, 1, 0, 0
-
 8, "GradientBoostedTrees", "Supervised>Trees", amuse.nodes.trainer.methods.supervised.GradientBoostedTreesAdapter, 'amuse.nodes.classifier.methods.supervised.RapidMinerModelLoader', "RapidMiner9", "-1", "-1", "-1", "-1", "-1", "Gradient Boosted Trees from H2O", "Number of trees:", "[%i]", "[20]", "The number of decision trees", 1, 0, 1, 0, 1, 1, 0, 0
 
