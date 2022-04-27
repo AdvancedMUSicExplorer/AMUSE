@@ -408,7 +408,7 @@ public class ClassifierController extends AbstractController {
         public void loadButtonClicked() {
             clFolder.mkdirs();
             JFileChooser fc = new SelectArffFileChooser(
-                    "Classificator Task", clFolder);
+                    "Classification Task", clFolder);
             if (fc.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) {
                 return;
             }
