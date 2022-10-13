@@ -231,7 +231,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Could not run data preprocessing: " + e.getMessage()); 
-			errorDescriptionBuilder.append(taskConfiguration.getDescription());
+			errorDescriptionBuilder.append(e.getMessage());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}
@@ -463,6 +463,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					// Load the first classifier input for attributes information
 					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
 					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					
 					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
 					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
 					if(currentInputFile.startsWith(musicDatabasePath)) {
@@ -500,13 +501,13 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
-					
+
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
 					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 					File processedFeatureFile = new File(currentInputFile);
 					if(!processedFeatureFile.exists()) {
-						throw new NodeException("The processed feature file does not exist.");
+						throw new NodeException("Could not load data from processed feature files: " + processedFeatureFile);
 					}
 					classifierInputLoader.setFile(processedFeatureFile);
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
@@ -657,14 +658,16 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
-						
-						
 						// Go to the next music file?
 						if(!newInputFile.equals(currentInputFile) || (Double)classifierGroundTruthSet.getAttribute("Start").getValueAt(i + 1) == 0) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							classifierInputLoader = new ArffLoader();
-							classifierInputLoader.setFile(new File(currentInputFile));
+							processedFeatureFile = new File(currentInputFile);
+							if(!processedFeatureFile.exists()) {
+								throw new NodeException("Could not load data from processed feature files: " + processedFeatureFile);
+							}
+							classifierInputLoader.setFile(processedFeatureFile);
 						} 
 						
 						// Load the next input vector
@@ -686,6 +689,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				// load the raw features
 				try {
 					labeledInputForTraining = new DataSet("TrainingSet");
+					
 					// Load the classifier description
 					DataSetAbstract classifierGroundTruthSet = new ArffDataSet(new File(pathToFileWithLabeledInstances));
 					

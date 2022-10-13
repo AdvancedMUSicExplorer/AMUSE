@@ -331,7 +331,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				if(((ClassificationConfiguration)this.getConfiguration()).getInputSourceType().
 						equals(ClassificationConfiguration.InputSourceType.READY_INPUT)) {
 					
-					
+					if (((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()) == null)
+					{
+						throw new NodeException("DATEI NICHT VORHANDEN");
+					}
 					DataSet completeInput = new DataSet(((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().get(0));
 					
 						inputForClassification = new DataSet("ClassificationSet");
@@ -511,6 +514,10 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 						}
 						currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
 						
+						File inputFile = new File (currentInputFile);
+						if(!inputFile.exists()) {
+							throw new NodeException("Could not load data from processed feature files: " + inputFile);
+						}
 						AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading:  " + currentInputFile);
 							
 						// Load processed features of the current file and save them to classifier input file
