@@ -331,10 +331,6 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 				if(((ClassificationConfiguration)this.getConfiguration()).getInputSourceType().
 						equals(ClassificationConfiguration.InputSourceType.READY_INPUT)) {
 					
-					if (((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()) == null)
-					{
-						throw new NodeException("DATEI NICHT VORHANDEN");
-					}
 					DataSet completeInput = new DataSet(((FileListInput)((ClassificationConfiguration)this.taskConfiguration).getInputToClassify()).getInputFiles().get(0));
 					
 						inputForClassification = new DataSet("ClassificationSet");
