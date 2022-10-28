@@ -367,6 +367,7 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// is here calculated and the features from larger time windows are converted, e.g. "Duration of a music pieces"
 		// becomes a vector with a larger number of equal values
 		this.minimalStepSize = Integer.MAX_VALUE;
+		//this.minimalStepSize = 8000;
 		int exampleOfFeatureWithMinimalStep = -1; // Used later
 		for(int i=0;i<features.size();i++) {
 			if(features.get(i).getSourceFrameSize() != -1 && features.get(i).getSourceFrameSize() < minimalStepSize) {
