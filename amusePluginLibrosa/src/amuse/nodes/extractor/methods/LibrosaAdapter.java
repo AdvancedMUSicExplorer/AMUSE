@@ -257,17 +257,16 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 
 			pc.waitFor();
 			// DEBUG Show the runtime outputs
-			String s = null; 
+			/*String s = null; 
 			java.io.BufferedReader stdInput = new java.io.BufferedReader(new java.io.InputStreamReader(pc.getInputStream()));
 			java.io.BufferedReader stdError = new java.io.BufferedReader(new java.io.InputStreamReader(pc.getErrorStream()));
 			System.out.println("Here is the standard output of the command:\n"); 
 			while ((s = stdInput.readLine()) != null) { System.out.println(s); } 
 			System.out.println("Here is the standard error of the command (if any):\n"); 
 			while ((s = stdError.readLine()) != null) { System.out.println(s); }
-			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
+			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");*/
 		} catch (IOException e) {
-			printStackTrace(e);
-			//e.printStackTrace();
+			//printStackTrace(e);
 			throw new NodeException("Extraction with Librosa failed: " + e.getMessage());
 		} catch (InterruptedException e) {
 			throw new NodeException("Extraction with Librosa interrupted! " + e.getMessage());
