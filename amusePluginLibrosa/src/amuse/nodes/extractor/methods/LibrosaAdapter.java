@@ -257,13 +257,13 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 
 			pc.waitFor();
 			// DEBUG Show the runtime outputs
-			/*String s = null; 
+			String s = null; 
 			java.io.BufferedReader stdInput = new java.io.BufferedReader(new java.io.InputStreamReader(pc.getInputStream()));
 			java.io.BufferedReader stdError = new java.io.BufferedReader(new java.io.InputStreamReader(pc.getErrorStream()));
 			System.out.println("Here is the standard output of the command:\n"); 
 			while ((s = stdInput.readLine()) != null) { System.out.println(s); } 
 			System.out.println("Here is the standard error of the command (if any):\n"); 
-			while ((s = stdError.readLine()) != null) { System.out.println(s); }*/
+			while ((s = stdError.readLine()) != null) { System.out.println(s); }
 			AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
 		} catch (IOException e) {
 			printStackTrace(e);
@@ -306,7 +306,7 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 		for(Feature feature : featureTable.getFeatures()) {
 			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
 				ids.add(feature.getId());
-				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId().toString());
 			}
 		}
 		
