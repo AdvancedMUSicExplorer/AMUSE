@@ -1,0 +1,34 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract.
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Step size in samples
+@ATTRIBUTE StepSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+% Type of feature:
+%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length
+%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time
+%   Event: feature marks events as points in time, but has no duration or value
+@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
+
+@DATA
+431, "Chromaticity", 9, 16384, 2048, 1, WindowedNumeric
+432, "Dyadicity", 9, 16384, 2048, 1, WindowedNumeric
+433, "Triadicity", 9, 16384, 2048, 1, WindowedNumeric
+434, "Diminished Quality", 9, 16384, 2048, 1, WindowedNumeric
+435, "Diatonicity", 9, 16384, 2048, 1, WindowedNumeric
+436, "Wholetoneness", 9, 16384, 2048, 1, WindowedNumeric
+437, "Dissonance", 9, 16384, 2048, 1, WindowedNumeric
