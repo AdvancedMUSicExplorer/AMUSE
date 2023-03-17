@@ -25,10 +25,10 @@
 @ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
 
 @DATA
-431, "Chromaticity", 9, 16384, 2048, 1, WindowedNumeric
-432, "Dyadicity", 9, 16384, 2048, 1, WindowedNumeric
-433, "Triadicity", 9, 16384, 2048, 1, WindowedNumeric
-434, "Diminished Quality", 9, 16384, 2048, 1, WindowedNumeric
-435, "Diatonicity", 9, 16384, 2048, 1, WindowedNumeric
-436, "Wholetoneness", 9, 16384, 2048, 1, WindowedNumeric
-437, "Dissonance", 9, 16384, 2048, 1, WindowedNumeric
+270, "Chromaticity", 9, 16384, 2048, 1, WindowedNumeric
+271, "Dyadicity", 9, 16384, 2048, 1, WindowedNumeric
+272, "Triadicity", 9, 16384, 2048, 1, WindowedNumeric
+273, "Diminished Quality", 9, 16384, 2048, 1, WindowedNumeric
+274, "Diatonicity", 9, 16384, 2048, 1, WindowedNumeric
+275, "Wholetoneness", 9, 16384, 2048, 1, WindowedNumeric
+276, "Dissonance", 9, 16384, 2048, 1, WindowedNumeric

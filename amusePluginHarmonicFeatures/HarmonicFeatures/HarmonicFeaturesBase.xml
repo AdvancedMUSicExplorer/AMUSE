@@ -33,60 +33,60 @@ if __name__ == '__main__':
         musicFile = sys.argv[1]
         outputFolder = sys.argv[2]
 </text>
-<amuseEnableFeature id="431" dimensions="1">
+<amuseEnableFeature id="270" dimensions="1">
 	<text>
         featureName = "Chromaticity"
         features = extract_features.main(musicFile, ["chromaticity"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="431", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="270", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="432" dimensions="1">
+<amuseEnableFeature id="271" dimensions="1">
 	<text>
         featureName = "Dyadicity"
         features = extract_features.main(musicFile, ["dyadicity"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="432", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="271", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="433" dimensions="1">
+<amuseEnableFeature id="272" dimensions="1">
 	<text>
         featureName = "Triadicity"
         features = extract_features.main(musicFile, ["triadicity"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="433", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="272", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="434" dimensions="1">
+<amuseEnableFeature id="273" dimensions="1">
 	<text>
         featureName = "Diminished Quality"
         features = extract_features.main(musicFile, ["dim_quality"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="434", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="273", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="435" dimensions="1">
+<amuseEnableFeature id="274" dimensions="1">
 	<text>
         featureName = "Diatonicity"
         features = extract_features.main(musicFile, ["diatonicity"])
 
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="435", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="274", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="436" dimensions="1">
+<amuseEnableFeature id="275" dimensions="1">
 	<text>
         featureName = "Wholetoneness"
         features = extract_features.main(musicFile, ["wholetoneness"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="436", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="275", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
-<amuseEnableFeature id="437" dimensions="1">
+<amuseEnableFeature id="276" dimensions="1">
 	<text>
         featureName = "Dissonance"
         features = extract_features.main(musicFile, ["dissonance"])
         
-        output(outputFolder=outputFolder, musicFile=musicFile, featureID="437", features=features, featureName=featureName)
+        output(outputFolder=outputFolder, musicFile=musicFile, featureID="276", features=features, featureName=featureName)
 	</text>
 </amuseEnableFeature>
 <text>     
