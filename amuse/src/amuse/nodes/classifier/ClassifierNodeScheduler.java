@@ -459,7 +459,13 @@ public class ClassifierNodeScheduler extends NodeScheduler {
 					
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
-					classifierInputLoader.setFile(new File(currentInputFile));
+					File currentInput = new File(currentInputFile);
+					classifierInputLoader.setFile(currentInput);
+					
+					if(!currentInput.exists()) {
+						throw new NodeException("Could not load data from processed feature files: " + currentInputFile);
+					}
+
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
 						
 					// Save the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
