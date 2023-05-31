@@ -17,10 +17,12 @@ if nargin == 0
     d.sampling = 0;
     d.length = 0;
     d.resampling = 0;
+    d.chunksizefactor = 0;
     d.nochunk = 0;
-    d.ascending = 0;
     d.overlap = 0;
     d.separate = 0;
+    d.presilence = 0;
+    d.postsilence = 0;
     d.chunk = [];
     d.eval = 0;
     d.interchunk = [];
@@ -29,7 +31,6 @@ if nargin == 0
     d.struct = [];
     d.stored = [];
     d.index = NaN;
-    d.tmpfile = [];
     d.tmpof = [];
 elseif isa(orig,'mirdesign')
     d.method = orig.method;
@@ -48,10 +49,12 @@ elseif isa(orig,'mirdesign')
     d.sampling = orig.sampling;
     d.length = orig.length;
     d.resampling = orig.resampling;
+    d.chunksizefactor = orig.chunksizefactor;
     d.nochunk = orig.nochunk;
-    d.ascending = orig.ascending;
     d.overlap = orig.overlap;
     d.separate = orig.separate;
+    d.presilence = orig.presilence;
+    d.postsilence = orig.postsilence;
     d.chunk = orig.chunk;
     d.eval = orig.eval;
     d.interchunk = orig.interchunk;
@@ -60,7 +63,6 @@ elseif isa(orig,'mirdesign')
     d.struct = orig.struct;
     d.stored = orig.stored;
     d.index = orig.index;
-    d.tmpfile = orig.tmpfile;
     d.tmpof = orig.tmpof;
 else
     d.method = orig;
@@ -80,15 +82,12 @@ else
         d.sampling = 0;
         d.length = 0;
         d.resampling = 0;
+        d.chunksizefactor = 1;
         d.nochunk = 0;
-        if not(isempty(orig)) && ...
-                strcmp(func2str(orig),'mirenvelope') && d.option.zp == 2
-                d.ascending = 0;
-        else
-            d.ascending = 1;
-        end
         d.overlap = 0;
         d.separate = 0;
+        d.presilence = 0;
+        d.postsilence = 0;
     else
         if iscell(argin)
             argin = argin{1};
@@ -122,6 +121,7 @@ else
         d.sampling = argin.sampling;
         d.length = argin.length;
         d.resampling = argin.resampling;
+        d.chunksizefactor = argin.chunksizefactor;
         if (isfield(specif,'nochunk') && specif.nochunk) 
             d.nochunk = 1; % was previously 2
         elseif not(isempty(argin.stored))
@@ -134,17 +134,11 @@ else
         else
             d.nochunk = argin.nochunk;
         end
-        if strcmp(func2str(orig),'mirenvelope')
-            if d.option.zp == 2
-                d.ascending = not(isempty(d.segment));
-            else
-                d.ascending = 1;
-            end
-        else
-            d.ascending = argin.ascending;
-        end
+        d.chunksizefactor = argin.chunksizefactor;
         d.overlap = argin.overlap;
         d.separate = argin.separate;
+        d.presilence = argin.presilence;
+        d.postsilence = argin.postsilence;
     end
     d.chunk = [];
     d.eval = 0;
@@ -154,13 +148,6 @@ else
     d.struct = [];
     d.stored = [];
     d.index = NaN;
-    if not(isempty(orig)) && strcmp(func2str(orig),'mirenvelope') && ...
-                d.option.zp == 2 && isempty(d.segment)
-        % Triggers the use of temporary file for the mirenvelope computation
-        d.tmpfile.fid = 0;
-    else
-        d.tmpfile = [];
-    end
     d.tmpof = [];
 end
 d = class(d,'mirdesign');

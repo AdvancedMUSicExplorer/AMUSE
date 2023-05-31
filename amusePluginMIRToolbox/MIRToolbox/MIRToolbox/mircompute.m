@@ -29,9 +29,11 @@ for i = 1:l
                 end
             end
         end
-        if 1 %nargout == 1 
+        if nargout == 1 
             res = algo(vk{:});
-        else %% used for miremotion, provokes bug else...
+        elseif nargout == 2
+            [res res2] = algo(vk{:});
+        else
             [res res2 res3 res4] = algo(vk{:}); 
         end
         if iscell(res)
@@ -41,10 +43,14 @@ for i = 1:l
             end
         else
             varargout{1}{i}{k} = res;
-            if nargout == 4
+            if nargout > 1
                 varargout{2}{i}{k} = res2;
-                varargout{3}{i}{k} = res3;
-                varargout{4}{i}{k} = res4;
+                if nargout > 2
+                    varargout{3}{i}{k} = res3;
+                    if nargout > 3
+                        varargout{4}{i}{k} = res4;
+                    end
+                end
             end
         end
     end

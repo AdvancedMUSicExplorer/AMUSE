@@ -3,6 +3,7 @@ function [orig during after] = miroptions(method,orig,specif,varg)
 DEFAULTFRAMELENGTH = .05;
 DEFAULTFRAMEHOP = .5;
 DEFAULTFRAMESTART = 0;
+DEFAULTFRAMESYNC = 0;
 
 % The options are determined during the bottom-up process design (see below). 
 
@@ -94,6 +95,7 @@ for i = 1:length(fields)
                 end
                 during.(field).phase.val = option.(field).default(3);
                 during.(field).phase.unit = '/1';
+                during.(field).phase.atend = 0;
             else
                 during.(field) = option.(field).default;
             end
@@ -108,6 +110,10 @@ while i <= length(varg)
         frame.length.unit = 's';
         frame.hop.unit = '/1';
         frame.phase.unit = '/1';
+        frame.phase.atend = 0;
+        frame.presilence = 0;
+        frame.postsilence = 0;
+        
         if length(varg) > i && isnumeric(varg{i+1})
             i = i+1;
             frame.length.val = varg{i};
@@ -149,9 +155,72 @@ while i <= length(varg)
                     i = i+1;
                     frame.phase.unit = varg{i};
                 end
+                if length(varg) > i && ischar(varg{i+1}) && strcmpi(varg{i+1},'AtEnd')
+                    i = i+1;
+                    frame.phase.atend = 'AtEnd';
+                elseif length(varg) > i && isnumeric(varg{i+1}) && ~varg{i+1}
+                    i = i+1;
+                    frame.phase.atend = 0;
+                end
             else
                 frame.phase.val = DEFAULTFRAMESTART;
             end
+            if length(varg) > i && isnumeric(varg{i+1})
+                i = i+1;
+                frame.presilence = varg{i};
+            else
+                frame.presilence = 0;
+            end
+            if length(varg) > i && isnumeric(varg{i+1})
+                i = i+1;
+                frame.postsilence = varg{i};
+            else
+                frame.postsilence = 0;
+            end
+            
+        elseif length(varg) > i && ischar(varg{i+1}) && ...
+               strcmpi(varg{i+1},'Hop')
+            i = i+1;
+            if not(isempty(persoframe))
+                if isfield(option.(persoframe),'keydefault')
+                    frame.length.val = option.(persoframe).keydefault(1);
+                else
+                    frame.length.val = option.(persoframe).default(1);
+                end
+            elseif isfield(specif,'defaultframelength')
+                frame.length.val = specif.defaultframelength;
+            else
+                frame.length.val = DEFAULTFRAMELENGTH;
+            end
+            i = i+1;
+            frame.hop.val = varg{i};
+            if length(varg) > i && ischar(varg{i+1}) && ...
+                    (strcmpi(varg{i+1},'%') || strcmpi(varg{i+1},'/1') || ...
+                     strcmpi(varg{i+1},'s') || strcmpi(varg{i+1},'sp')|| ...
+                     strcmpi(varg{i+1},'Hz'))
+                i = i+1;
+                frame.hop.unit = varg{i};
+            end
+            if not(frame.hop.val || strcmpi(frame.hop.unit,'Hz'))
+                mirerror(func2str(method),'The hop factor should be strictly positive.')
+            end
+            if length(varg) > i && isnumeric(varg{i+1})
+                i = i+1;
+                frame.phase.val = varg{i};
+                if length(varg) > i && ischar(varg{i+1}) && ...
+                        (strcmpi(varg{i+1},'%') || strcmpi(varg{i+1},'/1') || ...
+                         strcmpi(varg{i+1},'s') || strcmpi(varg{i+1},'sp'))
+                    i = i+1;
+                    frame.phase.unit = varg{i};
+                end
+                if length(varg) > i && ischar(varg{i+1}) && strcmpi(varg{i+1},'AtEnd')
+                    i = i+1;
+                    frame.phase.atend = 'AtEnd';
+                end
+            else
+                frame.phase.val = DEFAULTFRAMESTART;
+            end
+            
         else
             if not(isempty(persoframe))
                 if isfield(option.(persoframe),'keydefault')
@@ -177,6 +246,7 @@ while i <= length(varg)
             end
             frame.phase.val = DEFAULTFRAMESTART;
         end
+        
         frame.eval = 0;
         if not(isfield(option,'frame')) || ...
                 not(isfield(option.frame,'when')) || ...
@@ -226,7 +296,8 @@ while i <= length(varg)
                     end
                     if strcmpi(type,'String')
                         if length(varg) > i && ...
-                                (ischar(varg{i+1}) || varg{i+1} == 0)
+                                (ischar(varg{i+1}) || ...
+                                    varg{i+1} == 0 || varg{i+1} == 1)
                             if isfield(option.(field),'choice')
                                 match2 = 0;
                                 arg2 = varg{i+1};

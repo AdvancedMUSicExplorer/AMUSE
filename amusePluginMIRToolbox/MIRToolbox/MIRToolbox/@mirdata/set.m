@@ -19,6 +19,8 @@ while length(propertyArgIn) >= 2,
            a.unit = val;
        case 'FramePos'
            a.framepos = val;
+       case 'FrameRate'
+           a.framerate = val;
        case 'Sampling'
            a.sr = val;
        case 'Length'
@@ -53,10 +55,14 @@ while length(propertyArgIn) >= 2,
            a.peak.preciseval = val;
        case 'PeakMode'
            a.peak.mode = val;
+       case 'OnsetPos'
+           a.onset.pos = val;
+       case 'OffsetPos'
+           a.offset.pos = val;
        case 'AttackPos'
            a.attack.pos = val;
-       case 'ReleasePos'
-           a.release.pos = val;
+       case 'DecayPos'
+           a.decay.pos = val;
        case 'TrackPos'
            a.track.pos = val;
        case 'TrackVal'
@@ -73,8 +79,6 @@ while length(propertyArgIn) >= 2,
            a.acrosschunks = val;
        case 'Interpolable'
            a.interpolable = val;
-       case 'TmpFile'
-           a.tmpfile = val;
        case 'Index'
            a.index = val;  
        case 'Extracted'

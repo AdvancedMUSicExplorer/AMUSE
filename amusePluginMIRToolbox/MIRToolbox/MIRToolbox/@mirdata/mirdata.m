@@ -6,6 +6,7 @@ if nargin > 0 && isa(orig,'mirdata')
     d.data = orig.data;
     d.unit = orig.unit;
     d.framepos = orig.framepos;
+    d.framerate = orig.framerate;
     d.framed = orig.framed;
     d.sr = orig.sr;
     d.length = orig.length;
@@ -17,8 +18,10 @@ if nargin > 0 && isa(orig,'mirdata')
     d.clusters = orig.clusters;
     d.multidata = orig.multidata;
     d.peak = orig.peak;
+    d.onset = orig.onset;
+    d.offset = orig.offset;
     d.attack = orig.attack;
-    d.release = orig.release;
+    d.decay = orig.decay;
     d.track = orig.track;
     d.title = orig.title;
     d.abs = orig.abs;
@@ -27,13 +30,13 @@ if nargin > 0 && isa(orig,'mirdata')
     d.tmpidx = orig.tmpidx;
     d.acrosschunks = orig.acrosschunks;
     d.interpolable = orig.interpolable;
-    d.tmpfile = orig.tmpfile;
     d.index = orig.index;
 else
     d.pos = {};
     d.data = {};
     d.unit = '';
     d.framepos = {};
+    d.framerate = {};
     d.framed = 0;
     d.sr = {};
     d.length = {};
@@ -49,8 +52,10 @@ else
     d.peak.precisepos = {};
     d.peak.preciseval = {};
     d.peak.mode = {};
+    d.onset = {};
+    d.offset = {};
     d.attack = {};
-    d.release = {};
+    d.decay = {};
     d.track = {};
     d.title = 'Unspecified data';
     d.abs = 'Unspecified abscissa';
@@ -60,7 +65,6 @@ else
     d.acrosschunks = [];
     d.interpolable = 1;  % If the abscissae axis is non-numeric (0), 
                          % then peak picking has to be done without interpolation.
-    d.tmpfile = [];
     d.index = NaN;
 end
 d = class(d,'mirdata');

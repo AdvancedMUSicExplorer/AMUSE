@@ -85,11 +85,14 @@ function varargout = mirspectrum(orig,varargin)
 %           instead of a FFT, with a number of bins per octave fixed to nb.
 %           Default value for nb: 12 bins per octave.
 %
-%       mirspectrum(...,'Smooth',o): smooths the envelope using a movering
+%       mirspectrum(...,'Smooth',o): smooths the envelope using a moving
 %           average of order o.
 %           Default value when the option is toggled on: o=10
 %       mirspectrum(...,'Gauss',o): smooths the envelope using a gaussian
 %           of standard deviation o samples.
+%           Default value when the option is toggled on: o=10
+%       mirspectrum(...,'TimeSmooth',o): smooths each frequency channel of
+%           a spectrogram using a moving average of order o.
 %           Default value when the option is toggled on: o=10
 %       mirspectrum(...,'Phase',0): do not compute the FFT phase.
     
@@ -134,6 +137,11 @@ function varargout = mirspectrum(orig,varargin)
         wr.default = 0;
     option.wr = wr;
     
+        pow2.key = 'Power2';
+        pow2.type = 'Boolean';
+        pow2.default = 1;
+    option.pow2 = pow2;
+    
         octave.key = 'OctaveRatio';
         octave.type = 'Boolean';
         octave.default = 0;
@@ -162,9 +170,10 @@ function varargout = mirspectrum(orig,varargin)
     option.nl = nl;
     
         norm.key = 'Normal';
-        norm.type = 'Integer';
+        norm.type = 'String';
+        norm.choice = {'Local','Global',0,'no','off'};
         norm.default = 0;
-        norm.keydefault = 1;
+        norm.keydefault = 'Local';
         norm.when = 'After';
     option.norm = norm;
     
@@ -198,6 +207,7 @@ function varargout = mirspectrum(orig,varargin)
         reso.type = 'String';
         reso.choice = {'ToiviainenSnyder','Fluctuation','Meter',0,'no','off'};
         reso.default = 0;
+        reso.keydefault = 1;
         reso.when = 'After';
     option.reso = reso;
     
@@ -258,16 +268,31 @@ function varargout = mirspectrum(orig,varargin)
         gauss.keydefault = 10;
         gauss.when = 'After';
     option.gauss = gauss;
-    
-        rapid.key = 'Rapid';
-        rapid.type = 'Boolean';
-        rapid.default = 0;
-    option.rapid = rapid;
 
+        timesmooth.key = 'TimeSmooth';
+        timesmooth.type = 'Integer';
+        timesmooth.default = 0;
+        timesmooth.keydefault = 10;
+        timesmooth.when = 'After';
+    option.timesmooth = timesmooth;
+    
+        diff.key = 'Diff';
+        diff.type = 'Integer';
+        diff.default = 0;
+        diff.keydefault = 10;
+        diff.when = 'After';
+    option.diff = diff;
+    
         phase.key = 'Phase';
         phase.type = 'Boolean';
         phase.default = 1;
     option.phase = phase;
+    
+        mingate.key = 'MinGate';
+        mingate.type = 'Integer';
+        mingate.default = 0;
+        mingate.when = 'After';
+    option.mingate = mingate;
 
 specif.option = option;
 
@@ -299,7 +324,8 @@ if isstruct(option)
 end
 if not(isempty(postoption))
     if not(strcmpi(postoption.band,'Freq') && isempty(postoption.msum) ...
-            || isempty(postoption.mprod)) || postoption.log || postoption.db ...
+            && isempty(postoption.mprod)) ...
+            || postoption.log || postoption.db ...
             || postoption.pow || postoption.mask || postoption.collapsed ...
             || postoption.aver || postoption.gauss
         option.phase = 0;
@@ -369,6 +395,8 @@ else
     end
     fs = get(orig,'Sampling');
     fp = get(orig,'FramePos');
+    fr = get(orig,'FrameRate');
+    lg = get(orig,'Length');
     m = cell(1,length(sig));
     p = cell(1,length(sig));
     f = cell(1,length(sig));
@@ -379,7 +407,7 @@ else
             d = {d};
         end
         if option.alongbands
-            fsi = 1 / (fpi{1}(1,2) - fpi{1}(1,1));
+            fsi = fr{i};
         else
             fsi = fs{i};
         end
@@ -399,6 +427,7 @@ else
                 end
                 dj = reshape(dj,[size(dj,2),1,size(dj,3)]);
                 fp{i}{J} = fp{i}{J}([1;end]);
+                lg{i}{J} = diff(fp{i}{J}) * fs{i};
             end
                         
             if option.constq
@@ -412,7 +441,7 @@ else
                 end
                 B = floor(log(f_max/f_min) / log(r)); % number of bins
                 N0 = round(Q*fsi/f_min); % maximum Nkcq
-                j2piQn = -j*2*pi*Q*(0:N0-1)';
+                j2piQn = -1i*2*pi*Q*(0:N0-1)';
 
                 fj = f_min * r.^(0:B-1)';
                 transf = NaN(B,size(dj,2),size(dj,3));
@@ -468,7 +497,9 @@ else
                             end                
                             N = max(N,fsi/option.mr);
                         end
-                        N = 2^nextpow2(N);
+                        if option.pow2
+                            N = 2^nextpow2(N);
+                        end
                     else
                         N = ceil(fsi/option.res);
                     end
@@ -477,14 +508,21 @@ else
                 end
 
                 % Here is the spectrum computation itself
-                transf = fft(dj,N);
+                transf = fft(dj,N); %/(length(dj));
 
                 len = floor(N/2+1);
-                fj = fsi/2 * linspace(0,1,len)';
+                
+%                 fj = fsi/2 * linspace(0,1,len)';
+                
+                fj = fsi * (N-1)/N * linspace(0,1,N)';
+                fj = fj(1:len);
+
                 if option.max
-                    maxf = find(fj>=option.max,1);
+                    maxf = find(fj>option.max,1);
                     if isempty(maxf)
                         maxf = len;
+                    else
+                        maxf = maxf - 1;
                     end
                 else
                     maxf = len;
@@ -518,14 +556,15 @@ else
             f{i} = fi{1};
         end
     end
-    s = set(s,'Frequency',f,'Magnitude',m,'Phase',p,'FramePos',fp);
+    s = set(s,'Frequency',f,'Magnitude',m,'Phase',p,...
+              'FramePos',fp,'Length',lg);
     if not(isempty(postoption)) && isstruct(postoption)
-        s = post(s,postoption);
+        s = post(s,postoption,orig);
     end
 end
 
    
-function s = post(s,option)
+function s = post(s,option,orig)
 if option.collapsed
     option.band = 'Cents';
 end
@@ -538,8 +577,33 @@ for k = 1:length(m)
         f{k} = {f{k}};
     end
 end
+if option.timesmooth
+    [state s] = gettmp(s);
+    B = ones(1,option.timesmooth)/option.timesmooth;
+    for h = 1:length(m)
+        for l = 1:length(m{h})
+            [m{h}{l} state] = filter(B,1,m{h}{l},state,2);
+            %mhl = m{h}{l};
+            %for i = 1:size(m{h}{l},2)
+            %    m{h}{l}(:,i) = min(mhl(:,max(1,i-option.timesmooth+1):i),...
+            %                       [],2);
+            %end
+        end
+    end
+    s = settmp(s,state);
+end
+if option.diff
+    for h = 1:length(m)
+        for l = 1:length(m{h})
+            m{h}{l} = [zeros(size(m{h}{l},1),option.diff),...
+                       max(0,m{h}{l}(:,1+option.diff:end) - ...
+                             m{h}{l}(:,1:end-option.diff))];
+        end
+    end
+end
 if get(s,'Power') == 1 && ...
         (option.pow || any(option.mprod) || any(option.msum)) 
+                % mprod could be tried without power?
     for h = 1:length(m)
         for l = 1:length(m{k})
             m{h}{l} = m{h}{l}.^2;
@@ -549,7 +613,7 @@ if get(s,'Power') == 1 && ...
 end
 if any(option.mprod)
     for h = 1:length(m)
-        for l = 1:length(m{k})
+        for l = 1:length(m{h})
             z0 = m{h}{l};
             z1 = z0;
             for k = 1:length(option.mprod)
@@ -567,7 +631,7 @@ if any(option.mprod)
 end
 if any(option.msum)
     for h = 1:length(m)
-        for l = 1:length(m{k})
+        for l = 1:length(m{h})
             z0 = m{h}{l};
             z1 = z0;
             for k = 1:length(option.msum)
@@ -583,17 +647,27 @@ if any(option.msum)
     end
     s = set(s,'Title','Spectral sum');
 end
-if option.norm
-    for k = 1:length(m)
-        for l = 1:length(m{k})
-            mkl = m{k}{l};
-            nkl = zeros(1,size(mkl,2),size(mkl,3));
-            for kk = 1:size(mkl,2)
-                for ll = 1:size(mkl,3)
-                    nkl(1,kk,l) = norm(mkl(:,kk,ll));
+if ischar(option.norm)
+    if strcmpi(option.norm,'Local')
+        for k = 1:length(m)
+            for l = 1:length(m{k})
+                mkl = m{k}{l};
+                nkl = zeros(1,size(mkl,2),size(mkl,3));
+                for kk = 1:size(mkl,2)
+                    for ll = 1:size(mkl,3)
+                        nkl(1,kk,l) = norm(mkl(:,kk,ll));
+                    end
                 end
+                m{k}{l} = mkl./repmat(nkl,[size(m{k}{k},1),1,1]);
             end
-            m{k}{l} = mkl./repmat(nkl,[size(m{k}{k},1),1,1]);
+        end
+    elseif strcmpi(option.norm,'Global')
+        for k = 1:length(m)
+            for l = 1:length(m{k})
+                mkl = m{k}{l};
+                nkl = max(max(max(mkl)));
+                m{k}{l} = mkl/nkl;
+            end
         end
     end
 end
@@ -607,7 +681,7 @@ if option.nl
 end
 if option.terhardt && not(isempty(find(f{1}{1}))) % This excludes the case where spectrum already along bands
     % Code taken from Pampalk's MA Toolbox
-    for h = 1:length(m)
+    for k = 1:length(m)
         for l = 1:length(m{k})
             W_Adb = zeros(size(f{k}{l}));
             W_Adb(2:size(f{k}{l},1),:,:) = ...
@@ -615,13 +689,15 @@ if option.terhardt && not(isempty(find(f{1}{1}))) % This excludes the case where
                 + 6.5 * exp(-0.6 * (f{k}{l}(2:end,:,:)/1000 - 3.3).^2) ...
                 - 0.001*(f{k}{l}(2:end,:,:)/1000).^4)/20);
             W_Adb = W_Adb.^2;
-            m{h}{l} = m{h}{l}.*W_Adb;
+            m{k}{l} = m{k}{l}.*W_Adb;
         end
     end
 end
-if option.reso
+if ~isequal(option.reso,0) && ...
+        ~(ischar(option.reso) && ...
+            (strcmpi(option.reso,'off') || strcmpi(option.reso,'no'))) 
     if not(ischar(option.reso))
-        if strcmp(get(orig,'XScale'),'Mel')
+        if strcmp(get(s,'XScale'),'Mel')
             option.reso = 'Fluctuation';
         else
             option.reso = 'ToiviainenSnyder';
@@ -634,8 +710,9 @@ if option.reso
                     1 - 0.25*(log2(max(1./max(f{k}{l},1e-12),1e-12)/0.5)).^2);
             elseif strcmpi(option.reso,'Fluctuation')
                 w1 = f{k}{l} / 4; % ascending part of the fluctuation curve;
-                w2 = 1 - 0.3 * (f{k}{l} - 4)/6; % descending part;
+                w2 = 1 - 0.3 * (f{k}{l} - 4)/6; % descending part; %%% Negative!
                 w = min(w1,w2);
+                w = max(0,w);
             end
             if max(w) == 0
                 warning('The resonance curve, not defined for this range of delays, will not be applied.')
@@ -872,7 +949,8 @@ if option.log || option.db
     if option.db>0 && option.db < Inf
         for k = 1:length(m)
             for l = 1:length(m{k})
-                m{k}{l} = m{k}{l}-repmat(max(m{k}{l}),[size(m{k}{l},1) 1 1]);
+%                 m{k}{l} = m{k}{l}-repmat(max(m{k}{l}),[size(m{k}{l},1) 1 1]);
+               m{k}{l} = m{k}{l}-max(max(m{k}{l}));
                 m{k}{l} = option.db + max(-option.db,m{k}{l});
             end
         end
@@ -893,12 +971,25 @@ if option.gauss
             sigma = option.gauss;
             gauss = 1/sigma/2/pi...
                     *exp(- (-4*sigma:4*sigma).^2 /2/sigma^2);
-            y = filter(gauss,1,[m{k}{i};zeros(4*sigma,1)]);
+            y = filter(gauss,1,[m{k}{i};zeros(4*sigma,size(m{k}{1},2))]);
             y = y(4*sigma:end,:,:);
             m{k}{i} = y(1:size(m{k}{i},1),:,:);
         end
     end
     s = set(s,'Phase',[]);
+end
+if option.mingate
+    for k = 1:length(m)
+        for i = 1:length(m{k})
+            if s.log
+                thres = max(max(m{k}{i})) - option.mingate;
+                m{k}{i}(m{k}{i} < thres) = -Inf;
+            else
+                thres = max(max(m{k}{i})) * option.mingate;
+                m{k}{i}(m{k}{i} < thres) = 0;
+            end
+        end
+    end
 end
 s = set(s,'Magnitude',m,'Frequency',f);
 
@@ -918,7 +1009,8 @@ if not(win == 0)
             disp('Signal Processing Toolbox does not seem to be installed. Recompute the hamming window manually.');
             w = 0.54 - 0.46 * cos(2*pi*(0:N-1)'/(N-1));
         else
-            error(['ERROR in MIRSPECTRUM: Unknown windowing function ',win,' (maybe Signal Processing Toolbox is not installed).']);
+            warning(['WARNING in MIRSPECTRUM: Unknown windowing function ',win,' (maybe Signal Processing Toolbox is not installed).']);
+            return
         end
     end
     kw = repmat(w,[1,size(dj,2),size(dj,3)]);

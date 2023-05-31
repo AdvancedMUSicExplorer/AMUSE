@@ -1,25 +1,30 @@
-function features=getFeatureInfo(f,nBins,smoothingFactor, tracks)
+function features=getFeatureInfo(f,nBins,smoothingFactor, songs)
 
 %features=struct('names',{}, ...
 %    'fields',{}, ...
-%    'trackNames',{}, ...
+%    'songNames',{}, ...
 %    'data',{}, ...
 %    'valueRange',[], ...
 %    'distribution',[], ...
-%    'trackDistributions',[], ...
+%    'songDistributions',[], ...
 %    'frameLength',[], ...
 %    'framediff',[], ...
 %    'frameStart',[], ...
 %    'hasPeaks',[], ...
-%    'isTrackLevel',[]);
+%    'isSongLevel',[]);
 features={};
+
+if nargin<4, songs=[]; end
+if nargin<3, smoothingFactor=2; end
+if nargin<2, nBins=100; end
+
 
 fieldBranch={};
 fieldInd=0;
 nFeatures=0;
 maxFieldNameLength=7;
 binEdges=0:1/(nBins-1):1; %when visualizing the feature distributions, map feature values in the range of 0 and 1
-trackNames={};
+songNames={};
 
 
 
@@ -98,7 +103,7 @@ end
 if isempty(features)
     error('No mirscalar type of feature vectors in the set.');
 else
-    features.trackNames=trackNames{1};
+    features.songNames=songNames{1};
 end
 
 
@@ -111,12 +116,9 @@ end
         else
             featureData_tmp=scalarFeature.data;
         end
-        if ~isempty(tracks)
-            featureData_tmp=featureData_tmp(tracks);
+        if ~isempty(songs)
+            featureData_tmp=featureData_tmp(songs);
         end
-        
-        
-        
         
         %read the branch of fieldnames to get summarized
         fieldBranch{fieldInd}=fieldName;
@@ -137,31 +139,33 @@ end
         nFeatures=nFeatures+1; %add feature
         
         if isMirdata && length(featureData_tmp{1})==1 && length(featureData_tmp{1}{1})==1
-            features.isTrackLevel(nFeatures)=1;
+            features.isSongLevel(nFeatures)=1;
         elseif ~isMirdata && length(featureData_tmp{1})==1
-            features.isTrackLevel(nFeatures)=1;
+            features.isSongLevel(nFeatures)=1;
         else
-            features.isTrackLevel(nFeatures)=0;
+            features.isSongLevel(nFeatures)=0;
         end
         
         if isMirdata
-            trackNames{nFeatures}=get(scalarFeature,'Name'); %just to check that each feature is extracted from the same track. (what if the first track feature is empty due to the feature characteristics?)
+            songNames{nFeatures}=get(scalarFeature,'Name'); %just to check that each feature is extracted from the same song. (what if the first song feature is empty due to the feature characteristics?)
         else
-            trackNames{nFeatures}=scalarFeature.name;
+            songNames{nFeatures}=scalarFeature.name;
         end
-        if ~isempty(tracks)
-            trackNames{nFeatures}=trackNames{nFeatures}(tracks);
+        if ~isempty(songs)
+            songNames{nFeatures}=songNames{nFeatures}(songs);
         end
-        if nFeatures>1 && ~isequal(trackNames{1},trackNames{nFeatures})
-            error('%s: all features must relate to the same set of tracks.',featureName);
+        if nFeatures>1 && ~isequal(songNames{1},songNames{nFeatures})
+            error('%s: all features must relate to the same set of songs.',featureName);
         end
         
         
         features.fields{nFeatures}=fieldBranch;
+        features.titles{nFeatures}=get(scalarFeature,'Title');
         features.names{nFeatures}=featureName;
         features.cellinds(nFeatures)=ci;
         features.types{nFeatures}=class(scalarFeature);
         features.isMirdata(nFeatures)=isMirdata;
+        features.numAxes(nFeatures) = size(featureData_tmp{1}{1},3);
         
         %peaks...
         %peakPos=get(scalarFeature,'PeakPos');
@@ -178,88 +182,94 @@ end
         %get value range of the feature (summarize its overal distribution)
         features.valueRange(nFeatures,1:2)=[Inf,-Inf];
         features.distribution(nFeatures,1:nBins)=zeros(1,nBins);
-        features.emptytrack = zeros(1,length(featureData_tmp));
+        features.emptysong = zeros(1,length(featureData_tmp));
         
-        for track=1:length(featureData_tmp)
-            tmp = featureData_tmp{track};
+        for song=1:length(featureData_tmp)
+            tmp = featureData_tmp{song};
             if iscell(tmp)
-            tmp = tmp{1};
+                tmp = tmp{1};
             end
             if iscell(tmp)
-            tmp = tmp{1};
+                tmp = tmp{1};
             end
             if iscell(tmp)
                 tmp2 = [];
                 for i = 1:length(tmp)
                     tmp2 = [tmp2 tmp{i}(:)'];
                 end
-                featureData_tmp{track}{1} = tmp2;
+                featureData_tmp{song}{1} = tmp2;
             end
-            
             if ~isempty(tmp) && ~all(isnan(tmp(:)))
-                features.mintrack(nFeatures,track) = min(tmp(:));
+                features.minsong(nFeatures,song) = min(tmp(:));
                 minValue = min(tmp(:));
-                features.maxtrack(nFeatures,track) = max(tmp(:));
+                features.maxsong(nFeatures,song) = max(tmp(:));
                 maxValue = max(tmp(:));
             else
-                warning('%s, track %d: No feature extracted. Check if there was some error in feature extraction. Including an empty feature...',featureName, track);
-                features.mintrack(nFeatures,track) = NaN;
-                features.maxtrack(nFeatures,track) = NaN;
-                features.emptytrack(track) = 1;
+                warning('%s, song %d: No feature extracted. Check if there was some error in feature extraction. Including an empty feature...',featureName, song);
+                features.minsong(nFeatures,song) = NaN;
+                features.maxsong(nFeatures,song) = NaN;
+                features.emptysong(song) = 1;
                 continue
             end
             
-            features.valueRange(nFeatures,1:2)=[ min(features.mintrack(nFeatures,track),features.valueRange(nFeatures,1)), max(features.maxtrack(nFeatures,track),features.valueRange(nFeatures,2)) ];
+            features.valueRange(nFeatures,1:2)=[ min(features.minsong(nFeatures,song),features.valueRange(nFeatures,1)), max(features.maxsong(nFeatures,song),features.valueRange(nFeatures,2)) ];
             
             
             
             %frames with peaks
             if 0 && features.hasPeaks(nFeatures)
                 peakFrames=get(scalarFeature,'PeakPos');
-                features.peakPos{nFeatures}{track}=peakFrames{track}{1}{1};
+                features.peakPos{nFeatures}{song}=peakFrames{song}{1}{1};
                 
                 %get peak strength relative to feature value span
-                features.peaks{nFeatures}{track}=(featureData_tmp{track}{1}(features.peakPos{nFeatures}{track})-minValue)/(maxValue-minValue);
+                features.peaks{nFeatures}{song}=(featureData_tmp{song}{1}(features.peakPos{nFeatures}{song})-minValue)/(maxValue-minValue);
             end
             
         end
         
         if iscell(tmp)
-            features.trackDistributions{nFeatures} = [];
+            features.songDistributions{nFeatures} = [];
         else
-            for track=1:length(featureData_tmp)
-                %compute distribution of in one track, related to
+            for song=1:length(featureData_tmp)
+                tmp = featureData_tmp{song};
+                if iscell(tmp)
+                    tmp = tmp{1};
+                end
+                if iscell(tmp)
+                    tmp = tmp{1};
+                end
+                %compute distribution in one song, related to
                 %the featureValueRange
-                features.trackDistributions{nFeatures}(track,1:nBins)=medfilt1(histc((tmp(:)-features.valueRange(nFeatures,1))/(features.valueRange(nFeatures,2)-features.valueRange(nFeatures,1)),binEdges),smoothingFactor); %histogram, values related to the featureValueRange
+                features.songDistributions{nFeatures}(song,1:nBins)=medfilt1(histc((tmp(:)-features.valueRange(nFeatures,1))/(features.valueRange(nFeatures,2)-features.valueRange(nFeatures,1)),binEdges),smoothingFactor); %histogram, values related to the featureValueRange
                 
-                if isequal(features.trackDistributions{nFeatures}(track,1:nBins),zeros(1,nBins)) %if filtering was too harsh due to small number of feature values
-                    features.trackDistributions{nFeatures}(track,1:nBins)=histc((tmp-features.valueRange(nFeatures,1))/(features.valueRange(nFeatures,2)-features.valueRange(nFeatures,1)),binEdges);
+                if isequal(features.songDistributions{nFeatures}(song,1:nBins),zeros(1,nBins)) %if filtering was too harsh due to small number of feature values
+                    features.songDistributions{nFeatures}(song,1:nBins)=histc((tmp-features.valueRange(nFeatures,1))/(features.valueRange(nFeatures,2)-features.valueRange(nFeatures,1)),binEdges);
                 end
                 
-                features.distribution(nFeatures,1:nBins)=features.distribution(nFeatures,1:nBins)+features.trackDistributions{nFeatures}(track,1:nBins);
+                features.distribution(nFeatures,1:nBins)=features.distribution(nFeatures,1:nBins)+features.songDistributions{nFeatures}(song,1:nBins);
                 
             end
             
             %map feature distributions to [0,1]
             
-            features.trackDistributions{nFeatures}=features.trackDistributions{nFeatures}./repmat(max(features.trackDistributions{nFeatures},[],2),1,nBins);
+            features.songDistributions{nFeatures}=features.songDistributions{nFeatures}./repmat(max(features.songDistributions{nFeatures},[],2),1,nBins);
             features.distribution(nFeatures,1:nBins)=features.distribution(nFeatures,1:nBins)./repmat(max(features.distribution(nFeatures,1:nBins),[],2),1,nBins);
         end
         
         %features.data{nFeatures}=featureData_tmp;
         if isMirdata
-        framePos=get(scalarFeature,'FramePos');
+            framePos=get(scalarFeature,'FramePos');
         else
             framePos=scalarFeature.framepos;
         end
-        if ~isempty(tracks)
-            framePos = framePos(tracks);
+        if ~isempty(songs)
+            framePos = framePos(songs);
         end
         
-        if iscell(framePos{1}) && length(framePos{1})==1 && size(framePos{1}{1},2) == 1 && ~isa(scalarFeature,'miraudio')
-            features.isTrackLevel(nFeatures)=1;
-        elseif ~iscell(framePos{1}) && size(framePos{1},2) == 1 && ~isa(scalarFeature,'miraudio')
-            features.isTrackLevel(nFeatures)=1;
+        if iscell(framePos{1}) && length(framePos{1})==1 && size(framePos{1}{1},2) == 1 && ~isa(scalarFeature,'miraudio') && ~isa(scalarFeature,'mirenvelope')
+            features.isSongLevel(nFeatures)=1;
+        elseif ~iscell(framePos{1}) && size(framePos{1},2) == 1 && ~isa(scalarFeature,'miraudio') && ~isa(scalarFeature,'mirenvelope')
+            features.isSongLevel(nFeatures)=1;
         end
         %features.framePos{nFeatures}=framePos;
     end

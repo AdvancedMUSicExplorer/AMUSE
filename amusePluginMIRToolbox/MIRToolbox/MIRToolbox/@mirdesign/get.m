@@ -51,6 +51,13 @@ if ischar(varargin{1})
                 varargout = {[]};
             end
             return
+        case 'FramePhaseAtEnd'
+            if isstruct(a.frame)
+                varargout = {a.frame.phase.atend};
+            else
+                varargout = {[]};
+            end
+            return
         case 'FrameDontChunk'
             if isstruct(a.frame)
                 varargout = {a.frame.dontchunk};
@@ -112,15 +119,9 @@ if ischar(varargin{1})
         case 'Index'
             varargout = {a.index};
             return            
-        case 'TmpFile'
-            varargout = {a.tmpfile};
-            return     
         case 'TmpOf'
             varargout = {a.tmpof};
             return
-        case 'Ascending'
-            varargout = {a.ascending};
-            return            
         case 'SeparateChannels'
             varargout = {a.separate};
             return            
@@ -129,6 +130,15 @@ if ischar(varargin{1})
             return
         case 'Scale'
             varargout = {a.scale};
+            return 
+        case 'ChunkSizeFactor'
+            varargout = {a.chunksizefactor};
+            return 
+        case 'PreSilence'
+            varargout = {a.presilence};
+            return      
+        case 'PostSilence'
+            varargout = {a.postsilence};
             return 
     end
 end

@@ -48,6 +48,8 @@ a = d.argin;
 ch = d.chunk;
 chan = d.channel;
 specif = d.specif;
+pre = d.presilence;
+post = d.postsilence;
 if iscombinemethod(specif,'Average') || iscombinemethod(specif,'Sum')
     specif.eachchunk = 'Normal';
 end
@@ -59,10 +61,10 @@ if ischar(a)
     
     if isempty(ch)
         % No chunk decomposition
-        y = miraudio(f,'Now',[w(:)' chan]);
+        y = miraudio(f,'Now',[w(:)' chan pre post]);
     else
         % Chunk decomposition
-        y = miraudio(f,'Now',[ch(1),ch(2) chan]);
+        y = miraudio(f,'Now',[ch(1),ch(2) chan pre post]);
     end
     if not(isempty(d.postoption)) && d.postoption.mono
         y = miraudio(y,'Mono',1);
@@ -71,11 +73,43 @@ if ischar(a)
     y = set(y,'Extracted',1);
     d2 = d;
     
-elseif d.chunkdecomposed && isempty(d.tmpfile)
+elseif d.chunkdecomposed
     % Already in a chunk decomposition process
     
     [y d2] = evalnow(d);  
     
+elseif iscell(a) && length(a) == 2
+    a{2}.size = w;
+    a{2}.chunk = d.chunk;
+    a{2}.file = d.file;
+    a{2}.channel = d.channel;
+    a{2}.scale = d.scale;
+    a{2}.eval = 1;
+    a{2}.interchunk = d.interchunk;
+    a{2}.sampling = d.sampling;
+    if isstruct(d.frame) && isfield(d.frame,'decomposition') ...
+            && not(isempty(d.frame.decomposition))
+        a{2}.chunkdecomposed = 1;
+    else
+        a{2}.chunkdecomposed = d.chunkdecomposed;
+    end
+    if not(isempty(d.frame)) && ...
+            not(strcmp(func2str(d.method),'mirframe'))
+        a{2}.frame = d.frame;
+    end
+    a{2}.ready = 1;
+    a{2}.acrosschunks = d.acrosschunks;
+    a{2}.index = d.index;
+    a{2}.presilence = d.presilence;
+    a{2}.postsilence = d.postsilence;
+    
+    aux = evaleach(a{2},single,name);
+    if iscell(aux)
+        aux = aux{1};
+    end
+    d.postoption.new = aux;
+    d.argin = a{1};
+    [y d2] = evaleach(d,single,name);
 elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
     % Absence of frame decomposition or presence of segment decomposition in the design to evaluate
     % (Or particular frame decomposition, where chunks are not distributed to children (frnochunk).)
@@ -85,9 +119,19 @@ elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
             chunks = floor(sg(1:end-1)*sr)+1;
             chunks(2,:) = min( floor(sg(2:end)*sr)-1,lsz-1)+1;
         else
-            error('Fatal error. This mirsegment option is not available anymore.');
+            % The following is used only for miremotion
             chunks = floor(sg*sr);
             chunks(1,:) = chunks(1,:)+1;
+            
+            % Code below by Ming-Hsu Chang
+            chunks = chunks'; %%%
+            chunks(2, 1:size(chunks,2)-1) = chunks(1, 2:size(chunks,2)) + (sg(2,1)/fr.hop.val - sg(2,1))*sr; %%%
+            if chunks(2, size(chunks,2)-1) > len %%%
+                chunks = chunks(:, 1:size(chunks,2)-2);
+            else
+                chunks = chunks(:, 1:size(chunks,2)-1);
+            end
+            
         end
     elseif not(isfield(specif,'eachchunk')) ...
             || d.nochunk ...
@@ -99,36 +143,30 @@ elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
         meth = 'Chunk ';
         if isempty(fr)
             if lsz > CHUNKLIM
-            % The required memory exceed the max memory threshold.
-                nch = ceil(lsz/CHUNKLIM); 
-            %%% TAKE INTO CONSIDERATION NUMBER OF CHANNELS; ETC... 
-                chunks = max(0,lsz-CHUNKLIM*(nch:-1:1))+w(1);
-                chunks(2,:) = lsz-CHUNKLIM*(nch-1:-1:0)+w(1)-1;
+                % The required memory exceed the max memory threshold.
+                nch = ceil(lsz/CHUNKLIM);
+                        %%% TAKE INTO CONSIDERATION NUMBER OF CHANNELS; ETC...
+                chunks = max(0,lsz - CHUNKLIM*(nch:-1:1)) +w(1);
+                chunks(2,:) = lsz - max( CHUNKLIM*(nch-1:-1:0)-d.overlap(1), 0) +w(1)-1;
             else
                 chunks = [];
             end
         else
-            chunks = compute_frames(fr,sr,sr2,w,lsz,CHUNKLIM,d.overlap);
+            chunks = compute_frames(fr,sr,sr2,w,lsz,...
+                                    CHUNKLIM/d.chunksizefactor,...
+                                    d.overlap,d.presilence,d.postsilence);
         end
     end
     
     if not(isempty(chunks))
         % The chunk decomposition is performed.
         nch = size(chunks,2);
-        d = callbeforechunk(d,d,w,lsz); % Some optional initialisation
+        d = callbeforechunk(d,d,w,lsz); % If miraudio('Norm') is used: Scans through whole signal to find max
         tmp = [];
         if mirwaitbar
             h = waitbar(0,['Computing ' name]);
         else
             h = 0;
-        end
-        if not(isempty(d.tmpfile)) && d.tmpfile.fid == 0
-            % When applicable, a new temporary file is created.
-            d.tmpfile.fid = fopen('tmpfile.mirtoolbox','w');
-        end
-        tmpfile = [];
-        if not(d.ascending)
-            chunks = fliplr(chunks);
         end
 
         afterpostoption = d.postoption; % Used only when:
@@ -159,8 +197,12 @@ elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
         d2 = d;
         d2.method = method;
         y = {};
+        posi = d2.postsilence;
+        d2.postsilence = 0;
         for i = 1:size(chunks,2)
-            disp([meth,num2str(i),'/',num2str(nch),'...'])
+            if mirverbose
+                disp([meth,num2str(i),'/',num2str(nch),'...'])
+            end
             d2 = set(d2,'Chunk',[chunks(1,i) chunks(2,i) (i == size(chunks,2))]);
             
             if not(ischar(specif.eachchunk) && ...
@@ -194,35 +236,22 @@ elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
             d3.method = method;
             d2 = d3; % This new argument is transfered to d
 
-            y = combinechunk_noframe(y,ss,sg,i,d2,chunks,single);
+            y = combinechunk_noframe(y,ss,sg,i,d2,chunks,single,d.overlap);
 
             clear ss
-            if h
-                if not(d.ascending)
-                    close(h)
-                    h = waitbar((chunks(1,i)-chunks(1,end))/chunks(2,1),...
-                        ['Computing ' func2str(d.method) ' (backward)']);
-                else
-                    waitbar((chunks(2,i)-chunks(1))/chunks(end),h)
-                end
+            if isa(h,'matlab.ui.Figure')
+                waitbar((chunks(2,i)-chunks(1))/chunks(end),h)
             end
+            d2.presilence = 0;
+            d2.postsilence = posi;
         end
         
         if ~isstruct(y)
         % Final operations to be executed after the chunk decomposition
             if iscombinemethod(d2.specif,'Average')
                 y{1} = divideweightchunk(y{1},lsz);
-            elseif not(isempty(afterpostoption)) && isempty(d2.tmpfile)
+            elseif not(isempty(afterpostoption))
                 y{1} = d.method(y{1},[],afterpostoption);
-            end
-            if not(isempty(d2.tmpfile))
-                adr = ftell(d2.tmpfile.fid);
-                fclose(d2.tmpfile.fid);
-                ytmpfile.fid = fopen('tmpfile.mirtoolbox');
-                fseek(ytmpfile.fid,adr,'bof');
-                ytmpfile.data = y{1};
-                ytmpfile.layer = 0;
-                y{1} = set(y{1},'TmpFile',ytmpfile);
             end
         end
                 
@@ -230,7 +259,7 @@ elseif isempty(fr) || frnochunk || not(isempty(sg)) %% WHAT ABOUT CHANNELS?
                 (isempty(d.frame) || isfield(d.frame,'dontchunk'))
             y = evalbranches(d,y);
         end
-        if h
+        if isa(h,'matlab.ui.Figure')
             close(h)
         end
         drawnow
@@ -246,8 +275,10 @@ elseif d.nochunk
     [y d2] = evalnow(d);
 else
     % Frame decomposition in the design to be evaluated.
-    chunks = compute_frames(fr,sr,sr2,w,lsz,CHUNKLIM,d.overlap);
+    chunks = compute_frames(fr,sr,sr2,w,lsz,CHUNKLIM,d.overlap,d.presilence,d.postsilence);
     if size(chunks,2)>1
+        d = callbeforechunk(d,d,w,lsz); % If miraudio('Norm') is used: Scans through whole signal to find max
+        
         % The chunk decomposition is performed.
         if mirwaitbar
             h = waitbar(0,['Computing ' name]);
@@ -269,7 +300,9 @@ else
         end
         
         for fri = 1:nch     % For each chunk...
-            disp(['Chunk ',num2str(fri),'/',num2str(nch),'...'])
+            if mirverbose
+                disp(['Chunk ',num2str(fri),'/',num2str(nch),'...'])
+            end
             d2 = set(d2,'Chunk',chunks(:,fri)');
             d2 = set(d2,'InterChunk',inter);
             %d2.postoption = [];
@@ -284,7 +317,7 @@ else
             end
             
             y = combinechunk_frame(y,res,d2,fri);
-            if h
+            if ~isempty(h) && mirwaitbar
                 waitbar(chunks(2,fri)/chunks(end),h);
             end
         end
@@ -296,7 +329,7 @@ else
         if isa(d,'mirstruct') && get(d,'Stat') 
             y = mirstat(y);
         end
-        if h
+        if ~isempty(h) && mirwaitbar
             close(h)
         end
     else
@@ -321,7 +354,7 @@ if iscell(y)
 end
 
 
-function chunks = compute_frames(fr,sr,sr2,w,lsz,CHUNKLIM,frov)
+function chunks = compute_frames(fr,sr,sr2,w,lsz,CHUNKLIM,frov,pre,post)
 if strcmpi(fr.length.unit,'s')
     fl = fr.length.val*sr;
     fl2 = fr.length.val*sr2;
@@ -354,14 +387,31 @@ elseif strcmpi(fr.phase.unit,'/1')
 elseif strcmpi(fr.phase.unit,'%')
     ph = fr.phase.val*h*.01;
 end
-n = floor((lsz-fl-ph)/h)+1;   % Number of frames
+
+% Number of frames
+if pre && post
+    n = floor((lsz+fl-floor(h)-ph)/h)+1;   
+elseif pre || post
+    n = floor((lsz-floor(h)-ph)/h)+1;   
+else
+    n = floor((lsz-fl-ph)/h)+1;
+end
+
 if n < 1
     %warning('WARNING IN MIRFRAME: Frame length longer than total sequence size. No frame decomposition.');
     fp = w;
     fp2 = (w-1)/sr*sr2+1;
 else
-    st = floor(((1:n)-1)*h+ph)+w(1);
-    st2 = floor(((1:n)-1)*h2)+w(1)+ph;
+    st = ((1:n)-1)*h+ph+w(1);
+    if pre
+        st = st - fl + h;
+    end
+    st = floor(st);
+    st2 = ((1:n)-1)*h2+w(1)+ph;
+    if pre
+        st2 = st2 - fl + h2;
+    end
+    st2 = floor(st2);
     fp = [st; floor(st+fl-1)];
     fp(:,fp(2,:)>w(2)) = [];
     fp2 = [st2; floor(st2+fl2-1)];
@@ -387,9 +437,11 @@ if max(fpsz,fpsz2) > CHUNKLIM
             chend(end) = [];
         end
     end
-    if frov > 1 % If case of overlap
+    
+    if frov > 1 % If case of overlap <<<< Check if OK or not? (Was commented out before)
         chbeg = chend-frch+1;
     end
+    
     chunks = [fp(1,chbeg) ; fp(2,chend)+1]; % After resampling, one sample may be missing, leading to a complete frame drop.
     chunks(end) = min(chunks(end),fp(end)); % Last chunk should not extend beyond audio size.
 else
@@ -416,7 +468,7 @@ else
 end
 
 
-function res = combinechunk_noframe(old,new,sg,i,d2,chunks,single)
+function res = combinechunk_noframe(old,new,sg,i,d2,chunks,single,overlap)
 if isempty(new)
     res = {};
     return
@@ -463,91 +515,71 @@ if isempty(sg)
             new = set(new1,'Data',dnew);
         end
     end
-    %tmp = get(new{1},'InterChunk');
-    if not(isempty(d2.tmpfile)) && d2.tmpfile.fid > 0
-        % If temporary file is used, chunk results are written
-        % in the file
-        if i < size(chunks,2)
-            ds = get(new{1},'Data');
-            ps = get(new{1},'Pos');
-           % ftell(d2.tmpfile.fid)
-            count = fwrite(d2.tmpfile.fid,ds{1}{1},'double');
-            count = fwrite(d2.tmpfile.fid,ps{1}{1},'double');
-           % ftell(d2.tmpfile.fid)
-            clear ds ps
-        end
+    if i == 1
         res = new;
     else
-        % Else, chunk results are directly combined in active
-        % memory
-        if i == 1
-            res = new;
-        else
-            res = cell(1,length(old));
-            if isfield(d2.specif,'combinechunk')
-                if not(iscell(d2.specif.combinechunk))
-                    method = {d2.specif.combinechunk};
+        res = cell(1,length(old));
+        if isfield(d2.specif,'combinechunk')
+            if not(iscell(d2.specif.combinechunk))
+                method = {d2.specif.combinechunk};
+            else
+                method = d2.specif.combinechunk;
+            end
+            for z = 1:length(old)
+                if isframed(old{z})
+                    res(z) = combineframes(old{z},new{z});
                 else
-                    method = d2.specif.combinechunk;
-                end
-                for z = 1:length(old)
-                    if isframed(old{z})
-                        res(z) = combineframes(old{z},new{z});
-                    else
-                        if ischar(method{z})
-                            if strcmpi(method{z},'Concat')
-                                do = get(old{z},'Data');
-                                dn = get(new{z},'Data');
-                                fpo = get(old{z},'FramePos');
-                                fpn = get(new{z},'FramePos');
-                                if size(fpo{1}{1},2)>1
-                                    error('Fatal error. Please contact Olivier.');
-                                end
-                                if isa(old,'mirscalar')
+                    if ischar(method{z})
+                        if strcmpi(method{z},'Concat')
+                            do = get(old{z},'Data');
+                            dn = get(new{z},'Data');
+                            fpo = get(old{z},'FramePos');
+                            fpn = get(new{z},'FramePos');
+                            if isa(old,'mirscalar')
+                                res{z} = set(old{z},...
+                                    'Data',{{[do{1}{1},dn{1}{1}]}},...
+                                    'FramePos',{{[fpo{1}{1}(1);fpn{1}{1}(2)]}});
+                            else
+                                to = get(old{z},'Pos');
+                                tn = get(new{z},'Pos');
+                                if overlap(1)
+                                    o = overlap(1)/overlap(2)/2;
                                     res{z} = set(old{z},...
-                                        'Data',{{[do{1}{1},dn{1}{1}]}},...
+                                        'Data',{{[do{1}{1}(1:(end-o));dn{1}{1}((o+1):end)]}},...
+                                        'Pos',{{[to{1}{1}(1:(end-o));tn{1}{1}((o+1):end)]}},...
                                         'FramePos',{{[fpo{1}{1}(1);fpn{1}{1}(2)]}});
                                 else
-                                    to = get(old{z},'Pos');
-                                    tn = get(new{z},'Pos');
-                                    if d2.ascending
-                                        res{z} = set(old{z},...
-                                            'Data',{{[do{1}{1};dn{1}{1}]}},...
-                                            'Pos',{{[to{1}{1};tn{1}{1}]}},...
-                                            'FramePos',{{[fpo{1}{1}(1);fpn{1}{1}(2)]}});
-                                    else
-                                        res{z} = set(old{z},...
-                                            'Data',{{[dn{1}{1};do{1}{1}]}},...
-                                            'Pos',{{[tn{1}{1};to{1}{1}]}},...
-                                            'FramePos',{{[fpo{1}{1}(1);fpn{1}{1}(2)]}});
-                                    end
+                                    res{z} = set(old{z},...
+                                        'Data',{{[do{1}{1};dn{1}{1}]}},...
+                                        'Pos',{{[to{1}{1};tn{1}{1}]}},...
+                                        'FramePos',{{[fpo{1}{1}(1);fpn{1}{1}(2)]}});
                                 end
-                            elseif strcmpi(method{z},'Average') || ...
-                                    strcmpi(method{z},'Sum')
-                                do = get(old{z},'Data');
-                                dn = get(new{z},'Data');
-                                res{z} = set(old{z},...
-                                            'ChunkData',do{1}{1}+dn{1}{1});
-                            else
-                                error(['SYNTAX ERROR: ',method{z},...
-                            ' is not a known keyword for combinechunk.']);
                             end
+                        elseif strcmpi(method{z},'Average') || ...
+                                strcmpi(method{z},'Sum')
+                            do = get(old{z},'Data');
+                            dn = get(new{z},'Data');
+                            res{z} = set(old{z},...
+                                'ChunkData',do{1}{1}+dn{1}{1});
                         else
-                            res{z} = method{z}(old{z},new{z});
+                            error(['SYNTAX ERROR: ',method{z},...
+                                ' is not a known keyword for combinechunk.']);
                         end
-                        lo = get(old{z},'Length');
-                        ln = get(new{z},'Length');
-                        res{z} = set(res{z},'Length',{{lo{1}{1}+ln{1}{1}}});
-                    end
-                end
-            else
-                for z = 1:length(old)
-                    if isframed(old{z})
-                        res(z) = combineframes(old{z},new{z});
                     else
-                        mirerror('MIREVAL',...
-'Chunk recombination in non-framed mode is not available for all features yet. Please turn off the chunk decomposition.');
+                        res{z} = method{z}(old{z},new{z});
                     end
+                    lo = get(old{z},'Length');
+                    ln = get(new{z},'Length');
+                    res{z} = set(res{z},'Length',{{lo{1}{1}+ln{1}{1}}});
+                end
+            end
+        else
+            for z = 1:length(old)
+                if isframed(old{z})
+                    res(z) = combineframes(old{z},new{z});
+                else
+                    mirerror('MIREVAL',...
+                        'Chunk recombination in non-framed mode is not available for all features yet. Please turn off the chunk decomposition.');
                 end
             end
         end
@@ -662,41 +694,8 @@ if not(iscell(argin))
 end
 for i = 1:length(argin)
     a = argin{i};
-    if not(d.ascending)
-        a.ascending = 0;
-    end
     if isa(a,'mirdata')
         % Input already computed
-        tmpfile = get(a,'TmpFile');
-        if not(isempty(tmpfile)) && tmpfile.fid > 0
-            % The input can be read from the temporary file
-            ch = get(d,'Chunk');
-            a = tmpfile.data;
-            a = set(a,'InterChunk',get(d,'InterChunk'),'TmpFile',tmpfile);
-            channels = get(a,'Channels');
-            channels = length(channels{1});
-            if not(channels)
-                da = get(a,'Data');
-                channels = size(da{1}{1},3);
-            end
-            sz = (ch(2)-ch(1)+1);
-            current = ftell(tmpfile.fid);
-            fseek(tmpfile.fid,current-sz*(channels+1)*8,'bof');
-            %ftell(tmpfile.fid)
-            [data count] = fread(tmpfile.fid,[sz,channels],'double');
-            %count
-            data = reshape(data,[sz,1,channels]);
-            [pos count] = fread(tmpfile.fid,sz,'double');
-            %count
-           % ftell(tmpfile.fid)
-            fseek(tmpfile.fid,current-sz*(channels+1)*8,'bof');
-            a = set(a,'Data',{{data}},'Pos',{{pos}});
-            if ch(3)
-                fclose(tmpfile.fid);
-                delete('tmpfile.mirtoolbox');
-            end
-            argin{i} = a;
-        end
     elseif isa(a,'mirdesign')
         if isempty(a.stored)
             % The design parameters are transfered to the previous component
@@ -722,6 +721,8 @@ for i = 1:length(argin)
             a.ready = 1;
             a.acrosschunks = d.acrosschunks;
             a.index = d.index;
+            a.presilence = d.presilence;
+            a.postsilence = d.postsilence;
             argin{i} = a;
         else
             % Variable already calculated
@@ -792,7 +793,9 @@ function b = evalbranch(b,d,y)
 % corresponding to the temporary variable (d),
 
 if iscell(b)
-    mirerror('MIREVAL','Sorry, forked branching of temporary variable cannnot be evaluated in current version of MIRtoolbox.');
+    b = evalbranch(b{1},d,y);
+    return
+    %mirerror('MIREVAL','Sorry, forked branching of temporary variable cannnot be evaluated in current version of MIRtoolbox.');
 end
 if isstruct(b)
     % Subtrees are evaluated branch after branch.
@@ -846,16 +849,16 @@ res = isfield(specif,'combinechunk') && ...
 function d0 = callbeforechunk(d0,d,w,lsz)
 % If necessary, the chunk decomposition is performed a first time for
 % initialisation purposes.
-% Currently used only for miraudio(...,'Normal')
+% Used only for miraudio(...,'Normal')
 if not(ischar(d)) && not(iscell(d))
     specif = d.specif;
     CHUNKLIM = mirchunklim;
     nch = ceil(lsz/CHUNKLIM); 
     if isfield(specif,'beforechunk') ...
             && ((isfield(d.option,specif.beforechunk{2}) ...
-                    && d.option.(specif.beforechunk{2})) ...
+                    && ~isequal(d.option.(specif.beforechunk{2}),0)) ...
              || (isfield(d.postoption,specif.beforechunk{2}) ...
-                    && d.postoption.(specif.beforechunk{2})) )
+                    && ~isequal(d.postoption.(specif.beforechunk{2}),0)) )
         if mirwaitbar
             h = waitbar(0,['Preparing ' func2str(d.method)]);
         else
@@ -868,15 +871,15 @@ if not(ischar(d)) && not(iscell(d))
             d2 = set(d,'Size',d0.size,'File',d0.file,...
                        'Chunk',[chbeg+w(1) min(chend,lsz-1)+w(1)]);
             d2.method = specif.beforechunk{1};
-            d2.postoption = {chend-lsz};
             d2.chunkdecomposed = 1;
             [tmp d] = evalnow(d2);
+            d = set(d,'AcrossChunks',tmp);
             d0 = set(d0,'AcrossChunks',tmp);
-            if h
+            if isa(h,'matlab.ui.Figure')
                 waitbar(chend/lsz,h)
             end
         end
-        if h
+        if isa(h,'matlab.ui.Figure')
             close(h);
         end
         drawnow
@@ -895,8 +898,9 @@ pppo = get(old,'PeakPrecisePos');
 pvo = get(old,'PeakVal');
 ppvo = get(old,'PeakPreciseVal');
 pmo = get(old,'PeakMode');
+opo = get(old,'OnsetPos');
 apo = get(old,'AttackPos');
-rpo = get(old,'ReleasePos');
+rpo = get(old,'DecayPos');
 tpo = get(old,'TrackPos');
 tvo = get(old,'TrackVal');
 
@@ -908,8 +912,9 @@ pppn = get(new,'PeakPrecisePos');
 pvn = get(new,'PeakVal');
 ppvn = get(new,'PeakPreciseVal');
 pmn = get(new,'PeakMode');
+opn = get(new,'OnsetPos');
 apn = get(new,'AttackPos');
-rpn = get(new,'ReleasePos');
+rpn = get(new,'DecayPos');
 tpn = get(new,'TrackPos');
 tvn = get(new,'TrackVal');
 
@@ -936,12 +941,16 @@ if not(isempty(pppn))
                 'PeakPreciseVal',{[ppvo{1},ppvn{1}{1}]});
 end
 
+if not(isempty(opn))
+    y = set(y,'OnsetPos',{[opo{1},opn{1}{1}]});
+end
+
 if not(isempty(apn))
     y = set(y,'AttackPos',{[apo{1},apn{1}{1}]});
 end
 
 if not(isempty(rpn))
-    y = set(y,'ReleasePos',{[rpo{1},rpn{1}{1}]});
+    y = set(y,'DecayPos',{[rpo{1},rpn{1}{1}]});
 end
 
 if not(isempty(tpn))
@@ -979,17 +988,33 @@ if isa(old,'miremotion')
     tdn = get(new,'TenderFactors');
     agn = get(new,'AngerFactors');
     ffn = get(new,'FearFactors');
-    y = set(y,'DimData',{[deo{1},den{1}{1}]},...
-            'ClassData',{[ceo{1},cen{1}{1}]},...
-            'ActivityFactors',{[afo{1},afn{1}{1}]},...
-            'ValenceFactors',{[vfo{1},vfn{1}{1}]},...
-            'TensionFactors',{[tfo{1},tfn{1}{1}]},...
-            'HappyFactors',{[hfo{1},hfn{1}{1}]},...
-            'SadFactors',{[sfo{1},sfn{1}{1}]},...
-            'TenderFactors',{[tdo{1},tdn{1}{1}]},...
-            'AngerFactors',{[ago{1},agn{1}{1}]},...
-            'FearFactors',{[ffo{1},ffn{1}{1}]}...
-        );
+    y = set(y,'DimData',{[deo{1},den{1}{1}]},'ClassData',{[ceo{1},cen{1}{1}]});
+    
+    % Code improved by Ming-Hsu Chang
+    if iscell(afo)
+       y = set(y, 'ActivityFactors',{[afo{1},afn{1}{1}]});
+    end
+    if iscell(vfo)
+       y = set(y, 'ValenceFactors',{[vfo{1},vfn{1}{1}]});
+    end
+    if iscell(tfo)
+       y = set(y, 'TensionFactors',{[tfo{1},tfn{1}{1}]});
+    end
+    if iscell(hfo)
+       y = set(y, 'HappyFactors',{[hfo{1},hfn{1}{1}]});
+    end
+    if iscell(sfo)
+       y = set(y, 'SadFactors',{[sfo{1},sfn{1}{1}]});
+    end
+    if iscell(tdo)
+       y = set(y, 'TenderFactors',{[tdo{1},tdn{1}{1}]});
+    end
+    if iscell(ago)
+       y = set(y, 'AngerFactors',{[ago{1},agn{1}{1}]});
+    end
+    if iscell(ffo)
+       y = set(y, 'FearFactors',{[ffo{1},ffn{1}{1}]});
+    end
 end
  
 
