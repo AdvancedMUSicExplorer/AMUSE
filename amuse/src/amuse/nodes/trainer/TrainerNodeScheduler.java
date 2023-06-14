@@ -331,6 +331,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			List<Integer> attributesToPredict = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict();
 			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
+			
 			int numberOfCategories = attributesToPredict.size();
 			
 			//Check if the number of categories is correct
@@ -511,6 +512,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					}
 					classifierInputLoader.setFile(processedFeatureFile);
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
+					
+					// Check if attributesToIgnore matches training input
+					for(int i=0; i<attributesToIgnore.size(); i++) {
+						if(attributesToIgnore.get(i)<0 || attributesToIgnore.get(i) >= classifierInputLoader.getStructure().numAttributes()-3) {
+							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
+									"Training input does not contain attribute with number " + attributesToIgnore.get(i) + ". This attribute will not be ignored.");
+						}
+					}
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {

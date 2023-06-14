@@ -55,6 +55,7 @@ public class RawInputFeaturePanel extends JPanel {
     	unitComboBox.setSelectedItem(Unit.MILLISECONDS);
     	windowSizeTextField.setText("5000");
     	windowStepSizeTextField.setText("2500");
+    	attributesToIgnoreTextField.setToolTipText("Attributes of the processed feature file that should be ignored separed by comma");
     	this.add(featureButton, "wrap");
     	this.add(windowSizeLabel);
     	this.add(windowSizeTextField, "pushx, wrap");
