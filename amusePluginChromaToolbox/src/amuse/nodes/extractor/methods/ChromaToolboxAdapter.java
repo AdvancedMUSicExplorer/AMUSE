@@ -292,7 +292,7 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 		for(Feature feature : featureTable.getFeatures()) {
 			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
 				ids.add(feature.getId());
-				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId().toString());
 			}
 		}
 		
