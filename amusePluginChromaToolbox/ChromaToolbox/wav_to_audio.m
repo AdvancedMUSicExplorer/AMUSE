@@ -105,7 +105,7 @@ end
 
 [pathstr,name,ext] = fileparts(wavfilename);
 if strcmp(ext,'.wav')
-    [f_audio,fs,nbits] = wavread(strcat(dirAbs,dirRel,wavfilename));
+    [f_audio,fs] = amuse_audio_read(strcat(dirAbs,dirRel,wavfilename));
 else
     error(['Unknown file format ' ext]);
 end
@@ -159,7 +159,6 @@ sideinfo.wav.size       = size(f_audio,1);
 sideinfo.wav.duration   = (sideinfo.wav.size-1)/fs;
 sideinfo.wav.energy     = sum(f_audio.^2);
 sideinfo.wav.fs         = fs;
-sideinfo.wav.nbits      = nbits;
 sideinfo.wav.channels   = size(f_audio,2);
 sideinfo.wav.resampled  = bResampled;
 sideinfo.wav.monoConverted = bConverted_to_mono;
