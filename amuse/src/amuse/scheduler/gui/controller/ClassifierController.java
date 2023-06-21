@@ -373,7 +373,7 @@ public class ClassifierController extends AbstractController {
          */
         @Override
         public String getCaption() {
-            return "Classification Training Configurator";
+            return "Classification Configurator";
         }
 
         public void addTraining() {
@@ -408,7 +408,7 @@ public class ClassifierController extends AbstractController {
         public void loadButtonClicked() {
             clFolder.mkdirs();
             JFileChooser fc = new SelectArffFileChooser(
-                    "Classificator Training Task", clFolder);
+                    "Classification Task", clFolder);
             if (fc.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) {
                 return;
             }
@@ -424,7 +424,7 @@ public class ClassifierController extends AbstractController {
     private void saveButtonClick() {
         clFolder.mkdirs();
         JFileChooser fc = new SelectArffFileChooser(
-                "Classification Training Task", clFolder);
+                "Classification Task", clFolder);
         if (fc.showSaveDialog(view) != JFileChooser.APPROVE_OPTION) {
             return;
         }

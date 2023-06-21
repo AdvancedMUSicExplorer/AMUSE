@@ -309,7 +309,7 @@ public class TrainingController extends AbstractController {
         public void loadButtonClicked() {
             ctFolder.mkdirs();
             JFileChooser fc = new SelectArffFileChooser(
-                    "Classificator Training Task", ctFolder);
+                    "Classification Training Task", ctFolder);
             if (fc.showOpenDialog(view) != JFileChooser.APPROVE_OPTION) {
                 return;
             }
