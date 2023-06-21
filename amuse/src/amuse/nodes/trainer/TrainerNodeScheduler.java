@@ -719,6 +719,15 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							break;
 						}
 					}
+					
+					// Check if attributesToIgnore matches training input
+					for(int i=0; i<attributesToIgnore.size(); i++) {
+						if(attributesToIgnore.get(i)<0 || attributesToIgnore.get(i) >= numberOfValuesPerWindow) {
+							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
+									"Training input does not contain attribute with number " + attributesToIgnore.get(i) + ". This attribute will not be ignored.");
+						}
+					}
+					
 					// set the numberOfValuesPerWindow in the TrainingConfiguration for the training algorithm
 					// (the training algorithm needs the size of the windows after the attributesToIgnore have been removed)
 					((TrainingConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow - numberOfAttributesToIgnore);
