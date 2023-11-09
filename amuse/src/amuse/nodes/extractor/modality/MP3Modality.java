@@ -19,7 +19,7 @@ public class MP3Modality implements AudioModality {
 	
 	@Override
 	public List<MP3Format> getFormats() {
-		return null;
+		return formats;
 	}
 
 	@Override

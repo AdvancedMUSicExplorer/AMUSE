@@ -32,6 +32,10 @@ public class WaveModality implements AudioModality {
 		try {
 			/*Check, if file is appropriate wave data*/
 			AudioFileFormat audioFileFormat = AudioSystem.getAudioFileFormat(file);
+			if(audioFileFormat.getType() != AudioFileFormat.Type.WAVE) {
+				return false;
+			}
+			
 		} catch (UnsupportedAudioFileException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR, "The given file could not be used as WAVE-input: " + file.toString());
 		} catch (IOException e) {
