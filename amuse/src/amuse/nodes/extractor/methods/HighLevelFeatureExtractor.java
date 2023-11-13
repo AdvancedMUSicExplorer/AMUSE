@@ -31,6 +31,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,6 +62,9 @@ import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.classifier.ClassifierNodeScheduler;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.AudioModality;
+import amuse.nodes.extractor.modality.Modality;
+import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -415,6 +419,9 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 	public void setParameters(String parameterString) throws NodeException {
 		// Do nothing, since initialization is not required
 	}
-	
 
+	@Override
+	public List<Modality> getModalities() {
+		return null;
+	}
 }

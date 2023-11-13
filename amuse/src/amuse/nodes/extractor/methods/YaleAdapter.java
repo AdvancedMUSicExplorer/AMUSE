@@ -60,6 +60,9 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.AudioModality;
+import amuse.nodes.extractor.modality.Modality;
+import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysIntValue;
 import amuse.util.AmuseLogger;
@@ -84,6 +87,8 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
+	
+	private final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 
 	/*
 	 * (non-Javadoc)
@@ -796,6 +801,11 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void setParameters(String parameterString) throws NodeException {
 		// Do nothing, since initialization is not required
+	}
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
 	}
 
 }

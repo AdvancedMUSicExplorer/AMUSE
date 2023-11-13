@@ -183,9 +183,33 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extractor node scheduler for " + 
 				this.inputFileName + " configured; starting decoding..");
-	
+		
+		// --------------------------------------
+		// (II) Configure the extractor adapters 
+		// --------------------------------------
+		try {
+			this.configureFeatureExtractors();
+		} catch(NodeException e) {
+			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
+				"Could not configure feature extractor(s): " + e.getMessage());
+			errorDescriptionBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
+		}
+		
+		// -------------------------------------------------------------
+		// (III) Check if at least one extractor has been properly loaded
+		// -------------------------------------------------------------		
+	    if(this.extractors.size() == 0) {
+    		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
+    				"No extractor has been properly loaded, exiting the extractor node...");
+			errorDescriptionBuilder.append(this.inputFileName);
+			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+			return;
+	    }
+		
 		// --------------------------------
-		// (II) Convert mp3 file to wave(s)
+		// (IV) Convert mp3 file to wave(s)
 		// --------------------------------
 		try {
 			AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
@@ -215,30 +239,6 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				this.numberOfParts++;
 			}
 		}
-		
-		// --------------------------------------
-		// (III) Configure the extractor adapters 
-		// --------------------------------------
-		try {
-			this.configureFeatureExtractors();
-		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-				"Could not configure feature extractor(s): " + e.getMessage());
-			errorDescriptionBuilder.append(this.inputFileName);
-			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
-			return;
-		}
-		
-		// -------------------------------------------------------------
-		// (IV) Check if at least one extractor has been properly loaded
-		// -------------------------------------------------------------		
-	    if(this.extractors.size() == 0) {
-    		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
-    				"No extractor has been properly loaded, exiting the extractor node...");
-			errorDescriptionBuilder.append(this.inputFileName);
-			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
-			return;
-	    }
 		
 		// --------------------------------
 		// (V) Start the extractor adapters

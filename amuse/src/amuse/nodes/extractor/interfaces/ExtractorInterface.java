@@ -24,9 +24,11 @@
 package amuse.nodes.extractor.interfaces;
 
 import java.util.HashMap;
+import java.util.List;
 
 import amuse.data.FeatureTable;
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.extractor.modality.Modality;
 
 /**
  * This interface defines the operations which should be supported by all feature extractors.
@@ -64,5 +66,10 @@ public interface ExtractorInterface {
 	 * @throws NodeException
 	 */
 	public void convertOutput() throws NodeException;
+	
+	/** 
+	 * Get modalities supported by extractor tool 
+	 */
+	public List<Modality> getModalities();
 
 }

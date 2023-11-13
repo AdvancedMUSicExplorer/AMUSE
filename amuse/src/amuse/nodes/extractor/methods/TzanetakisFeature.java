@@ -30,6 +30,9 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.AudioModality;
+import amuse.nodes.extractor.modality.Modality;
+import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -56,7 +59,8 @@ public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
     private String processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
     private String currentFile = null;
     private File outputFile = null;
-
+    
+	private final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 
     public void setParameters(String parameterString) throws NodeException {
 	// Nothing to do.
@@ -153,7 +157,6 @@ public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
 	    set.addAttribute(peakAttribute);
 	    outputFile.getParentFile().mkdirs();
 	    set.saveToArffFile(outputFile);
-	    System.out.println("TAAADAAA");
 	    set.saveToArffFile(new File("/Users/waeltken/Desktop/TzanetakisResult.arff"));
 	} catch (IOException ex) {
 	    AmuseLogger.write(TzanetakisFeature.class.getName(), Level.ERROR, ex.getMessage());
@@ -167,5 +170,10 @@ public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
     public void convertOutput() throws NodeException {
 	// Nothing to do.
     }
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
+	}
 
 }
