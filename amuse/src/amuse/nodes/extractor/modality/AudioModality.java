@@ -25,26 +25,28 @@ public class AudioModality implements Modality {
 
 	@Override
 	public boolean matchesRequirements(File file) {
-		/*Check file format*/
+		
+		/* Check, if file is mp3-data */
+		if(file.getPath().endsWith(".mp3") && formats.contains(AudioFormat.MP3)) {
+			return true;
+		}
+		/* Check other file formats */
 		AudioFileFormat audioFileFormat;
 		try {
 			audioFileFormat = AudioSystem.getAudioFileFormat(file);
-			if(audioFileFormat.getType() != AudioFileFormat.Type.WAVE && formats.contains(AudioFormat.WAVE)) {
+			if(audioFileFormat.getType() == AudioFileFormat.Type.WAVE && formats.contains(AudioFormat.WAVE)) {
 				return true;
 			}
-			else if(audioFileFormat.getType() != AudioFileFormat.Type.SND && formats.contains(AudioFormat.SND)) {
+			else if(audioFileFormat.getType() == AudioFileFormat.Type.SND && formats.contains(AudioFormat.SND)) {
 				return true;
 			}
-			else if(audioFileFormat.getType() != AudioFileFormat.Type.AIFF && formats.contains(AudioFormat.AIFF)) {
+			else if(audioFileFormat.getType() == AudioFileFormat.Type.AIFF && formats.contains(AudioFormat.AIFF)) {
 				return true;
 			}
-			else if(audioFileFormat.getType() != AudioFileFormat.Type.AIFC && formats.contains(AudioFormat.AIFC)) {
+			else if(audioFileFormat.getType() == AudioFileFormat.Type.AIFC && formats.contains(AudioFormat.AIFC)) {
 				return true;
 			}
-			else if(audioFileFormat.getType() != AudioFileFormat.Type.AU && formats.contains(AudioFormat.AU)) {
-				return true;
-			}
-			else if(file.getPath().endsWith(".mp3") && formats.contains(AudioFormat.MP3)) {
+			else if(audioFileFormat.getType() == AudioFileFormat.Type.AU && formats.contains(AudioFormat.AU)) {
 				return true;
 			}
 		} catch (UnsupportedAudioFileException e) {

@@ -24,6 +24,7 @@
 package amuse.util.audio;
 
 import amuse.interfaces.nodes.NodeException;
+import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysBooleanValue;
 import amuse.preferences.KeysIntValue;
@@ -167,8 +168,6 @@ public class AudioFileConversion {
         if (!targetDir.isDirectory() || !musicFile.isFile()) {
             throw new NodeException("Path to music file or target directory is not properly set!");
         }
-        boolean isSplittingEnabled = AmusePreferences.getBoolean(KeysBooleanValue.SPLIT_WAVE);
-        int splitSize = AmusePreferences.getInt(KeysIntValue.SPLIT_SIZE_IN_KB);
         File wavFile = new File(targetDir.getAbsolutePath() + File.separator +
                 musicFile.getName().substring(0, musicFile.getName().lastIndexOf('.')) + ".wav");
         File targetFile = new File(targetDir.getAbsolutePath() + File.separator + "1" + File.separator + wavFile.getName());
@@ -184,16 +183,19 @@ public class AudioFileConversion {
         }
         // Again wavFile is now the current file to process.
         wavFile = targetFile;
-
+        
         // ---------------------------------------------------------------------
         // IV.II: Try splitting wave file and copy into according directories.
         // ---------------------------------------------------------------------
-        if (isSplittingEnabled) {
+        
+		boolean isSplittingEnabled = AmusePreferences.getBoolean(KeysBooleanValue.SPLIT_WAVE);
+        int splitSize = AmusePreferences.getInt(KeysIntValue.SPLIT_SIZE_IN_KB);
+		if (isSplittingEnabled) {
             int index = 1;
             int splitFileCount = 1;
 
             try {
-                splitFileCount = splitWaveFile(wavFile, splitSize);
+                splitFileCount = AudioFileConversion.splitWaveFile(wavFile, splitSize);
             } catch (IOException ex) {
                 AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to split " + wavFile.getName() + ": " + ex.getMessage());
             }
@@ -205,7 +207,7 @@ public class AudioFileConversion {
                 }
                 File src = new File(wavFile.getAbsolutePath() + "." + index);
                 File dest = new File(targetDir.getAbsolutePath() + File.separator + index + File.separator + wavFile.getName());
-                fileCopy(src, dest);
+                AudioFileConversion.fileCopy(src, dest);
                 src.delete();
                 index++;
             }
@@ -316,7 +318,7 @@ public class AudioFileConversion {
         }
     }
 
-    private static void fileCopy(File srcFile, File destFile) {
+    public static void fileCopy(File srcFile, File destFile) {
     	FileInputStream srcChannelFIS = null;
     	FileOutputStream dstChannelFOS = null;
         try {

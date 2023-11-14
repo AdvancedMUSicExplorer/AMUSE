@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -54,7 +55,10 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.Modality;
 import amuse.preferences.AmusePreferences;
+import amuse.preferences.KeysBooleanValue;
+import amuse.preferences.KeysIntValue;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.pluginmanagement.PluginLoader;
 import amuse.util.AmuseLogger;
@@ -170,14 +174,14 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
 		}
-		if(relativeName.charAt(0) == File.separatorChar) {
+		/*if(relativeName.charAt(0) == File.separatorChar) {
 			relativeName = relativeName.substring(1);
 		}
 		if(relativeName.endsWith(".mp3")) {
 			// Cut extension
 			relativeName = relativeName.substring(0,relativeName.length()-4);
 			relativeName = new String(relativeName + ".wav");
-		}
+		}*/
 		
 		this.inputFileName = relativeName;
 		
@@ -208,20 +212,58 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			return;
 	    }
 		
-		// --------------------------------
-		// (IV) Convert mp3 file to wave(s)
-		// --------------------------------
-		try {
-			AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
-					new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
-		} catch(NodeException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-				"Audio decoding error: " + e.getMessage());
-			errorDescriptionBuilder.append(this.inputFileName);
-			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
-			return;
+		// ---------------------------------
+		// (IV) Convert input file if needed
+		// ---------------------------------
+		
+	    /* Check, if at least one tool requirement is not met */
+	    boolean fileMatchesRequirements = false;
+		for(Map.Entry<Integer,ExtractorInterface> e : extractors.entrySet()){
+			for (Modality modality: e.getValue().getModalities()) {
+				if(modality.matchesRequirements(new File(inputFileName))) {
+					fileMatchesRequirements = true;
+				}
+			}
 		}
-
+		/* If file does not match requirements of an extractor tool, convert to wave */
+		// TODO add more conversions
+		if(!fileMatchesRequirements) {
+			// TODO Generalize, at the Moment GUI allows only .wav and .mp3 files for extraction
+			if(relativeName.endsWith(".mp3")) {
+				/* Cut extension */
+				relativeName = relativeName.substring(0,relativeName.length()-4);
+				relativeName = new String(relativeName + ".wav");
+				this.inputFileName = relativeName;
+			}
+			try {
+				AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
+						new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
+			} catch(NodeException e) {
+				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
+					"Audio decoding error: " + e.getMessage());
+				errorDescriptionBuilder.append(this.inputFileName);
+				this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+				return;
+			}
+		} 
+		/* if file already fits requirements */
+		else {
+			// TODO move splitting files out of AudioFileConversion
+			// TODO add methods for splitting other file formats
+			File targetDir = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
+			if (!targetDir.exists()) {
+	            targetDir.mkdirs();
+	        }
+			File musicFile = new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0));
+	        File targetFile = new File(targetDir.getAbsolutePath() + File.separator + "1" + File.separator + musicFile.getName());
+	        
+	        if (!new File(targetDir.getAbsolutePath() + File.separator + "1").exists()) {
+	            new File(targetDir.getAbsolutePath() + File.separator + "1").mkdirs();
+	        }
+	        //TODO Move fileCopy out of AudioFileConversion
+	        AudioFileConversion.fileCopy(musicFile,targetFile);
+	        
+		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
 		
 		// Find out the number of parts if the music file was splitted
