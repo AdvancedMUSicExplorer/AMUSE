@@ -8,11 +8,17 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiFileFormat;
 import javax.sound.midi.MidiSystem;
 
+import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
+
 public class SymbolicModality implements Modality {
 
 	public enum SymbolicFormat{MIDI, MUSICXML}
 	
 	private List<SymbolicFormat> formats;
+	
+	public SymbolicModality(List<SymbolicFormat> formats) {
+		this.formats = formats;
+	}
 	
 	@Override
 	public List<SymbolicFormat> getFormats() {

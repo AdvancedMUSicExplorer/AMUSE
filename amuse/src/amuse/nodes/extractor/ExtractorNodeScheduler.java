@@ -142,6 +142,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// --------------------------------------
 		// (I) Configure extractor node scheduler
 		// --------------------------------------
+		
 		this.nodeHome = nodeHome;
 		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
@@ -174,15 +175,6 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
 		}
-		/*if(relativeName.charAt(0) == File.separatorChar) {
-			relativeName = relativeName.substring(1);
-		}
-		if(relativeName.endsWith(".mp3")) {
-			// Cut extension
-			relativeName = relativeName.substring(0,relativeName.length()-4);
-			relativeName = new String(relativeName + ".wav");
-		}*/
-		
 		this.inputFileName = relativeName;
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extractor node scheduler for " + 
@@ -191,6 +183,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// --------------------------------------
 		// (II) Configure the extractor adapters 
 		// --------------------------------------
+		
 		try {
 			this.configureFeatureExtractors();
 		} catch(NodeException e) {
@@ -201,9 +194,10 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			return;
 		}
 		
-		// -------------------------------------------------------------
+		// --------------------------------------------------------------
 		// (III) Check if at least one extractor has been properly loaded
-		// -------------------------------------------------------------		
+		// --------------------------------------------------------------
+		
 	    if(this.extractors.size() == 0) {
     		AmuseLogger.write(this.getClass().getName(), Level.FATAL, 
     				"No extractor has been properly loaded, exiting the extractor node...");
@@ -212,19 +206,24 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			return;
 	    }
 		
-		// ---------------------------------
-		// (IV) Convert input file if needed
-		// ---------------------------------
+		// -----------------------------------------
+		// (IV) Check if file fits tool requirements
+		// -----------------------------------------
 		
 	    /* Check, if at least one tool requirement is not met */
-	    boolean fileMatchesRequirements = false;
+	    boolean fileMatchesRequirements = true;
 		for(Map.Entry<Integer,ExtractorInterface> e : extractors.entrySet()){
 			for (Modality modality: e.getValue().getModalities()) {
-				if(modality.matchesRequirements(new File(inputFileName))) {
-					fileMatchesRequirements = true;
+				if(!modality.matchesRequirements(new File(inputFileName))) {
+					fileMatchesRequirements = false;
 				}
 			}
 		}
+		
+		// ---------------------------------------------
+		// (V) Convert input file if needed and possible
+		// ---------------------------------------------
+		
 		/* If file does not match requirements of an extractor tool, convert to wave */
 		// TODO add more conversions
 		if(!fileMatchesRequirements) {
@@ -234,16 +233,21 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				relativeName = relativeName.substring(0,relativeName.length()-4);
 				relativeName = new String(relativeName + ".wav");
 				this.inputFileName = relativeName;
+				
+				try {
+					AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
+							new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
+				} catch(NodeException e) {
+					AmuseLogger.write(this.getClass().getName(), Level.ERROR,
+						"Audio decoding error: " + e.getMessage());
+					errorDescriptionBuilder.append(this.inputFileName);
+					this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
+					return;
+				}
 			}
-			try {
-				AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
-						new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
-			} catch(NodeException e) {
-				AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-					"Audio decoding error: " + e.getMessage());
-				errorDescriptionBuilder.append(this.inputFileName);
-				this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
-				return;
+			else {
+				AmuseLogger.write(ExtractorNodeScheduler.class.getName(), Level.ERROR,
+						"File does not match tool requirements and can not be converted: " + relativeName);
 			}
 		} 
 		/* if file already fits requirements */
@@ -282,16 +286,18 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			}
 		}
 		
-		// --------------------------------
-		// (V) Start the extractor adapters
-		// --------------------------------		
+		// ---------------------------------
+		// (VI) Start the extractor adapters
+		// ---------------------------------
+		
 		this.startFeatureExtractors();
 		
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "All extractors finished their work");
 		
-		// ----------------------------------------------------------------------------------
-		// (VI) If started directly, remove generated data and fire event for Amuse scheduler
-		// ----------------------------------------------------------------------------------
+		// -----------------------------------------------------------------------------------
+		// (VII) If started directly, remove generated data and fire event for Amuse scheduler
+		// -----------------------------------------------------------------------------------
+		
 		if(this.directStart) {
 			try {
 				this.cleanInputFolder();
@@ -303,6 +309,31 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_COMPLETED, this));
 		}
 	}
+	
+	public int splitFile(File file, File targetDir) {
+        int splitSize = AmusePreferences.getInt(KeysIntValue.SPLIT_SIZE_IN_KB);
+            int index = 1;
+            int splitFileCount = 1;
+
+            try {
+                splitFileCount = AudioFileConversion.splitWaveFile(file, splitSize);
+            } catch (IOException ex) {
+                AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to split " + file.getName() + ": " + ex.getMessage());
+            }
+
+            while (index <= splitFileCount) {
+                // Create folders if necessary:
+                if (!new File(targetDir.getAbsolutePath() + File.separator + index).exists()) { // Create targetDir if necessary.
+                    new File(targetDir.getAbsolutePath() + File.separator + index).mkdirs();
+                }
+                File src = new File(file.getAbsolutePath() + "." + index);
+                File dest = new File(targetDir.getAbsolutePath() + File.separator + index + File.separator + file.getName());
+                AudioFileConversion.fileCopy(src, dest);
+                src.delete();
+                index++;
+            }
+            return splitFileCount;
+	} 
 	
 	/*
 	 * (non-Javadoc)
