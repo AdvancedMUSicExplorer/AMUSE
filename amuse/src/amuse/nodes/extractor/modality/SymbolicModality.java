@@ -28,12 +28,15 @@ public class SymbolicModality implements Modality {
 	@Override
 	public boolean matchesRequirements(File file) {
 		/*Check, if file is appropriate midi data*/
-		try {
-			MidiFileFormat midifileformat = MidiSystem.getMidiFileFormat(file);
-		} catch (InvalidMidiDataException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(file.getName().endsWith(".mid")) {
+			try {
+				MidiFileFormat midifileformat = MidiSystem.getMidiFileFormat(file);
+				return true;
+			} catch (InvalidMidiDataException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return false;
 	}
