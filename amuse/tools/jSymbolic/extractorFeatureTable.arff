@@ -1,0 +1,21 @@
+% Music feature table
+
+@relation "Mapping of jSymbolic features to Amuse feature IDs"
+
+@attribute ExtractorDescription string
+@attribute Id numeric
+
+@data
+"Pitch_Class_Histogram_0", 500
+"Pitch_Class_Histogram_1", 500
+"Pitch_Class_Histogram_2", 500
+"Pitch_Class_Histogram_3", 500
+"Pitch_Class_Histogram_4", 500
+"Pitch_Class_Histogram_5", 500
+"Pitch_Class_Histogram_6", 500
+"Pitch_Class_Histogram_7", 500
+"Pitch_Class_Histogram_8", 500
+"Pitch_Class_Histogram_9", 500
+"Pitch_Class_Histogram_10", 500
+"Pitch_Class_Histogram_11", 500
+"Number_of_Common_Pitches", 501
