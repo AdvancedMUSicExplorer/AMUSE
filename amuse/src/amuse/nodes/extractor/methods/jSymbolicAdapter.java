@@ -1,7 +1,6 @@
 package amuse.nodes.extractor.methods;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
@@ -29,7 +27,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
@@ -49,6 +46,9 @@ import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.converters.ArffLoader;
 
+/**
+ * Adapter to jSymbolic feature extractor.
+ */
 public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 
 	/** Input music file */
@@ -155,7 +155,7 @@ public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 		for(int i=0;i<nList.getLength();i++) {
 			Node node = nList.item(i);
 			NamedNodeMap attr = node.getAttributes();
-			Integer idOfCurrentEnabler = new Integer(attr.getNamedItem("id").getNodeValue());
+			Integer idOfCurrentEnabler = Integer.valueOf(attr.getNamedItem("id").getNodeValue());
 		
 			/* Delete amuseEnablerNode */
 			if(!feature2Tool.containsKey(idOfCurrentEnabler)) {
@@ -296,207 +296,207 @@ public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 	@Override
 	public void convertOutput() throws NodeException {
 		// Maps the jSymbolic feature name to Amuse feature ID
-				HashMap<String,Integer> jSymbolicFeatureToAmuseId = new HashMap<String,Integer>();
-				
-				// Maps the Amuse feature ID to the Amuse feature name
-				HashMap<Integer,String> amuseIdToAmuseName = new HashMap<Integer,String>();
-				
-				// Maps the Amuse feature ID to feature that was extracted with a custom configuration
-				// if custom configurations are used
-				HashMap<Integer,Feature> amuseIdToCustomFeature = new HashMap<Integer,Feature>();
-				
-				// Maps the Amuse feature ID to the corresponding list of jSymbolic features
-				HashMap<Integer,ArrayList<String>> featureIdToFeatureList = new HashMap<Integer,ArrayList<String>>();
-				
-				ArffLoader featureIDsMappingLoader = new ArffLoader();
-				try {
-					// Load the ARFF file which maps jSymbolic feature descriptions to Amuse feature descriptions
-					featureIDsMappingLoader.setFile(new File(properties.getProperty("extractorFolder") + File.separator + "extractorFeatureTable.arff"));
-					
-					// Set up the first two hash maps
-					Attribute extractorDescriptionAttribute = featureIDsMappingLoader.getStructure().attribute("ExtractorDescription");
-					Attribute idAttribute = featureIDsMappingLoader.getStructure().attribute("Id");
-					Instance currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure()); 
-					while(currentInstance != null) {
-						jSymbolicFeatureToAmuseId.put(currentInstance.stringValue(extractorDescriptionAttribute),
-								                            new Double(currentInstance.value(idAttribute)).intValue());
-						currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure());
-					}
-					
-					// Set up the third hash map 
-					featureIDsMappingLoader.reset();
-					currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure()); 
-					while(currentInstance != null) {
-						if(featureIdToFeatureList.containsKey(new Double(currentInstance.value(idAttribute)).intValue())) {
-							featureIdToFeatureList.get(new Double(currentInstance.value(idAttribute)).intValue()).add(
-									currentInstance.stringValue(extractorDescriptionAttribute));
-						} else {
-							ArrayList<String> newFeatureList = new ArrayList<String>();
-							newFeatureList.add(currentInstance.stringValue(extractorDescriptionAttribute));
-							featureIdToFeatureList.put(new Double(currentInstance.value(idAttribute)).intValue(),newFeatureList);
-						}
-						jSymbolicFeatureToAmuseId.put(currentInstance.stringValue(extractorDescriptionAttribute),
-								                            new Double(currentInstance.value(idAttribute)).intValue());
-						currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure());
-					}
-					
-					// Set the Amuse descriptions of features
-					FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
-					for(int i=0;i<featureTable.size();i++) {
-						Feature feature = featureTable.getFeatureAt(i);
-						amuseIdToAmuseName.put(feature.getId(),
-								feature.getDescription());
-						// if the feature was extracted by this extractor using a custom configuration
-						// put in the hash map of custom features
-						if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
-							amuseIdToCustomFeature.put(feature.getId(), feature);
-						}
-					}
-					
-					// Go through Amuse metafeatures one by one and save them to ARFF feature files
-					Set<?> ids = featureIdToFeatureList.keySet();
-					Iterator<?> i = ids.iterator();
-					while(i.hasNext()) {
-						
-						// Load jSymbolic output feature file
-						ArffLoader featureLoader = new ArffLoader();
-						FileInputStream outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
-						featureLoader.setSource(outputFeatureFileStream);
-						
-						Object o = i.next();
-						
-						// If the feature from featureIdToFeatureList has not been extracted by jSymbolic, go on
-						if(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(0))) == null) {
-							outputFeatureFileStream.close();
-							continue;
-						}
-						// Calculate the number of instances
-						int window_number = 0;
-						currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
-						while(currentInstance != null) {
-							currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
-							window_number++;
-						}
-						featureLoader = new ArffLoader();
-						outputFeatureFileStream.close();
-						outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
-						featureLoader.setSource(outputFeatureFileStream);
-						
-						
-						
-						// Get the jSymbolic ARFF attributes for current Amuse feature ID
-						FastVector atts = new FastVector();
-						for(int j=0;j<featureIdToFeatureList.get(o).size();j++) {
-							atts.addElement(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(j))));
-						}
-						
-						currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
-						
-						// Create a folder for Amuse feature files
-						File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
-								this.correspondingScheduler.getTaskId() + 
-								//properties.getProperty("taskId") + 
-								File.separator + this.currentPart + File.separator + properties.getProperty("extractorName"));
-						if(!folder.exists() && !folder.mkdirs()) {
-							throw new NodeException("Extraction with jSymbolic failed: could not create temp folder " + 
-									folder.toString());
-						}
-						
-						// Create a name for Amuse feature file 
-						String currentFeatureFile = new String(folder.toString());
-						String configurationId = "";
-						if(amuseIdToCustomFeature.containsKey(new Integer(o.toString()))) {
-							configurationId = "_" + amuseIdToCustomFeature.get(new Integer(o.toString())).getConfigurationId();
-						}
-						if(musicFile.lastIndexOf(File.separator) != -1) {
-							currentFeatureFile += File.separator +
-								musicFile.substring(musicFile.lastIndexOf(File.separator),musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
-						} else {
-							currentFeatureFile += File.separator +
-								musicFile.substring(0,musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
-						}
-						File feature_values_save_file = new File(currentFeatureFile);
-						if (feature_values_save_file.exists())
-							if (!feature_values_save_file.canWrite()) {
-								
-								return;
-							}
-						if (!feature_values_save_file.exists())
-							feature_values_save_file.createNewFile();
-
-						FileOutputStream values_to = new FileOutputStream(feature_values_save_file);
-						DataOutputStream values_writer = new DataOutputStream(values_to);
-						String sep = System.getProperty("line.separator");
-						
-						int windowSize = 512;
-						int stepSize = 512;
-						if(amuseIdToCustomFeature.containsKey(new Integer(o.toString()))) {
-							windowSize = amuseIdToCustomFeature.get(new Integer(o.toString())).getSourceFrameSize();
-							stepSize = amuseIdToCustomFeature.get(new Integer(o.toString())).getSourceStepSize();
-						}
-						
-						// Write to the ARFF feature file (header)
-						values_writer.writeBytes("@RELATION 'Music feature'");
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes("%rows=" + atts.size());
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes("%columns=" + window_number);
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes("%sample_rate=" + "22050");
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes("%window_size=" + windowSize);
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes("%step_size=" + stepSize);
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes(sep);
-						
-						// Create an attribute vector with Amuse feature names
-						for(int j=0;j<atts.size();j++) {
-							values_writer.writeBytes("@ATTRIBUTE '" + amuseIdToAmuseName.get(jSymbolicFeatureToAmuseId.get( ((Attribute)atts.elementAt(j)).name() )) + "' NUMERIC");
-							values_writer.writeBytes(sep);
-						}
-						values_writer.writeBytes("@ATTRIBUTE WindowNumber NUMERIC");
-						values_writer.writeBytes(sep);
-						values_writer.writeBytes(sep);
-						
-						// Write to the ARFF feature file (data)
-						values_writer.writeBytes("@DATA");
-						values_writer.writeBytes(sep);
-						
-						// Current window
-						int window_counter = 0;
-						while(currentInstance != null) {
-							for(int j=0;j<atts.size();j++) {
-
-								// If the feature is multidimensional...
-								if(j>0) {
-									values_writer.writeBytes(",");
-								}
-								int z = ((Attribute)atts.elementAt(j)).index();
-								Attribute zc = featureLoader.getStructure().attribute(z);
-								values_writer.writeBytes(new Double(currentInstance.value(zc)).toString());
-							}
-							
-							// Go to the next line
-							values_writer.writeBytes("," + new Integer(++window_counter).toString());
-							values_writer.writeBytes(sep);
-							
-							// Get the next feature
-							currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
-						}
-						
-						// Close the feature file
-						values_writer.close();
-						values_to.close();
-						outputFeatureFileStream.close();
-						
-					}
+		HashMap<String,Integer> jSymbolicFeatureToAmuseId = new HashMap<String,Integer>();
+		
+		// Maps the Amuse feature ID to the Amuse feature name
+		HashMap<Integer,String> amuseIdToAmuseName = new HashMap<Integer,String>();
+		
+		// Maps the Amuse feature ID to feature that was extracted with a custom configuration
+		// if custom configurations are used
+		HashMap<Integer,Feature> amuseIdToCustomFeature = new HashMap<Integer,Feature>();
+		
+		// Maps the Amuse feature ID to the corresponding list of jSymbolic features
+		HashMap<Integer,ArrayList<String>> featureIdToFeatureList = new HashMap<Integer,ArrayList<String>>();
+		
+		ArffLoader featureIDsMappingLoader = new ArffLoader();
+		try {
+			// Load the ARFF file which maps jSymbolic feature descriptions to Amuse feature descriptions
+			featureIDsMappingLoader.setFile(new File(properties.getProperty("extractorFolder") + File.separator + "extractorFeatureTable.arff"));
+			
+			// Set up the first two hash maps
+			Attribute extractorDescriptionAttribute = featureIDsMappingLoader.getStructure().attribute("ExtractorDescription");
+			Attribute idAttribute = featureIDsMappingLoader.getStructure().attribute("Id");
+			Instance currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure()); 
+			while(currentInstance != null) {
+				jSymbolicFeatureToAmuseId.put(currentInstance.stringValue(extractorDescriptionAttribute),
+						                            Double.valueOf(currentInstance.value(idAttribute)).intValue());
+				currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure());
+			}
+			
+			// Set up the third hash map 
+			featureIDsMappingLoader.reset();
+			currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure()); 
+			while(currentInstance != null) {
+				if(featureIdToFeatureList.containsKey(Double.valueOf(currentInstance.value(idAttribute)).intValue())) {
+					featureIdToFeatureList.get(Double.valueOf(currentInstance.value(idAttribute)).intValue()).add(
+							currentInstance.stringValue(extractorDescriptionAttribute));
+				} else {
+					ArrayList<String> newFeatureList = new ArrayList<String>();
+					newFeatureList.add(currentInstance.stringValue(extractorDescriptionAttribute));
+					featureIdToFeatureList.put(Double.valueOf(currentInstance.value(idAttribute)).intValue(),newFeatureList);
 				}
-				catch(Exception e) {
-					e.printStackTrace();
-					throw new NodeException("Conversion of jSymbolic features failed: " + e.getMessage());
+				jSymbolicFeatureToAmuseId.put(currentInstance.stringValue(extractorDescriptionAttribute),
+						                            Double.valueOf(currentInstance.value(idAttribute)).intValue());
+				currentInstance = featureIDsMappingLoader.getNextInstance(featureIDsMappingLoader.getStructure());
+			}
+			
+			// Set the Amuse descriptions of features
+			FeatureTable featureTable = ((ExtractionConfiguration)this.correspondingScheduler.getConfiguration()).getFeatureTable();
+			for(int i=0;i<featureTable.size();i++) {
+				Feature feature = featureTable.getFeatureAt(i);
+				amuseIdToAmuseName.put(feature.getId(),
+						feature.getDescription());
+				// if the feature was extracted by this extractor using a custom configuration
+				// put in the hash map of custom features
+				if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
+					amuseIdToCustomFeature.put(feature.getId(), feature);
 				}
-				AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extracted features has been converted to Amuse ARFF");
+			}
+			
+			// Go through Amuse metafeatures one by one and save them to ARFF feature files
+			Set<?> ids = featureIdToFeatureList.keySet();
+			Iterator<?> i = ids.iterator();
+			while(i.hasNext()) {
+				
+				// Load jSymbolic output feature file
+				ArffLoader featureLoader = new ArffLoader();
+				FileInputStream outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
+				featureLoader.setSource(outputFeatureFileStream);
+				
+				Object o = i.next();
+				
+				// If the feature from featureIdToFeatureList has not been extracted by jSymbolic, go on
+				if(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(0))) == null) {
+					outputFeatureFileStream.close();
+					continue;
+				}
+				// Calculate the number of instances
+				int window_number = 0;
+				currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
+				while(currentInstance != null) {
+					currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
+					window_number++;
+				}
+				featureLoader = new ArffLoader();
+				outputFeatureFileStream.close();
+				outputFeatureFileStream = new FileInputStream(new File(this.outputFeatureFile));
+				featureLoader.setSource(outputFeatureFileStream);
+				
+				
+				
+				// Get the jSymbolic ARFF attributes for current Amuse feature ID
+				FastVector atts = new FastVector();
+				for(int j=0;j<featureIdToFeatureList.get(o).size();j++) {
+					atts.addElement(featureLoader.getStructure().attribute(new String(featureIdToFeatureList.get(o).get(j))));
+				}
+				
+				currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
+				
+				// Create a folder for Amuse feature files
+				File folder = new File(this.correspondingScheduler.getHomeFolder() + File.separator + "input" + File.separator + "task_" + 
+						this.correspondingScheduler.getTaskId() + 
+						//properties.getProperty("taskId") + 
+						File.separator + this.currentPart + File.separator + properties.getProperty("extractorName"));
+				if(!folder.exists() && !folder.mkdirs()) {
+					throw new NodeException("Extraction with jSymbolic failed: could not create temp folder " + 
+							folder.toString());
+				}
+				
+				// Create a name for Amuse feature file 
+				String currentFeatureFile = new String(folder.toString());
+				String configurationId = "";
+				if(amuseIdToCustomFeature.containsKey(Integer.valueOf(o.toString()))) {
+					configurationId = "_" + amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getConfigurationId();
+				}
+				if(musicFile.lastIndexOf(File.separator) != -1) {
+					currentFeatureFile += File.separator +
+						musicFile.substring(musicFile.lastIndexOf(File.separator),musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
+				} else {
+					currentFeatureFile += File.separator +
+						musicFile.substring(0,musicFile.lastIndexOf(".")) + "_" + o + configurationId + ".arff";
+				}
+				File feature_values_save_file = new File(currentFeatureFile);
+				if (feature_values_save_file.exists())
+					if (!feature_values_save_file.canWrite()) {
+						
+						return;
+					}
+				if (!feature_values_save_file.exists())
+					feature_values_save_file.createNewFile();
+
+				FileOutputStream values_to = new FileOutputStream(feature_values_save_file);
+				DataOutputStream values_writer = new DataOutputStream(values_to);
+				String sep = System.getProperty("line.separator");
+				
+				int windowSize = -1;
+				int stepSize = 0;
+				if(amuseIdToCustomFeature.containsKey(Integer.valueOf(o.toString()))) {
+					windowSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceFrameSize();
+					stepSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceStepSize();
+				}
+				
+				// Write to the ARFF feature file (header)
+				values_writer.writeBytes("@RELATION 'Music feature'");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%rows=" + atts.size());
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%columns=" + window_number);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%sample_rate=" + "22050");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%window_size=" + windowSize);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes("%step_size=" + stepSize);
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes(sep);
+				
+				// Create an attribute vector with Amuse feature names
+				for(int j=0;j<atts.size();j++) {
+					values_writer.writeBytes("@ATTRIBUTE '" + amuseIdToAmuseName.get(jSymbolicFeatureToAmuseId.get( ((Attribute)atts.elementAt(j)).name() )) + "' NUMERIC");
+					values_writer.writeBytes(sep);
+				}
+				values_writer.writeBytes("@ATTRIBUTE WindowNumber NUMERIC");
+				values_writer.writeBytes(sep);
+				values_writer.writeBytes(sep);
+				
+				// Write to the ARFF feature file (data)
+				values_writer.writeBytes("@DATA");
+				values_writer.writeBytes(sep);
+				
+				// Current window
+				int window_counter = 0;
+				while(currentInstance != null) {
+					for(int j=0;j<atts.size();j++) {
+
+						// If the feature is multidimensional...
+						if(j>0) {
+							values_writer.writeBytes(",");
+						}
+						int z = ((Attribute)atts.elementAt(j)).index();
+						Attribute zc = featureLoader.getStructure().attribute(z);
+						values_writer.writeBytes(Double.valueOf(currentInstance.value(zc)).toString());
+					}
+					
+					// Go to the next line
+					values_writer.writeBytes("," + Integer.valueOf(++window_counter).toString());
+					values_writer.writeBytes(sep);
+					
+					// Get the next feature
+					currentInstance = featureLoader.getNextInstance(featureLoader.getStructure());
+				}
+				
+				// Close the feature file
+				values_writer.close();
+				values_to.close();
+				outputFeatureFileStream.close();
+				
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			throw new NodeException("Conversion of jSymbolic features failed: " + e.getMessage());
+		}
+		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Extracted features has been converted to Amuse ARFF");
 
 	}
 
