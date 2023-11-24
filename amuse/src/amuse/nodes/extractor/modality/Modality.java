@@ -8,7 +8,20 @@ import java.util.List;
  */
 public interface Modality {
 	
-	public List getFormats();
+	public enum ModalityEnum{
+		SYMBOLIC,
+		AUDIO;
+		
+		public List<String> getEndings() {
+			switch(this) {
+			case SYMBOLIC: 	return SymbolicModality.getEndings();
+			case AUDIO: 	return AudioModality.getEndings();
+			default: 		return null;
+			}
+		}
+	}
+	
+	public List<?> getFormats();
 	
 	public boolean matchesRequirements(File file);
 }

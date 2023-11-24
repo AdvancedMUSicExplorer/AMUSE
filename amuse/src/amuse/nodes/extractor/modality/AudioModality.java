@@ -10,12 +10,37 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class AudioModality implements Modality {
 	
-	public enum AudioFormat{MP3, WAVE, AIFF, AIFC, SND, AU}
+	public enum AudioFormat {
+		
+		MP3		(List.of("mp3")),
+		WAVE	(List.of("wav")), 
+		AIFF 	(List.of("aiff", "aif")), 
+		AIFC 	(List.of("aifc")), 
+		SND 	(List.of("snd")), 
+		AU 		(List.of("au"));
+		
+		private final ModalityEnum modality = ModalityEnum.AUDIO;
+		private final List<String> endings;
+		
+		private AudioFormat(List<String> endings) {
+			this.endings = endings;
+		}
+	}
 	
 	private List<AudioFormat> formats;
 	
 	public AudioModality(List<AudioFormat> formats) {
 		this.formats = formats;
+	}
+	
+	/** Returns an array with all possible audio file endings */
+	public static List<String> getEndings() {
+		List<String> endings = List.of();
+		for (AudioFormat format : AudioFormat.values()) {
+			endings.addAll(format.endings);
+		}
+		return endings;
+		
 	}
 	
 	@Override

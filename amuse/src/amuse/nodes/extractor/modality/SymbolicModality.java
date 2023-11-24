@@ -9,15 +9,36 @@ import javax.sound.midi.MidiFileFormat;
 import javax.sound.midi.MidiSystem;
 
 import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 
 public class SymbolicModality implements Modality {
 
-	public enum SymbolicFormat{MIDI, MUSICXML}
+	public enum SymbolicFormat {
+		
+		MIDI 		(List.of("midi")),
+		MUSICXML 	(List.of("mxl"));
+		
+		private final ModalityEnum modality = ModalityEnum.SYMBOLIC;
+		private final List<String> endings;
+		
+		private SymbolicFormat(List<String> endings) {
+			this.endings = endings;
+		}
+	}
 	
 	private List<SymbolicFormat> formats;
 	
 	public SymbolicModality(List<SymbolicFormat> formats) {
 		this.formats = formats;
+	}
+	
+	/** Returns an array with all possible symbolic file endings */
+	public static List<String> getEndings() {
+		List<String> endings = List.of();
+		for (SymbolicFormat format : SymbolicFormat.values()) {
+			endings.addAll(format.endings);
+		}
+		return endings;
 	}
 	
 	@Override
