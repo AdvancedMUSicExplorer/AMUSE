@@ -78,5 +78,61 @@
 
 % Symbolic features
 
-500, "Pitch Class Histogramm", 10, 512, 0, 12, WindowedNumeric
-501, "Number of Common Pitches", 10, 512 0, 1, WindowedNumeric
+500, "Basic Pitch Histogram", 10, 512, 512, 128, WindowedNumeric
+501, "Pitch Class Histogram", 10, 512, 512, 12, WindowedNumeric
+502, "Folded Fifths Pitch Class Histogram", 10, 512, 512, 12, WindowedNumeric
+503, "Number of Pitches", 10, 512, 512, 1, WindowedNumeric
+504, "Number of Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+505, "Number of Common Pitches", 10, 512, 512, 1, WindowedNumeric
+506, "Number of Common Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+507, "Range", 10, 512, 512, 1, WindowedNumeric
+508, "Importance of Bass Register", 10, 512, 512, 1, WindowedNumeric
+509, "Importance of Middle Register", 10, 512, 512, 1, WindowedNumeric
+510, "Importance of High Register", 10, 512, 512, 1, WindowedNumeric
+511, "Dominant Spread", 10, 512, 512, 1, WindowedNumeric
+512, "Strong Tonal Centres", 10, 512, 512, 1, WindowedNumeric
+513, "Mean Pitch", 10, 512, 512, 1, WindowedNumeric
+514, "Mean Pitch Class", 10, 512, 512, 1, WindowedNumeric
+515, "Most Common Pitch", 10, 512, 512, 1, WindowedNumeric
+516, "Most Common Pitch Class", 10, 512, 512, 1, WindowedNumeric
+517, "Prevalence of Most Common Pitch", 10, 512, 512, 1, WindowedNumeric
+518, "Prevalence of Most Common Pitch Class", 10, 512, 512, 1, WindowedNumeric
+519, "Pitch Variability", 10, 512, 512, 1, WindowedNumeric
+520, "Pitch Class Variability", 10, 512, 512, 1, WindowedNumeric
+521, "Pitch Skewness", 10, 512, 512, 1, WindowedNumeric
+522, "Major or Minor", 10, 512, 512, 1, WindowedNumeric
+523, "Glissando Prevalence", 10, 512, 512, 1, WindowedNumeric
+524, "Average Range of Glissandos", 10, 512, 512, 1, WindowedNumeric
+525, "Vibrato Prevalence", 10, 512, 512, 1, WindowedNumeric
+526, "Microtone Prevalence", 10, 512, 512, 1, WindowedNumeric
+527, "Most Common Melodic Interval", 10, 512, 512, 1, WindowedNumeric
+528, "Amount of Arpeggiation", 10, 512, 512, 1, WindowedNumeric
+529, "Repeated Notes", 10, 512, 512, 1, WindowedNumeric
+530, "Chromatic Motion", 10, 512, 512, 1, WindowedNumeric
+531, "Melodic Pitch Variety", 10, 512, 512, 1, WindowedNumeric
+532, "Vertical Dissonance Ratio", 10, 512, 512, 1, WindowedNumeric
+533, "Chord Duration", 10, 512, 512, 1, WindowedNumeric
+534, "Diminished and Augmented Triads", 10, 512, 512, 1, WindowedNumeric
+535, "Dominant Seventh Chords", 10, 512, 512, 1, WindowedNumeric
+536, "Seventh Chords", 10, 512, 512, 1, WindowedNumeric
+537, "Non-Standard Chords", 10, 512, 512, 1, WindowedNumeric
+538, "Complex Chords", 10, 512, 512, 1, WindowedNumeric
+539, "Simple Initial Meter", 10, 512, 512, 1, WindowedNumeric
+540, "Range of Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+541, "Prevalence of Dotted Notes", 10, 512, 512, 1, WindowedNumeric
+542, "Most Common Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+543, "Rhythmic Variability - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+544, "Polyrhythms - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+545, "Variability of Note Durations", 10, 512, 512, 1, WindowedNumeric
+546, "Polyrhythms", 10, 512, 512, 1, WindowedNumeric
+547, "Unpitched Percussion Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+548, "String Keyboard Prevalence", 10, 512, 512, 1, WindowedNumeric
+549, "Acoustic Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+550, "Electric Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+551, "Violin Prevalence", 10, 512, 512, 1, WindowedNumeric
+552, "Saxophone Prevalence", 10, 512, 512, 1, WindowedNumeric
+553, "Brass Prevalence", 10, 512, 512, 1, WindowedNumeric
+554, "Woodwinds Prevalence", 10, 512, 512, 1, WindowedNumeric
+555, "Orchestral Strings Prevalence", 10, 512, 512, 1, WindowedNumeric
+556, "String Ensemble Prevalence", 10, 512, 512, 1, WindowedNumeric
+557, "Electric Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric

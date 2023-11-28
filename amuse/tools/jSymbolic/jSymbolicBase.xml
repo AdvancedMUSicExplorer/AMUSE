@@ -12,6 +12,7 @@
 
 <feature_key_file>
 
+   <amuseEnableFeature id="500">
    <feature>
       <name>Basic Pitch Histogram</name>
       <active>false</active>
@@ -19,8 +20,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>128</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
-   <amuseEnableFeature id="500">
+   <amuseEnableFeature id="501">
    <feature>
       <name>Pitch Class Histogram</name>
       <active>false</active>
@@ -30,6 +32,7 @@
    </feature>
    </amuseEnableFeature>
 
+   <amuseEnableFeature id="502">
    <feature>
       <name>Folded Fifths Pitch Class Histogram</name>
       <active>false</active>
@@ -37,7 +40,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>12</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="503">
    <feature>
       <name>Number of Pitches</name>
       <active>false</active>
@@ -45,7 +50,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="504">
    <feature>
       <name>Number of Pitch Classes</name>
       <active>false</active>
@@ -53,8 +60,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
-   <amuseEnableFeature id="501">
+   <amuseEnableFeature id="505">
    <feature>
       <name>Number of Common Pitches</name>
       <active>false</active>
@@ -64,6 +72,7 @@
    </feature>
    </amuseEnableFeature>
 
+   <amuseEnableFeature id="506">
    <feature>
       <name>Number of Common Pitch Classes</name>
       <active>false</active>
@@ -71,7 +80,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="507">
    <feature>
       <name>Range</name>
       <active>false</active>
@@ -79,7 +90,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="508">
    <feature>
       <name>Importance of Bass Register</name>
       <active>false</active>
@@ -87,7 +100,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="509">
    <feature>
       <name>Importance of Middle Register</name>
       <active>false</active>
@@ -95,7 +110,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="510">
    <feature>
       <name>Importance of High Register</name>
       <active>false</active>
@@ -103,7 +120,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="511">
    <feature>
       <name>Dominant Spread</name>
       <active>false</active>
@@ -111,7 +130,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="512">
    <feature>
       <name>Strong Tonal Centres</name>
       <active>false</active>
@@ -119,7 +140,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="513">
    <feature>
       <name>Mean Pitch</name>
       <active>false</active>
@@ -127,7 +150,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="514">
    <feature>
       <name>Mean Pitch Class</name>
       <active>false</active>
@@ -135,7 +160,10 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+
+   <amuseEnableFeature id="515">
    <feature>
       <name>Most Common Pitch</name>
       <active>false</active>
@@ -143,7 +171,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="516">
    <feature>
       <name>Most Common Pitch Class</name>
       <active>false</active>
@@ -151,7 +181,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="517">
    <feature>
       <name>Prevalence of Most Common Pitch</name>
       <active>false</active>
@@ -159,7 +191,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="518">
    <feature>
       <name>Prevalence of Most Common Pitch Class</name>
       <active>false</active>
@@ -167,6 +201,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Relative Prevalence of Top Pitches</name>
@@ -200,6 +235,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="519">
    <feature>
       <name>Pitch Variability</name>
       <active>false</active>
@@ -207,7 +243,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="520">
    <feature>
       <name>Pitch Class Variability</name>
       <active>false</active>
@@ -215,6 +253,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Pitch Class Variability After Folding</name>
@@ -224,6 +263,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="521">
    <feature>
       <name>Pitch Skewness</name>
       <active>false</active>
@@ -231,6 +271,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Pitch Class Skewness</name>
@@ -272,6 +313,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="522">
    <feature>
       <name>Major or Minor</name>
       <active>false</active>
@@ -279,6 +321,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>First Pitch</name>
@@ -312,6 +355,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="523">
    <feature>
       <name>Glissando Prevalence</name>
       <active>false</active>
@@ -319,7 +363,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="524">
    <feature>
       <name>Average Range of Glissandos</name>
       <active>false</active>
@@ -327,7 +373,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="525">
    <feature>
       <name>Vibrato Prevalence</name>
       <active>false</active>
@@ -335,7 +383,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="526">
    <feature>
       <name>Microtone Prevalence</name>
       <active>false</active>
@@ -343,7 +393,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="527">
    <feature>
       <name>Most Common Melodic Interval</name>
       <active>false</active>
@@ -351,6 +403,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Mean Melodic Interval</name>
@@ -392,6 +445,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="528">
    <feature>
       <name>Amount of Arpeggiation</name>
       <active>false</active>
@@ -399,7 +453,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="529">
    <feature>
       <name>Repeated Notes</name>
       <active>false</active>
@@ -407,7 +463,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="530">
    <feature>
       <name>Chromatic Motion</name>
       <active>false</active>
@@ -415,6 +473,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Stepwise Motion</name>
@@ -528,6 +587,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="531">
    <feature>
       <name>Melodic Pitch Variety</name>
       <active>false</active>
@@ -535,6 +595,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Average Number of Simultaneous Pitch Classes</name>
@@ -696,6 +757,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="532">
    <feature>
       <name>Vertical Dissonance Ratio</name>
       <active>false</active>
@@ -703,6 +765,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Vertical Minor Third Prevalence</name>
@@ -720,6 +783,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="533">
    <feature>
       <name>Chord Duration</name>
       <active>false</active>
@@ -727,6 +791,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Partial Chords</name>
@@ -744,6 +809,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="534">
    <feature>
       <name>Diminished and Augmented Triads</name>
       <active>false</active>
@@ -751,7 +817,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="535">
    <feature>
       <name>Dominant Seventh Chords</name>
       <active>false</active>
@@ -759,7 +827,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="536">
    <feature>
       <name>Seventh Chords</name>
       <active>false</active>
@@ -767,7 +837,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="537">
    <feature>
       <name>Non-Standard Chords</name>
       <active>false</active>
@@ -775,7 +847,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="538">
    <feature>
       <name>Complex Chords</name>
       <active>false</active>
@@ -783,6 +857,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Minor Major Triad Ratio</name>
@@ -792,6 +867,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="539">
    <feature>
       <name>Simple Initial Meter</name>
       <active>false</active>
@@ -799,6 +875,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Compound Initial Meter</name>
@@ -880,6 +957,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="540">
    <feature>
       <name>Range of Rhythmic Values</name>
       <active>false</active>
@@ -887,6 +965,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Number of Different Rhythmic Values Present</name>
@@ -944,6 +1023,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="541">
    <feature>
       <name>Prevalence of Dotted Notes</name>
       <active>false</active>
@@ -951,6 +1031,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Shortest Rhythmic Value</name>
@@ -976,6 +1057,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="542">
    <feature>
       <name>Most Common Rhythmic Value</name>
       <active>false</active>
@@ -983,6 +1065,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Prevalence of Most Common Rhythmic Value</name>
@@ -1256,6 +1339,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="543">
    <feature>
       <name>Rhythmic Variability - Tempo Standardized</name>
       <active>false</active>
@@ -1263,6 +1347,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Rhythmic Looseness - Tempo Standardized</name>
@@ -1272,6 +1357,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="544">
    <feature>
       <name>Polyrhythms - Tempo Standardized</name>
       <active>false</active>
@@ -1279,6 +1365,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Initial Tempo</name>
@@ -1384,6 +1471,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="545">
    <feature>
       <name>Variability of Note Durations</name>
       <active>false</active>
@@ -1391,6 +1479,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Amount of Staccato</name>
@@ -1496,6 +1585,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="546">
    <feature>
       <name>Polyrhythms</name>
       <active>false</active>
@@ -1503,6 +1593,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Variability of Note Prevalence of Pitched Instruments</name>
@@ -1536,6 +1627,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="547">
    <feature>
       <name>Unpitched Percussion Instrument Prevalence</name>
       <active>false</active>
@@ -1543,7 +1635,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="548">
    <feature>
       <name>String Keyboard Prevalence</name>
       <active>false</active>
@@ -1551,7 +1645,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="549">
    <feature>
       <name>Acoustic Guitar Prevalence</name>
       <active>false</active>
@@ -1559,7 +1655,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="550">
    <feature>
       <name>Electric Guitar Prevalence</name>
       <active>false</active>
@@ -1567,7 +1665,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="551">
    <feature>
       <name>Violin Prevalence</name>
       <active>false</active>
@@ -1575,7 +1675,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="552">
    <feature>
       <name>Saxophone Prevalence</name>
       <active>false</active>
@@ -1583,7 +1685,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="553">
    <feature>
       <name>Brass Prevalence</name>
       <active>false</active>
@@ -1591,7 +1695,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="554">
    <feature>
       <name>Woodwinds Prevalence</name>
       <active>false</active>
@@ -1599,7 +1705,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="555">
    <feature>
       <name>Orchestral Strings Prevalence</name>
       <active>false</active>
@@ -1607,7 +1715,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="556">
    <feature>
       <name>String Ensemble Prevalence</name>
       <active>false</active>
@@ -1615,7 +1725,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="557">
    <feature>
       <name>Electric Instrument Prevalence</name>
       <active>false</active>
@@ -1623,6 +1735,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Maximum Number of Independent Voices</name>
