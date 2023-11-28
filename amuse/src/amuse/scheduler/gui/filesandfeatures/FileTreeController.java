@@ -43,6 +43,7 @@ import amuse.data.datasets.FileTableSet;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 
 /**
  * Controller Class for MusicFileTrees.
@@ -52,7 +53,8 @@ public class FileTreeController implements ActionListener, KeyListener {
 
     FileTreeModel model;
     FileTreeView view;
-    private String fileFilterDescription = "wav and mp3 supported";
+    private ModalityEnum modality;
+    private String fileFilterDescription;
 
     private File filelistFolder = new File("experiments" + File.separator + "filelists");
 
@@ -61,9 +63,15 @@ public class FileTreeController implements ActionListener, KeyListener {
      * @param model The <class>FileTreeModel</class> to display.
      * @param view The <class>FileTreeView</class> to display in.
      */
-    public FileTreeController(FileTreeModel model, FileTreeView view) {
+    public FileTreeController(FileTreeModel model, FileTreeView view, ModalityEnum modality) {
         this.model = model;
         this.view = view;
+        this.modality = modality;
+        if (this.modality == null) {
+        	this.fileFilterDescription = "music files";
+        } else {
+            this.fileFilterDescription = modality.getGenericName() + " music files";
+        }
         view.setModel(this.model);
         view.setController(this);
     }
@@ -158,10 +166,13 @@ public class FileTreeController implements ActionListener, KeyListener {
 
                 @Override
                 public boolean accept(File arg0) {
-                    if (arg0.isDirectory() || arg0.getName().endsWith(".mp3") || arg0.getName().endsWith(".wav")) {
-                        return true;
-                    }
-                    return false;
+                	boolean fileFitsModality;
+                	if (modality == null) {
+                		fileFitsModality = ModalityEnum.fitsAnyModality(arg0);
+                	} else {
+                		fileFitsModality = modality.fitsModality(arg0);
+                	}
+                    return (arg0.isDirectory() || fileFitsModality);
                 }
 
                 @Override

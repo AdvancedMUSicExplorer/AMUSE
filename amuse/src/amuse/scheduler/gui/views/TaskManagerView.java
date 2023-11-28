@@ -27,6 +27,7 @@ package amuse.scheduler.gui.views;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -188,13 +189,13 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
 	    JMenuItem audioSelection = new JMenuItem("Audio");
 	    audioSelection.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent ev) {
-	        	wizard.goToFeatureExtraction();
+	        	wizard.goToFeatureExtraction(ModalityEnum.AUDIO);
 	        }
 	    });
         JMenuItem symbolicSelection = new JMenuItem("Symbolic");
 	    symbolicSelection.addActionListener(new ActionListener() {
 	        public void actionPerformed(ActionEvent ev) {
-	        	wizard.goToFeatureExtraction();
+	        	wizard.goToFeatureExtraction(ModalityEnum.SYMBOLIC);
 	        }
 	    });
         modalitySelection.add(audioSelection);

@@ -78,7 +78,7 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 	private Integer currentPart;
 	
 	/** List of supported modalities */
-	private final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)

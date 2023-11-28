@@ -34,6 +34,8 @@ import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+
 /**
  *
  * @author Clemens Waeltken
@@ -42,7 +44,7 @@ public class FileTreeModel extends DefaultTreeModel {
 
 	private static final long serialVersionUID = -8847125059405665407L;
 	private File relativeToFolder;
-    private String[] fileEndings;
+    private List<String> fileEndings;
     private DefaultMutableTreeNode relativeToNode = new DefaultMutableTreeNode("Music Database", true);
     private DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(File.separator, true);
 
@@ -50,13 +52,19 @@ public class FileTreeModel extends DefaultTreeModel {
      * Creates a new <class>FileTreeModel</class>.
      * @param relativeFolder The folder to display files relative to (e.g. MusicDatabase).
      * @param label The label used for the relative folder (e.g. "Music Database").
-     * @param fileEndings The file endings excepted by this model (e.g. ["mp3", "wav"]).
+     * @param modality The file endings excepted by this model (e.g. ["mp3", "wav"]).
      */
-    public FileTreeModel(File relativeFolder, String label, String[] fileEndings) {
+    public FileTreeModel(File relativeFolder, String label, ModalityEnum modality) {
         super(new DefaultMutableTreeNode("root"));
         this.relativeToFolder = relativeFolder;
         this.relativeToNode = new DefaultMutableTreeNode(label, true);
-        this.fileEndings = fileEndings;
+        
+        if(modality == null) {
+        	this.fileEndings = ModalityEnum.getAllEndings();
+        } else {
+            this.fileEndings = modality.getEndings();
+        }
+        
         if (!this.relativeToFolder.isDirectory()) {
         	JOptionPane.showMessageDialog(null,
                     this.relativeToFolder.getPath() + "is not a folder!",

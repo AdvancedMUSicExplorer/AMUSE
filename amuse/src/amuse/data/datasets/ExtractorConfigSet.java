@@ -32,6 +32,7 @@ import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.interfaces.nodes.TaskConfiguration;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.nodes.extractor.ExtractionConfiguration;
 
 /**
@@ -44,10 +45,12 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
 	// Strings which describe ARFF attributes
 	private static final String strMusicFileList = "MusicFileList";
     private static final String strFeatureTable = "FeatureTable";
+    private static final String strModality = "Modality";
     
     // ARFF attributes
     private final StringAttribute musicFileListAttribute;
     private final StringAttribute featureTableAttribute;
+    private final StringAttribute modalityAttribute;
 
     private String description = "";
 
@@ -56,8 +59,10 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
         // Check preconditions:
         dataSet.checkStringAttribute(strMusicFileList);
         dataSet.checkStringAttribute(strFeatureTable);
+        dataSet.checkStringAttribute(strModality);
         musicFileListAttribute = (StringAttribute) dataSet.getAttribute(strMusicFileList);
         featureTableAttribute = (StringAttribute) dataSet.getAttribute(strFeatureTable);
+        modalityAttribute = (StringAttribute) dataSet.getAttribute(strModality);
         addAttribute(musicFileListAttribute);
         addAttribute(featureTableAttribute);
     }
@@ -88,36 +93,47 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
         // Check preconditions:
         checkStringAttribute(strMusicFileList);
         checkStringAttribute(strFeatureTable);
+        checkStringAttribute(strModality);
         musicFileListAttribute = (StringAttribute) this.getAttribute(strMusicFileList);
         featureTableAttribute = (StringAttribute) this.getAttribute(strFeatureTable);
+        modalityAttribute = (StringAttribute) this.getAttribute(strModality);
     }
 
-    public ExtractorConfigSet(List<File> musicFileLists, List<File> featureTableLists) {
+    public ExtractorConfigSet(List<File> musicFileLists, List<File> featureTableLists, List<ModalityEnum> modalityList) {
         super("ExtractorConfig");
         List<String> musicFileL = new ArrayList<String>();
         List<String> featureTablesL = new ArrayList<String>();
+        List<String> modalityL = new ArrayList<String> ();
         for (File f : musicFileLists) {
             musicFileL.add(f.getAbsolutePath());
         }
         for (File f : featureTableLists) {
             featureTablesL.add(f.getAbsolutePath());
         }
+        for (ModalityEnum m : modalityList) {
+        	modalityL.add(m.toString());
+        }
         musicFileListAttribute = new StringAttribute(strMusicFileList, musicFileL);
         featureTableAttribute = new StringAttribute(strFeatureTable, featureTablesL);
+        modalityAttribute = new StringAttribute(strModality, modalityL);
         this.addAttribute(musicFileListAttribute);
         this.addAttribute(featureTableAttribute);
     }
 
-    public ExtractorConfigSet(File musicFileListFile, File featureTableListFile) {
+    public ExtractorConfigSet(File musicFileListFile, File featureTableListFile,ModalityEnum modality) {
         super("ExtractorConfig");
         List<String> musicFileL = new ArrayList<String>();
         List<String> featureTablesL = new ArrayList<String>();
+        List<String> modalityL = new ArrayList<String> ();
         musicFileL.add(musicFileListFile.getAbsolutePath());
         featureTablesL.add(featureTableListFile.getAbsolutePath());
+        modalityL.add(modality.getGenericName());
         musicFileListAttribute = new StringAttribute(strMusicFileList, musicFileL);
         featureTableAttribute = new StringAttribute(strFeatureTable, featureTablesL);
+        modalityAttribute = new StringAttribute(strModality, modalityL);
         this.addAttribute(musicFileListAttribute);
         this.addAttribute(featureTableAttribute);
+        this.addAttribute(modalityAttribute);
     }
 
     public String getType() {
@@ -166,5 +182,9 @@ public class ExtractorConfigSet extends AbstractArffExperimentSet {
 	 */
 	public StringAttribute getFeatureTableAttribute() {
 		return featureTableAttribute;
+	}
+
+	public StringAttribute getModalityAttribute() {
+		return modalityAttribute;
 	}
 }

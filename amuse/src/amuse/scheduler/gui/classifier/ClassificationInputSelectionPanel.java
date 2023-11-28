@@ -30,12 +30,11 @@ import net.miginfocom.swing.MigLayout;
 
 public class ClassificationInputSelectionPanel extends JPanel{
 	
-  private String[] endings = {"mp3", "wav"};
   private File musicDatabaseFolder = new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE));
   private String musicDatabaseLabel = "Music Database";
   private FileTreeView fileView = new FileTreeView();
-  private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
-  private FileTreeController ftController = new FileTreeController(ftModel, fileView);
+  private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, null);
+  private FileTreeController ftController = new FileTreeController(ftModel, fileView, null);
   private ReadyInputSelectionPanel readyInputSelectionPanel;
   private CategorySelectionPanel categorySelectionPanel;
   private JComboBox<InputSourceType> inputSourceTypeComboBox;

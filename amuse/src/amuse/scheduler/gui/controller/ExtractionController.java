@@ -36,6 +36,7 @@ import javax.swing.JOptionPane;
 import amuse.data.io.DataSetException;
 import amuse.data.datasets.ExtractorConfigSet;
 import amuse.nodes.extractor.ExtractionConfiguration;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
@@ -56,15 +57,19 @@ public class ExtractionController extends AbstractController {
 
     WizardController wizardController;
     FilesAndFeaturesFacade filesAndFeatures;
+    ModalityEnum modality;
+    ExtractionPanel extractionPanel;
     File feFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
             + File.separator + "experiments" + File.separator + "FE");
 
-    public ExtractionController(WizardController wc) {
+    public ExtractionController(WizardController wc, ModalityEnum modality) {
+    	this.modality = modality;
+        this.extractionPanel = new ExtractionPanel(this.modality);
         wizardController = wc;
         getView();
     }
 
-    public void addExtraction() {
+	public void addExtraction() {
         // System.out.println("File count: " +
         // jPanelAmuseFileTree.getFiles().size());
         if (!filesAndFeatures.filesAndFeaturesSelected()) {
@@ -84,12 +89,11 @@ public class ExtractionController extends AbstractController {
     }
 
     private JComponent getFilesAndFeatures() {
-        JPanel p = new ExtracionPanel();
         if (filesAndFeatures == null) {
-            filesAndFeatures = new FilesAndFeaturesFacade();
+            filesAndFeatures = new FilesAndFeaturesFacade(this.modality);
         }
-        p.add(filesAndFeatures.getView(), BorderLayout.CENTER);
-        return p;
+        extractionPanel.add(filesAndFeatures.getView(), BorderLayout.CENTER);
+        return extractionPanel;
     }
 
     @Override
@@ -109,7 +113,7 @@ public class ExtractionController extends AbstractController {
             return;
         }
         ExtractorConfigSet extractorConfigSet = new ExtractorConfigSet(
-                fileTableFile, featureTableFile);
+                fileTableFile, featureTableFile, extractionPanel.modality);
         try {
             extractorConfigSet.saveToArffFile(selectedFile);
             filesAndFeatures.saveFilesAndFeatures(fileTableFile,
@@ -144,7 +148,7 @@ public class ExtractionController extends AbstractController {
     @Override
     public ExtractionConfiguration getExperimentConfiguration() {
         ExtractionConfiguration config = new ExtractionConfiguration(new FileTable(filesAndFeatures.getFiles()),
-                filesAndFeatures.getFeatureTable());
+                filesAndFeatures.getFeatureTable(), filesAndFeatures.getModalityEnum());
         return config;
     }
 
@@ -157,11 +161,14 @@ public class ExtractionController extends AbstractController {
         }
     }
 
-    private class ExtracionPanel extends JPanel implements HasSaveButton,
+    private class ExtractionPanel extends JPanel implements HasSaveButton,
             HasLoadButton, NextButtonUsable, HasCaption {
+    	
+    	private ModalityEnum modality;
 
-        public ExtracionPanel() {
+        public ExtractionPanel(ModalityEnum modality) {
             super(new BorderLayout());
+            this.modality = modality;
         }
 
         @Override

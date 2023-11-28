@@ -50,6 +50,7 @@ import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.ExtractorNodeScheduler;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysIntValue;
 import amuse.preferences.KeysStringValue;
@@ -119,7 +120,8 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					fileId.add(extractorConfig.getMusicFileList().getIds().get(k));
 					ArrayList<String> filePath = new ArrayList<String>(1);
 					filePath.add(extractorConfig.getMusicFileList().getFileAt(k));
-					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable);
+					ModalityEnum modality = extractorConfig.getModalityEnum();
+					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable, modality);
 					
 					FileOutputStream fos = null;
 		   	   		ObjectOutputStream out = null;
@@ -190,7 +192,8 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					fileId.add(extractorConfig.getMusicFileList().getIds().get(k));
 					ArrayList<String> filePath = new ArrayList<String>(1);
 					filePath.add(extractorConfig.getMusicFileList().getFileAt(k));
-					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable);
+					ModalityEnum modality = extractorConfig.getModalityEnum();
+					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable, modality);
 				
 					
 					ExtractorNodeScheduler extractorThread = null;

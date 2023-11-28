@@ -2,11 +2,17 @@ package amuse.nodes.extractor.modality;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
+
+import org.apache.log4j.Level;
+
+import amuse.nodes.extractor.ExtractorNodeScheduler;
+import amuse.util.AmuseLogger;
 
 public class AudioModality implements Modality {
 	
@@ -19,13 +25,14 @@ public class AudioModality implements Modality {
 		SND 	(List.of("snd")), 
 		AU 		(List.of("au"));
 		
-		private final ModalityEnum modality = ModalityEnum.AUDIO;
 		private final List<String> endings;
 		
 		private AudioFormat(List<String> endings) {
 			this.endings = endings;
 		}
 	}
+	
+	private final ModalityEnum modalityEnum = ModalityEnum.AUDIO;
 	
 	private List<AudioFormat> formats;
 	
@@ -35,7 +42,7 @@ public class AudioModality implements Modality {
 	
 	/** Returns an array with all possible audio file endings */
 	public static List<String> getEndings() {
-		List<String> endings = List.of();
+		List<String> endings = new ArrayList<String>();
 		for (AudioFormat format : AudioFormat.values()) {
 			endings.addAll(format.endings);
 		}
@@ -75,11 +82,16 @@ public class AudioModality implements Modality {
 				return true;
 			}
 		} catch (UnsupportedAudioFileException e) {
-			e.printStackTrace();
+			AmuseLogger.write(this.getClass().getName(), Level.WARN,"The audio file format could not be confirmed: " + file.getName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return false;
+	}
+
+	@Override
+	public ModalityEnum getModalityEnum() {
+		return modalityEnum;
 	}
 
 }

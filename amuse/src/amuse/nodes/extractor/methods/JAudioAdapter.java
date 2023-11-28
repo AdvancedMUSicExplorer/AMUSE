@@ -87,7 +87,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
 	
-	private final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)
@@ -317,7 +317,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    jAudio.setWorkingDirectory(new File(amuse + File.separator +"tools"+ File.separator + "jAudio"));
 		    Process pc = jAudio.start();
 		    
-		    // Ausgabe für JAudio 
+		    // Ausgabe f��r JAudio 
 		    InputStream inputStream = pc.getInputStream();
 		    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		    BufferedReader inputReader = new BufferedReader(inputStreamReader);

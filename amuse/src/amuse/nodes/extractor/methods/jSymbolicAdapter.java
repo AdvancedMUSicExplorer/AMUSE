@@ -61,7 +61,7 @@ public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 	private Integer currentPart;
 
 	/** List of supported modalities */
-	private final List<Modality> modalities = List.of(new SymbolicModality(List.of(SymbolicFormat.MIDI)));
+	private static final List<Modality> modalities = List.of(new SymbolicModality(List.of(SymbolicFormat.MIDI)));
 
 	@Override
 	public void setParameters(String parameterString) throws NodeException {}
@@ -428,8 +428,9 @@ public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 				DataOutputStream values_writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
 				
-				int windowSize = -1;
-				int stepSize = 0;
+				
+				int windowSize = 512;
+				int stepSize = 512;
 				if(amuseIdToCustomFeature.containsKey(Integer.valueOf(o.toString()))) {
 					windowSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceFrameSize();
 					stepSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceStepSize();

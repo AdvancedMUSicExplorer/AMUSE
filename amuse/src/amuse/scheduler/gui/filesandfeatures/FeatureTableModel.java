@@ -26,6 +26,20 @@ package amuse.scheduler.gui.filesandfeatures;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.datasets.FeatureTableSet;
+import amuse.data.io.ArffDataSet;
+import amuse.data.io.DataSetAbstract;
+import amuse.data.io.attributes.Attribute;
+import amuse.data.io.attributes.NominalAttribute;
+import amuse.data.io.attributes.NumericAttribute;
+import amuse.data.io.attributes.StringAttribute;
+import amuse.nodes.extractor.interfaces.ExtractorInterface;
+import amuse.nodes.extractor.modality.Modality;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+import amuse.preferences.AmusePreferences;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.TableModelEvent;
@@ -42,9 +56,16 @@ public class FeatureTableModel implements TableModel {
     private FeatureTable featureTable;
     private ArrayList<TableModelListener> listeners = new ArrayList<TableModelListener>();
 
-    /**
+    
+    public FeatureTableModel(FeatureTable featureTable, ModalityEnum modality) throws IOException {
+    	filterFeatureTable(modality);
+        setFeatureTable(featureTable);
+    }
+
+	/**
      * Creates a new Feature Table Model out of a given FeatureTable.
      * @param featureTable The feature table of all Features to be displayed in this table.
+     * @param modality 
      */
     public FeatureTableModel(FeatureTable featureTable) {
         setFeatureTable(featureTable);
@@ -212,4 +233,61 @@ public class FeatureTableModel implements TableModel {
     	setFeatureTable(featureTable);
     	notifyListeners();
     }
+	
+	/** 
+	 * Deletes all features that are not associated with the given modality 
+	 * by checking modalities of extractor tool.
+	 * @throws IOException 
+	 */
+	public void filterFeatureTable(ModalityEnum modality) throws IOException {
+		
+		// Load extractorTableSet to get adapter class
+		DataSetAbstract extractorTableSet;
+		try {
+			extractorTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
+		} catch (IOException e) {
+			throw new IOException ("Feature table could not be loaded.");
+		}
+		Attribute adapterClassAttribute = extractorTableSet.getAttribute("AdapterClass");
+		Attribute idAttribute = extractorTableSet.getAttribute("Id");
+        
+		List<Feature> features = featureTable.getFeatures();
+		
+		for(int i=0;i<features.size();i++) {
+			int extractorID = features.get(i).getExtractorId();
+			
+			try {
+				for(int j=0;j<idAttribute.getValueCount();j++) {
+					int adapterID = ((Double)idAttribute.getValueAt(j)).intValue();
+					
+					if(extractorID == adapterID) {
+						
+						String adapterName = adapterClassAttribute.getValueAt(j).toString();
+						Class <?> adapterClass = Class.forName(adapterName);
+						ExtractorInterface adapter = (ExtractorInterface) adapterClass.newInstance();
+						List<Modality> modalities = adapter.getModalities();
+						
+						boolean extractorSupportsModality = false;
+						for (Modality extractorModality: modalities) {
+							if(extractorModality.getModalityEnum() == modality) {
+								extractorSupportsModality = true;
+							}
+						}
+						if(!extractorSupportsModality) {
+							features.remove(i);
+							i--;
+						}
+						break;
+					}
+				}
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		setFeatureTable(featureTable);
+		notifyListeners();
+	}
+
 }

@@ -27,6 +27,7 @@ package amuse.scheduler.gui.filesandfeatures;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.datasets.FileTableSet;
+import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import java.io.File;
@@ -46,8 +47,8 @@ import javax.swing.JSplitPane;
 public class FilesAndFeaturesFacade {
 
     private final JSplitPane view;
-
-    private final String[] endings = {"mp3" , "wav"};
+    
+    private final ModalityEnum modality;
 
     private FeatureTableModel featureTableModel;
 
@@ -67,20 +68,39 @@ public class FilesAndFeaturesFacade {
 
     private final FileTreeController fileTreeController;
 
-    public FilesAndFeaturesFacade(FeatureTable pFeatureTable){
+    public FilesAndFeaturesFacade(FeatureTable pFeatureTable, ModalityEnum modality) throws IOException{
+    	this.modality = modality;
+    	featureTableModel = new FeatureTableModel(pFeatureTable, modality);
+    	view = new JSplitPane();
+        view.add(featureTableView.getView(), JSplitPane.RIGHT);
+        view.add(fileTreeView.getView(), JSplitPane.LEFT);
+        featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
+        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView, modality);
+    }
+    
+    public FilesAndFeaturesFacade(ModalityEnum modality) {
+    	this.modality = modality;
+    	view = new JSplitPane();
+        view.add(featureTableView.getView(), JSplitPane.RIGHT);
+        view.add(fileTreeView.getView(), JSplitPane.LEFT);
+        featureTableModel = getFeatureTableModel();
+        try {
+			featureTableModel.filterFeatureTable(modality);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        featureTableController = new FeatureTableController(featureTableModel, featureTableView);
+        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView, modality);
+    }
+    
+    public FilesAndFeaturesFacade(FeatureTable pFeatureTable) {
+    	this.modality = null;
     	featureTableModel = new FeatureTableModel(pFeatureTable);
     	view = new JSplitPane();
         view.add(featureTableView.getView(), JSplitPane.RIGHT);
         view.add(fileTreeView.getView(), JSplitPane.LEFT);
         featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
-        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView);
-    }
-    public FilesAndFeaturesFacade() {
-        view = new JSplitPane();
-        view.add(featureTableView.getView(), JSplitPane.RIGHT);
-        view.add(fileTreeView.getView(), JSplitPane.LEFT);
-        featureTableController = new FeatureTableController(getFeatureTableModel(), featureTableView);
-        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView);
+        fileTreeController = new FileTreeController(getFileTreeModel(), fileTreeView, modality);
     }
 
     public FeatureTable getFeatureTable() {
@@ -116,7 +136,7 @@ public class FilesAndFeaturesFacade {
 
     private FileTreeModel getFileTreeModel() {
         if(fileTreeModel == null) {
-    		fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, endings);
+    		fileTreeModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, modality);
         }
         return fileTreeModel;
     }
@@ -165,5 +185,9 @@ public class FilesAndFeaturesFacade {
 
     public FileTable getFileTable() {
         return new FileTable(getFiles());
+    }
+    
+    public ModalityEnum getModalityEnum() {
+    	return modality;
     }
 }

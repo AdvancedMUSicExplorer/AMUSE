@@ -2,6 +2,7 @@ package amuse.nodes.extractor.modality;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -15,16 +16,17 @@ public class SymbolicModality implements Modality {
 
 	public enum SymbolicFormat {
 		
-		MIDI 		(List.of("midi")),
+		MIDI 		(List.of("mid", "midi")),
 		MUSICXML 	(List.of("mxl"));
 		
-		private final ModalityEnum modality = ModalityEnum.SYMBOLIC;
 		private final List<String> endings;
 		
 		private SymbolicFormat(List<String> endings) {
 			this.endings = endings;
 		}
 	}
+	
+	private final ModalityEnum modalityEnum = ModalityEnum.SYMBOLIC;
 	
 	private List<SymbolicFormat> formats;
 	
@@ -34,7 +36,7 @@ public class SymbolicModality implements Modality {
 	
 	/** Returns an array with all possible symbolic file endings */
 	public static List<String> getEndings() {
-		List<String> endings = List.of();
+		List<String> endings = new ArrayList<String>();
 		for (SymbolicFormat format : SymbolicFormat.values()) {
 			endings.addAll(format.endings);
 		}
@@ -60,6 +62,11 @@ public class SymbolicModality implements Modality {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public ModalityEnum getModalityEnum() {
+		return modalityEnum;
 	}
 	
 }

@@ -24,8 +24,10 @@
 
 package amuse.scheduler.gui.navigation;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 
 /**
  * Interface for a Button Panel.
@@ -37,6 +39,5 @@ public interface ButtonPanelInterface {
 
     public JPanel getPanel();
 
-    void addButton(JButton button);
-
+    void addButton(AbstractButton button);
 }

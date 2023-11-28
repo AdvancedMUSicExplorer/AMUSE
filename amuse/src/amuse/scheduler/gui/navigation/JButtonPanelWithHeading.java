@@ -26,9 +26,9 @@ package amuse.scheduler.gui.navigation;
 import java.awt.BorderLayout;
 import java.awt.LayoutManager;
 
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -58,7 +58,7 @@ public class JButtonPanelWithHeading extends javax.swing.JPanel implements Butto
 	}
 	
     @Override
-	public void addButton(JButton button) {
+	public void addButton(AbstractButton button) {
 		buttonsPanel.add(button);
 		buttonsPanel.add(Box.createHorizontalGlue());
 	}

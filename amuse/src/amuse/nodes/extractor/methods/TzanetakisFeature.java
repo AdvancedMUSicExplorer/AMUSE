@@ -51,7 +51,7 @@ import org.apache.log4j.Level;
 
 /**
  *
- * @author Clemens Wältken
+ * @author Clemens Waeltken
  */
 public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
     private File processedFeatureFile = null;
@@ -60,7 +60,7 @@ public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
     private String currentFile = null;
     private File outputFile = null;
     
-	private final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 
     public void setParameters(String parameterString) throws NodeException {
 	// Nothing to do.
@@ -119,7 +119,7 @@ public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
 	    }
 	    double[] derivedDistances = new double[rows - 2];
 	    for (int i = 0; i < rows -2 ; i++) {
-		derivedDistances[i] = distances[i+1] - distances[i]; // Vorwärtsgradient
+		derivedDistances[i] = distances[i+1] - distances[i]; // Vorwaertsgradient
 //		System.out.println(derivedDistances[i]);
 	    }
 

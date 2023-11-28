@@ -78,5 +78,5 @@
 
 % Symbolic features
 
-500, "Pitch Class Histogramm", 10, -1, 0, 12, WindowedNumeric
-501, "Number of Common Pitches", 10, -1, 0, 1, WindowedNumeric
+500, "Pitch Class Histogramm", 10, 512, 0, 12, WindowedNumeric
+501, "Number of Common Pitches", 10, 512 0, 1, WindowedNumeric
