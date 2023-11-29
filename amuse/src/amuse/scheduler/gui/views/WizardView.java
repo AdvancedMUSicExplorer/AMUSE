@@ -24,7 +24,7 @@
 
 package amuse.scheduler.gui.views;
 
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.scheduler.gui.MenuButton;
 import amuse.scheduler.gui.controller.*;
 import amuse.scheduler.gui.logger.JPanelAmuseLogger;
@@ -36,8 +36,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -51,9 +49,6 @@ import javax.swing.JTabbedPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
-
-import org.apache.log4j.Logger;
-
 
 /**
  *

@@ -61,9 +61,9 @@ import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
-import amuse.nodes.extractor.modality.Modality;
-import amuse.nodes.extractor.modality.AudioModality;
-import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
+import amuse.data.modality.Modality;
+import amuse.data.modality.AudioModality;
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.util.AmuseLogger;
@@ -317,7 +317,7 @@ public class JAudioAdapter extends AmuseTask implements ExtractorInterface {
 		    jAudio.setWorkingDirectory(new File(amuse + File.separator +"tools"+ File.separator + "jAudio"));
 		    Process pc = jAudio.start();
 		    
-		    // Ausgabe f��r JAudio 
+		    // Ausgabe fuer JAudio 
 		    InputStream inputStream = pc.getInputStream();
 		    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 		    BufferedReader inputReader = new BufferedReader(inputStreamReader);

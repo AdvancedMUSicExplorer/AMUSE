@@ -40,10 +40,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import amuse.data.datasets.FileTableSet;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 
 /**
  * Controller Class for MusicFileTrees.

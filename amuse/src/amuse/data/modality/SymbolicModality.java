@@ -1,4 +1,4 @@
-package amuse.nodes.extractor.modality;
+package amuse.data.modality;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,9 +8,6 @@ import java.util.List;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiFileFormat;
 import javax.sound.midi.MidiSystem;
-
-import amuse.nodes.extractor.modality.AudioModality.AudioFormat;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 
 public class SymbolicModality implements Modality {
 

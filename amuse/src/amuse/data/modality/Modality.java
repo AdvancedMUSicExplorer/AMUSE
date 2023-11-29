@@ -1,4 +1,4 @@
-package amuse.nodes.extractor.modality;
+package amuse.data.modality;
 
 import java.io.File;
 import java.util.ArrayList;

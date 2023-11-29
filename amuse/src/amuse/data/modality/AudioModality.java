@@ -1,4 +1,4 @@
-package amuse.nodes.extractor.modality;
+package amuse.data.modality;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +11,8 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.log4j.Level;
 
+import amuse.data.modality.Modality;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.extractor.ExtractorNodeScheduler;
 import amuse.util.AmuseLogger;
 

@@ -33,9 +33,9 @@ import amuse.data.io.attributes.Attribute;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
+import amuse.data.modality.Modality;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
-import amuse.nodes.extractor.modality.Modality;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 
 import java.io.File;

@@ -27,7 +27,7 @@ package amuse.scheduler.gui.filesandfeatures;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.datasets.FileTableSet;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import java.io.File;

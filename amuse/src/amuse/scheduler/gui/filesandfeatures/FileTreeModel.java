@@ -34,7 +34,7 @@ import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+import amuse.data.modality.Modality.ModalityEnum;
 
 /**
  *

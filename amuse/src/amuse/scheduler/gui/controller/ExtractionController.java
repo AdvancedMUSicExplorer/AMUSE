@@ -34,9 +34,9 @@ import javax.swing.JOptionPane;
 
 
 import amuse.data.io.DataSetException;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.data.datasets.ExtractorConfigSet;
 import amuse.nodes.extractor.ExtractionConfiguration;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;

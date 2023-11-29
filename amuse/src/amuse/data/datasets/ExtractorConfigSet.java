@@ -31,8 +31,8 @@ import java.util.List;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.DataSetException;
 import amuse.data.io.attributes.StringAttribute;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.interfaces.nodes.TaskConfiguration;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
 import amuse.nodes.extractor.ExtractionConfiguration;
 
 /**

@@ -27,7 +27,7 @@ package amuse.scheduler.gui.views;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
-import amuse.nodes.extractor.modality.Modality.ModalityEnum;
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;

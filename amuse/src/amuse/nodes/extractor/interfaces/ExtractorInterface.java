@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import amuse.data.FeatureTable;
+import amuse.data.modality.Modality;
 import amuse.interfaces.nodes.NodeException;
-import amuse.nodes.extractor.modality.Modality;
 
 /**
  * This interface defines the operations which should be supported by all feature extractors.
