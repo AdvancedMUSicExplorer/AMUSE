@@ -19,6 +19,8 @@ public interface Modality {
 			this.genericName = genericName;
 		}
 		
+		/** Returns a list of all endings that are associated with 
+		 * this modality in general and are listed in their modality class. */
 		public List<String> getEndings() {
 			switch(this) {
 				case SYMBOLIC: 	return SymbolicModality.getEndings();
@@ -27,6 +29,7 @@ public interface Modality {
 			}
 		}
 		
+		/** Returns a list of all file endings */
 		public static List<String> getAllEndings() {
 			List<String> allEndings = new ArrayList<String>();
 			for(ModalityEnum modality: ModalityEnum.values()) {
@@ -48,6 +51,7 @@ public interface Modality {
 			return genericName;
 		}
 		
+		/** Returns true, if the file ending of the given fits this modality. */
 		public boolean fitsModality(File file) {
 			List<String> endings = this.getEndings();
 			String fileName = file.getName();
@@ -59,6 +63,7 @@ public interface Modality {
 			return false;
 		}
 
+		/** Returns true, if the file ending of this file fits any modality. */
 		public static boolean fitsAnyModality(File file) {
 			List<String> endings = ModalityEnum.getAllEndings();
 			String fileName = file.getName();
@@ -71,9 +76,14 @@ public interface Modality {
 		}
 	}
 	
+	/** Returns a list of all supported formats of the modality object. */
 	public List<?> getFormats();
 	
+	/** Returns true, if the given file matches 
+	 * the supported formats of the modality object. */
 	public boolean matchesRequirements(File file);
 	
 	public ModalityEnum getModalityEnum();
+	
 }
+

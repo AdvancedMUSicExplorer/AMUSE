@@ -12,13 +12,15 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import org.apache.log4j.Level;
 
 import amuse.data.modality.Modality;
-import amuse.data.modality.Modality.ModalityEnum;
-import amuse.nodes.extractor.ExtractorNodeScheduler;
 import amuse.util.AmuseLogger;
 
+/** 
+ * AudioModality objects can be used by extraction tools to specify, 
+ * that all of their features can be extracted from audio data and from which formats.
+ */
 public class AudioModality implements Modality {
 	
-	public enum AudioFormat {
+	public enum AudioFormat implements FormatInterface {
 		
 		MP3		(List.of("mp3")),
 		WAVE	(List.of("wav")), 
@@ -31,6 +33,61 @@ public class AudioModality implements Modality {
 		
 		private AudioFormat(List<String> endings) {
 			this.endings = endings;
+		}
+
+		@Override
+		public boolean matchesEndings(File file) {
+			for(String ending: this.endings) {
+				if(file.getPath().endsWith("." + ending)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean confirmFormat(File file) {
+			switch(this) {
+				case MP3: {
+					return true;
+				}
+				case WAVE: {
+					try {
+						return AudioSystem.getAudioFileFormat(file).getType() == AudioFileFormat.Type.WAVE;
+					} catch (UnsupportedAudioFileException e) {
+						return false;
+					} catch (IOException e) { e.printStackTrace(); }
+				}
+				case AIFF: {
+					try {
+						return AudioSystem.getAudioFileFormat(file).getType() == AudioFileFormat.Type.AIFF;
+					} catch (UnsupportedAudioFileException e) {
+						return false;
+					} catch (IOException e) { e.printStackTrace(); }
+				}
+				case AIFC: {
+					try {
+						return AudioSystem.getAudioFileFormat(file).getType() == AudioFileFormat.Type.AIFC;
+					} catch (UnsupportedAudioFileException e) {
+						return false;
+					} catch (IOException e) { e.printStackTrace(); }
+				}
+				case SND: {
+					try {
+						return AudioSystem.getAudioFileFormat(file).getType() == AudioFileFormat.Type.SND;
+					} catch (UnsupportedAudioFileException e) {
+						return false;
+					} catch (IOException e) { e.printStackTrace(); }
+				}
+				case AU: {
+					try {
+						return AudioSystem.getAudioFileFormat(file).getType() == AudioFileFormat.Type.AU;
+					} catch (UnsupportedAudioFileException e) {
+						return false;
+					} catch (IOException e) { e.printStackTrace(); }
+				}
+				default: return false;
+			}
 		}
 	}
 	
@@ -53,40 +110,23 @@ public class AudioModality implements Modality {
 	}
 	
 	@Override
-	public List getFormats() {
+	public List<AudioFormat> getFormats() {
 		return formats;
 	}
-
+	
 	@Override
 	public boolean matchesRequirements(File file) {
 		
-		/* Check, if file is mp3-data */
-		if(file.getPath().endsWith(".mp3") && formats.contains(AudioFormat.MP3)) {
-			return true;
-		}
-		/* Check other file formats */
-		AudioFileFormat audioFileFormat;
-		try {
-			audioFileFormat = AudioSystem.getAudioFileFormat(file);
-			if(audioFileFormat.getType() == AudioFileFormat.Type.WAVE && formats.contains(AudioFormat.WAVE)) {
+		for(AudioFormat symbolicFormat : this.formats) {
+			boolean fileEndingMatchesRequirements = symbolicFormat.matchesEndings(file);
+			boolean fileFormatConfirmed = symbolicFormat.confirmFormat(file);
+			
+			if(fileEndingMatchesRequirements && fileFormatConfirmed) {
+				return true;
+			} else if (fileEndingMatchesRequirements && !fileFormatConfirmed) {
+				AmuseLogger.write(this.getClass().getName(), Level.WARN,"The audio file format could not be confirmed and might be broken: " + file.getName());
 				return true;
 			}
-			else if(audioFileFormat.getType() == AudioFileFormat.Type.SND && formats.contains(AudioFormat.SND)) {
-				return true;
-			}
-			else if(audioFileFormat.getType() == AudioFileFormat.Type.AIFF && formats.contains(AudioFormat.AIFF)) {
-				return true;
-			}
-			else if(audioFileFormat.getType() == AudioFileFormat.Type.AIFC && formats.contains(AudioFormat.AIFC)) {
-				return true;
-			}
-			else if(audioFileFormat.getType() == AudioFileFormat.Type.AU && formats.contains(AudioFormat.AU)) {
-				return true;
-			}
-		} catch (UnsupportedAudioFileException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.WARN,"The audio file format could not be confirmed: " + file.getName());
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		return false;
 	}
@@ -95,5 +135,5 @@ public class AudioModality implements Modality {
 	public ModalityEnum getModalityEnum() {
 		return modalityEnum;
 	}
-
 }
+

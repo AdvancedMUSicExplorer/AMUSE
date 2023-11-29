@@ -9,9 +9,17 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiFileFormat;
 import javax.sound.midi.MidiSystem;
 
+import org.apache.log4j.Level;
+
+import amuse.util.AmuseLogger;
+
+/** 
+ * SymbolicModality objects can be used by extraction tools to specify, 
+ * that all of their features can be extracted from symbolic data and from which formats.
+ */
 public class SymbolicModality implements Modality {
 
-	public enum SymbolicFormat {
+	public enum SymbolicFormat implements FormatInterface {
 		
 		MIDI 		(List.of("mid", "midi")),
 		MUSICXML 	(List.of("mxl"));
@@ -20,6 +28,37 @@ public class SymbolicModality implements Modality {
 		
 		private SymbolicFormat(List<String> endings) {
 			this.endings = endings;
+		}
+		
+		@Override
+		public boolean matchesEndings(File file) {
+			for(String ending: this.endings) {
+				if(file.getPath().endsWith("." + ending)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean confirmFormat(File file) {
+			switch(this) {
+				case MIDI: {
+					try {
+						MidiFileFormat midifileformat = MidiSystem.getMidiFileFormat(file);
+						return true;
+					} catch (InvalidMidiDataException e) {
+						return false;
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					return true;
+				}
+				case MUSICXML: {
+					return true;
+				}
+				default: return false;
+			}
 		}
 	}
 	
@@ -47,15 +86,16 @@ public class SymbolicModality implements Modality {
 
 	@Override
 	public boolean matchesRequirements(File file) {
-		/*Check, if file is appropriate midi data*/
-		if(file.getName().endsWith(".mid")) {
-			try {
-				MidiFileFormat midifileformat = MidiSystem.getMidiFileFormat(file);
+
+		for(SymbolicFormat symbolicFormat : this.formats) {
+			boolean fileEndingMatchesRequirements = symbolicFormat.matchesEndings(file);
+			boolean fileFormatConfirmed = symbolicFormat.confirmFormat(file);
+			
+			if(fileEndingMatchesRequirements && fileFormatConfirmed) {
 				return true;
-			} catch (InvalidMidiDataException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
+			} else if (fileEndingMatchesRequirements && !fileFormatConfirmed) {
+				AmuseLogger.write(this.getClass().getName(), Level.WARN,"The symbolic file format could not be confirmed and might be broken: " + file.getName());
+				return true;
 			}
 		}
 		return false;
