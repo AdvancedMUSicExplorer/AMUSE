@@ -2,7 +2,11 @@ package amuse.data.modality;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import amuse.data.modality.SymbolicModality.SymbolicFormat;
+import amuse.data.modality.AudioModality.AudioFormat;
 
 /**
  * This interface defines the operations which should be supported by all modalities.
@@ -76,6 +80,25 @@ public interface Modality {
 		}
 	}
 	
+	public static List<Format> getAllFormats() {
+		List<Format> formats = new ArrayList<Format>();
+		formats.addAll(Arrays.asList(SymbolicFormat.values()));
+		formats.addAll(Arrays.asList(AudioFormat.values()));
+		return formats;
+	}
+	
+	/** Returns format enum by checking the fileending. */
+	public static Format getFormat(File file) {
+		for(Format format : getAllFormats()) {
+			for(String ending : format.getEndings()) {
+				if(file.getPath().endsWith(ending)) {
+					return format;
+				}
+			}
+		}
+		return null;
+	}
+	
 	/** Returns a list of all supported formats of the modality object. */
 	public List<?> getFormats();
 	
@@ -83,7 +106,7 @@ public interface Modality {
 	 * the supported formats of the modality object. */
 	public boolean matchesRequirements(File file);
 	
+	/** Returns corresponding ModalityEnum object. */
 	public ModalityEnum getModalityEnum();
-	
 }
 

@@ -27,7 +27,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -45,7 +44,6 @@ import org.apache.log4j.Level;
 
 import amuse.data.Feature;
 import amuse.data.io.ArffDataSet;
-import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
 import amuse.data.modality.Modality;
@@ -57,7 +55,6 @@ import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
 import amuse.preferences.AmusePreferences;
-import amuse.preferences.KeysBooleanValue;
 import amuse.preferences.KeysIntValue;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.pluginmanagement.PluginLoader;
@@ -147,7 +144,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		if(this.nodeHome.startsWith(AmusePreferences.get(KeysStringValue.AMUSE_PATH))) {
 			this.directStart = true;
 		}
-		this.jobId = new Long(jobId);
+		this.jobId = Long.valueOf(jobId);
 		this.taskConfiguration = extractorConfiguration;
 		
 		// If this node is started directly, the properties are loaded from AMUSEHOME folder;
@@ -224,19 +221,19 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (V) Convert input file if needed and possible
 		// ---------------------------------------------
 		
-		/* If file does not match requirements of an extractor tool, convert to wave */
-		// TODO add more conversions
+		/* If file does not match requirements of an extractor tool, convert */
 		if(!fileMatchesRequirements) {
-			// TODO Generalize, at the Moment GUI allows only .wav and .mp3 files for extraction
+			// TODO Generalize, add more conversions
 			if(relativeName.endsWith(".mp3")) {
-				/* Cut extension */
-				relativeName = relativeName.substring(0,relativeName.length()-4);
-				relativeName = new String(relativeName + ".wav");
-				this.inputFileName = relativeName;
 				
 				try {
 					AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
 							new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
+					
+					/* Cut extension */
+					relativeName = relativeName.substring(0,relativeName.length()-4);
+					relativeName = new String(relativeName + ".wav");
+					this.inputFileName = relativeName;
 				} catch(NodeException e) {
 					AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 						"Audio decoding error: " + e.getMessage());
@@ -245,6 +242,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					return;
 				}
 			}
+			/* If file does not fit requirements and could not be converted. */
 			else {
 				AmuseLogger.write(ExtractorNodeScheduler.class.getName(), Level.ERROR,
 						"File does not match tool requirements and can not be converted: " + relativeName);
@@ -364,8 +362,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		}
 		
 		// Proceed the extractor task
-		proceedTask(args[0],new Long(args[1]),extractorConfig);
-	}
+		proceedTask(args[0], Long.valueOf(args[1]),extractorConfig);
+	} 
 	
 	/**
 	 * Configures the extractor adapters
@@ -433,7 +431,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			for(int i=0;i<extractorTableSet.getValueCount();i++) {
 
 				// Load the adapters classes and configure them
-				if(requiredExtractorIDs.contains(new Double(idAttribute.getValueAt(i).toString()).intValue())) {
+				if(requiredExtractorIDs.contains(Double.valueOf(idAttribute.getValueAt(i).toString()).intValue())) {
 					try {
 						// prepare extractor
 						
@@ -441,7 +439,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 						
 						ExtractorInterface ead = (ExtractorInterface)adapter.newInstance();
 						Properties extractorProperties = new Properties();
-						Integer idOfCurrentExtractor = new Double(idAttribute.getValueAt(i).toString()).intValue();
+						Integer idOfCurrentExtractor = Double.valueOf(idAttribute.getValueAt(i).toString()).intValue();
 						
 						// prepare the extractor for regular features if that is required
 						if(requiredRegularExtractorIDs.contains(idOfCurrentExtractor)) {
@@ -523,7 +521,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		Iterator<?> it = usedExtractorIDs.iterator();
 		while(it.hasNext()) {
 			int i = (Integer)it.next();
-			this.currentPartForThisExtractor.put(new Integer(((AmuseTask)this.extractors.
+			this.currentPartForThisExtractor.put(Integer.valueOf(((AmuseTask)this.extractors.
 					get(i)).getProperties().getProperty("id")), 1);
 		    
 			// Start the feature extractors for all parts
@@ -559,6 +557,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// -------------------------------------------------------------------------
 		// (I) If the track was split, create a new arff feature file from several
 		// -------------------------------------------------------------------------
+		
 		if(numberOfParts > 1) {
 			File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId + File.separator + "1" + File.separator + 
 					((AmuseTask)adapter).getProperties().getProperty("extractorFolderName"));
@@ -610,7 +609,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			            // Save the feature values from the part file
 						while ((line = featuresReader.readLine()) != null) {
 							if(line.startsWith("%columns=")) {
-								columnNumber = new Integer(line.substring(9));
+								columnNumber = Integer.valueOf(line.substring(9));
 								break;
 							}
 						}
@@ -625,7 +624,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				            // Save the feature values from the part file
 							while ((line = featuresReader.readLine()) != null) {
 								if(line.startsWith("%columns=")) {
-									columnNumber += new Integer(line.substring(9));
+									columnNumber += Integer.valueOf(line.substring(9));
 									break;
 								}
 							}
@@ -672,7 +671,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 							// Only the lines (a) and (b) should remain in the future!
 							if(files[i].getName().toString().endsWith("_400.arff")) {
 								if(dataPartStarted) { 
-									duration_id_400 += new Double(line);
+									duration_id_400 += Double.valueOf(line);
 								} else {
 									values_writer.writeBytes(line); 
 									values_writer.writeBytes(sep);  
@@ -680,20 +679,20 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 							} else {
 								if(files[i].getName().toString().endsWith("_408.arff")) {
 									if(dataPartStarted) {
-										Double beatTimesValue = new Double(line);
+										Double beatTimesValue = Double.valueOf(line);
 										// TODO 480 = maxSize from system.sh !
 										beatTimesValue += (j-1)*480;
 										line = beatTimesValue.toString();
 									}
 								} else if(files[i].getName().toString().endsWith("_416.arff")) {
 									if(dataPartStarted) {	
-										Double tatumTimesValue = new Double(line);
+										Double tatumTimesValue = Double.valueOf(line);
 										tatumTimesValue += (j-1)*480;
 										line = tatumTimesValue.toString();
 									}
 								} else if(files[i].getName().toString().endsWith("_419.arff")) {
 									if(dataPartStarted) {	
-										Double onsetTimesValue = new Double(line);
+										Double onsetTimesValue = Double.valueOf(line);
 										onsetTimesValue += (j-1)*480;
 										line = onsetTimesValue.toString();
 									}
@@ -718,7 +717,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					}
 					
 					if(files[i].getName().toString().endsWith("_400.arff")) {
-						values_writer.writeBytes(new Double(duration_id_400).toString());
+						values_writer.writeBytes(Double.valueOf(duration_id_400).toString());
 					}
 					
 					values_writer.close();

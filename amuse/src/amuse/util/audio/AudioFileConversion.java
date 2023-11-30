@@ -67,38 +67,20 @@ public class AudioFileConversion {
             targetKHZ = 44100;
         }
         boolean isOriginal = true;
-        AudioFileFormat audioFileFormat = null;
         File wavFile = new File(targetFile.getParent() + File.separator + "tmp_" + musicFile.getName());
-        // ---------------------------------------------------------------------
-        // I.: Try to get AudioFileFormat:
-        // ---------------------------------------------------------------------
-        try {
-            audioFileFormat = AudioSystem.getAudioFileFormat(musicFile);
-        } catch (UnsupportedAudioFileException ex) {
-            // If no wave file is given, this exception is generated. However the conversion mp3->wave can
-            // be done!
-            // throw new NodeException("Could not convert audio file: " + ex.getMessage());
-        } catch (IOException ex) {
-            throw new IOException("Error accessing file to process: " + ex.getMessage());
-        }
 
         // ---------------------------------------------------------------------
         // II.: Try to convert mp3 to wave if needed:
         // ---------------------------------------------------------------------
-        if (audioFileFormat == null || audioFileFormat.getType() != Type.WAVE) { // If not wave already, convert to wave
-            try {
-                AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave.");
-                convertMp3ToWave(musicFile, wavFile);
-                isOriginal = false;
-            } catch (IOException ex) {
-                throw new IOException("Error converting audio file " + musicFile.getName() + ": " + ex.getMessage());
-            }
-        } else {
-
-            // wavFile is now the file to process.
-            wavFile = musicFile;
+        
+        try {
+            AmuseLogger.write(AudioFileConversion.class.getName(), Level.INFO, "Converting " + musicFile.getName() + " to wave.");
+            convertMp3ToWave(musicFile, wavFile);
+            isOriginal = false;
+        } catch (IOException ex) {
+            throw new IOException("Error converting audio file " + musicFile.getName() + ": " + ex.getMessage());
         }
-
+        
         // ---------------------------------------------------------------------
         // III.: Try to reduce audio quality:
         // ---------------------------------------------------------------------
@@ -107,14 +89,14 @@ public class AudioFileConversion {
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.DEBUG, "Starting: "+wavFile.getName() + " "+ (int)format.getFrameRate()+"kHz, "+format.getChannels());
             fileCopy(wavFile, targetFile);
             if (!isDownSamplingActive) {
-		targetKHZ = (int) format.getFrameRate();
-	    }
+				targetKHZ = (int) format.getFrameRate();
+		    }
             if (!isReduceToMono && format.getChannels() == 1) {
-		AmuseLogger.write(AudioFileConversion.class.getName(), Level.WARN, "Target is stereo, but this file is mono already: " + wavFile.getName());
-	    }
+            	AmuseLogger.write(AudioFileConversion.class.getName(), Level.WARN, "Target is stereo, but this file is mono already: " + wavFile.getName());
+            }
             if (isDownSamplingActive && targetKHZ > format.getFrameRate()) {
-		AmuseLogger.write(AudioFileConversion.class.getName(), Level.WARN, "Target is " + targetKHZ + "kHz, but this file is at " + (int) format.getFrameRate() + "kHz already: " + wavFile.getName());
-	    }
+            	AmuseLogger.write(AudioFileConversion.class.getName(), Level.WARN, "Target is " + targetKHZ + "kHz, but this file is at " + (int) format.getFrameRate() + "kHz already: " + wavFile.getName());
+            }
             sampleToTargetSize(targetFile, targetKHZ, isReduceToMono);
             format = AudioSystem.getAudioFileFormat(targetFile).getFormat();
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.DEBUG, "Result: "+targetFile.getName() + " "+ (int)format.getFrameRate()+"kHz, "+format.getChannels());

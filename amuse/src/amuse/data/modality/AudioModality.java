@@ -20,7 +20,7 @@ import amuse.util.AmuseLogger;
  */
 public class AudioModality implements Modality {
 	
-	public enum AudioFormat implements FormatInterface {
+	public enum AudioFormat implements Format {
 		
 		MP3		(List.of("mp3")),
 		WAVE	(List.of("wav")), 
@@ -33,6 +33,17 @@ public class AudioModality implements Modality {
 		
 		private AudioFormat(List<String> endings) {
 			this.endings = endings;
+		}
+		
+		public static AudioFormat getFormat(File file) {
+			for(AudioFormat format : AudioFormat.values()) {
+				for(String ending : format.endings) {
+					if(file.getPath().endsWith("." + ending)) {
+						return format;
+					}
+				}
+			}
+			return null;
 		}
 
 		@Override
@@ -89,6 +100,11 @@ public class AudioModality implements Modality {
 				default: return false;
 			}
 		}
+
+		@Override
+		public List<String> getEndings() {
+			return endings;
+		}
 	}
 	
 	private final ModalityEnum modalityEnum = ModalityEnum.AUDIO;
@@ -117,9 +133,9 @@ public class AudioModality implements Modality {
 	@Override
 	public boolean matchesRequirements(File file) {
 		
-		for(AudioFormat symbolicFormat : this.formats) {
-			boolean fileEndingMatchesRequirements = symbolicFormat.matchesEndings(file);
-			boolean fileFormatConfirmed = symbolicFormat.confirmFormat(file);
+		for(AudioFormat audioFormat : this.formats) {
+			boolean fileEndingMatchesRequirements = audioFormat.matchesEndings(file);
+			boolean fileFormatConfirmed = audioFormat.confirmFormat(file);
 			
 			if(fileEndingMatchesRequirements && fileFormatConfirmed) {
 				return true;

@@ -11,6 +11,7 @@ import javax.sound.midi.MidiSystem;
 
 import org.apache.log4j.Level;
 
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.util.AmuseLogger;
 
 /** 
@@ -19,7 +20,7 @@ import amuse.util.AmuseLogger;
  */
 public class SymbolicModality implements Modality {
 
-	public enum SymbolicFormat implements FormatInterface {
+	public enum SymbolicFormat implements Format {
 		
 		MIDI 		(List.of("mid", "midi")),
 		MUSICXML 	(List.of("mxl"));
@@ -28,6 +29,17 @@ public class SymbolicModality implements Modality {
 		
 		private SymbolicFormat(List<String> endings) {
 			this.endings = endings;
+		}
+		
+		public static SymbolicFormat getFormat(File file) {
+			for(SymbolicFormat format : SymbolicFormat.values()) {
+				for(String ending : format.endings) {
+					if(file.getPath().endsWith("." + ending)) {
+						return format;
+					}
+				}
+			}
+			return null;
 		}
 		
 		@Override
@@ -59,6 +71,11 @@ public class SymbolicModality implements Modality {
 				}
 				default: return false;
 			}
+		}
+
+		@Override
+		public List<String> getEndings() {
+			return endings;
 		}
 	}
 	
