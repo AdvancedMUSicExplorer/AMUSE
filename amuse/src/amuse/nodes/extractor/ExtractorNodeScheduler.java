@@ -76,9 +76,11 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	/** Extractors are kept in this map (ID -> extractor interface) during feature extraction */
 	private HashMap<Integer,ExtractorInterface> extractors;
 	
-	/** Input music file */
+	/** Original input music file */
 	private String inputFileName = null;
 	
+	/** Stores the input file for each extractor */
+	private HashMap<Integer, String> extractorToFilename;
 	
 	/** If the music file is split into several parts.. */
 	private int numberOfParts = 0;
@@ -96,6 +98,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	public ExtractorNodeScheduler(String folderForResults) throws NodeException {
 		super(folderForResults);
 		extractors = new HashMap<Integer,ExtractorInterface>();
+		extractorToFilename = new HashMap<Integer,String>();
 		currentPartForThisExtractor = new HashMap<Integer,Integer>();
 		inputFileName = new String();
 	}
@@ -207,25 +210,26 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (IV) Check if file fits tool requirements
 		// -----------------------------------------
 		
-	    /* Check, if at least one tool requirement is not met */
-	    boolean fileMatchesRequirements = true;
-		for(Map.Entry<Integer,ExtractorInterface> e : extractors.entrySet()){
-			for (Modality modality: e.getValue().getModalities()) {
-				if(!modality.matchesRequirements(new File(inputFileName))) {
-					fileMatchesRequirements = false;
-				}
-			}
-		}
+	    /* Search for Extractor tools, that can't extract from the inputFiles format */
+	    List<Integer> extractorsNotFitting = new ArrayList<>();
+	    for (Map.Entry<Integer, ExtractorInterface> e : extractors.entrySet()) {
+	        boolean fitsAnyToolModality = e.getValue().getModalities().stream().anyMatch(modality -> modality.matchesRequirements(new File(inputFileName)));
+	        if (!fitsAnyToolModality) {
+	            extractorsNotFitting.add(e.getKey());
+	        } else {
+	        	// If file fits tool requirements, the file can be saved as input for this tool
+	            extractorToFilename.put(e.getKey(), inputFileName);
+	        }
+	    }
 		
 		// ---------------------------------------------
 		// (V) Convert input file if needed and possible
 		// ---------------------------------------------
 		
 		/* If file does not match requirements of an extractor tool, convert */
-		if(!fileMatchesRequirements) {
+		if(!extractorsNotFitting.isEmpty()) {
 			// TODO Generalize, add more conversions
 			if(relativeName.endsWith(".mp3")) {
-				
 				try {
 					AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
 							new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
@@ -240,6 +244,13 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					errorDescriptionBuilder.append(this.inputFileName);
 					this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 					return;
+				}
+				for(Map.Entry<Integer,ExtractorInterface> e : extractors.entrySet()){
+					for (Integer extractorID: extractorsNotFitting) {
+						if(extractorID == e.getKey()) {
+							extractorToFilename.put(extractorID, this.inputFileName);
+						}
+					}
 				}
 			}
 			/* If file does not fit requirements and could not be converted. */
@@ -509,20 +520,18 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	 */
 	public void startFeatureExtractors() {
 		
-		// For a music file name without path
-	    String inputFileName = new String();
-		inputFileName = this.inputFileName;
-		if(inputFileName.lastIndexOf(File.separator) != -1) {
-			inputFileName = inputFileName.substring(inputFileName.lastIndexOf(File.separator)+1);
-		}
-	    
 	    // Start the extractor adapters
-		Set<?> usedExtractorIDs = this.extractors.keySet();
-		Iterator<?> it = usedExtractorIDs.iterator();
-		while(it.hasNext()) {
-			int i = (Integer)it.next();
-			this.currentPartForThisExtractor.put(Integer.valueOf(((AmuseTask)this.extractors.
-					get(i)).getProperties().getProperty("id")), 1);
+		for(Map.Entry<Integer,ExtractorInterface> extractor : extractors.entrySet()) {
+			
+			// For a music file name without path
+		    String inputFileName = new String();
+			inputFileName = extractorToFilename.get(extractor.getKey());
+			if(inputFileName.lastIndexOf(File.separator) != -1) {
+				inputFileName = inputFileName.substring(inputFileName.lastIndexOf(File.separator)+1);
+			}
+			
+			this.currentPartForThisExtractor.put(Integer.valueOf(((AmuseTask)extractor.getValue())
+					.getProperties().getProperty("id")), 1);
 		    
 			// Start the feature extractors for all parts
 			for(int currentPart = 1; currentPart <= this.numberOfParts; currentPart++) {
@@ -530,21 +539,21 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				String musicInput = new String(this.nodeHome + sep + "input" + sep + "task_" + this.jobId + sep + currentPart + sep + inputFileName);
 				String featureOutput = new String(this.nodeHome + sep + "input" + sep + "task_" + this.jobId + sep + currentPart + sep +
 						inputFileName.substring(0,inputFileName.lastIndexOf(".")) + "_" +  
-						((AmuseTask)this.extractors.get(i)).getProperties().getProperty("extractorName") + 
+						((AmuseTask)extractor.getValue()).getProperties().getProperty("extractorName") + 
 						"_features.arff"); 
 				try {
-					this.extractors.get(i).setFilenames(musicInput, featureOutput,currentPart);
-					this.extractors.get(i).extractFeatures();
+					extractor.getValue().setFilenames(musicInput, featureOutput,currentPart);
+					extractor.getValue().extractFeatures();
 				} catch (NodeException e) {
 					AmuseLogger.write(this.getClass().getName(), Level.ERROR, 
 							"Error occured during feature extraction with extractor '" + 
-							((AmuseTask)this.extractors.get(i)).getProperties().getProperty("extractorName") + 
+							((AmuseTask)extractor.getValue()).getProperties().getProperty("extractorName") + 
 							"': " + e.getMessage());
 				}
 			}
 			
 			// Consolidate the part results and copy them to feature database
-			consolidateResults(this.extractors.get(i));
+			consolidateResults(extractor.getValue());
 		}
 	}
 	
