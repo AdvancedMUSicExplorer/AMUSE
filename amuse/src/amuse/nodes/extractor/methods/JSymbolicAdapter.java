@@ -49,7 +49,7 @@ import weka.core.converters.ArffLoader;
 /**
  * Adapter to jSymbolic feature extractor.
  */
-public class jSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
+public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 
 	/** Input music file */
 	private String musicFile;

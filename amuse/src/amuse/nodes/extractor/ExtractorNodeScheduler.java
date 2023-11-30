@@ -210,7 +210,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (IV) Check if file fits tool requirements
 		// -----------------------------------------
 		
-	    /* Search for Extractor tools, that can't extract from the inputFiles format */
+	    /* Search for extractor tools, that can't extract from the inputFiles format */
 	    List<Integer> extractorsNotFitting = new ArrayList<>();
 	    for (Map.Entry<Integer, ExtractorInterface> e : extractors.entrySet()) {
 	        boolean fitsAnyToolModality = e.getValue().getModalities().stream().anyMatch(modality -> modality.matchesRequirements(new File(inputFileName)));
@@ -245,18 +245,9 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 					return;
 				}
-				for(Map.Entry<Integer,ExtractorInterface> e : extractors.entrySet()){
-					for (Integer extractorID: extractorsNotFitting) {
-						if(extractorID == e.getKey()) {
-							extractorToFilename.put(extractorID, this.inputFileName);
-						}
-					}
+				for (Integer extractorID: extractorsNotFitting) {
+					extractorToFilename.put(extractorID, this.inputFileName);
 				}
-			}
-			/* If file does not fit requirements and could not be converted. */
-			else {
-				AmuseLogger.write(ExtractorNodeScheduler.class.getName(), Level.ERROR,
-						"File does not match tool requirements and can not be converted: " + relativeName);
 			}
 		} 
 		/* if file already fits requirements */
@@ -526,6 +517,14 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 			// For a music file name without path
 		    String inputFileName = new String();
 			inputFileName = extractorToFilename.get(extractor.getKey());
+			
+			/* If file does not fit requirements and could not be converted. */
+			if(inputFileName == null) {
+				AmuseLogger.write(ExtractorNodeScheduler.class.getName(), Level.ERROR,
+						"File does not match tool requirements and could not be converted: " + this.inputFileName);
+				continue;
+			}
+			
 			if(inputFileName.lastIndexOf(File.separator) != -1) {
 				inputFileName = inputFileName.substring(inputFileName.lastIndexOf(File.separator)+1);
 			}
