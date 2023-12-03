@@ -238,15 +238,15 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 					relativeName = relativeName.substring(0,relativeName.length()-4);
 					relativeName = new String(relativeName + ".wav");
 					this.inputFileName = relativeName;
+					for (Integer extractorID: extractorsNotFitting) {
+						extractorToFilename.put(extractorID, this.inputFileName);
+					}
 				} catch(NodeException e) {
 					AmuseLogger.write(this.getClass().getName(), Level.ERROR,
 						"Audio decoding error: " + e.getMessage());
 					errorDescriptionBuilder.append(this.inputFileName);
 					this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
 					return;
-				}
-				for (Integer extractorID: extractorsNotFitting) {
-					extractorToFilename.put(extractorID, this.inputFileName);
 				}
 			}
 		} 
