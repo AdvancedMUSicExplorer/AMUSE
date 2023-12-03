@@ -20,4 +20,4 @@
 0, "jAudio", "amuse.nodes.extractor.methods.JAudioAdapter", "jAudio", "jAudioStart.sh", "jAudioBase512.xml", "jAudioBaseModified512.xml"
 1, "Yale", "amuse.nodes.extractor.methods.YaleAdapter", "Yale", "yaleStart1800.sh", "yaleBase512.xml", "yaleBaseModified512.xml"
 2, "Matlab", "amuse.nodes.extractor.methods.MatlabAdapter", "MatlabFeatures", "matlabStart.sh", "matlabBase.xml", "matlabBaseModified.m"
-10, "jSymbolic", "amuse.nodes.extractor.methods.jSymbolicAdapter", "jSymbolic", "jSymbolicStart.sh", "jSymbolicBase.xml", "jSymbolicBaseModified.xml"
+10, "jSymbolic", "amuse.nodes.extractor.methods.JSymbolicAdapter", "jSymbolic", "jSymbolicStart.sh", "jSymbolicBase.xml", "jSymbolicBaseModified.xml"
