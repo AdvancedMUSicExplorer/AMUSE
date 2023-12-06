@@ -66,6 +66,20 @@ public interface Modality {
 			}
 			return false;
 		}
+		
+		/** Returns the ModalityEnum, that fits the file ending. */
+		public static ModalityEnum getModalityEnum(File file) {
+			String fileName = file.getName();
+			for(ModalityEnum modality: ModalityEnum.values()) {
+				List<String> endings = modality.getEndings();
+				for (String ending: endings) {
+					if(fileName.endsWith(ending)) {
+						return modality;
+					}
+				}
+			}
+			return null;
+		}
 
 		/** Returns true, if the file ending of this file fits any modality. */
 		public static boolean fitsAnyModality(File file) {

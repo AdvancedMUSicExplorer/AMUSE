@@ -44,26 +44,21 @@ public class FileTreeModel extends DefaultTreeModel {
 
 	private static final long serialVersionUID = -8847125059405665407L;
 	private File relativeToFolder;
-    private List<String> fileEndings;
+    private List<String> fileEndings = ModalityEnum.getAllEndings();
     private DefaultMutableTreeNode relativeToNode = new DefaultMutableTreeNode("Music Database", true);
     private DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(File.separator, true);
+    
+    private Vector<TreeModelModalityListener> listeners = new Vector<TreeModelModalityListener>();
 
     /**
      * Creates a new <class>FileTreeModel</class>.
      * @param relativeFolder The folder to display files relative to (e.g. MusicDatabase).
      * @param label The label used for the relative folder (e.g. "Music Database").
-     * @param modality The file endings excepted by this model (e.g. ["mp3", "wav"]).
      */
-    public FileTreeModel(File relativeFolder, String label, ModalityEnum modality) {
+    public FileTreeModel(File relativeFolder, String label) {
         super(new DefaultMutableTreeNode("root"));
         this.relativeToFolder = relativeFolder;
         this.relativeToNode = new DefaultMutableTreeNode(label, true);
-        
-        if(modality == null) {
-        	this.fileEndings = ModalityEnum.getAllEndings();
-        } else {
-            this.fileEndings = modality.getEndings();
-        }
         
         if (!this.relativeToFolder.isDirectory()) {
         	JOptionPane.showMessageDialog(null,
@@ -71,6 +66,37 @@ public class FileTreeModel extends DefaultTreeModel {
                     "Music database is not a folder",
                     JOptionPane.ERROR_MESSAGE);
             throw new IllegalArgumentException(this.relativeToFolder.getName() + " is not a folder!");
+        }
+    }
+    
+    
+    public void addTreeModelModalityListener(TreeModelModalityListener listener) {
+	    listeners.add(listener);
+    }
+    
+    public void removeTreeModelModalityListener(TreeModelModalityListener listener) {
+        listeners.remove(listener);
+    }
+    
+    private void notifyModalityListenersAdd(ModalityEnum modality) {
+    	this.updateEndings(modality);
+        for (TreeModelModalityListener listener : listeners) {
+        	listener.fileAdded(modality);
+        }
+    }
+    
+    private void notifyModalityListenersRemoveAll() {
+    	this.updateEndings(null);
+        for (TreeModelModalityListener listener : listeners) {
+        	listener.allFilesRemoved();
+        }
+    }
+
+	public void updateEndings(ModalityEnum modality) {
+        if(modality == null) {
+        	this.fileEndings = ModalityEnum.getAllEndings();
+        } else {
+            this.fileEndings = modality.getEndings();
         }
     }
 
@@ -95,6 +121,7 @@ public class FileTreeModel extends DefaultTreeModel {
             }
         }
         this.nodeStructureChanged(root);
+        this.notifyModalityListenersAdd(ModalityEnum.getModalityEnum(file));
     }
 
     /**
@@ -127,6 +154,7 @@ public class FileTreeModel extends DefaultTreeModel {
         relativeToNode.removeFromParent();
         mainNode.removeFromParent();
         this.reload();
+        this.notifyModalityListenersRemoveAll();
     }
 
     void removeNode(DefaultMutableTreeNode node) {

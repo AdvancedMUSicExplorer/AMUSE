@@ -26,7 +26,6 @@ package amuse.scheduler.gui.controller;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -63,9 +62,8 @@ public interface WizardControllerInterface {
 
     /**
      * Go to the Freature Extraction View.
-     * @param modality 
      */
-    void goToFeatureExtraction(ModalityEnum modality);
+    void goToFeatureExtraction();
     /**
      * Go to the Freature Extraction View and restore configuration.
      * @param set The ExtractionConfiguration to restore from.
@@ -181,5 +179,4 @@ public interface WizardControllerInterface {
 	 * Notifies the task listeners of the finishing of a task
 	 */
 	public void notifyListenersOfFinish(TaskConfiguration experiment);
-
 }

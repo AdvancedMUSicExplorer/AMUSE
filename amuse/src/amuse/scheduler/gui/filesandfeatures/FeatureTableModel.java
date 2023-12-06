@@ -26,13 +26,9 @@ package amuse.scheduler.gui.filesandfeatures;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
-import amuse.data.datasets.FeatureTableSet;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
-import amuse.data.io.attributes.NominalAttribute;
-import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
 import amuse.data.modality.Modality;
 import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.extractor.interfaces.ExtractorInterface;
@@ -50,22 +46,16 @@ import javax.swing.table.TableModel;
  *
  * @author Clemens Waeltken
  */
-public class FeatureTableModel implements TableModel {
+public class FeatureTableModel implements TableModel, TreeModelModalityListener {
 
     private Object[][] table;
     private FeatureTable featureTable;
+    private final FeatureTable originalFeatureTable = new FeatureTable(new File(AmusePreferences.getFeatureTablePath()));
     private ArrayList<TableModelListener> listeners = new ArrayList<TableModelListener>();
-
-    
-    public FeatureTableModel(FeatureTable featureTable, ModalityEnum modality) throws IOException {
-    	filterFeatureTable(modality);
-        setFeatureTable(featureTable);
-    }
 
 	/**
      * Creates a new Feature Table Model out of a given FeatureTable.
      * @param featureTable The feature table of all Features to be displayed in this table.
-     * @param modality 
      */
     public FeatureTableModel(FeatureTable featureTable) {
         setFeatureTable(featureTable);
@@ -287,6 +277,21 @@ public class FeatureTableModel implements TableModel {
 			}
 		}
 		setFeatureTable(featureTable);
+		notifyListeners();
+	}
+
+	@Override
+	public void fileAdded(ModalityEnum modality) {
+		try {
+			filterFeatureTable(modality);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void allFilesRemoved() {
+		setFeatureTable(originalFeatureTable);
 		notifyListeners();
 	}
 

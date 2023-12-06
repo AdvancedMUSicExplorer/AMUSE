@@ -33,8 +33,8 @@ public class ClassificationInputSelectionPanel extends JPanel{
   private File musicDatabaseFolder = new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE));
   private String musicDatabaseLabel = "Music Database";
   private FileTreeView fileView = new FileTreeView();
-  private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel, null);
-  private FileTreeController ftController = new FileTreeController(ftModel, fileView, null);
+  private FileTreeModel ftModel = new FileTreeModel(musicDatabaseFolder, musicDatabaseLabel);
+  private FileTreeController ftController = new FileTreeController(ftModel, fileView);
   private ReadyInputSelectionPanel readyInputSelectionPanel;
   private CategorySelectionPanel categorySelectionPanel;
   private JComboBox<InputSourceType> inputSourceTypeComboBox;

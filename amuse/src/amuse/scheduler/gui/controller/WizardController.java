@@ -23,7 +23,6 @@
  */
 package amuse.scheduler.gui.controller;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.io.File;
@@ -36,10 +35,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.swing.JFrame;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 
 import org.apache.log4j.Level;
 
@@ -50,7 +47,6 @@ import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.scheduler.SchedulerException;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
@@ -91,8 +87,7 @@ public final class WizardController implements WizardControllerInterface {
 	
 	private enum ControllerType {
 		CLASSIFICATION, 
-		FEATURE_EXTRACTION_AUDIO,
-		FEATURE_EXTRACTION_SYMBOLIC,
+		FEATURE_EXTRACTION,
 		OPTIMIZATION, 
 		FEATURE_PROCESSING, 
 		CLASSIFICATION_TRAINING, 
@@ -102,8 +97,7 @@ public final class WizardController implements WizardControllerInterface {
 		public String toString(){
 			switch(this){
 			case CLASSIFICATION: return "c";
-			case FEATURE_EXTRACTION_AUDIO: return "fe_a";
-			case FEATURE_EXTRACTION_SYMBOLIC: return "fe_s";
+			case FEATURE_EXTRACTION: return "fe";
 			case OPTIMIZATION: return "o";
 			case FEATURE_PROCESSING: return "fp";
 			case CLASSIFICATION_TRAINING: return "ct";
@@ -115,8 +109,7 @@ public final class WizardController implements WizardControllerInterface {
 		public AbstractController getController(){
 			switch(this){
 			case CLASSIFICATION: return new ClassifierController(instance);
-			case FEATURE_EXTRACTION_AUDIO: return new ExtractionController(instance, ModalityEnum.AUDIO);
-			case FEATURE_EXTRACTION_SYMBOLIC: return new ExtractionController(instance, ModalityEnum.SYMBOLIC);
+			case FEATURE_EXTRACTION: return new ExtractionController(instance);
 			case OPTIMIZATION: return new OptimizationController(instance);
 			case FEATURE_PROCESSING: return new ProcessingController(instance);
 			case CLASSIFICATION_TRAINING: return new TrainingController(instance);
@@ -129,13 +122,8 @@ public final class WizardController implements WizardControllerInterface {
 			if(config instanceof ClassificationConfiguration){
 				return CLASSIFICATION;
 			}
-			else if(config instanceof ExtractionConfiguration 
-					&& ((ExtractionConfiguration) config).getModalityEnum() == ModalityEnum.AUDIO){
-				return FEATURE_EXTRACTION_AUDIO;
-			}
-			else if(config instanceof ExtractionConfiguration 
-					&& ((ExtractionConfiguration) config).getModalityEnum() == ModalityEnum.SYMBOLIC){
-				return FEATURE_EXTRACTION_SYMBOLIC;
+			else if(config instanceof ExtractionConfiguration){
+				return FEATURE_EXTRACTION;
 			}
 			else if(config instanceof OptimizationConfiguration){
 				return OPTIMIZATION;
@@ -271,16 +259,8 @@ public final class WizardController implements WizardControllerInterface {
 	 *
 	 */
 	@Override
-	public void goToFeatureExtraction(ModalityEnum modality) {
-		goToFeatureExtraction(modality, null);
-	}
-	
-	public void goToFeatureExtraction(ModalityEnum modality, ExtractionConfiguration set) {
-		exController = new ExtractionController(instance, modality);
-		if (set != null) {
-			exController.loadTask(set);
-		}
-		wizard.showInWizardPane(exController.getView());
+	public void goToFeatureExtraction() {
+		goToFeatureExtraction(null);
 	}
 
 	/**
@@ -289,7 +269,11 @@ public final class WizardController implements WizardControllerInterface {
 	 */
 	@Override
 	public void goToFeatureExtraction(ExtractionConfiguration set) {
-		goToFeatureExtraction(set.getModalityEnum(),set);
+		exController = new ExtractionController(instance);
+		if (set != null) {
+			exController.loadTask(set);
+		}
+		wizard.showInWizardPane(exController.getView());
 	}
 
 	/* (non-Javadoc)
@@ -518,11 +502,8 @@ public final class WizardController implements WizardControllerInterface {
 				case "c":
 					type = ControllerType.CLASSIFICATION;
 					break;
-				case "fe_a":
-					type = ControllerType.FEATURE_EXTRACTION_AUDIO;
-					break;
-				case "fe_s":
-					type = ControllerType.FEATURE_EXTRACTION_SYMBOLIC;
+				case "fe":
+					type = ControllerType.FEATURE_EXTRACTION;
 					break;
 				case "o":
 					type = ControllerType.OPTIMIZATION;

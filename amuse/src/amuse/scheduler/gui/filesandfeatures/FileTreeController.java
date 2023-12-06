@@ -49,11 +49,11 @@ import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
  * Controller Class for MusicFileTrees.
  * @author Clemens Waeltken
  */
-public class FileTreeController implements ActionListener, KeyListener {
+public class FileTreeController implements ActionListener, KeyListener, TreeModelModalityListener {
 
     FileTreeModel model;
     FileTreeView view;
-    private ModalityEnum modality;
+    private ModalityEnum currentModality;
     private String fileFilterDescription;
 
     private File filelistFolder = new File("experiments" + File.separator + "filelists");
@@ -63,17 +63,25 @@ public class FileTreeController implements ActionListener, KeyListener {
      * @param model The <class>FileTreeModel</class> to display.
      * @param view The <class>FileTreeView</class> to display in.
      */
-    public FileTreeController(FileTreeModel model, FileTreeView view, ModalityEnum modality) {
+    public FileTreeController(FileTreeModel model, FileTreeView view) {
         this.model = model;
         this.view = view;
-        this.modality = modality;
-        if (this.modality == null) {
-        	this.fileFilterDescription = "music files";
-        } else {
-            this.fileFilterDescription = modality.getGenericName() + " music files";
-        }
         view.setModel(this.model);
         view.setController(this);
+        updateFilterDescription();
+    }
+    
+    public void updateModality(ModalityEnum modality) {
+    	this.currentModality = modality;
+    	updateFilterDescription();
+    }
+    
+    public void updateFilterDescription() {
+    	if (this.currentModality == null) {
+        	this.fileFilterDescription = "music files";
+        } else {
+            this.fileFilterDescription = currentModality.getGenericName() + " music files";
+        }
     }
 
     /**
@@ -167,10 +175,10 @@ public class FileTreeController implements ActionListener, KeyListener {
                 @Override
                 public boolean accept(File arg0) {
                 	boolean fileFitsModality;
-                	if (modality == null) {
+                	if (currentModality == null) {
                 		fileFitsModality = ModalityEnum.fitsAnyModality(arg0);
                 	} else {
-                		fileFitsModality = modality.fitsModality(arg0);
+                		fileFitsModality = currentModality.fitsModality(arg0);
                 	}
                     return (arg0.isDirectory() || fileFitsModality);
                 }
@@ -254,5 +262,15 @@ public class FileTreeController implements ActionListener, KeyListener {
             JOptionPane.showMessageDialog(view.getView(), "Select atleast one file to remove.", "No file selcted!", JOptionPane.WARNING_MESSAGE);
         }
     }
+
+	@Override
+	public void fileAdded(ModalityEnum modality) {
+		updateModality(modality);
+	}
+
+	@Override
+	public void allFilesRemoved() {
+		updateModality(null);
+	}
     
 }

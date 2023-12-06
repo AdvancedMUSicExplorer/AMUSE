@@ -27,14 +27,12 @@ package amuse.scheduler.gui.views;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.nodes.classifier.ClassificationConfiguration;
 import amuse.nodes.extractor.ExtractionConfiguration;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.nodes.optimizer.OptimizationConfiguration;
 import amuse.nodes.processor.ProcessingConfiguration;
 import amuse.nodes.trainer.TrainingConfiguration;
 import amuse.nodes.validator.ValidationConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
-import amuse.scheduler.gui.MenuButton;
 import amuse.scheduler.gui.controller.WizardController;
 import amuse.scheduler.gui.controller.WizardControllerInterface;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
@@ -61,14 +59,11 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -184,22 +179,15 @@ public class TaskManagerView extends JPanel implements HasCaption, NextButtonUsa
     	JPanel taskButtonPanel = new JPanel(new GridLayout(2, 3));
 		taskButtonPanel.setBorder(new TitledBorder("Add Experiment"));
     	
-		JPopupMenu modalitySelection = new JPopupMenu();
-		MenuButton feTaskButton = new MenuButton("Feature Extraction", modalitySelection);
-	    JMenuItem audioSelection = new JMenuItem("Audio");
-	    audioSelection.addActionListener(new ActionListener() {
-	        public void actionPerformed(ActionEvent ev) {
-	        	wizard.goToFeatureExtraction(ModalityEnum.AUDIO);
-	        }
-	    });
-        JMenuItem symbolicSelection = new JMenuItem("Symbolic");
-	    symbolicSelection.addActionListener(new ActionListener() {
-	        public void actionPerformed(ActionEvent ev) {
-	        	wizard.goToFeatureExtraction(ModalityEnum.SYMBOLIC);
-	        }
-	    });
-        modalitySelection.add(audioSelection);
-        modalitySelection.add(symbolicSelection);       
+		JButton feTaskButton = new JButton("Feature Extraction");
+        feTaskButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+               wizard.goToFeatureExtraction();
+                isEditing = false;
+            }
+        });
         JButton fpTaskButton = new JButton("Feature Processing");
         fpTaskButton.addActionListener(new ActionListener() {
 

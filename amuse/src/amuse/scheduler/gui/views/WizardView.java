@@ -24,8 +24,6 @@
 
 package amuse.scheduler.gui.views;
 
-import amuse.data.modality.Modality.ModalityEnum;
-import amuse.scheduler.gui.MenuButton;
 import amuse.scheduler.gui.controller.*;
 import amuse.scheduler.gui.logger.JPanelAmuseLogger;
 import amuse.scheduler.gui.navigation.ButtonPanelInterface;
@@ -42,11 +40,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -157,15 +152,9 @@ public class WizardView {
 	    
 	    
 	    // Create New Experiment ButtonPanel:
-	    JPopupMenu modalitySelection = new JPopupMenu();
-		JToggleButton buttonFeatureExtraction = new MenuButton("Feature Extraction", modalitySelection);
-	    JMenuItem audioSelection = new JMenuItem("Audio");
-	    audioSelection.addActionListener(e -> wizardController.goToFeatureExtraction(ModalityEnum.AUDIO));
-        JMenuItem symbolicSelection = new JMenuItem("Symbolic");
-	    symbolicSelection.addActionListener(e -> wizardController.goToFeatureExtraction(ModalityEnum.SYMBOLIC));
-        modalitySelection.add(audioSelection);
-        modalitySelection.add(symbolicSelection);
-        newExperimentButtons.addButton(buttonFeatureExtraction);
+	    JButton buttonFeatureExtraction = new JButton("Feature Extraction");
+	    buttonFeatureExtraction.addActionListener(e -> wizardController.goToFeatureProcessing());
+	    newExperimentButtons.addButton(buttonFeatureExtraction);
 
 	    JButton buttonFeatureProcessing = new JButton("Feature Processing");
 	    buttonFeatureProcessing.addActionListener(e -> wizardController.goToFeatureProcessing());

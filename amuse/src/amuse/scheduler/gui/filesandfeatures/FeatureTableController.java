@@ -221,4 +221,8 @@ public class FeatureTableController implements ActionListener {
     void loadFeatureTableSelection(FeatureTable featureTable) {
         loadFeatureTableSelection(featureTable.getAccordingDataSet());
     }
+    
+    public FeatureTableView getFeatureTableView() {
+    	return view;
+    }
 }

@@ -41,11 +41,14 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.filesandfeatures.FilesAndFeaturesFacade;
+import amuse.scheduler.gui.filesandfeatures.TreeModelModalityListener;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
 import amuse.scheduler.gui.navigation.NextButtonUsable;
+
 import java.awt.BorderLayout;
+
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
@@ -53,20 +56,23 @@ import javax.swing.JPanel;
  * 
  * @author Clemens Waeltken
  */
-public class ExtractionController extends AbstractController {
+public class ExtractionController extends AbstractController implements TreeModelModalityListener {
 
     WizardController wizardController;
     FilesAndFeaturesFacade filesAndFeatures;
-    ModalityEnum modality;
+    ModalityEnum currentModality;
     ExtractionPanel extractionPanel;
     File feFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
             + File.separator + "experiments" + File.separator + "FE");
 
-    public ExtractionController(WizardController wc, ModalityEnum modality) {
-    	this.modality = modality;
-        this.extractionPanel = new ExtractionPanel(this.modality);
+    public ExtractionController(WizardController wc) {
+        this.extractionPanel = new ExtractionPanel();
         wizardController = wc;
         getView();
+        
+        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(this);
+        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(filesAndFeatures.getFeatureTableModel());
+        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(filesAndFeatures.getFileTreeController());
     }
 
 	public void addExtraction() {
@@ -90,7 +96,7 @@ public class ExtractionController extends AbstractController {
 
     private JComponent getFilesAndFeatures() {
         if (filesAndFeatures == null) {
-            filesAndFeatures = new FilesAndFeaturesFacade(this.modality);
+            filesAndFeatures = new FilesAndFeaturesFacade();
         }
         extractionPanel.add(filesAndFeatures.getView(), BorderLayout.CENTER);
         return extractionPanel;
@@ -113,7 +119,7 @@ public class ExtractionController extends AbstractController {
             return;
         }
         ExtractorConfigSet extractorConfigSet = new ExtractorConfigSet(
-                fileTableFile, featureTableFile, extractionPanel.modality);
+                fileTableFile, featureTableFile, this.currentModality);
         try {
             extractorConfigSet.saveToArffFile(selectedFile);
             filesAndFeatures.saveFilesAndFeatures(fileTableFile,
@@ -148,7 +154,7 @@ public class ExtractionController extends AbstractController {
     @Override
     public ExtractionConfiguration getExperimentConfiguration() {
         ExtractionConfiguration config = new ExtractionConfiguration(new FileTable(filesAndFeatures.getFiles()),
-                filesAndFeatures.getFeatureTable(), filesAndFeatures.getModalityEnum());
+                filesAndFeatures.getFeatureTable(), this.currentModality);
         return config;
     }
 
@@ -163,12 +169,9 @@ public class ExtractionController extends AbstractController {
 
     private class ExtractionPanel extends JPanel implements HasSaveButton,
             HasLoadButton, NextButtonUsable, HasCaption {
-    	
-    	private ModalityEnum modality;
 
-        public ExtractionPanel(ModalityEnum modality) {
+        public ExtractionPanel() {
             super(new BorderLayout());
-            this.modality = modality;
         }
 
         @Override
@@ -225,4 +228,14 @@ public class ExtractionController extends AbstractController {
             return "Feature Extraction Configurator";
         }
     }
+
+	@Override
+	public void fileAdded(ModalityEnum modality) {
+		this.currentModality = modality;
+	}
+
+	@Override
+	public void allFilesRemoved() {
+		this.currentModality = null;
+	}
 }
