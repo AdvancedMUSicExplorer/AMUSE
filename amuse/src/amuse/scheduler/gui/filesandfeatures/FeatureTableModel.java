@@ -37,10 +37,13 @@ import amuse.preferences.AmusePreferences;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
+
 
 /**
  *
@@ -50,7 +53,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 
     private Object[][] table;
     private FeatureTable featureTable;
-    private final FeatureTable originalFeatureTable = new FeatureTable(new File(AmusePreferences.getFeatureTablePath()));
+    private FeatureTable deletedFeatureTable = new FeatureTable();
     private ArrayList<TableModelListener> listeners = new ArrayList<TableModelListener>();
 
 	/**
@@ -242,6 +245,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		Attribute idAttribute = extractorTableSet.getAttribute("Id");
         
 		List<Feature> features = featureTable.getFeatures();
+		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
 		
 		for(int i=0;i<features.size();i++) {
 			int extractorID = features.get(i).getExtractorId();
@@ -264,6 +268,9 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 							}
 						}
 						if(!extractorSupportsModality) {
+							Feature currentFeature = features.get(i);
+							currentFeature.setSelectedForExtraction(false);
+							deletedFeatures.add(currentFeature);
 							features.remove(i);
 							i--;
 						}
@@ -291,7 +298,20 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 
 	@Override
 	public void allFilesRemoved() {
-		setFeatureTable(originalFeatureTable);
+		List<Feature> features = getCurrentFeatureTable().getFeatures();
+		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
+		for(int i = 0; i<deletedFeatures.size(); i++) {
+			features.add(deletedFeatures.get(i));
+			deletedFeatures.remove(i);
+			i--;
+		}
+	    Collections.sort(features, new Comparator<Feature>() {
+	    	@Override
+	        public int compare(Feature f1, Feature f2) {
+	            return Integer.valueOf(f1.getId()).compareTo(Integer.valueOf(f2.getId()));
+	        }
+	    });
+		setFeatureTable(featureTable);
 		notifyListeners();
 	}
 
