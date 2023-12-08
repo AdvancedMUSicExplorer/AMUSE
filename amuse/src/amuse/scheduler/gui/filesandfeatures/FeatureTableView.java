@@ -52,6 +52,7 @@ public class FeatureTableView {
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
     private JCheckBox customFeatureCheckBox;
+    private JCheckBox showFeaturesAllModalities;
 
     /**
      * Creates a new Feature Table View.
@@ -109,6 +110,7 @@ public class FeatureTableView {
             jPanelFeatureExtractionButtons.add(getJButtonSelectAll());
             jPanelFeatureExtractionButtons.add(getJButtonDeselectAll());
             jPanelFeatureExtractionButtons.add(getCustomFeatureCheckBox());
+            jPanelFeatureExtractionButtons.add(getShowFeaturesAllModalities());
             jPanelFeatureExtractionButtons.add(Box.createHorizontalGlue());
             jPanelFeatureExtractionButtons.add(getLoadButton());
             jPanelFeatureExtractionButtons.add(getSaveButton());
@@ -168,6 +170,22 @@ public class FeatureTableView {
     		});
     	}
     	return customFeatureCheckBox;
+    }
+    
+    private JCheckBox getShowFeaturesAllModalities() {
+    	if(showFeaturesAllModalities == null) {
+    		showFeaturesAllModalities = new JCheckBox();
+    		showFeaturesAllModalities.setText("Show features of all modalities");
+    		showFeaturesAllModalities.addActionListener(l -> {
+    			FeatureTableModel model = (FeatureTableModel)table.getModel();
+    			if(showFeaturesAllModalities.isSelected()) {
+    				
+    			} else {
+    				
+    			}
+    		});
+    	}
+    	return showFeaturesAllModalities;
     }
 
     private void initGUI() {

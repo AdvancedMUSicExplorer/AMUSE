@@ -271,7 +271,7 @@ public class FeatureTable implements Serializable {
 	public void addCustomFeatures() {
 		for(int i = 0; i < features.size(); i++) {
 			Feature feature = features.get(i);
-			List<Feature> customFeatures = loadCustomFeatures(features.get(i).getId());
+			List<Feature> customFeatures = loadCustomFeatures(feature.getId());
 			for(Feature customFeature : customFeatures) {
 				if(!features.contains(customFeature)) {
 					i++;
@@ -314,7 +314,7 @@ public class FeatureTable implements Serializable {
 	            		// Skip this
 	            	} else {
 	            		String configIdString = idAttribute.getValueAt(i);
-	            		int configIdInt = new Double(configIdString).intValue();
+	            		int configIdInt = Double.valueOf(configIdString).intValue();
 	             		Feature f = new Feature(id, description.getValueAt(i), dimension.getValueAt(i).intValue(), extractorID.getValueAt(i).intValue(), featureType.getValueAt(i));
 	            		f.setSourceFrameSize(windowSize.getValueAt(i).intValue());
 	            		f.setSourceStepSize(stepSize.getValueAt(i).intValue());

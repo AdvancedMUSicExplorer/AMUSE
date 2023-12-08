@@ -244,7 +244,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		Attribute adapterClassAttribute = extractorTableSet.getAttribute("AdapterClass");
 		Attribute idAttribute = extractorTableSet.getAttribute("Id");
         
-		List<Feature> features = featureTable.getFeatures();
+		List<Feature> features = getCurrentFeatureTable().getFeatures();
 		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
 		
 		for(int i=0;i<features.size();i++) {
@@ -314,5 +314,4 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		setFeatureTable(featureTable);
 		notifyListeners();
 	}
-
 }
