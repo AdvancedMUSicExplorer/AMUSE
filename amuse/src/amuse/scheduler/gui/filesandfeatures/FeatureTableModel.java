@@ -54,6 +54,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
     private Object[][] table;
     private FeatureTable featureTable;
     private FeatureTable deletedFeatureTable = new FeatureTable();
+    private boolean showAllModalityFeatures = false;
     private ArrayList<TableModelListener> listeners = new ArrayList<TableModelListener>();
 
 	/**
@@ -164,7 +165,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         switch (columnIndex) {
             case 0:
-                return true;
+                return !featureTable.getFeatureAt(rowIndex).isDisabled();
             case 1:
                 return false;
             case 2:
@@ -215,6 +216,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
     
     public void addCustomFeatures(){
     	updateSelectedForExtraction();
+    	FeatureTable featureTable = getCurrentFeatureTable();
     	featureTable.addCustomFeatures();
     	setFeatureTable(featureTable);
     	notifyListeners();
@@ -228,7 +230,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
     }
 	
 	/** 
-	 * Deletes all features that are not associated with the given modality 
+	 * Deletes or disables all features that are not associated with the given modality 
 	 * by checking modalities of extractor tool.
 	 * @throws IOException 
 	 */
@@ -255,7 +257,6 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 					int adapterID = ((Double)idAttribute.getValueAt(j)).intValue();
 					
 					if(extractorID == adapterID) {
-						
 						String adapterName = adapterClassAttribute.getValueAt(j).toString();
 						Class <?> adapterClass = Class.forName(adapterName);
 						ExtractorInterface adapter = (ExtractorInterface) adapterClass.newInstance();
@@ -270,9 +271,12 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 						if(!extractorSupportsModality) {
 							Feature currentFeature = features.get(i);
 							currentFeature.setSelectedForExtraction(false);
-							deletedFeatures.add(currentFeature);
-							features.remove(i);
-							i--;
+							currentFeature.setIsDisabled(true);
+							if(!showAllModalityFeatures) {
+								deletedFeatures.add(currentFeature);
+								features.remove(i);
+								i--;
+							}
 						}
 						break;
 					}
@@ -283,6 +287,66 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 				e.printStackTrace();
 			}
 		}
+		sortFeatures();
+		setFeatureTable(featureTable);
+		notifyListeners();
+	}
+	
+	public void reenableModalityFeatures(ModalityEnum modality) throws IOException {
+		// Load extractorTableSet to get adapter class
+		DataSetAbstract extractorTableSet;
+		try {
+			extractorTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
+		} catch (IOException e) {
+			throw new IOException ("Feature table could not be loaded.");
+		}
+		Attribute adapterClassAttribute = extractorTableSet.getAttribute("AdapterClass");
+		Attribute idAttribute = extractorTableSet.getAttribute("Id");
+        
+		List<Feature> features = getCurrentFeatureTable().getFeatures();
+		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
+		
+		List<Feature> targetFeatures = showAllModalityFeatures ? features : deletedFeatures;
+		
+		for(int i=0;i<targetFeatures.size();i++) {
+			int extractorID = deletedFeatures.get(i).getExtractorId();
+			try {
+				for(int j=0;j<idAttribute.getValueCount();j++) {
+					int adapterID = ((Double)idAttribute.getValueAt(j)).intValue();
+					
+					if(extractorID == adapterID) {
+						String adapterName = adapterClassAttribute.getValueAt(j).toString();
+						Class <?> adapterClass = Class.forName(adapterName);
+						ExtractorInterface adapter = (ExtractorInterface) adapterClass.newInstance();
+						List<Modality> modalities = adapter.getModalities();
+						
+						boolean extractorSupportsModality = false;
+						for (Modality extractorModality: modalities) {
+							if(extractorModality.getModalityEnum() == modality) {
+								extractorSupportsModality = true;
+							}
+						}
+						if(extractorSupportsModality) {
+							Feature currentFeature = deletedFeatures.get(i);
+							currentFeature.setSelectedForExtraction(true);
+							currentFeature.setIsDisabled(false);
+							if(!showAllModalityFeatures) {
+								features.add(currentFeature);
+								deletedFeatures.remove(i);
+								i--;
+							}
+							
+						}
+						break;
+					}
+				}
+			} catch (ClassNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (InstantiationException | IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+		sortFeatures();
 		setFeatureTable(featureTable);
 		notifyListeners();
 	}
@@ -295,23 +359,90 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 			e.printStackTrace();
 		}
 	}
+	
+	public void sortFeatures() {
+		Collections.sort(featureTable.getFeatures(), new Comparator<Feature>() {
+	    	@Override
+	        public int compare(Feature f1, Feature f2) {
+	            int comp = Boolean.valueOf(f1.isDisabled()).compareTo(Boolean.valueOf(f2.isDisabled()));
+	            if(comp == 0) {
+	            	return Integer.valueOf(f1.getId()).compareTo(Integer.valueOf(f2.getId()));
+	            }
+	    		return comp;
+	        }
+	    });
+	}
 
 	@Override
 	public void allFilesRemoved() {
+		List<Feature> features = featureTable.getFeatures();
+		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
+		if(!showAllModalityFeatures) {
+			for(int i = 0; i<deletedFeatures.size(); i++) {
+				Feature currentFeature = deletedFeatures.get(i);
+				currentFeature.setIsDisabled(false);
+				features.add(currentFeature);
+				deletedFeatures.remove(i);
+				i--;
+			}
+		} else {
+			for(Feature feature: features) {
+				feature.setIsDisabled(false);
+			}
+		}
+		setAllFeaturesSelected();
+	    sortFeatures();
+		setFeatureTable(featureTable);
+		notifyListeners();
+	}
+	
+	public void setAllFeaturesSelected() {
+		List<Feature> features = featureTable.getFeatures();
+		for(Feature feature: features) {
+			feature.setSelectedForExtraction(true);
+		}
+	}
+
+	/** Show all modalities in the feature table and disable features 
+	 * that do not match the modality of the files in the file tree. */
+	public void showAllModalities() {
 		List<Feature> features = getCurrentFeatureTable().getFeatures();
 		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
 		for(int i = 0; i<deletedFeatures.size(); i++) {
-			features.add(deletedFeatures.get(i));
+			Feature feature = deletedFeatures.get(i);
+			feature.setIsDisabled(true);
+			features.add(feature);
 			deletedFeatures.remove(i);
 			i--;
 		}
-	    Collections.sort(features, new Comparator<Feature>() {
-	    	@Override
-	        public int compare(Feature f1, Feature f2) {
-	            return Integer.valueOf(f1.getId()).compareTo(Integer.valueOf(f2.getId()));
-	        }
-	    });
+		showAllModalityFeatures = true;
 		setFeatureTable(featureTable);
 		notifyListeners();
+	}
+	
+	/** Delete all currently disabled features from the featureTable. */
+	public void hideAllModalities() {
+		List<Feature> features = featureTable.getFeatures();
+		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
+		for(int i = 0; i < features.size(); i++) {
+			Feature feature = features.get(i);
+			if(feature.isDisabled()) {
+				deletedFeatures.add(feature);
+				features.remove(i);
+				i--;
+			}
+		}
+		showAllModalityFeatures = false;
+		setFeatureTable(featureTable);
+		notifyListeners();
+	}
+
+	@Override
+	public void selectedFilesRemoved(ModalityEnum modality) {
+		try {
+			reenableModalityFeatures(modality);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

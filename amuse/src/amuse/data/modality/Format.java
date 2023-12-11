@@ -5,6 +5,8 @@ import java.util.List;
 
 /**
  * This interface defines the operations which should be supported by all format enum classes.
+ * 
+ * @author Clara Pingel
  */
 public interface Format {
 	

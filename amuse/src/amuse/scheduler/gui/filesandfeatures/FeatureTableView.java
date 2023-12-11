@@ -37,7 +37,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
+
+import amuse.data.FeatureTable;
 
 /**
  *
@@ -45,7 +48,22 @@ import javax.swing.table.TableRowSorter;
  */
 public class FeatureTableView {
     private JPanel view = new JPanel();
-    private JTable table = new JTable();
+    private JTable table = new JTable() {
+    	@Override
+    	public Component prepareRenderer (TableCellRenderer renderer, int index_row, int index_col){
+            Component comp = super.prepareRenderer(renderer, index_row, index_col);
+            
+			FeatureTableModel model = (FeatureTableModel)this.getModel();
+			int currentFeatureID = (int) this.getModel().getValueAt(index_row, 1);
+			FeatureTable featureTable = model.getCurrentFeatureTable();
+            if( featureTable.getFeatureByID(currentFeatureID).isDisabled() ){
+            	comp.setEnabled(false);
+            } else {
+            	comp.setEnabled(true);
+            }
+			return comp;                           
+        }
+    };
     private JPanel jPanelFeatureExtractionButtons;
     private JButton saveSelectionButton;
     private JButton loadSelectionButton;
@@ -179,9 +197,9 @@ public class FeatureTableView {
     		showFeaturesAllModalities.addActionListener(l -> {
     			FeatureTableModel model = (FeatureTableModel)table.getModel();
     			if(showFeaturesAllModalities.isSelected()) {
-    				
+    				model.showAllModalities();
     			} else {
-    				
+    				model.hideAllModalities();
     			}
     		});
     	}

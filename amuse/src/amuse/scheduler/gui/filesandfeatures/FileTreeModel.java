@@ -25,6 +25,7 @@
 package amuse.scheduler.gui.filesandfeatures;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -69,7 +70,6 @@ public class FileTreeModel extends DefaultTreeModel {
         }
     }
     
-    
     public void addTreeModelModalityListener(TreeModelModalityListener listener) {
 	    listeners.add(listener);
     }
@@ -78,6 +78,10 @@ public class FileTreeModel extends DefaultTreeModel {
         listeners.remove(listener);
     }
     
+    /** 
+     * Notify all listeners, that a single file was added. 
+     * @param modality of the added file
+     */
     private void notifyModalityListenersAdd(ModalityEnum modality) {
     	this.updateEndings(modality);
         for (TreeModelModalityListener listener : listeners) {
@@ -85,13 +89,43 @@ public class FileTreeModel extends DefaultTreeModel {
         }
     }
     
-    private void notifyModalityListenersRemoveAll() {
+    /** Notify all listeners, that all files were removed. */
+    private void notifyModalityListenersRemovedAll() {
     	this.updateEndings(null);
         for (TreeModelModalityListener listener : listeners) {
         	listener.allFilesRemoved();
         }
     }
+    
+    /** Notify listeners, if files were removed and the remaining files fit one modality. */
+    public void notifyModalityListenersRemovedSelected() {
+    	List<ModalityEnum> modalities = new ArrayList<ModalityEnum>();
+    	List<File> files = getFiles();
+    	// If there are no files remaining
+    	if(files.size() == 0) {
+    		notifyModalityListenersRemovedAll();
+    	} else {
+    		for(File file: files) {
+        		ModalityEnum currentModality = ModalityEnum.getModalityEnum(file);
+        		if(!modalities.contains(currentModality)) {
+        			modalities.add(currentModality);
+        		}
+        	}
+        	if(modalities.size() == 1) {
+        		ModalityEnum remainingModality = modalities.get(0);
+        		this.updateEndings(remainingModality);
+        		for (TreeModelModalityListener listener : listeners) {
+                	listener.selectedFilesRemoved(remainingModality);
+                }
+        		this.updateEndings(remainingModality);
+        	}
+    	}
+    }
 
+    /** 
+     * Updates the accepted file endings according to the given modality.
+     * @param modality 
+     */
 	public void updateEndings(ModalityEnum modality) {
         if(modality == null) {
         	this.fileEndings = ModalityEnum.getAllEndings();
@@ -101,17 +135,15 @@ public class FileTreeModel extends DefaultTreeModel {
     }
 
     /**
-     * adds a single file to this model.
-     * @param file the file to add to the model.
+     * Adds a single file or files in a folder to this model.
+     * @param file or folder to add to the model.
      */
     protected void addFile(File file) {
-//        System.out.println("Path to Music DB: " + relativeToPath.getAbsolutePath());
-//        System.out.println("File to Add: "+ file.getAbsolutePath());
         if (!file.isDirectory() && hasCorrectEnding(file)) {
             insertInTree(file);
         }
         if (file.isDirectory() && hasNonHiddenContent(file)) {
-            Vector<File> files = new Vector<File>();
+    		Vector<File> files = new Vector<File>();
             for (File child : file.listFiles()) {
                 files.add(child);
             }
@@ -125,13 +157,13 @@ public class FileTreeModel extends DefaultTreeModel {
     }
 
     /**
-     * Retuns all files in the current FileTreeModel
+     * Returns all files in the current FileTreeModel
      * @return complete list of files in this model.
      */
     public List<File> getFiles() {
         Vector<File> files = new Vector<File>();
         DefaultMutableTreeNode rootNode = (DefaultMutableTreeNode) root;
-        Enumeration nodes = rootNode.breadthFirstEnumeration();
+        Enumeration<?> nodes = rootNode.breadthFirstEnumeration();
         while (nodes.hasMoreElements()) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodes.nextElement();
             if (node.isLeaf()) {
@@ -147,17 +179,18 @@ public class FileTreeModel extends DefaultTreeModel {
         return relativeToFolder;
     }
 
-    void removeAllFiles() {
+    /** Removes all files from the fileTree. */
+    public void removeAllFiles() {
         mainNode.removeAllChildren();
         mainNode.removeFromParent();
         relativeToNode.removeAllChildren();
         relativeToNode.removeFromParent();
         mainNode.removeFromParent();
         this.reload();
-        this.notifyModalityListenersRemoveAll();
+        this.notifyModalityListenersRemovedAll();
     }
 
-    void removeNode(DefaultMutableTreeNode node) {
+    public void removeNode(DefaultMutableTreeNode node) {
         node.removeAllChildren();
         DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
         node.removeFromParent();
@@ -199,7 +232,7 @@ public class FileTreeModel extends DefaultTreeModel {
                 }
             }
             if (existingChild == null) {
-//                System.out.println("Creating node: "+ expectedFile.getName());
+            	// System.out.println("Creating node: "+ expectedFile.getName());
                 existingChild = new FileMutableTreeNode(expectedFile);
                 node.add(existingChild);
             }
@@ -216,7 +249,6 @@ public class FileTreeModel extends DefaultTreeModel {
             }
         }
         if (existingChild == null) {
-//                System.out.println("Creating leaf: "+ expectedFile.getAbsolutePath());
             existingChild = new FileMutableTreeNode(expectedFile);
             node.add(existingChild);
         }
@@ -240,8 +272,9 @@ public class FileTreeModel extends DefaultTreeModel {
         return false;
     }
 
+    /** Returns true, if the given file fits one of the currently accepted endings. */
     private boolean hasCorrectEnding(File file) {
-        for (String ending : fileEndings) {
+        for (String ending : this.fileEndings) {
             if (file.getName().endsWith('.'+ending)) {
                 return true;
             }

@@ -238,4 +238,9 @@ public class ExtractionController extends AbstractController implements TreeMode
 	public void allFilesRemoved() {
 		this.currentModality = null;
 	}
+
+	@Override
+	public void selectedFilesRemoved(ModalityEnum modality) {
+		this.currentModality = modality;
+	}
 }

@@ -210,7 +210,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (IV) Check if file fits tool requirements
 		// -----------------------------------------
 		
-	    /* Search for extractor tools, that can't extract from the inputFiles format */
+	    // Search for extractor tools, that can't extract from the inputFiles format
 	    List<Integer> extractorsNotFitting = new ArrayList<>();
 	    for (Map.Entry<Integer, ExtractorInterface> e : extractors.entrySet()) {
 	        boolean fitsAnyToolModality = e.getValue().getModalities().stream().anyMatch(modality -> modality.matchesRequirements(new File(inputFileName)));
@@ -226,7 +226,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (V) Convert input file if needed and possible
 		// ---------------------------------------------
 		
-		/* If file does not match requirements of an extractor tool, convert */
+		// If file does not match requirements of an extractor tool, convert
 		if(!extractorsNotFitting.isEmpty()) {
 			// TODO Generalize, add more conversions
 			if(relativeName.endsWith(".mp3")) {
@@ -250,7 +250,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 				}
 			}
 		} 
-		/* if file already fits requirements */
+		// if file already fits requirements
 		else {
 			// TODO move splitting files out of AudioFileConversion
 			// TODO add methods for splitting other file formats

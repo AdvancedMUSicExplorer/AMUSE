@@ -94,6 +94,7 @@ public interface Modality {
 		}
 	}
 	
+	/** Returns a list of all formats listed in modality classes */
 	public static List<Format> getAllFormats() {
 		List<Format> formats = new ArrayList<Format>();
 		formats.addAll(Arrays.asList(SymbolicFormat.values()));

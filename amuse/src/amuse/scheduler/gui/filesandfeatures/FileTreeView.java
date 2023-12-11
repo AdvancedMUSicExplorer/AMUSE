@@ -44,7 +44,6 @@ import javax.swing.tree.TreeSelectionModel;
 public class FileTreeView {
 
     JPanel view = new JPanel();
-
     JTree tree = new JTree();
     JPanel buttonPanel;
     JButton addButton;

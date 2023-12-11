@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -94,6 +93,9 @@ public class Feature implements Serializable {
 	
 	/** This value is used to determine if this feature is selected for extraction */
 	private boolean isSelectedForExtraction = true;
+	
+	/** This value is used to store, if a feature should be grayed out in the extraction experiment */
+	private boolean disabled = false;
 	
 	public Feature(ArrayList<Integer> ids, String description, ArrayList<Double[]> values,ArrayList<Double> windows) {
 		this.ids = ids;
@@ -245,6 +247,14 @@ public class Feature implements Serializable {
 	
 	public void setSelectedForExtraction(boolean bool) {
 		this.isSelectedForExtraction = bool;
+	}
+	
+	public boolean isDisabled() {
+		return this.disabled;
+	}
+	
+	public void setIsDisabled(boolean bool) {
+		this.disabled = bool;
 	}
 	
 	@Override

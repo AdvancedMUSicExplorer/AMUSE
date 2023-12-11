@@ -53,6 +53,8 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
 
     FileTreeModel model;
     FileTreeView view;
+    
+    /** Stores the current modality */
     private ModalityEnum currentModality;
     private String fileFilterDescription;
 
@@ -71,6 +73,10 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
         updateFilterDescription();
     }
     
+    /** 
+     * Updates the currentModality and corresponding filterDescription.
+     * @param modality
+     */
     public void updateModality(ModalityEnum modality) {
     	this.currentModality = modality;
     	updateFilterDescription();
@@ -258,8 +264,9 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
             for (TreePath path : selectedNodes) {
                 model.removeNode((DefaultMutableTreeNode) path.getLastPathComponent());
             }
+            model.notifyModalityListenersRemovedSelected();
         } else {
-            JOptionPane.showMessageDialog(view.getView(), "Select atleast one file to remove.", "No file selcted!", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(view.getView(), "Select at least one file to remove.", "No file selcted!", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -272,5 +279,9 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
 	public void allFilesRemoved() {
 		updateModality(null);
 	}
-    
+
+	@Override
+	public void selectedFilesRemoved(ModalityEnum modality) {
+		updateModality(modality);
+	}
 }

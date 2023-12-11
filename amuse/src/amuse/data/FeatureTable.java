@@ -273,6 +273,8 @@ public class FeatureTable implements Serializable {
 			Feature feature = features.get(i);
 			List<Feature> customFeatures = loadCustomFeatures(feature.getId());
 			for(Feature customFeature : customFeatures) {
+				customFeature.setSelectedForExtraction(feature.isSelectedForExtraction());
+				customFeature.setIsDisabled(feature.isDisabled());
 				if(!features.contains(customFeature)) {
 					i++;
 					features.add(i, customFeature);

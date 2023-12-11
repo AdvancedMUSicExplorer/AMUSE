@@ -17,6 +17,8 @@ import amuse.util.AmuseLogger;
 /** 
  * SymbolicModality objects can be used by extraction tools to specify, 
  * that all of their features can be extracted from symbolic data and from which formats.
+ * 
+ * @author Clara Pingel
  */
 public class SymbolicModality implements Modality {
 
