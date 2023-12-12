@@ -49,14 +49,12 @@ import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
  * Controller Class for MusicFileTrees.
  * @author Clemens Waeltken
  */
-public class FileTreeController implements ActionListener, KeyListener, TreeModelModalityListener {
+public class FileTreeController implements ActionListener, KeyListener {
 
     FileTreeModel model;
     FileTreeView view;
     
-    /** Stores the current modality */
-    private ModalityEnum currentModality;
-    private String fileFilterDescription;
+    private String fileFilterDescription = "music files";
 
     private File filelistFolder = new File("experiments" + File.separator + "filelists");
 
@@ -70,24 +68,7 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
         this.view = view;
         view.setModel(this.model);
         view.setController(this);
-        updateFilterDescription();
-    }
-    
-    /** 
-     * Updates the currentModality and corresponding filterDescription.
-     * @param modality
-     */
-    public void updateModality(ModalityEnum modality) {
-    	this.currentModality = modality;
-    	updateFilterDescription();
-    }
-    
-    public void updateFilterDescription() {
-    	if (this.currentModality == null) {
-        	this.fileFilterDescription = "music files";
-        } else {
-            this.fileFilterDescription = currentModality.getGenericName() + " music files";
-        }
+        //updateFilterDescription();
     }
 
     /**
@@ -125,7 +106,7 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
                 fileList.add(musicFile);
             }
             FileTableSet fileSet = new FileTableSet(fileList);
-//            System.out.println(fileSet.getValueCount());
+        	// System.out.println(fileSet.getValueCount());
             try {
                 // 4. Write file
                 fileSet.saveToArffFile(file);
@@ -179,14 +160,20 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
             jFileChooserSelect.setFileFilter(new FileFilter() {
 
                 @Override
-                public boolean accept(File arg0) {
-                	boolean fileFitsModality;
-                	if (currentModality == null) {
-                		fileFitsModality = ModalityEnum.fitsAnyModality(arg0);
+                public boolean accept(File file) {
+                	/*boolean fileFitsModality;
+                	if (currentModalities == null || currentModalities.isEmpty()) {
+                		fileFitsModality = ModalityEnum.fitsAnyModality(file);
                 	} else {
-                		fileFitsModality = currentModality.fitsModality(arg0);
-                	}
-                    return (arg0.isDirectory() || fileFitsModality);
+                		fileFitsModality = false;
+                		for(ModalityEnum modality: currentModalities) {
+                			if(modality.fitsModality(file)) {
+                				fileFitsModality = true;
+                			}
+                		}
+                	}*/
+                	boolean fileFitsAnyModality = ModalityEnum.fitsAnyModality(file);
+                    return (file.isDirectory() || fileFitsAnyModality);
                 }
 
                 @Override
@@ -197,7 +184,7 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
             int returnValue = jFileChooserSelect.showDialog(view.getView(), "Select File/Folder");
             if (returnValue == javax.swing.JFileChooser.APPROVE_OPTION) {
                 for (File f : jFileChooserSelect.getSelectedFiles()) {
-                    model.addFile(f);
+                	model.addFile(f);
                 }
             }
         } else if (e.getActionCommand().equals("remove")) {
@@ -269,19 +256,4 @@ public class FileTreeController implements ActionListener, KeyListener, TreeMode
             JOptionPane.showMessageDialog(view.getView(), "Select at least one file to remove.", "No file selcted!", JOptionPane.WARNING_MESSAGE);
         }
     }
-
-	@Override
-	public void fileAdded(ModalityEnum modality) {
-		updateModality(modality);
-	}
-
-	@Override
-	public void allFilesRemoved() {
-		updateModality(null);
-	}
-
-	@Override
-	public void selectedFilesRemoved(ModalityEnum modality) {
-		updateModality(modality);
-	}
 }

@@ -42,7 +42,6 @@ import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.interfaces.nodes.methods.AmuseTask;
@@ -120,8 +119,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					fileId.add(extractorConfig.getMusicFileList().getIds().get(k));
 					ArrayList<String> filePath = new ArrayList<String>(1);
 					filePath.add(extractorConfig.getMusicFileList().getFileAt(k));
-					ModalityEnum modality = extractorConfig.getModalityEnum();
-					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable, modality);
+					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable);
 					
 					FileOutputStream fos = null;
 		   	   		ObjectOutputStream out = null;
@@ -192,8 +190,7 @@ public class FeatureExtractionStarter extends AmuseTaskStarter {
 					fileId.add(extractorConfig.getMusicFileList().getIds().get(k));
 					ArrayList<String> filePath = new ArrayList<String>(1);
 					filePath.add(extractorConfig.getMusicFileList().getFileAt(k));
-					ModalityEnum modality = extractorConfig.getModalityEnum();
-					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable, modality);
+					ExtractionConfiguration extractorConfigWithOneFile = new ExtractionConfiguration(new FileTable(fileId,filePath), featureTable);
 				
 					
 					ExtractorNodeScheduler extractorThread = null;

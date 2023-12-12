@@ -34,14 +34,12 @@ import javax.swing.JOptionPane;
 
 
 import amuse.data.io.DataSetException;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.data.datasets.ExtractorConfigSet;
 import amuse.nodes.extractor.ExtractionConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 import amuse.scheduler.gui.filesandfeatures.FilesAndFeaturesFacade;
-import amuse.scheduler.gui.filesandfeatures.TreeModelModalityListener;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
@@ -56,11 +54,10 @@ import javax.swing.JPanel;
  * 
  * @author Clemens Waeltken
  */
-public class ExtractionController extends AbstractController implements TreeModelModalityListener {
+public class ExtractionController extends AbstractController {
 
     WizardController wizardController;
     FilesAndFeaturesFacade filesAndFeatures;
-    ModalityEnum currentModality;
     ExtractionPanel extractionPanel;
     File feFolder = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH)
             + File.separator + "experiments" + File.separator + "FE");
@@ -70,14 +67,10 @@ public class ExtractionController extends AbstractController implements TreeMode
         wizardController = wc;
         getView();
         
-        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(this);
         filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(filesAndFeatures.getFeatureTableModel());
-        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(filesAndFeatures.getFileTreeController());
     }
 
 	public void addExtraction() {
-        // System.out.println("File count: " +
-        // jPanelAmuseFileTree.getFiles().size());
         if (!filesAndFeatures.filesAndFeaturesSelected()) {
             JOptionPane.showMessageDialog(filesAndFeatures.getView(),
                     "Please select at least one music file and feature!",
@@ -119,7 +112,7 @@ public class ExtractionController extends AbstractController implements TreeMode
             return;
         }
         ExtractorConfigSet extractorConfigSet = new ExtractorConfigSet(
-                fileTableFile, featureTableFile, this.currentModality);
+                fileTableFile, featureTableFile);
         try {
             extractorConfigSet.saveToArffFile(selectedFile);
             filesAndFeatures.saveFilesAndFeatures(fileTableFile,
@@ -154,7 +147,7 @@ public class ExtractionController extends AbstractController implements TreeMode
     @Override
     public ExtractionConfiguration getExperimentConfiguration() {
         ExtractionConfiguration config = new ExtractionConfiguration(new FileTable(filesAndFeatures.getFiles()),
-                filesAndFeatures.getFeatureTable(), this.currentModality);
+                filesAndFeatures.getFeatureTable());
         return config;
     }
 
@@ -228,19 +221,4 @@ public class ExtractionController extends AbstractController implements TreeMode
             return "Feature Extraction Configurator";
         }
     }
-
-	@Override
-	public void fileAdded(ModalityEnum modality) {
-		this.currentModality = modality;
-	}
-
-	@Override
-	public void allFilesRemoved() {
-		this.currentModality = null;
-	}
-
-	@Override
-	public void selectedFilesRemoved(ModalityEnum modality) {
-		this.currentModality = modality;
-	}
 }

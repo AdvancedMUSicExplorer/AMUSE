@@ -63,7 +63,7 @@ public class FileTreeModel extends DefaultTreeModel {
         
         if (!this.relativeToFolder.isDirectory()) {
         	JOptionPane.showMessageDialog(null,
-                    this.relativeToFolder.getPath() + "is not a folder!",
+                    this.relativeToFolder.getPath() + " is not a folder!",
                     "Music database is not a folder",
                     JOptionPane.ERROR_MESSAGE);
             throw new IllegalArgumentException(this.relativeToFolder.getName() + " is not a folder!");
@@ -82,10 +82,10 @@ public class FileTreeModel extends DefaultTreeModel {
      * Notify all listeners, that a single file was added. 
      * @param modality of the added file
      */
-    private void notifyModalityListenersAdd(ModalityEnum modality) {
-    	this.updateEndings(modality);
+    private void notifyModalityListenersAdd(List<ModalityEnum> modalities) {
+    	this.updateEndings(modalities);
         for (TreeModelModalityListener listener : listeners) {
-        	listener.fileAdded(modality);
+        	listener.fileAdded(modalities);
         }
     }
     
@@ -111,26 +111,24 @@ public class FileTreeModel extends DefaultTreeModel {
         			modalities.add(currentModality);
         		}
         	}
-        	if(modalities.size() == 1) {
-        		ModalityEnum remainingModality = modalities.get(0);
-        		this.updateEndings(remainingModality);
-        		for (TreeModelModalityListener listener : listeners) {
-                	listener.selectedFilesRemoved(remainingModality);
-                }
-        		this.updateEndings(remainingModality);
-        	}
+            listeners.forEach(listener -> listener.selectedFilesRemoved(modalities));
+    		this.updateEndings(modalities);
     	}
-    }
+	}
+    
 
     /** 
-     * Updates the accepted file endings according to the given modality.
-     * @param modality 
+     * Updates the accepted file endings according to the given modalities.
+     * @param modalities
      */
-	public void updateEndings(ModalityEnum modality) {
-        if(modality == null) {
+	public void updateEndings(List<ModalityEnum> modalities) {
+        if(modalities == null || modalities.isEmpty()) {
         	this.fileEndings = ModalityEnum.getAllEndings();
         } else {
-            this.fileEndings = modality.getEndings();
+        	for(ModalityEnum modality: modalities) {
+        		this.fileEndings.clear();
+        		this.fileEndings.addAll(modality.getEndings());
+        	}
         }
     }
 
@@ -139,8 +137,15 @@ public class FileTreeModel extends DefaultTreeModel {
      * @param file or folder to add to the model.
      */
     protected void addFile(File file) {
-        if (!file.isDirectory() && hasCorrectEnding(file)) {
+        if (!file.isDirectory() && ModalityEnum.fitsAnyModality(file)) {
             insertInTree(file);
+            List<ModalityEnum> modalities = new ArrayList<ModalityEnum>();
+            ModalityEnum currentModality = ModalityEnum.getModalityEnum(file);
+        	if(!modalities.contains(currentModality)) {
+        		modalities.add(currentModality);
+        	}
+        	this.nodeStructureChanged(root);
+            this.notifyModalityListenersAdd(modalities);
         }
         if (file.isDirectory() && hasNonHiddenContent(file)) {
     		Vector<File> files = new Vector<File>();
@@ -149,11 +154,9 @@ public class FileTreeModel extends DefaultTreeModel {
             }
             Collections.sort(files);
             for (File child : files) {
-                addFile(child);
+                	addFile(child);
             }
         }
-        this.nodeStructureChanged(root);
-        this.notifyModalityListenersAdd(ModalityEnum.getModalityEnum(file));
     }
 
     /**

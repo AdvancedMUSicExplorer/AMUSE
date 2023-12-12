@@ -230,11 +230,11 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
     }
 	
 	/** 
-	 * Deletes or disables all features that are not associated with the given modality 
+	 * Deletes or disables all features that are not associated with the given modalities 
 	 * by checking modalities of extractor tool.
 	 * @throws IOException 
 	 */
-	public void filterFeatureTable(ModalityEnum modality) throws IOException {
+	public void filterFeatureTable(List<ModalityEnum> modalities) throws IOException {
 		
 		// Load extractorTableSet to get adapter class
 		DataSetAbstract extractorTableSet;
@@ -260,15 +260,12 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 						String adapterName = adapterClassAttribute.getValueAt(j).toString();
 						Class <?> adapterClass = Class.forName(adapterName);
 						ExtractorInterface adapter = (ExtractorInterface) adapterClass.newInstance();
-						List<Modality> modalities = adapter.getModalities();
+						List<Modality> toolModalities = adapter.getModalities();
 						
-						boolean extractorSupportsModality = false;
-						for (Modality extractorModality: modalities) {
-							if(extractorModality.getModalityEnum() == modality) {
-								extractorSupportsModality = true;
-							}
-						}
-						if(!extractorSupportsModality) {
+						List<ModalityEnum> toolModalityEnums = new ArrayList<ModalityEnum>();
+						toolModalities.forEach(modality -> toolModalityEnums.add(modality.getModalityEnum()));
+						
+						if(!toolModalityEnums.containsAll(modalities)) {
 							Feature currentFeature = features.get(i);
 							currentFeature.setSelectedForExtraction(false);
 							currentFeature.setIsDisabled(true);
@@ -292,7 +289,8 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		notifyListeners();
 	}
 	
-	public void reenableModalityFeatures(ModalityEnum modality) throws IOException {
+	/** Add or enable all features that extract from all given modalities. */
+	public void reenableModalityFeatures(List<ModalityEnum> modalities) throws IOException {
 		// Load extractorTableSet to get adapter class
 		DataSetAbstract extractorTableSet;
 		try {
@@ -305,7 +303,6 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
         
 		List<Feature> features = getCurrentFeatureTable().getFeatures();
 		List<Feature> deletedFeatures = deletedFeatureTable.getFeatures();
-		
 		List<Feature> targetFeatures = showAllModalityFeatures ? features : deletedFeatures;
 		
 		for(int i=0;i<targetFeatures.size();i++) {
@@ -318,15 +315,12 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 						String adapterName = adapterClassAttribute.getValueAt(j).toString();
 						Class <?> adapterClass = Class.forName(adapterName);
 						ExtractorInterface adapter = (ExtractorInterface) adapterClass.newInstance();
-						List<Modality> modalities = adapter.getModalities();
+						List<Modality> toolModalities = adapter.getModalities();
 						
-						boolean extractorSupportsModality = false;
-						for (Modality extractorModality: modalities) {
-							if(extractorModality.getModalityEnum() == modality) {
-								extractorSupportsModality = true;
-							}
-						}
-						if(extractorSupportsModality) {
+						List<ModalityEnum> toolModalityEnums = new ArrayList<ModalityEnum>();
+						toolModalities.forEach(modality -> toolModalityEnums.add(modality.getModalityEnum()));
+						
+						if(toolModalityEnums.containsAll(modalities)) {
 							Feature currentFeature = deletedFeatures.get(i);
 							currentFeature.setSelectedForExtraction(true);
 							currentFeature.setIsDisabled(false);
@@ -335,9 +329,8 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 								deletedFeatures.remove(i);
 								i--;
 							}
-							
+							break;
 						}
-						break;
 					}
 				}
 			} catch (ClassNotFoundException e1) {
@@ -352,14 +345,15 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 	}
 
 	@Override
-	public void fileAdded(ModalityEnum modality) {
+	public void fileAdded(List<ModalityEnum> modalities) {
 		try {
-			filterFeatureTable(modality);
+			filterFeatureTable(modalities);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
+	/** Sorts the current FeatureTable so that features are sorted primarily by modality and secondarily by id */
 	public void sortFeatures() {
 		Collections.sort(featureTable.getFeatures(), new Comparator<Feature>() {
 	    	@Override
@@ -396,6 +390,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		notifyListeners();
 	}
 	
+	/** Check all boxes in featureTable. */
 	public void setAllFeaturesSelected() {
 		List<Feature> features = featureTable.getFeatures();
 		for(Feature feature: features) {
@@ -416,6 +411,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 			i--;
 		}
 		showAllModalityFeatures = true;
+		sortFeatures();
 		setFeatureTable(featureTable);
 		notifyListeners();
 	}
@@ -438,9 +434,9 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 	}
 
 	@Override
-	public void selectedFilesRemoved(ModalityEnum modality) {
+	public void selectedFilesRemoved(List<ModalityEnum> modalities) {
 		try {
-			reenableModalityFeatures(modality);
+			reenableModalityFeatures(modalities);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

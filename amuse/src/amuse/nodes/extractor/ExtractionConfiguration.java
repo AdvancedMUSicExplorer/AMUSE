@@ -33,7 +33,6 @@ import org.apache.log4j.Level;
 import amuse.data.FeatureTable;
 import amuse.data.FileTable;
 import amuse.data.datasets.ExtractorConfigSet;
-import amuse.data.modality.Modality.ModalityEnum;
 import amuse.interfaces.nodes.TaskConfiguration;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
@@ -56,8 +55,6 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	/** Feature list */
 	private final FeatureTable features;
 	
-	private final ModalityEnum modality;
-	
 	/** Folder to store the extracted features (default: Amuse extracted feature database) */
 	private String featureDatabase;
 
@@ -66,10 +63,9 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	 * @param musicFile Music file list for feature extraction
 	 * @param features Features to extract
 	 */
-	public ExtractionConfiguration(FileTable musicFileList, FeatureTable features, ModalityEnum modality) {
+	public ExtractionConfiguration(FileTable musicFileList, FeatureTable features) {
 		this.musicFileList = musicFileList;
 		this.features = features;
-		this.modality = modality;
 		this.setFeatureDatabase(AmusePreferences.get(KeysStringValue.FEATURE_DATABASE));
 	}
 
@@ -85,13 +81,12 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	    for(int i=0;i<extractorConfig.getValueCount();i++) {
 			String currentMusicFileList = extractorConfig.getMusicFileListAttribute().getValueAt(i).toString();
 			String currentFeatureTableString = extractorConfig.getFeatureTableAttribute().getValueAt(i).toString();
-			String currentModality = extractorConfig.getModalityAttribute().getValueAt(i).toString();
 
 			// Load the file and feature tables
 			FileTable currentFileTable = new FileTable(new File(currentMusicFileList));
 			FeatureTable currentFeatureTable = new FeatureTable(new File(currentFeatureTableString));
 			
-			taskConfigurations.add(new ExtractionConfiguration(currentFileTable,currentFeatureTable, ModalityEnum.getByGenericName(currentModality)));
+			taskConfigurations.add(new ExtractionConfiguration(currentFileTable,currentFeatureTable));
 			AmuseLogger.write(ExtractionConfiguration.class.getName(), Level.DEBUG, taskConfigurations.size() + " extraction task(s) for " + currentMusicFileList + " loaded");
 		}
 
@@ -164,10 +159,4 @@ public class ExtractionConfiguration extends TaskConfiguration {
 	public String getDescription() {
 		return new String("Number of files: " + musicFileList.getFiles().size() + " Number of features: " + features.getSelectedIds().size());
 	}
-
-	public ModalityEnum getModalityEnum() {
-		return modality;
-	}
-
-	
 }
