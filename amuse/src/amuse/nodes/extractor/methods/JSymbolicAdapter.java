@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,8 +78,20 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 		
 		File configFile = new File(properties.getProperty("extractorFolder") + File.separator + "jSymbolicConfig.txt");
 		try {
-			configFile.createNewFile();
-			FileWriter writer = new FileWriter(configFile, true);
+			BufferedReader reader = new BufferedReader(new FileReader(configFile));
+			List<String> features = new ArrayList<String>();
+			String line;
+			while((line = reader.readLine()) != null && !line.equals("<input_files>")) {
+				features.add(line);
+			}
+			reader.close();
+			
+			FileWriter writer = new FileWriter(configFile, false);
+			
+			for(String feature: features) {
+				writer.write(feature);
+				writer.write("\n");
+			}
 			
 			// Set input file in config file
 			writer.write("<input_files>");
@@ -97,7 +110,7 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 			// Set options in config file
 			writer.write("<jSymbolic_options>");
 			writer.write(System.getProperty("line.separator"));
-			writer.write("window_size=1.0");
+			writer.write("window_size=0.0232199546485");
 			writer.write(System.getProperty("line.separator"));
 			writer.write("window_overlap=0.0");
 			writer.write(System.getProperty("line.separator"));
