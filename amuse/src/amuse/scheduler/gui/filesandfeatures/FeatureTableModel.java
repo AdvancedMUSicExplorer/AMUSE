@@ -241,7 +241,7 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 		try {
 			extractorTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 		} catch (IOException e) {
-			throw new IOException ("Feature table could not be loaded.");
+			throw new IOException ("Extractor tool table could not be loaded.");
 		}
 		Attribute adapterClassAttribute = extractorTableSet.getAttribute("AdapterClass");
 		Attribute idAttribute = extractorTableSet.getAttribute("Id");
@@ -291,12 +291,13 @@ public class FeatureTableModel implements TableModel, TreeModelModalityListener 
 	
 	/** Add or enable all features that extract from all given modalities. */
 	public void reenableModalityFeatures(List<ModalityEnum> modalities) throws IOException {
+		
 		// Load extractorTableSet to get adapter class
 		DataSetAbstract extractorTableSet;
 		try {
 			extractorTableSet = new ArffDataSet(new File(AmusePreferences.getFeatureExtractorToolTablePath()));
 		} catch (IOException e) {
-			throw new IOException ("Feature table could not be loaded.");
+			throw new IOException ("Extractor tool table could not be loaded.");
 		}
 		Attribute adapterClassAttribute = extractorTableSet.getAttribute("AdapterClass");
 		Attribute idAttribute = extractorTableSet.getAttribute("Id");

@@ -49,7 +49,7 @@ public class FileTreeModel extends DefaultTreeModel {
     private DefaultMutableTreeNode relativeToNode = new DefaultMutableTreeNode("Music Database", true);
     private DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(File.separator, true);
     
-    private Vector<TreeModelModalityListener> listeners = new Vector<TreeModelModalityListener>();
+    private List<TreeModelModalityListener> listeners = new ArrayList<TreeModelModalityListener>();
 
     /**
      * Creates a new <class>FileTreeModel</class>.
@@ -83,7 +83,6 @@ public class FileTreeModel extends DefaultTreeModel {
      * @param modality of the added file
      */
     private void notifyModalityListenersAdd(List<ModalityEnum> modalities) {
-    	this.updateEndings(modalities);
         for (TreeModelModalityListener listener : listeners) {
         	listener.fileAdded(modalities);
         }
@@ -91,7 +90,6 @@ public class FileTreeModel extends DefaultTreeModel {
     
     /** Notify all listeners, that all files were removed. */
     private void notifyModalityListenersRemovedAll() {
-    	this.updateEndings(null);
         for (TreeModelModalityListener listener : listeners) {
         	listener.allFilesRemoved();
         }
@@ -101,6 +99,7 @@ public class FileTreeModel extends DefaultTreeModel {
     public void notifyModalityListenersRemovedSelected() {
     	List<ModalityEnum> modalities = new ArrayList<ModalityEnum>();
     	List<File> files = getFiles();
+    	
     	// If there are no files remaining
     	if(files.size() == 0) {
     		notifyModalityListenersRemovedAll();
@@ -112,10 +111,8 @@ public class FileTreeModel extends DefaultTreeModel {
         		}
         	}
             listeners.forEach(listener -> listener.selectedFilesRemoved(modalities));
-    		this.updateEndings(modalities);
     	}
 	}
-    
 
     /** 
      * Updates the accepted file endings according to the given modalities.
@@ -137,7 +134,7 @@ public class FileTreeModel extends DefaultTreeModel {
      * @param file or folder to add to the model.
      */
     protected void addFile(File file) {
-        if (!file.isDirectory() && ModalityEnum.fitsAnyModality(file)) {
+        if (!file.isDirectory() && hasCorrectEnding(file)) {
             insertInTree(file);
             List<ModalityEnum> modalities = new ArrayList<ModalityEnum>();
             ModalityEnum currentModality = ModalityEnum.getModalityEnum(file);
@@ -154,7 +151,9 @@ public class FileTreeModel extends DefaultTreeModel {
             }
             Collections.sort(files);
             for (File child : files) {
-                	addFile(child);
+            	if(child.isDirectory() || hasCorrectEnding(child)) {
+            		addFile(child);
+            	}
             }
         }
     }

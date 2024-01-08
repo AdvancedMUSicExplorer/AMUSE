@@ -19,20 +19,6 @@ public interface Modality {
 		
 		private String genericName;
 		
-		private ModalityEnum(String genericName) {
-			this.genericName = genericName;
-		}
-		
-		/** Returns a list of all endings that are associated with 
-		 * this modality in general and are listed in their modality class. */
-		public List<String> getEndings() {
-			switch(this) {
-				case SYMBOLIC: 	return SymbolicModality.getEndings();
-				case AUDIO: 	return AudioModality.getEndings();
-				default: 		return ModalityEnum.getAllEndings();
-			}
-		}
-		
 		/** Returns a list of all file endings */
 		public static List<String> getAllEndings() {
 			List<String> allEndings = new ArrayList<String>();
@@ -49,6 +35,20 @@ public interface Modality {
 				}
 			}
 			throw new IllegalArgumentException("ModalityEnum could not be found.");
+		}
+		
+		private ModalityEnum(String genericName) {
+			this.genericName = genericName;
+		}
+		
+		/** Returns a list of all endings that are associated with 
+		 * this modality in general and are listed in their modality class. */
+		public List<String> getEndings() {
+			switch(this) {
+				case SYMBOLIC: 	return SymbolicModality.getEndings();
+				case AUDIO: 	return AudioModality.getEndings();
+				default: 		return ModalityEnum.getAllEndings();
+			}
 		}
 		
 		public String getGenericName() {

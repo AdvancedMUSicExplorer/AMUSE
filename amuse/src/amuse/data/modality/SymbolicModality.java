@@ -11,7 +11,6 @@ import javax.sound.midi.MidiSystem;
 
 import org.apache.log4j.Level;
 
-import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.util.AmuseLogger;
 
 /** 
@@ -25,7 +24,8 @@ public class SymbolicModality implements Modality {
 	public enum SymbolicFormat implements Format {
 		
 		MIDI 		(List.of("mid", "midi")),
-		MUSICXML 	(List.of("mxl"));
+		MUSICXML 	(List.of("mxl")),
+		ABC			(List.of("abc"));
 		
 		private final List<String> endings;
 		

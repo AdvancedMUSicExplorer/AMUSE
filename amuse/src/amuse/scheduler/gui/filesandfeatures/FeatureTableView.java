@@ -70,7 +70,7 @@ public class FeatureTableView {
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
     private JCheckBox customFeatureCheckBox;
-    private JCheckBox showFeaturesAllModalities;
+    private JCheckBox showFeaturesAllModalitiesCheckbox;
 
     /**
      * Creates a new Feature Table View.
@@ -128,7 +128,7 @@ public class FeatureTableView {
             jPanelFeatureExtractionButtons.add(getJButtonSelectAll());
             jPanelFeatureExtractionButtons.add(getJButtonDeselectAll());
             jPanelFeatureExtractionButtons.add(getCustomFeatureCheckBox());
-            jPanelFeatureExtractionButtons.add(getShowFeaturesAllModalities());
+            jPanelFeatureExtractionButtons.add(getShowFeaturesAllModalitiesCheckbox());
             jPanelFeatureExtractionButtons.add(Box.createHorizontalGlue());
             jPanelFeatureExtractionButtons.add(getLoadButton());
             jPanelFeatureExtractionButtons.add(getSaveButton());
@@ -190,20 +190,20 @@ public class FeatureTableView {
     	return customFeatureCheckBox;
     }
     
-    private JCheckBox getShowFeaturesAllModalities() {
-    	if(showFeaturesAllModalities == null) {
-    		showFeaturesAllModalities = new JCheckBox();
-    		showFeaturesAllModalities.setText("Show features of all modalities");
-    		showFeaturesAllModalities.addActionListener(l -> {
+    private JCheckBox getShowFeaturesAllModalitiesCheckbox() {
+    	if(showFeaturesAllModalitiesCheckbox == null) {
+    		showFeaturesAllModalitiesCheckbox = new JCheckBox();
+    		showFeaturesAllModalitiesCheckbox.setText("Show features of all modalities");
+    		showFeaturesAllModalitiesCheckbox.addActionListener(l -> {
     			FeatureTableModel model = (FeatureTableModel)table.getModel();
-    			if(showFeaturesAllModalities.isSelected()) {
+    			if(showFeaturesAllModalitiesCheckbox.isSelected()) {
     				model.showAllModalities();
     			} else {
     				model.hideAllModalities();
     			}
     		});
     	}
-    	return showFeaturesAllModalities;
+    	return showFeaturesAllModalitiesCheckbox;
     }
 
     private void initGUI() {

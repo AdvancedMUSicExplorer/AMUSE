@@ -28,6 +28,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -68,7 +70,6 @@ public class FileTreeController implements ActionListener, KeyListener {
         this.view = view;
         view.setModel(this.model);
         view.setController(this);
-        //updateFilterDescription();
     }
 
     /**
@@ -157,29 +158,22 @@ public class FileTreeController implements ActionListener, KeyListener {
             jFileChooserSelect.setAcceptAllFileFilterUsed(false);
             jFileChooserSelect.setMultiSelectionEnabled(true);
             jFileChooserSelect.setCurrentDirectory(model.getRelativFolder());
-            jFileChooserSelect.setFileFilter(new FileFilter() {
-
-                @Override
-                public boolean accept(File file) {
-                	/*boolean fileFitsModality;
-                	if (currentModalities == null || currentModalities.isEmpty()) {
-                		fileFitsModality = ModalityEnum.fitsAnyModality(file);
-                	} else {
-                		fileFitsModality = false;
-                		for(ModalityEnum modality: currentModalities) {
-                			if(modality.fitsModality(file)) {
-                				fileFitsModality = true;
-                			}
-                		}
-                	}*/
-                	boolean fileFitsAnyModality = ModalityEnum.fitsAnyModality(file);
-                    return (file.isDirectory() || fileFitsAnyModality);
-                }
-
-                @Override
-                public String getDescription() {
-                    return getFileFilterDescription();
-                }
+            
+            jFileChooserSelect.setFileFilter(new ModalityFileFilter(ModalityEnum.AUDIO));
+            jFileChooserSelect.setFileFilter(new ModalityFileFilter(ModalityEnum.SYMBOLIC));
+            jFileChooserSelect.setFileFilter(new ModalityFileFilter(null));
+            
+            jFileChooserSelect.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
+	             public void propertyChange(PropertyChangeEvent evt)
+	             {
+	            	 ModalityFileFilter filter = (ModalityFileFilter) evt.getNewValue();
+	            	 ModalityEnum modality = filter.getModalityEnum();
+	            	 if(modality == null) {
+	            		 model.updateEndings(null);
+	            	 } else {
+	            		 model.updateEndings(List.of(modality));
+	            	 }
+	             }
             });
             int returnValue = jFileChooserSelect.showDialog(view.getView(), "Select File/Folder");
             if (returnValue == javax.swing.JFileChooser.APPROVE_OPTION) {
