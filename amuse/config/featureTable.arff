@@ -123,16 +123,19 @@
 542, "Most Common Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
 543, "Rhythmic Variability - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
 544, "Polyrhythms - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
-545, "Variability of Note Durations", 10, 512, 512, 1, WindowedNumeric
-546, "Polyrhythms", 10, 512, 512, 1, WindowedNumeric
-547, "Unpitched Percussion Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
-548, "String Keyboard Prevalence", 10, 512, 512, 1, WindowedNumeric
-549, "Acoustic Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
-550, "Electric Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
-551, "Violin Prevalence", 10, 512, 512, 1, WindowedNumeric
-552, "Saxophone Prevalence", 10, 512, 512, 1, WindowedNumeric
-553, "Brass Prevalence", 10, 512, 512, 1, WindowedNumeric
-554, "Woodwinds Prevalence", 10, 512, 512, 1, WindowedNumeric
-555, "Orchestral Strings Prevalence", 10, 512, 512, 1, WindowedNumeric
-556, "String Ensemble Prevalence", 10, 512, 512, 1, WindowedNumeric
-557, "Electric Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+545, "Initial Tempo", 10, 512, 512, 1, WindowedNumeric
+546, "Mean Tempo", 10, 512, 512, 1, WindowedNumeric
+547, "Tempo Variability", 10, 512, 512, 1, WindowedNumeric
+548, "Variability of Note Durations", 10, 512, 512, 1, WindowedNumeric
+549, "Polyrhythms", 10, 512, 512, 1, WindowedNumeric
+550, "Unpitched Percussion Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+551, "String Keyboard Prevalence", 10, 512, 512, 1, WindowedNumeric
+552, "Acoustic Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+553, "Electric Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+554, "Violin Prevalence", 10, 512, 512, 1, WindowedNumeric
+555, "Saxophone Prevalence", 10, 512, 512, 1, WindowedNumeric
+556, "Brass Prevalence", 10, 512, 512, 1, WindowedNumeric
+557, "Woodwinds Prevalence", 10, 512, 512, 1, WindowedNumeric
+558, "Orchestral Strings Prevalence", 10, 512, 512, 1, WindowedNumeric
+559, "String Ensemble Prevalence", 10, 512, 512, 1, WindowedNumeric
+560, "Electric Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric

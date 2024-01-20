@@ -1367,6 +1367,7 @@
    </feature>
    </amuseEnableFeature>
 
+   <amuseEnableFeature id="545">
    <feature>
       <name>Initial Tempo</name>
       <active>false</active>
@@ -1374,7 +1375,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="546">
    <feature>
       <name>Mean Tempo</name>
       <active>false</active>
@@ -1382,7 +1385,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="547">
    <feature>
       <name>Tempo Variability</name>
       <active>false</active>
@@ -1390,6 +1395,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Duration in Seconds</name>
@@ -1471,7 +1477,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
-   <amuseEnableFeature id="545">
+   <amuseEnableFeature id="548">
    <feature>
       <name>Variability of Note Durations</name>
       <active>false</active>
@@ -1585,7 +1591,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
-   <amuseEnableFeature id="546">
+   <amuseEnableFeature id="549">
    <feature>
       <name>Polyrhythms</name>
       <active>false</active>
@@ -1627,7 +1633,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
-   <amuseEnableFeature id="547">
+   <amuseEnableFeature id="550">
    <feature>
       <name>Unpitched Percussion Instrument Prevalence</name>
       <active>false</active>
@@ -1637,7 +1643,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="548">
+   <amuseEnableFeature id="551">
    <feature>
       <name>String Keyboard Prevalence</name>
       <active>false</active>
@@ -1647,7 +1653,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="549">
+   <amuseEnableFeature id="552">
    <feature>
       <name>Acoustic Guitar Prevalence</name>
       <active>false</active>
@@ -1657,7 +1663,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="550">
+   <amuseEnableFeature id="553">
    <feature>
       <name>Electric Guitar Prevalence</name>
       <active>false</active>
@@ -1667,7 +1673,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="551">
+   <amuseEnableFeature id="554">
    <feature>
       <name>Violin Prevalence</name>
       <active>false</active>
@@ -1677,7 +1683,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="552">
+   <amuseEnableFeature id="555">
    <feature>
       <name>Saxophone Prevalence</name>
       <active>false</active>
@@ -1687,7 +1693,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="553">
+   <amuseEnableFeature id="556">
    <feature>
       <name>Brass Prevalence</name>
       <active>false</active>
@@ -1697,7 +1703,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="554">
+   <amuseEnableFeature id="557">
    <feature>
       <name>Woodwinds Prevalence</name>
       <active>false</active>
@@ -1707,7 +1713,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="555">
+   <amuseEnableFeature id="558">
    <feature>
       <name>Orchestral Strings Prevalence</name>
       <active>false</active>
@@ -1717,7 +1723,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="556">
+   <amuseEnableFeature id="559">
    <feature>
       <name>String Ensemble Prevalence</name>
       <active>false</active>
@@ -1727,7 +1733,7 @@
    </feature>
    </amuseEnableFeature>
 
-   <amuseEnableFeature id="557">
+   <amuseEnableFeature id="560">
    <feature>
       <name>Electric Instrument Prevalence</name>
       <active>false</active>
@@ -1929,6 +1935,7 @@
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
 
+   <amuseEnableFeature id="559">
    <feature>
       <name>Dynamic Range</name>
       <active>false</active>
@@ -1936,7 +1943,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="560">
    <feature>
       <name>Variation of Dynamics</name>
       <active>false</active>
@@ -1944,7 +1953,9 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
+   <amuseEnableFeature id="561">
    <feature>
       <name>Variation of Dynamics In Each Voice</name>
       <active>false</active>
@@ -1952,6 +1963,7 @@
       <is_sequential>true</is_sequential>
       <parallel_dimensions>1</parallel_dimensions>
    </feature>
+   </amuseEnableFeature>
 
    <feature>
       <name>Average Note to Note Change in Dynamics</name>
