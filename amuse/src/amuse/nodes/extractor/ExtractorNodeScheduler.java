@@ -46,6 +46,7 @@ import amuse.data.Feature;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
 import amuse.data.io.attributes.Attribute;
+import amuse.data.modality.Format;
 import amuse.data.modality.Modality;
 import amuse.interfaces.nodes.NodeEvent;
 import amuse.interfaces.nodes.NodeException;
@@ -61,6 +62,7 @@ import amuse.scheduler.pluginmanagement.PluginLoader;
 import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 import amuse.util.audio.AudioFileConversion;
+import amuse.util.converters.ConverterInterface;
 
 /**
  * ExtractorNodeScheduler is responsible for the extractor node. The given music files
@@ -226,34 +228,46 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		// (V) Convert input file if needed and possible
 		// ---------------------------------------------
 		
-		// If file does not match requirements of an extractor tool, convert
+		// If file does not match requirements of an extractor tool, try to convert
 		if(!extractorsNotFitting.isEmpty()) {
-			// TODO Generalize, add more conversions
-			if(relativeName.endsWith(".mp3")) {
+			Format originalFormat = Modality.getFormat(new File(relativeName));
+			
+			// Search for possible conversions
+			List<Format> possibleTargetFormats = ConverterInterface.conversionsAvailable(originalFormat);
+			
+			if(!possibleTargetFormats.isEmpty()) {
 				try {
-					AudioFileConversion.processFile(new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId), 
-							new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)));
-					
-					/* Cut extension */
-					relativeName = relativeName.substring(0,relativeName.length()-4);
-					relativeName = new String(relativeName + ".wav");
-					this.inputFileName = relativeName;
 					for (Integer extractorID: extractorsNotFitting) {
-						extractorToFilename.put(extractorID, this.inputFileName);
+						for(Format targetFormat: possibleTargetFormats) {
+							
+							// Search for target format, that matches extractor tools requirements
+							List<Modality> modalities = extractors.get(extractorID).getModalities();
+							for(Modality modality: modalities) {
+								if(modality.getFormats().contains(targetFormat)) {
+									
+									ConverterInterface converter = ConverterInterface.getConversionClass(originalFormat, targetFormat);
+									converter.convert(new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)), 
+											new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId));
+									
+									/* Update extension */
+									relativeName = ConverterInterface.cutExtension(relativeName);
+									relativeName = new String(relativeName + converter.getEnding());
+									
+									this.inputFileName = relativeName;
+									extractorToFilename.put(extractorID, this.inputFileName);
+								}
+							}
+						}
 					}
-				} catch(NodeException e) {
-					AmuseLogger.write(this.getClass().getName(), Level.ERROR,
-						"Audio decoding error: " + e.getMessage());
-					errorDescriptionBuilder.append(this.inputFileName);
-					this.fireEvent(new NodeEvent(NodeEvent.EXTRACTION_FAILED, this));
-					return;
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (NodeException e1) {
+					e1.printStackTrace();
 				}
 			}
 		} 
 		// if file already fits requirements
 		else {
-			// TODO move splitting files out of AudioFileConversion
-			// TODO add methods for splitting other file formats
 			File targetDir = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
 			if (!targetDir.exists()) {
 	            targetDir.mkdirs();
@@ -264,12 +278,11 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	        if (!new File(targetDir.getAbsolutePath() + File.separator + "1").exists()) {
 	            new File(targetDir.getAbsolutePath() + File.separator + "1").mkdirs();
 	        }
-	        //TODO Move fileCopy out of AudioFileConversion
-	        AudioFileConversion.fileCopy(musicFile,targetFile);
-	        
+	        ConverterInterface.fileCopy(musicFile,targetFile);
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
 		
+		//TODO remove file splitting
 		// Find out the number of parts if the music file was splitted
 		File file = new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId);
 		if(!file.exists()) {

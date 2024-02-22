@@ -44,6 +44,15 @@ public class SymbolicModality implements Modality {
 			return null;
 		}
 		
+		public static SymbolicFormat getFormatByString(String file) {
+			for(SymbolicFormat format : SymbolicFormat.values()) {
+				if(format.toString() == file) {
+					return format;
+				}
+			}
+			return null;
+		}
+		
 		@Override
 		public boolean matchesEndings(File file) {
 			for(String ending: this.endings) {

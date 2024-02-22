@@ -1,0 +1,15 @@
+% Conversion table
+@RELATION conversions
+
+% Unique Conversion ID
+@ATTRIBUTE Id NUMERIC
+% Source format
+@ATTRIBUTE Source STRING
+% Target format
+@ATTRIBUTE Target STRING
+% Java class which performs conversion
+@ATTRIBUTE ConversionClass STRING
+
+@DATA
+0, "MP3", "WAVE", "amuse.util.converters.Mp3ToWaveConverter"
+

@@ -347,6 +347,14 @@ public class AmusePreferences {
 	public static String getPluginTablePath() {
 		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginTable.arff";
 	}
+	
+	/**
+     * Convenience method to get the path to the conversionTable File
+     * @return the path to pluginTable.arff
+     */
+	public static String getConversionTablePath() {
+		return get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "conversionTable.arff";
+	}
 
     /**
      * Convenience method to get the path to the multipleTacksAnnotationTable File
