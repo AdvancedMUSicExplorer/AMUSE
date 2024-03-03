@@ -29,6 +29,7 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysBooleanValue;
 import amuse.preferences.KeysIntValue;
 import amuse.util.AmuseLogger;
+import amuse.util.FileOperations;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 import org.apache.log4j.Level;
@@ -41,7 +42,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.logging.Logger;
 
 /**
@@ -87,7 +87,7 @@ public class AudioFileConversion {
         try {
             AudioFormat format = AudioSystem.getAudioFileFormat(wavFile).getFormat();
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.DEBUG, "Starting: "+wavFile.getName() + " "+ (int)format.getFrameRate()+"kHz, "+format.getChannels());
-            fileCopy(wavFile, targetFile);
+            FileOperations.fileCopy(wavFile, targetFile);
             if (!isDownSamplingActive) {
 				targetKHZ = (int) format.getFrameRate();
 		    }
@@ -107,11 +107,11 @@ public class AudioFileConversion {
         } catch (IOException ex) {
             ex.printStackTrace();
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to perform down-sampling: " + ex.getMessage());
-            fileCopy(wavFile, targetFile);
+            FileOperations.fileCopy(wavFile, targetFile);
             deleteConvertedFile(wavFile, isOriginal);
             throw ex;
         } catch (UnsupportedAudioFileException ex) {
-            fileCopy(wavFile, targetFile);
+            FileOperations.fileCopy(wavFile, targetFile);
             deleteConvertedFile(wavFile, isOriginal);
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unsupported Audio-File: \"" + ex.getLocalizedMessage() + "\"");
             throw new IOException(ex.getMessage());
@@ -189,7 +189,7 @@ public class AudioFileConversion {
                 }
                 File src = new File(wavFile.getAbsolutePath() + "." + index);
                 File dest = new File(targetDir.getAbsolutePath() + File.separator + index + File.separator + wavFile.getName());
-                AudioFileConversion.fileCopy(src, dest);
+                FileOperations.fileCopy(src, dest);
                 src.delete();
                 index++;
             }
@@ -217,7 +217,7 @@ public class AudioFileConversion {
         	
         	// Also when the file is not splitted, processFile() expects that file ends with ".1"
         	// (see the line with "while (index <= splitFileCount) {") 
-        	fileCopy(waveFile, getNextSplitFile(waveFile, part));
+        	FileOperations.fileCopy(waveFile, getNextSplitFile(waveFile, part));
         	return 1;
         }
         try {
@@ -300,42 +300,6 @@ public class AudioFileConversion {
         }
     }
 
-    public static void fileCopy(File srcFile, File destFile) {
-    	FileInputStream srcChannelFIS = null;
-    	FileOutputStream dstChannelFOS = null;
-        try {
-        	// System.out.println("Trying to copy " + srcFile.getName());
-            // Create channel on the source
-        	srcChannelFIS = new FileInputStream(srcFile);
-            FileChannel srcChannel = srcChannelFIS.getChannel();
-
-            // Create channel on the destination
-            dstChannelFOS = new FileOutputStream(destFile);
-            FileChannel dstChannel = dstChannelFOS.getChannel();
-
-            // Copy file contents from source to destination
-            dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
-
-            // Close the channels
-            srcChannel.close();
-            dstChannel.close();
-        } catch (IOException e) {
-            AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to copy " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath() + ".");
-        }
-        finally{
-        	if(srcChannelFIS != null){
-        		try {
-					srcChannelFIS.close();
-				} catch (IOException e) {}
-        	}
-        	if(dstChannelFOS != null){
-        		try {
-        			dstChannelFOS.close();
-				} catch (IOException e) {}
-        	}
-        }
-    }
-
     /**
      * This method is manly used to calculate the file to write each split part of a .wav to. It is currently used by <class>AudioFileConversion.splitWaveFile</class>.
      *
@@ -380,7 +344,7 @@ public class AudioFileConversion {
 
     private static void sampleToTargetSize(File file, int targetKHZ, boolean isReduceToMono) throws UnsupportedAudioFileException, IOException {
         File tmpFile = new File(file.getParent() + File.separator + "tmp_" + file.getName());
-        fileCopy(file, tmpFile);
+        FileOperations.fileCopy(file, tmpFile);
         SampleRateConverter.changeFormat(tmpFile, file, targetKHZ, isReduceToMono);
 	    tmpFile.delete();
 	}

@@ -250,7 +250,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 											new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId));
 									
 									/* Update extension */
-									relativeName = ConverterInterface.cutExtension(relativeName);
+									relativeName = FileOperations.cutExtension(relativeName);
 									relativeName = new String(relativeName + converter.getEnding());
 									
 									this.inputFileName = relativeName;
@@ -278,7 +278,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 	        if (!new File(targetDir.getAbsolutePath() + File.separator + "1").exists()) {
 	            new File(targetDir.getAbsolutePath() + File.separator + "1").mkdirs();
 	        }
-	        ConverterInterface.fileCopy(musicFile,targetFile);
+	        FileOperations.fileCopy(musicFile,targetFile);
 		}
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "..decoding completed!");
 		
@@ -341,7 +341,7 @@ public class ExtractorNodeScheduler extends NodeScheduler {
                 }
                 File src = new File(file.getAbsolutePath() + "." + index);
                 File dest = new File(targetDir.getAbsolutePath() + File.separator + index + File.separator + file.getName());
-                AudioFileConversion.fileCopy(src, dest);
+                FileOperations.fileCopy(src, dest);
                 src.delete();
                 index++;
             }

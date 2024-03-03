@@ -97,45 +97,219 @@
 516, "Most Common Pitch Class", 10, 512, 512, 1, WindowedNumeric
 517, "Prevalence of Most Common Pitch", 10, 512, 512, 1, WindowedNumeric
 518, "Prevalence of Most Common Pitch Class", 10, 512, 512, 1, WindowedNumeric
-519, "Pitch Variability", 10, 512, 512, 1, WindowedNumeric
-520, "Pitch Class Variability", 10, 512, 512, 1, WindowedNumeric
-521, "Pitch Skewness", 10, 512, 512, 1, WindowedNumeric
-522, "Major or Minor", 10, 512, 512, 1, WindowedNumeric
-523, "Glissando Prevalence", 10, 512, 512, 1, WindowedNumeric
-524, "Average Range of Glissandos", 10, 512, 512, 1, WindowedNumeric
-525, "Vibrato Prevalence", 10, 512, 512, 1, WindowedNumeric
-526, "Microtone Prevalence", 10, 512, 512, 1, WindowedNumeric
-527, "Most Common Melodic Interval", 10, 512, 512, 1, WindowedNumeric
-528, "Amount of Arpeggiation", 10, 512, 512, 1, WindowedNumeric
-529, "Repeated Notes", 10, 512, 512, 1, WindowedNumeric
-530, "Chromatic Motion", 10, 512, 512, 1, WindowedNumeric
-531, "Melodic Pitch Variety", 10, 512, 512, 1, WindowedNumeric
-532, "Vertical Dissonance Ratio", 10, 512, 512, 1, WindowedNumeric
-533, "Chord Duration", 10, 512, 512, 1, WindowedNumeric
-534, "Diminished and Augmented Triads", 10, 512, 512, 1, WindowedNumeric
-535, "Dominant Seventh Chords", 10, 512, 512, 1, WindowedNumeric
-536, "Seventh Chords", 10, 512, 512, 1, WindowedNumeric
-537, "Non-Standard Chords", 10, 512, 512, 1, WindowedNumeric
-538, "Complex Chords", 10, 512, 512, 1, WindowedNumeric
-539, "Simple Initial Meter", 10, 512, 512, 1, WindowedNumeric
-540, "Range of Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
-541, "Prevalence of Dotted Notes", 10, 512, 512, 1, WindowedNumeric
-542, "Most Common Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
-543, "Rhythmic Variability - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
-544, "Polyrhythms - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
-545, "Initial Tempo", 10, 512, 512, 1, WindowedNumeric
-546, "Mean Tempo", 10, 512, 512, 1, WindowedNumeric
-547, "Tempo Variability", 10, 512, 512, 1, WindowedNumeric
-548, "Variability of Note Durations", 10, 512, 512, 1, WindowedNumeric
-549, "Polyrhythms", 10, 512, 512, 1, WindowedNumeric
-550, "Unpitched Percussion Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
-551, "String Keyboard Prevalence", 10, 512, 512, 1, WindowedNumeric
-552, "Acoustic Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
-553, "Electric Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
-554, "Violin Prevalence", 10, 512, 512, 1, WindowedNumeric
-555, "Saxophone Prevalence", 10, 512, 512, 1, WindowedNumeric
-556, "Brass Prevalence", 10, 512, 512, 1, WindowedNumeric
-557, "Woodwinds Prevalence", 10, 512, 512, 1, WindowedNumeric
-558, "Orchestral Strings Prevalence", 10, 512, 512, 1, WindowedNumeric
-559, "String Ensemble Prevalence", 10, 512, 512, 1, WindowedNumeric
-560, "Electric Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+519, "Relative Prevalence of Top Pitches", 10, 512, 512, 1, WindowedNumeric
+520, "Relative Prevalence of Top Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+521, "Interval Between Most Prevalent Pitches", 10, 512, 512, 1, WindowedNumeric
+522, "Interval Between Most Prevalent Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+523, "Pitch Variability", 10, 512, 512, 1, WindowedNumeric
+524, "Pitch Class Variability", 10, 512, 512, 1, WindowedNumeric
+525, "Pitch Class Variability After Folding", 10, 512, 512, 1, WindowedNumeric
+526, "Pitch Skewness", 10, 512, 512, 1, WindowedNumeric
+527, "Pitch Class Skewness", 10, 512, 512, 1, WindowedNumeric
+528, "Pitch Class Skewness After Folding", 10, 512, 512, 1, WindowedNumeric
+529, "Pitch Kurtosis", 10, 512, 512, 1, WindowedNumeric
+530, "Pitch Class Kurtosis", 10, 512, 512, 1, WindowedNumeric
+531, "Pitch Class Kurtosis After Folding", 10, 512, 512, 1, WindowedNumeric
+532, "Major or Minor", 10, 512, 512, 1, WindowedNumeric
+533, "First Pitch", 10, 512, 512, 1, WindowedNumeric
+534, "First Pitch Class", 10, 512, 512, 1, WindowedNumeric
+535, "Last Pitch", 10, 512, 512, 1, WindowedNumeric
+536, "Last Pitch Class", 10, 512, 512, 1, WindowedNumeric
+537, "Glissando Prevalence", 10, 512, 512, 1, WindowedNumeric
+538, "Average Range of Glissandos", 10, 512, 512, 1, WindowedNumeric
+539, "Vibrato Prevalence", 10, 512, 512, 1, WindowedNumeric
+540, "Microtone Prevalence", 10, 512, 512, 1, WindowedNumeric
+
+541, "Most Common Melodic Interval", 10, 512, 512, 1, WindowedNumeric
+542, "Mean Melodic Interval", 10, 512, 512, 1, WindowedNumeric
+543, "Number of Common Melodic Intervals", 10, 512, 512, 1, WindowedNumeric
+544, "Distance Between Most Prevalent Melodic Intervals", 10, 512, 512, 1, WindowedNumeric
+545, "Prevalence of Most Common Melodic Interval", 10, 512, 512, 1, WindowedNumeric
+546, "Relative Prevalence of Most Common Melodic Intervals", 10, 512, 512, 1, WindowedNumeric
+547, "Amount of Arpeggiation", 10, 512, 512, 1, WindowedNumeric
+548, "Repeated Notes", 10, 512, 512, 1, WindowedNumeric
+549, "Chromatic Motion", 10, 512, 512, 1, WindowedNumeric
+550, "Stepwise Motion", 10, 512, 512, 1, WindowedNumeric
+551, "Melodic Thirds", 10, 512, 512, 1, WindowedNumeric
+552, "Melodic Perfect Fourths", 10, 512, 512, 1, WindowedNumeric
+553, "Melodic Tritones", 10, 512, 512, 1, WindowedNumeric
+554, "Melodic Perfect Fifths", 10, 512, 512, 1, WindowedNumeric
+555, "Melodic Sixths", 10, 512, 512, 1, WindowedNumeric
+556, "Melodic Sevenths", 10, 512, 512, 1, WindowedNumeric
+557, "Melodic Octaves", 10, 512, 512, 1, WindowedNumeric
+558, "Melodic Large Intervals", 10, 512, 512, 1, WindowedNumeric
+559, "Minor Major Melodic Third Ratio", 10, 512, 512, 1, WindowedNumeric
+560, "Melodic Embellishments", 10, 512, 512, 1, WindowedNumeric
+561, "Direction of Melodic Motion", 10, 512, 512, 1, WindowedNumeric
+562, "Average Length of Melodic Arcs", 10, 512, 512, 1, WindowedNumeric
+563, "Average Interval Spanned by Melodic Arcs", 10, 512, 512, 1, WindowedNumeric
+564, "Melodic Pitch Variety", 10, 512, 512, 1, WindowedNumeric
+
+565, "Average Number of Simultaneous Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+566, "Variability of Number of Simultaneous Pitch Classes", 10, 512, 512, 1, WindowedNumeric
+567, "Average Number of Simultaneous Pitches", 10, 512, 512, 1, WindowedNumeric
+568, "Variability of Number of Simultaneous Pitches", 10, 512, 512, 1, WindowedNumeric
+569, "Most Common Vertical Interval", 10, 512, 512, 1, WindowedNumeric
+570, "Second Most Common Vertical Interval", 10, 512, 512, 1, WindowedNumeric
+571, "Distance Between Two Most Common Vertical Intervals", 10, 512, 512, 1, WindowedNumeric
+572, "Prevalence of Most Common Vertical Interval", 10, 512, 512, 1, WindowedNumeric
+573, "Prevalence of Second Most Common Vertical Interval", 10, 512, 512, 1, WindowedNumeric
+574, "Prevalence Ratio of Two Most Common Vertical Intervals", 10, 512, 512, 1, WindowedNumeric
+575, "Vertical Unisons", 10, 512, 512, 1, WindowedNumeric
+576, "Vertical Minor Seconds", 10, 512, 512, 1, WindowedNumeric
+577, "Vertical Thirds", 10, 512, 512, 1, WindowedNumeric
+578, "Vertical Tritones", 10, 512, 512, 1, WindowedNumeric
+579, "Vertical Perfect Fourths", 10, 512, 512, 1, WindowedNumeric
+580, "Vertical Perfect Fifths", 10, 512, 512, 1, WindowedNumeric
+581, "Vertical Sixths", 10, 512, 512, 1, WindowedNumeric
+582, "Vertical Sevenths", 10, 512, 512, 1, WindowedNumeric
+583, "Vertical Octaves", 10, 512, 512, 1, WindowedNumeric
+584, "Perfect Vertical Intervals", 10, 512, 512, 1, WindowedNumeric
+585, "Vertical Dissonance Ratio", 10, 512, 512, 1, WindowedNumeric
+586, "Vertical Minor Third Prevalence", 10, 512, 512, 1, WindowedNumeric
+587, "Vertical Major Third Prevalence", 10, 512, 512, 1, WindowedNumeric
+588, "Chord Duration", 10, 512, 512, 1, WindowedNumeric
+589, "Partial Chords", 10, 512, 512, 1, WindowedNumeric
+590, "Standard Triads", 10, 512, 512, 1, WindowedNumeric
+591, "Diminished and Augmented Triads", 10, 512, 512, 1, WindowedNumeric
+592, "Dominant Seventh Chords", 10, 512, 512, 1, WindowedNumeric
+593, "Seventh Chords", 10, 512, 512, 1, WindowedNumeric
+594, "Non-Standard Chords", 10, 512, 512, 1, WindowedNumeric
+595, "Complex Chords", 10, 512, 512, 1, WindowedNumeric
+596, "Minor Major Triad Ratio", 10, 512, 512, 1, WindowedNumeric
+
+597, "Simple Initial Meter", 10, 512, 512, 1, WindowedNumeric
+598, "Compound Initial Meter", 10, 512, 512, 1, WindowedNumeric
+599, "Complex Initial Meter", 10, 512, 512, 1, WindowedNumeric
+600, "Duple Initial Meter", 10, 512, 512, 1, WindowedNumeric
+601, "Triple Initial Meter", 10, 512, 512, 1, WindowedNumeric
+602, "Quadruple Initial Meter", 10, 512, 512, 1, WindowedNumeric
+603, "Metrical Diversity", 10, 512, 512, 1, WindowedNumeric
+604, "Total Number of Notes", 10, 512, 512, 1, WindowedNumeric
+605, "Note Density per Quarter Note", 10, 512, 512, 1, WindowedNumeric
+606, "Note Density per Quarter Note per Voice", 10, 512, 512, 1, WindowedNumeric
+607, "Note Density per Quarter Note Variability", 10, 512, 512, 1, WindowedNumeric
+608, "Range of Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+609, "Number of Different Rhythmic Values Present", 10, 512, 512, 1, WindowedNumeric
+610, "Number of Common Rhythmic Values Present", 10, 512, 512, 1, WindowedNumeric
+611, "Prevalence of Very Short Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+612, "Prevalence of Short Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+613, "Prevalence of Medium Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+614, "Prevalence of Long Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+615, "Prevalence of Very Long Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+616, "Prevalence of Dotted Notes", 10, 512, 512, 1, WindowedNumeric
+617, "Shortest Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+618, "Longest Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+619, "Mean Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+620, "Most Common Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+621, "Prevalence of Most Common Rhythmic Value", 10, 512, 512, 1, WindowedNumeric
+622, "Relative Prevalence of Most Common Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+623, "Difference Between Most Common Rhythmic Values", 10, 512, 512, 1, WindowedNumeric
+624, "Rhythmic Value Variability", 10, 512, 512, 1, WindowedNumeric
+625, "Rhythmic Value Skewness", 10, 512, 512, 1, WindowedNumeric
+626, "Rhythmic Value Kurtosis", 10, 512, 512, 1, WindowedNumeric
+627, "Mean Rhythmic Value Run Length", 10, 512, 512, 1, WindowedNumeric
+628, "Median Rhythmic Value Run Length", 10, 512, 512, 1, WindowedNumeric
+629, "Variability in Rhythmic Value Run Lengths", 10, 512, 512, 1, WindowedNumeric
+630, "Mean Rhythmic Value Offset", 10, 512, 512, 1, WindowedNumeric
+631, "Median Rhythmic Value Offset", 10, 512, 512, 1, WindowedNumeric
+632, "Variability of Rhythmic Value Offsets", 10, 512, 512, 1, WindowedNumeric
+633, "Complete Rests Fraction", 10, 512, 512, 1, WindowedNumeric
+634, "Partial Rests Fraction", 10, 512, 512, 1, WindowedNumeric
+635, "Average Rest Fraction Across Voices", 10, 512, 512, 1, WindowedNumeric
+636, "Longest Complete Rest", 10, 512, 512, 1, WindowedNumeric
+637, "Longest Partial Rest", 10, 512, 512, 1, WindowedNumeric
+638, "Mean Complete Rest Duration", 10, 512, 512, 1, WindowedNumeric
+639, "Mean Partial Rest Duration", 10, 512, 512, 1, WindowedNumeric
+640, "Median Complete Rest Duration", 10, 512, 512, 1, WindowedNumeric
+641, "Median Partial Rest Duration", 10, 512, 512, 1, WindowedNumeric
+642, "Variability of Complete Rest Durations", 10, 512, 512, 1, WindowedNumeric
+643, "Variability of Partial Rest Durations", 10, 512, 512, 1, WindowedNumeric
+644, "Variability Across Voices of Combined Rests", 10, 512, 512, 1, WindowedNumeric
+645, "Number of Strong Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+646, "Number of Moderate Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+647, "Number of Relatively Strong Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+648, "Strongest Rhythmic Pulse - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+649, "Second Strongest Rhythmic Pulse - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+650, "Harmonicity of Two Strongest Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+651, "Strength of Strongest Rhythmic Pulse - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+652, "Strength of Second Strongest Rhythmic Pulse - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+653, "Strength Ratio of Two Strongest Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+654, "Combined Strength of Two Strongest Rhythmic Pulses - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+655, "Rhythmic Variability - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+656, "Rhythmic Looseness - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+657, "Polyrhythms - Tempo Standardized", 10, 512, 512, 1, WindowedNumeric
+658, "Initial Tempo", 10, 512, 512, 1, WindowedNumeric
+659, "Mean Tempo", 10, 512, 512, 1, WindowedNumeric
+660, "Tempo Variability", 10, 512, 512, 1, WindowedNumeric
+661, "Duration in Seconds", 10, 512, 512, 1, WindowedNumeric
+662, "Note Density", 10, 512, 512, 1, WindowedNumeric
+663, "Note Density Variability", 10, 512, 512, 1, WindowedNumeric
+664, "Average Time Between Attacks", 10, 512, 512, 1, WindowedNumeric
+665, "Average Time Between Attacks for Each Voice", 10, 512, 512, 1, WindowedNumeric
+666, "Variability of Time Between Attacks", 10, 512, 512, 1, WindowedNumeric
+667, "Average Variability of Time Between Attacks for Each Voice", 10, 512, 512, 1, WindowedNumeric
+668, "Minimum Note Duration", 10, 512, 512, 1, WindowedNumeric
+669, "Maximum Note Duration", 10, 512, 512, 1, WindowedNumeric
+670, "Average Note Duration", 10, 512, 512, 1, WindowedNumeric
+671, "Variability of Note Durations", 10, 512, 512, 1, WindowedNumeric
+672, "Amount of Staccato", 10, 512, 512, 1, WindowedNumeric
+673, "Number of Strong Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+674, "Number of Moderate Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+675, "Number of Relatively Strong Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+676, "Strongest Rhythmic Pulse", 10, 512, 512, 1, WindowedNumeric
+677, "Second Strongest Rhythmic Pulse", 10, 512, 512, 1, WindowedNumeric
+678, "Harmonicity of Two Strongest Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+679, "Strength of Strongest Rhythmic Pulse", 10, 512, 512, 1, WindowedNumeric
+680, "Strength of Second Strongest Rhythmic Pulse", 10, 512, 512, 1, WindowedNumeric
+681, "Strength Ratio of Two Strongest Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+682, "Combined Strength of Two Strongest Rhythmic Pulses", 10, 512, 512, 1, WindowedNumeric
+683, "Rhythmic Variability", 10, 512, 512, 1, WindowedNumeric
+684, "Rhythmic Looseness", 10, 512, 512, 1, WindowedNumeric
+685, "Polyrhythms", 10, 512, 512, 1, WindowedNumeric
+
+686, "Variability of Note Prevalence of Pitched Instruments", 10, 512, 512, 1, WindowedNumeric
+687, "Variability of Note Prevalence of Unpitched Instruments", 10, 512, 512, 1, WindowedNumeric
+688, "Number of Pitched Instruments", 10, 512, 512, 1, WindowedNumeric
+689, "Number of Unpitched Instruments", 10, 512, 512, 1, WindowedNumeric
+690, "Unpitched Percussion Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+691, "String Keyboard Prevalence", 10, 512, 512, 1, WindowedNumeric
+692, "Acoustic Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+693, "Electric Guitar Prevalence", 10, 512, 512, 1, WindowedNumeric
+694, "Violin Prevalence", 10, 512, 512, 1, WindowedNumeric
+695, "Saxophone Prevalence", 10, 512, 512, 1, WindowedNumeric
+696, "Brass Prevalence", 10, 512, 512, 1, WindowedNumeric
+697, "Woodwinds Prevalence", 10, 512, 512, 1, WindowedNumeric
+698, "Orchestral Strings Prevalence", 10, 512, 512, 1, WindowedNumeric
+699, "String Ensemble Prevalence", 10, 512, 512, 1, WindowedNumeric
+700, "Electric Instrument Prevalence", 10, 512, 512, 1, WindowedNumeric
+
+701, "Maximum Number of Independent Voices", 10, 512, 512, 1, WindowedNumeric
+702, "Average Number of Independent Voices", 10, 512, 512, 1, WindowedNumeric
+703, "Variability of Number of Independent Voices", 10, 512, 512, 1, WindowedNumeric
+704, "Voice Equality - Number of Notes", 10, 512, 512, 1, WindowedNumeric
+705, "Voice Equality - Note Duration", 10, 512, 512, 1, WindowedNumeric
+706, "Voice Equality - Dynamics", 10, 512, 512, 1, WindowedNumeric
+707, "Voice Equality - Melodic Leaps", 10, 512, 512, 1, WindowedNumeric
+708, "Voice Equality - Range", 10, 512, 512, 1, WindowedNumeric
+709, "Importance of Loudest Voice", 10, 512, 512, 1, WindowedNumeric
+710, "Relative Range of Loudest Voice", 10, 512, 512, 1, WindowedNumeric
+711, "Relative Range Isolation of Loudest Voice", 10, 512, 512, 1, WindowedNumeric
+712, "Relative Range of Highest Line", 10, 512, 512, 1, WindowedNumeric
+713, "Relative Note Density of Highest Line", 10, 512, 512, 1, WindowedNumeric
+714, "Relative Note Durations of Lowest Line", 10, 512, 512, 1, WindowedNumeric
+715, "Relative Size of Melodic Intervals in Lowest Line", 10, 512, 512, 1, WindowedNumeric
+716, "Voice Overlap", 10, 512, 512, 1, WindowedNumeric
+717, "Voice Separation", 10, 512, 512, 1, WindowedNumeric
+718, "Variability of Voice Separation", 10, 512, 512, 1, WindowedNumeric
+
+719, "Parallel Motion", 10, 512, 512, 1, WindowedNumeric
+720, "Similar Motion", 10, 512, 512, 1, WindowedNumeric
+721, "Contrary Motion", 10, 512, 512, 1, WindowedNumeric
+722, "Oblique Motion", 10, 512, 512, 1, WindowedNumeric
+723, "Parallel Fifths", 10, 512, 512, 1, WindowedNumeric
+724, "Parallel Octaves", 10, 512, 512, 1, WindowedNumeric
+725, "Dynamic Range", 10, 512, 512, 1, WindowedNumeric
+726, "Variation of Dynamics", 10, 512, 512, 1, WindowedNumeric
+727, "Variation of Dynamics In Each Voice", 10, 512, 512, 1, WindowedNumeric
+728, "Average Note to Note Change in Dynamics", 10, 512, 512, 1, WindowedNumeric

@@ -29,7 +29,8 @@ public class AudioModality implements Modality {
 		AIFF 	(List.of("aiff", "aif")), 
 		AIFC 	(List.of("aifc")), 
 		SND 	(List.of("snd")), 
-		AU 		(List.of("au"));
+		AU 		(List.of("au")),
+		FLAC	(List.of("flac"));
 		
 		private final List<String> endings;
 		

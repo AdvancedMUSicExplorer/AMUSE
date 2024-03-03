@@ -40,7 +40,6 @@ public class FileOperations {
 
     private static Level defaultLevel = Level.DEBUG;
 
-
     /**
      * Use this method to copy single files or directories recursively.
      * @param from the file or folder to copy.
@@ -231,4 +230,51 @@ public class FileOperations {
         }
         return false;
     }
+    
+    public static void fileCopy(File srcFile, File destFile) {
+    	FileInputStream srcChannelFIS = null;
+    	FileOutputStream dstChannelFOS = null;
+        try {
+            // Create channel on the source
+        	srcChannelFIS = new FileInputStream(srcFile);
+            FileChannel srcChannel = srcChannelFIS.getChannel();
+
+            // Create channel on the destination
+            dstChannelFOS = new FileOutputStream(destFile);
+            FileChannel dstChannel = dstChannelFOS.getChannel();
+
+            // Copy file contents from source to destination
+            dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
+
+            // Close the channels
+            srcChannel.close();
+            dstChannel.close();
+        } catch (IOException e) {
+            AmuseLogger.write(FileOperations.class.getName(), Level.ERROR, "Unable to copy " + srcFile.getAbsolutePath() + " to " + destFile.getAbsolutePath() + ".");
+        }
+        finally{
+        	if(srcChannelFIS != null){
+        		try {
+					srcChannelFIS.close();
+				} catch (IOException e) {}
+        	}
+        	if(dstChannelFOS != null){
+        		try {
+        			dstChannelFOS.close();
+				} catch (IOException e) {}
+        	}
+        }
+    }
+    
+    public static void deleteFile(File wavFile) {
+        boolean success = wavFile.delete();
+        if (!success) {
+        	wavFile.deleteOnExit();
+        }
+    }
+    
+    public static String cutExtension(String filename) {
+		int pos = filename.lastIndexOf('.');
+        return filename.substring(0, pos);
+	}
 }
