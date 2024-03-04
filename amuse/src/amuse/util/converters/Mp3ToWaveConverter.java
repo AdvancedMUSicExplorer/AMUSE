@@ -15,6 +15,7 @@ import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysBooleanValue;
 import amuse.preferences.KeysIntValue;
 import amuse.util.AmuseLogger;
+import amuse.util.FileOperations;
 import amuse.util.audio.AudioFileConversion;
 import amuse.util.audio.SampleRateConverter;
 import amuse.util.audio.AudioFileConversion.KHz;
@@ -72,7 +73,7 @@ public class Mp3ToWaveConverter implements ConverterInterface {
             AudioFormat format = AudioSystem.getAudioFileFormat(file).getFormat();
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.DEBUG, "Starting: "+file.getName() + " "+ (int)format.getFrameRate()+"kHz, "+format.getChannels());
             
-            ConverterInterface.fileCopy(file, tempFile);
+            FileOperations.fileCopy(file, tempFile);
             if (!isDownSamplingActive) {
 				targetKHZ = (int) format.getFrameRate();
 		    }
@@ -87,17 +88,17 @@ public class Mp3ToWaveConverter implements ConverterInterface {
             if (isDownSamplingActive && format.getFrameRate() != 44100f && format.getFrameRate() != 22050f && format.getFrameRate() != 11025f) {
                 AmuseLogger.write(AudioFileConversion.class.getName(), Level.WARN, "This file has no standard frame rate: \"" + file + "\"");
             }
-            ConverterInterface.deleteFile(file);
-            ConverterInterface.fileCopy(tempFile, file);
-            ConverterInterface.deleteFile(tempFile);
+            FileOperations.deleteFile(file);
+            FileOperations.fileCopy(tempFile, file);
+            FileOperations.deleteFile(tempFile);
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.DEBUG, "Result: "+file.getName() + " "+ (int)format.getFrameRate()+"kHz, "+format.getChannels());
         } catch (IOException ex) {
             ex.printStackTrace();
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unable to perform down-sampling: " + ex.getMessage());
-            ConverterInterface.deleteFile(tempFile);
+            FileOperations.deleteFile(tempFile);
             throw ex;
         } catch (UnsupportedAudioFileException ex) {
-            ConverterInterface.deleteFile(tempFile);
+            FileOperations.deleteFile(tempFile);
             AmuseLogger.write(AudioFileConversion.class.getName(), Level.ERROR, "Unsupported Audio-File: \"" + ex.getLocalizedMessage() + "\"");
             throw new IOException(ex.getMessage());
         }
@@ -105,7 +106,7 @@ public class Mp3ToWaveConverter implements ConverterInterface {
 	
 	private void sampleToTargetSize(File file, int targetKHZ, boolean isReduceToMono) throws UnsupportedAudioFileException, IOException {
         File tmpFile = new File(file.getParent() + File.separator + "tmp_sample_" + file.getName());
-        ConverterInterface.fileCopy(file, tmpFile);
+        FileOperations.fileCopy(file, tmpFile);
         SampleRateConverter.changeFormat(tmpFile, file, targetKHZ, isReduceToMono);
 	    tmpFile.delete();
 	}
