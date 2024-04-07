@@ -23,7 +23,7 @@ public class SymbolicModality implements Modality {
 
 	public enum SymbolicFormat implements Format {
 		
-		MIDI 		(List.of("mid", "midi")),
+		MIDI 		(List.of("mid", "midi", "smf")),
 		MUSICXML 	(List.of("mxl")),
 		ABC			(List.of("abc"));
 		
@@ -39,15 +39,6 @@ public class SymbolicModality implements Modality {
 					if(file.getPath().endsWith("." + ending)) {
 						return format;
 					}
-				}
-			}
-			return null;
-		}
-		
-		public static SymbolicFormat getFormatByString(String file) {
-			for(SymbolicFormat format : SymbolicFormat.values()) {
-				if(format.toString() == file) {
-					return format;
 				}
 			}
 			return null;

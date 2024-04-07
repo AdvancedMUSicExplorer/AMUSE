@@ -23,13 +23,17 @@ public interface Format {
 	public List<String> getEndings();
 	
 	public static Format getFormatByString(String format) {
-		Format target = AudioFormat.getFormatByString(format);
-		if(target != null) {
-			return target;
+		Format[] audioFormats = AudioFormat.values();
+		for(Format audioFormat: audioFormats) {
+			if(audioFormat.toString() == format) {
+				return audioFormat;
+			}
 		}
-		target = SymbolicFormat.getFormatByString(format);
-		if(target != null) {
-			return target;
+		Format[] symbolicFormats = SymbolicFormat.values();
+		for(Format symbolicFormat: symbolicFormats) {
+			if(symbolicFormat.toString() == format) {
+				return symbolicFormat;
+			}
 		}
 		return null;
 	}

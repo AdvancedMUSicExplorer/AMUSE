@@ -63,6 +63,9 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 
 	/** List of supported modalities */
 	private static final List<Modality> modalities = List.of(new SymbolicModality(List.of(SymbolicFormat.MIDI)));
+	
+	private double windowDurationInSeconds = 0.1;
+	int sampleRate = 22050;
 
 	@Override
 	public void setParameters(String parameterString) throws NodeException {}
@@ -110,7 +113,7 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 			// Set options in config file
 			writer.write("<jSymbolic_options>");
 			writer.write(System.getProperty("line.separator"));
-			writer.write("window_size=0.0232199546485");
+			writer.write("window_size="+windowDurationInSeconds);
 			writer.write(System.getProperty("line.separator"));
 			writer.write("window_overlap=0.0");
 			writer.write(System.getProperty("line.separator"));
@@ -441,9 +444,8 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 				DataOutputStream values_writer = new DataOutputStream(values_to);
 				String sep = System.getProperty("line.separator");
 				
-				
-				int windowSize = 512;
-				int stepSize = 512;
+				int windowSize = (int) (sampleRate*windowDurationInSeconds);
+				int stepSize = windowSize;
 				if(amuseIdToCustomFeature.containsKey(Integer.valueOf(o.toString()))) {
 					windowSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceFrameSize();
 					stepSize = amuseIdToCustomFeature.get(Integer.valueOf(o.toString())).getSourceStepSize();
@@ -456,11 +458,11 @@ public class JSymbolicAdapter  extends AmuseTask implements ExtractorInterface {
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes("%columns=" + window_number);
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%sample_rate=" + "22050");
+				values_writer.writeBytes("%sample_rate="+sampleRate);
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%window_size=" + windowSize);
+				values_writer.writeBytes("%window_size="+windowSize);
 				values_writer.writeBytes(sep);
-				values_writer.writeBytes("%step_size=" + stepSize);
+				values_writer.writeBytes("%step_size="+stepSize);
 				values_writer.writeBytes(sep);
 				values_writer.writeBytes(sep);
 				

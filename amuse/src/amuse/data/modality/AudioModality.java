@@ -48,15 +48,6 @@ public class AudioModality implements Modality {
 			}
 			return null;
 		}
-		
-		public static AudioFormat getFormatByString(String file) {
-			for(AudioFormat format : AudioFormat.values()) {
-				if(format.name().equals(file)) {
-					return format;
-				}
-			}
-			return null;
-		}
 
 		@Override
 		public boolean matchesEndings(File file) {

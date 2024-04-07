@@ -18,7 +18,6 @@ import amuse.util.AmuseLogger;
 import amuse.util.FileOperations;
 import amuse.util.audio.AudioFileConversion;
 import amuse.util.audio.SampleRateConverter;
-import amuse.util.audio.AudioFileConversion.KHz;
 import javazoom.jl.converter.Converter;
 import javazoom.jl.decoder.JavaLayerException;
 
