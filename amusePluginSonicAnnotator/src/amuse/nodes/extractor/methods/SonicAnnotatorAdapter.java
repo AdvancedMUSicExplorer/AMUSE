@@ -52,6 +52,9 @@ import org.w3c.dom.NodeList;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.modality.AudioModality;
+import amuse.data.modality.Modality;
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -78,6 +81,9 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	
 	/** Path to the desired arff output from Sonic Annotator */
 	private String outputFeatureFile;
+	
+	/** List of supported modalities and formats */
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)
@@ -613,6 +619,11 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 	    } finally {
 	        is.close();
 	    }
+	}
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
 	}
 
 }

@@ -12,9 +12,20 @@ import amuse.data.modality.Format;
 import amuse.interfaces.nodes.NodeException;
 import amuse.preferences.AmusePreferences;
 
+/**
+ * This interface defines the operations which should be supported by all converter classes
+ * and provides methods to search for possible conversions in conversionTable.arff.
+ * 
+ * @author Clara Pingel
+ */
 public interface ConverterInterface {
 	
-	public static List<Format> conversionsAvailable(Format format) {
+	/**
+	 * Searchs conversionTable.arff for possible target formats for given source format.
+	 * 
+	 * @return list of possible target formats
+	 */
+	public static List<Format> conversionsAvailable(Format source) {
 		DataSetAbstract configTable;
 		List<Format> targetFormats = new ArrayList<Format>();
 		try {
@@ -23,7 +34,7 @@ public interface ConverterInterface {
 			Attribute targetAttribute = configTable.getAttribute("Target");
 			
 			for(int i = 0; i<configTable.getValueCount(); i++) {
-				if(sourceAttribute.getValueAt(i).toString().equals(format.toString())) {
+				if(sourceAttribute.getValueAt(i).toString().equals(source.toString())) {
 					targetFormats.add(Format.getFormatByString(targetAttribute.getValueAt(i).toString()));
 				}
 			}
@@ -33,7 +44,10 @@ public interface ConverterInterface {
 		return targetFormats;
 	}
 	
-	public static ConverterInterface getConversionClass(Format sourceFormat, Format targetFormat) {
+	/**
+	 * Returns conversion class for given source and target format.
+	 */
+	public static ConverterInterface getConversionClass(Format source, Format target) {
 		DataSetAbstract configTable;
 		try {
 			configTable = new ArffDataSet(new File(AmusePreferences.getConversionTablePath()));
@@ -42,7 +56,7 @@ public interface ConverterInterface {
 			Attribute conversionClassAttribute = configTable.getAttribute("ConversionClass");
 			
 			for(int i = 0; i<configTable.getValueCount(); i++) {
-				if(sourceAttribute.getValueAt(i).equals(sourceFormat.toString()) && targetAttribute.getValueAt(i).equals(targetFormat.toString())) {
+				if(sourceAttribute.getValueAt(i).equals(source.toString()) && targetAttribute.getValueAt(i).equals(target.toString())) {
 					Class<?> converter = Class.forName(conversionClassAttribute.getValueAt(i).toString());
 					ConverterInterface ca = (ConverterInterface)converter.newInstance();
 					return ca;
@@ -60,7 +74,7 @@ public interface ConverterInterface {
 		return null;
 	}
 	
-	public void convert(File file, File outputFolder) throws IOException, NodeException;
+	public File convert(File file, File outputFolder) throws IOException, NodeException;
 	
 	public String getEnding();
 }

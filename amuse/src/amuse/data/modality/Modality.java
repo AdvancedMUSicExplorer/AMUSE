@@ -10,6 +10,8 @@ import amuse.data.modality.AudioModality.AudioFormat;
 
 /**
  * This interface defines the operations which should be supported by all modalities.
+ * 
+ * @author Clara Pingel
  */
 public interface Modality {
 	

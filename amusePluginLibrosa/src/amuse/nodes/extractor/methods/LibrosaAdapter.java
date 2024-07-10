@@ -42,6 +42,9 @@ import org.w3c.dom.NodeList;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.modality.AudioModality;
+import amuse.data.modality.Modality;
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -63,6 +66,9 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 	
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
+	
+	/** List of supported modalities and formats */
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)
@@ -354,6 +360,11 @@ public class LibrosaAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void setParameters(String parameterString) throws NodeException {
 		// Do nothing, since initialization is not required	
+	}
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
 	}
 
 }

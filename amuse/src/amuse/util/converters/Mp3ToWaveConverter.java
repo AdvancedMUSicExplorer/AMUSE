@@ -25,7 +25,7 @@ public class Mp3ToWaveConverter implements ConverterInterface {
 	//TODO remove folder for splitted files
 
 	@Override
-	public void convert(File file, File outputFolder) throws IOException, NodeException {
+	public File convert(File file, File outputFolder) throws IOException, NodeException {
 		if (!outputFolder.exists()) {
             outputFolder.mkdirs();
         }
@@ -48,6 +48,7 @@ public class Mp3ToWaveConverter implements ConverterInterface {
         } catch (JavaLayerException ex) {
             Logger.getLogger(AudioFileConversion.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+		return targetFile;
     }
 
 	@Override

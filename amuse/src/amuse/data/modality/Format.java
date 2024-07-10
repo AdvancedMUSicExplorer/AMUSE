@@ -25,13 +25,13 @@ public interface Format {
 	public static Format getFormatByString(String format) {
 		Format[] audioFormats = AudioFormat.values();
 		for(Format audioFormat: audioFormats) {
-			if(audioFormat.toString() == format) {
+			if(audioFormat.toString().equals(format)) {
 				return audioFormat;
 			}
 		}
 		Format[] symbolicFormats = SymbolicFormat.values();
 		for(Format symbolicFormat: symbolicFormats) {
-			if(symbolicFormat.toString() == format) {
+			if(symbolicFormat.toString().equals(format)) {
 				return symbolicFormat;
 			}
 		}

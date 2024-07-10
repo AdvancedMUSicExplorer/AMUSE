@@ -54,12 +54,14 @@ import org.apache.log4j.Level;
  * @author Clemens Waeltken
  */
 public class TzanetakisFeature extends AmuseTask implements ExtractorInterface {
+	
     private File processedFeatureFile = null;
     private String musicDatabase = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
     private String processedFeatureDatabase = AmusePreferences.get(KeysStringValue.PROCESSED_FEATURE_DATABASE);
     private String currentFile = null;
     private File outputFile = null;
     
+    /** List of supported modalities and formats */
 	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 
     public void setParameters(String parameterString) throws NodeException {

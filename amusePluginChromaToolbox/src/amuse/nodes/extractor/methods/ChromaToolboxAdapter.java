@@ -42,6 +42,9 @@ import org.apache.log4j.Level;
 
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
+import amuse.data.modality.AudioModality;
+import amuse.data.modality.Modality;
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -67,6 +70,9 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 	
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
+	
+	/** List of supported modalities and formats */
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)
@@ -346,5 +352,10 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 	public void setFeaturesIds(List<Integer> featureIds) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
 	}
 }

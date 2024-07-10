@@ -246,15 +246,10 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 								if(modality.getFormats().contains(targetFormat)) {
 									
 									ConverterInterface converter = ConverterInterface.getConversionClass(originalFormat, targetFormat);
-									converter.convert(new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)), 
+									File convertedFile = converter.convert(new File(((ExtractionConfiguration)this.taskConfiguration).getMusicFileList().getFileAt(0)), 
 											new File(this.nodeHome + File.separator + "input" + File.separator + "task_" + this.jobId));
 									
-									/* Update extension */
-									relativeName = FileOperations.cutExtension(relativeName);
-									relativeName = new String(relativeName + converter.getEnding());
-									
-									this.inputFileName = relativeName;
-									extractorToFilename.put(extractorID, this.inputFileName);
+									this.extractorToFilename.put(extractorID, convertedFile.getAbsolutePath());
 								}
 							}
 						}

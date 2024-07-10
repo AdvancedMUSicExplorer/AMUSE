@@ -84,6 +84,9 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 	// (not required here but is currently done by ExtractorNodeScheduler automaticly!)
 	private Integer currentPart;
 	
+	/** List of supported modalities and formats */
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
+	
 	/*
 	 * (non-Javadoc)
 	 * @see amuse.nodes.extractor.interfaces.ExtractorInterface#setFilenames(java.lang.String, java.lang.String, java.lang.Integer)
@@ -422,6 +425,6 @@ public class HighLevelFeatureExtractor extends AmuseTask implements ExtractorInt
 
 	@Override
 	public List<Modality> getModalities() {
-		return null;
+		return modalities;
 	}
 }

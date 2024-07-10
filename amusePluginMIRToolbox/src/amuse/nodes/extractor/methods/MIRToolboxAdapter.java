@@ -55,6 +55,9 @@ import org.apache.log4j.Level;
 import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.data.io.DataSet;
+import amuse.data.modality.AudioModality;
+import amuse.data.modality.Modality;
+import amuse.data.modality.AudioModality.AudioFormat;
 import amuse.interfaces.nodes.NodeException;
 import amuse.interfaces.nodes.methods.AmuseTask;
 import amuse.nodes.extractor.ExtractionConfiguration;
@@ -82,6 +85,9 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	private boolean convertAttackSlopes;
 	
 	private boolean convertRiseTimes;
+	
+	/** List of supported modalities and formats */
+	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 	
 	/*
 	 * (non-Javadoc)
@@ -646,5 +652,10 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 	 */
 	public void setParameters(String parameterString) throws NodeException {
 		// Do nothing, since initialization is not required	
+	}
+
+	@Override
+	public List<Modality> getModalities() {
+		return modalities;
 	}
 }

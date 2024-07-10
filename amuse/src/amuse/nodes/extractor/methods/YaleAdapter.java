@@ -88,6 +88,7 @@ public class YaleAdapter extends AmuseTask implements ExtractorInterface {
 	/** If the input music file was splitted, here is the number of current part */
 	private Integer currentPart;
 	
+	/** List of supported modalities and formats */
 	private static final List<Modality> modalities = List.of(new AudioModality(List.of(AudioFormat.WAVE)));
 
 	/*

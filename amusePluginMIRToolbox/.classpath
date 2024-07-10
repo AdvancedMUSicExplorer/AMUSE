@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_144"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/amuse-frame.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/amuse-utils.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/config/node/extractor/extractorNode.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/log4j-1.2.14.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/amuse"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/amuse/lib/amuse-frame.jar"/>
+	<classpathentry kind="lib" path="/amuse/lib/amuse-utils.jar"/>
+	<classpathentry kind="lib" path="/amuse/config/node/extractor/extractorNode.jar"/>
+	<classpathentry kind="lib" path="/amuse/lib/log4j-1.2.14.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
