@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_144"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/amuse-frame.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/amuse-utils.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/config/node/extractor/extractorNode.jar"/>
-	<classpathentry kind="lib" path="/home/workspace/amuse/lib/log4j-1.2.14.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/amuse"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/amuse-frame.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/amuse-utils.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 8 [1.8.0_391]"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/config/node/extractor/extractorNode.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AMUSE"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

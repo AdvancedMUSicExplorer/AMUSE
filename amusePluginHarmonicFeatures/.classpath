@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/amuse"/>
-	<classpathentry kind="lib" path="/amuse/lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/log4j-1.2.14.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/AMUSE"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
