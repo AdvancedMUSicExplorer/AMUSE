@@ -25,10 +25,14 @@ package amuse.scheduler.gui.validation;
 
 import amuse.data.Measure;
 import amuse.data.MeasureTable;
+import amuse.data.io.attributes.NumericAttribute;
+import amuse.data.io.attributes.StringAttribute;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -42,11 +46,12 @@ public class MeasuresTableModel extends DefaultTableModel {
     private File measureTableFile = new File(AmusePreferences.getMeasureTablePath());
     private MeasureTable measureTable;
 
+
     public MeasuresTableModel() throws IOException {
         super();
         measureTable = new MeasureTable(measureTableFile);
-        Object[][] data = new Object[measureTable.size()][5];
-        String[] columnHeaders = {"ID", "Name", "Category", "Track Level", "Window Level"};
+        Object[][] data = new Object[measureTable.size()][6];
+        String[] columnHeaders = {"ID", "Name", "Category", "Track Level", "Window Level", "Parameters"}; /* 'Parameters' column is added for parameter adjustment */
         int index = 0;
         for (Object[] column:data) {
             amuse.data.Measure m = measureTable.get(index);
@@ -55,6 +60,7 @@ public class MeasuresTableModel extends DefaultTableModel {
             column[2] = m.getCategory();
             column[3] = m.isTrackLevelSelected();
             column[4] = m.isWindowLevelSelected();
+            column[5] = m.isChangeParameterSelected();  /* added for parameter adjustment */
             index++;
         }
         this.setDataVector(data, columnHeaders);
@@ -64,17 +70,24 @@ public class MeasuresTableModel extends DefaultTableModel {
         for (int i = 0; i < table.size(); i++) {
            setValueAt(table.get(i).isTrackLevelSelected(), i, 3);
            setValueAt(table.get(i).isWindowLevelSelected(), i, 4);
+           setValueAt(table.get(i).isChangeParameterSelected(), i, 5);   /* added for parameter adjustment */
         }
     }
   
     @Override
     public boolean isCellEditable (int row, int col) {
         if (col >= 3) {
-            return true;
-        } else {
+            if (col == 3||col==4) {
+        	return true;
+            }
+            Measure measure = measureTable.get(row);
+            return measure.isChangeParameterSelected();
+        } else{
             return false;
         }
     }
+
+
 
     @Override
     public Class<?> getColumnClass(int index) {
@@ -82,7 +95,7 @@ public class MeasuresTableModel extends DefaultTableModel {
             return Integer.class;
         } else if (index == 1 || index == 2) {
             return String.class;
-        } else if (index == 3 || index == 4) {
+        } else if (index == 3 || index == 4 || index == 5) {     /* index == 5 added for parameter adjustment */
             return Boolean.class;
         } else {
             throw new IndexOutOfBoundsException("No column at: " + index);
@@ -97,10 +110,13 @@ public class MeasuresTableModel extends DefaultTableModel {
         for (int i = 0; i < getRowCount(); i++) {
             boolean trackLevel = (Boolean)getValueAt(i, 3);
             boolean classificationWindowLevel = (Boolean)getValueAt(i, 4);
+            boolean changeParameter = (Boolean)getValueAt(i, 5);
             Measure measure = measureTable.get(i);
             measure.setTrackLevelSelected(trackLevel);
             measure.setWindowLevelSelected(classificationWindowLevel);
+            measure.setChangeParameterSelected(changeParameter); /* added for parameter adjustment */
         }
         return measureTable;
     }
+   
 }

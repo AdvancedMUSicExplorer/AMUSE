@@ -1,0 +1,14 @@
+@RELATION ProcessorConfig
+
+@ATTRIBUTE 'FileList' STRING
+@ATTRIBUTE 'InputSourceType' {'RAW_FEATURE_LIST','PROCESSING_CONFIG'}
+@ATTRIBUTE 'Input' STRING
+@ATTRIBUTE 'ReductionSteps' STRING
+@ATTRIBUTE 'Unit' {'MILLISECONDS','SAMPLES'}
+@ATTRIBUTE 'AggregationWindowSize' NUMERIC
+@ATTRIBUTE 'AggregationWindowStepSize' NUMERIC
+@ATTRIBUTE 'MatrixToVectorMethod' STRING
+@ATTRIBUTE 'FeatureDescription' STRING
+
+@DATA
+'/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/tasks/jazz_classification_experiment_with_10_training/filelists/task_2_fp.arff','RAW_FEATURE_LIST','/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/tasks/jazz_classification_experiment_with_10_training/featurelists/task_2_fp.arff','9','MILLISECONDS',5000,2500,'0[true_true]',''

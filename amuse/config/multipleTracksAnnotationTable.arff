@@ -5,3 +5,20 @@
 @ATTRIBUTE 'CategoryName' STRING
 
 @DATA
+1,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/RockClassicalAnnotated.arff','RockClassical'
+2,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/RockClassicalTest.arff','RockClassicalTest'
+3,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/RockClassicalTrain.arff','RockClassicalTrain'
+4,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/TestClassical.arff','TestClassicalPiano'
+5,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/classical_binary.arff','Classical_binary'
+6,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/jazz_binary.arff','jazz_binary'
+7,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/classical_jazz_train.arff','classical_jazz_train'
+8,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/classical_jazz_test.arff','classical_jazz_test'
+9,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/rock_classical_train.arff','rock_classical_train'
+10,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/rock_classical_test.arff','rock_classical_test'
+11,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/rock_classical_10_training.arff','rock_classical_10_training'
+12,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/rock_classical_4_test.arff','rock_classical_4_test'
+13,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/jazz_classical_10_training.arff','jazz_classical_10_training'
+14,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/jazz_classical_3_test.arff','jazz_classical_3_test'
+
+15,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/jazz_classical_piano_drums_multilabel_train.arff','jazz_classical_piano_drums_multilabel_train'
+16,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Annotations/Multiple_Tracks/jazz_classical_piano_drums_multilabel_test.arff','jazz_classical_piano_drums_multilabel_test'

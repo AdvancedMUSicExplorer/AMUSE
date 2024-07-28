@@ -1,0 +1,14 @@
+@RELATION FileTable
+
+@ATTRIBUTE 'Id' NUMERIC
+@ATTRIBUTE 'Path' STRING
+
+@DATA
+1,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700739__ztidlen__jazzaisound-jazzgenre-1.mp3'
+2,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700740__ztidlen__jazzaisound-jazzgenre-2.mp3'
+3,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700741__ztidlen__jazzaisound-jazzgenre-3.mp3'
+4,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700749__ztidlen__jazzaisound-jazzgenre-4.mp3'
+5,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700750__ztidlen__jazzaisound-jazzgenre-5.mp3'
+6,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700751__ztidlen__jazzaisound-jazzgenre-6.mp3'
+7,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700752__ztidlen__jazzaisound-jazzgenre-7.mp3'
+8,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/703947__ztidlen__jazzaisound-jazzgenre-8.mp3'

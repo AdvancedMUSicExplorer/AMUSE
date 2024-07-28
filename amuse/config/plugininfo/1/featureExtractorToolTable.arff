@@ -1,0 +1,21 @@
+% Feature extractors table
+
+@RELATION extractors
+
+% Unique extractor ID
+@ATTRIBUTE Id NUMERIC
+% Extractor name
+@ATTRIBUTE Name STRING
+% Java class which runs extractor
+@ATTRIBUTE AdapterClass STRING
+% Extractor home folder (e.g. if an external tool is used)
+@ATTRIBUTE HomeFolder STRING
+% Extractor start script for adapter only if external tool is used (otherwise please set to -1)
+@ATTRIBUTE StartScript STRING
+% Base script for feature extraction
+@ATTRIBUTE InputBaseBatch STRING
+% Script for feature extraction (after the parameters / options were saved to base script)
+@ATTRIBUTE InputBatch STRING
+
+@DATA
+4, "MIRToolbox", "amuse.nodes.extractor.methods.MIRToolboxAdapter", "MIRToolbox", "MIRToolboxStart.sh", "MIRToolboxBase.xml", "MIRToolboxBaseModified.m"

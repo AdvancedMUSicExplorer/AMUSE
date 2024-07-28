@@ -13,3 +13,4 @@
 @ATTRIBUTE PluginList STRING
 
 @DATA
+1, "MIR Toolbox", "MIRToolbox", "1.4 stable", "1"

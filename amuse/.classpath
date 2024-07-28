@@ -1,41 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/jama.jar"/>
-	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
-	<classpathentry kind="lib" path="lib/launcher.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
-	<classpathentry kind="lib" path="lib/miglayout-3.7-swing.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer.jar"/>
-	<classpathentry kind="lib" path="lib/tritonus_share-0.3.6.jar"/>
-	<classpathentry kind="lib" path="lib/vldocking.jar"/>
-	<classpathentry kind="lib" path="lib/xerces.jar"/>
-	<classpathentry kind="lib" path="lib/xpp3.jar"/>
-	<classpathentry kind="lib" path="lib/xstream.jar"/>
-	<classpathentry kind="lib" path="lib/mp3plugin.jar"/>
-	<classpathentry kind="lib" path="lib/tritonus_remaining-0.3.6.jar"/>
-	<classpathentry kind="lib" path="lib/jAudio.jar"/>
-	<classpathentry kind="lib" path="lib/jhall.jar"/>
-	<classpathentry kind="lib" path="lib/jlfgr-1_0.jar"/>
-	<classpathentry kind="lib" path="lib/jar-loader.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/rapidminer-license-api-4.2.4.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/rapidminer-license-commons-4.2.4.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jackson-core-2.9.5.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jackson-databind-2.9.5.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jackson-annotations-2.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/belt-1.0.0-BETA5.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/belt-adapter-0.7.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/versioned-repository-0.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/weka.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/alphanumeric-sorting-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/commons-lang-2.6.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/json-20180813.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/jxl-2.6.12.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/ojalgo-47.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/poi-ooxml-3.17.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/protobuf-java-3.11.1.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/rapidminer-api-0.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/rapidminer_dependencies/tink-1.3.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx-swt.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.base.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.controls.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.fxml.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.graphics.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.media.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.swing.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/javafx-sdk-17.0.10/lib/javafx.web.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/amuse-frame.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/amuse-gui.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/amuse-utils.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jar-loader.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jAudio.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jama.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jlfgr-1_0.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jl1.0.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/jhall.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/launcher.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/mp3plugin.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/miglayout-3.7-swing.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/xstream.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/xpp3.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/xmlpull.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/xerces.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/weka.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/vldocking.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/tritonus_share-0.3.6.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/tritonus_remaining-0.3.6.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/versioned-repository-0.1.1.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/tink-1.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/rapidminer-license-commons-4.2.4.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/rapidminer-license-api-4.2.4.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/rapidminer-api-0.2.2.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/protobuf-java-3.11.1.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/ojalgo-47.3.0.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/jxl-2.6.12.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/json-20180813.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/jackson-databind-2.9.5.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/jackson-core-2.9.5.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/jackson-annotations-2.9.0.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/belt-adapter-0.7.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/belt-1.0.0-BETA5.jar"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/lib/rapidminer_dependencies/alphanumeric-sorting-1.0.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 8 [1.8.0_391]"/>
+	<classpathentry kind="lib" path="/Users/aylinozek/Desktop/RWTH/hiwiamuse/jlayer/target/jlayer-1.0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

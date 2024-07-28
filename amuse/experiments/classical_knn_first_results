@@ -1,0 +1,17 @@
+% Classifier result
+
+@RELATION 'Classification result'
+
+@ATTRIBUTE Id NUMERIC
+@ATTRIBUTE Filename STRING
+@ATTRIBUTE StartMs NUMERIC
+@ATTRIBUTE EndMs NUMERIC
+@ATTRIBUTE Classical NUMERIC
+
+
+
+@DATA
+0,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706259__ztidlen__classicaliasound-classicalgenre-7.mp3',-1,-1,0.0
+1,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706261__ztidlen__classicaliasound-classicalgenre-8.mp3',-1,-1,0.6666666666666666
+2,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/700752__ztidlen__jazzaisound-jazzgenre-7.mp3',-1,-1,1.0
+3,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/jazz/703947__ztidlen__jazzaisound-jazzgenre-8.mp3',-1,-1,0.0

@@ -1,0 +1,14 @@
+@RELATION FileTable
+
+@ATTRIBUTE 'Id' NUMERIC
+@ATTRIBUTE 'Path' STRING
+
+@DATA
+1,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/702019__ztidlen__classicaliasound-classicalgenre-1.mp3'
+2,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/702020__ztidlen__classicaliasound-classicalgenre-2.mp3'
+3,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/702021__ztidlen__classicaliasound-classicalgenre-3.mp3'
+4,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/702022__ztidlen__classicaliasound-classicalgenre-4.mp3'
+5,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706255__ztidlen__classicaliasound-classicalgenre-5.mp3'
+6,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706257__ztidlen__classicaliasound-classicalgenre-6.mp3'
+7,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706259__ztidlen__classicaliasound-classicalgenre-7.mp3'
+8,'/Users/aylinozek/Desktop/RWTH/hiwiamuse/Music/Database/classical/706261__ztidlen__classicaliasound-classicalgenre-8.mp3'

@@ -19,50 +19,56 @@
 @ATTRIBUTE CalculateForTracks {true,false}
 % Should this measure be calculated for each classification window?
 @ATTRIBUTE CalculateForWindows {true,false}
-
+% Do you want to change the parameters or use the default ones?
+@ATTRIBUTE ChangeParameters {true,false}
+@ATTRIBUTE ParameterName STRING
+@ATTRIBUTE ParameterValue NUMERIC
+@ATTRIBUTE ParameterDefault NUMERIC
+@ATTRIBUTE ParameterRange NUMERIC
+@ATTRIBUTE ParameterDefinition STRING
 @DATA
 
 % Runtime measures
 
-0, "Ratio of used raw time windows", "Data reduction",  -1, amuse.nodes.validator.measures.datareduction.RatioOfUsedRawTimeWindows, ?, ?
-1, "Feature matrix reduction rate", "Data reduction",  -1, amuse.nodes.validator.measures.datareduction.FeatureMatrixReductionRate, ?, ?
-2, "Feature vector reduction rate", "Data reduction", -1, amuse.nodes.validator.measures.datareduction.FeatureVectorReductionRate, ?, ?
+0, "Ratio of used raw time windows", "Data reduction",  -1, amuse.nodes.validator.measures.datareduction.RatioOfUsedRawTimeWindows, ?, ?, false, alpha, 1, 1, 1, parameter
+1, "Feature matrix reduction rate", "Data reduction",  -1, amuse.nodes.validator.measures.datareduction.FeatureMatrixReductionRate, ?, ?, false, alpha, 1, 1, 1, parameter
+2, "Feature vector reduction rate", "Data reduction", -1, amuse.nodes.validator.measures.datareduction.FeatureVectorReductionRate, ?, ?, false, alpha, 1, 1, 1, parameter
 
 % Confusion matrix based measures
 
-100, "True positives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.TruePositives, true, true
-101, "True negatives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.TrueNegatives, true, true
-102, "False positives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.FalsePositives, true, true
-103, "False negatives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.FalseNegatives, true, true
-104, "Accuracy", "Standard measures", 1.0, amuse.nodes.validator.measures.confusionmatrix.Accuracy, true, true
-105, "Precision", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Precision, true, true
-106, "Recall", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Recall, true, true
-107, "Specificity", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Specificity, true, true
-108, "F1-measure", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.FMeasure, true, true
-110, "Youden's index", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.YoudensIndex, true, true
-111, "Likelihoods", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.Likelihoods, true, true
-112, "Discriminant power", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.DiscriminantPower, true, true
-113, "Geometric means", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.GeometricMeans, true, true
-114, "List of correctly predicted instances", "Track list", -1, amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances, true, false
-115, "Balanced relative error", "Standard measures", 0, amuse.nodes.validator.measures.confusionmatrix.BalancedRelativeError, true, true
+100, "True positives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.TruePositives, true, true, false, alpha, 1, 1, 1, parameter
+101, "True negatives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.TrueNegatives, true, true, false, alpha, 1, 1, 1, parameter
+102, "False positives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.FalsePositives, true, true, false, alpha, 1, 1, 1, parameter
+103, "False negatives", "Confusion matrix", -1, amuse.nodes.validator.measures.confusionmatrix.base.FalseNegatives, true, true, false, alpha, 1, 1, 1, parameter
+104, "Accuracy", "Standard measures", 1.0, amuse.nodes.validator.measures.confusionmatrix.Accuracy, true, true, false, alpha, 1, 1, 1, parameter
+105, "Precision", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Precision, true, true, false, alpha, 1, 1, 1, parameter
+106, "Recall", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Recall, true, true, false, alpha, 1, 1, 1, parameter
+107, "Specificity", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.Specificity, true, true, false, alpha, 1, 1, 1, parameter
+108, "F1-measure", "Standard measures", -1, amuse.nodes.validator.measures.confusionmatrix.FMeasure, true, true, true, alpha, 1, 1, 1, parameter
+110, "Youden's index", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.YoudensIndex, true, true, false, alpha, 1, 1, 1, parameter
+111, "Likelihoods", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.Likelihoods, true, true, false, alpha, 1, 1, 1, parameter
+112, "Discriminant power", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.DiscriminantPower, true, true, false, alpha, 1, 1, 1, parameter
+113, "Geometric means", "Recall and specificity combinations", -1, amuse.nodes.validator.measures.confusionmatrix.GeometricMeans, true, true, false, alpha, 1, 1, 1, parameter
+114, "List of correctly predicted instances", "Track list", -1, amuse.nodes.validator.measures.confusionmatrix.base.ListOfCorrectlyPredictedInstances, true, false, false, alpha, 1, 1, 1, parameter
+115, "Balanced relative error", "Standard measures", 0, amuse.nodes.validator.measures.confusionmatrix.BalancedRelativeError, true, true, false, alpha, 1, 1, 1, parameter
 
 % Numeric prediction measured errors
 
-200, "Absolute error", "Measured error", 0.0, amuse.nodes.validator.measures.AbsoluteError, true, true
-201, "Relative error", "Measured error", 0.0, amuse.nodes.validator.measures.RelativeError, true, true
-202, "Mean squared error", "Measured error", 0.0, amuse.nodes.validator.measures.MeanSquaredError, true, true
+200, "Absolute error", "Measured error", 0.0, amuse.nodes.validator.measures.AbsoluteError, true, true, false, alpha, 1, 1, 1, parameter
+201, "Relative error", "Measured error", 0.0, amuse.nodes.validator.measures.RelativeError, true, true, false, alpha, 1, 1, 1, parameter
+202, "Mean squared error", "Measured error", 0.0, amuse.nodes.validator.measures.MeanSquaredError, true, true, false, alpha, 1, 1, 1, parameter
 
 % Correlation between predicted and labeled values
 
-300, "Standard correlation coefficient", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.StandardCorrelationCoefficient, true, true
-301, "Spearman's Rho", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.SpearmansRhoRankCorrelation, true, true
-302, "Kendal's Tau", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.KendallsTauRankCorrelation, true, false
+300, "Standard correlation coefficient", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.StandardCorrelationCoefficient, true, true, false, alpha, 1, 1, 1, parameter
+301, "Spearman's Rho", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.SpearmansRhoRankCorrelation, true, true, false, alpha, 1, 1, 1, parameter
+302, "Kendal's Tau", "Correlation-based measures", 1.0, amuse.nodes.validator.measures.correlation.KendallsTauRankCorrelation, true, false, false, alpha, 1, 1, 1, parameter
 
 % Measures for event prediction
-400, "True positives", "Events", -1, amuse.nodes.validator.measures.events.base.TruePositives, true, false
-402, "False positives", "Events", -1, amuse.nodes.validator.measures.events.base.FalsePositives, true, false
-403, "False negatives", "Events", -1, amuse.nodes.validator.measures.events.base.FalseNegatives, true, false
-405, "Precision", "Events", 1.0, amuse.nodes.validator.measures.events.Precision, true, false
-406, "Recall", "Events", 1.0, amuse.nodes.validator.measures.events.Recall, true, false
-408, "F-measure", "Events", 1.0, amuse.nodes.validator.measures.events.FMeasure, true, false
-416, "Deviation", "Events", 0.0, amuse.nodes.validator.measures.events.Deviation, true, false
+400, "True positives", "Events", -1, amuse.nodes.validator.measures.events.base.TruePositives, true, false, false, alpha, 1, 1, 1, parameter
+402, "False positives", "Events", -1, amuse.nodes.validator.measures.events.base.FalsePositives, true, false, false, alpha, 1, 1, 1, parameter
+403, "False negatives", "Events", -1, amuse.nodes.validator.measures.events.base.FalseNegatives, true, false, false, alpha, 1, 1, 1, parameter
+405, "Precision", "Events", 1.0, amuse.nodes.validator.measures.events.Precision, true, false, false, alpha, 1, 1, 1, parameter
+406, "Recall", "Events", 1.0, amuse.nodes.validator.measures.events.Recall, true, false, false, alpha, 1, 1, 1, parameter
+408, "F-measure", "Events", 1.0, amuse.nodes.validator.measures.events.FMeasure, true, false, false, alpha, 1, 1, 1, parameter
+416, "Deviation", "Events", 0.0, amuse.nodes.validator.measures.events.Deviation, true, false, false, alpha, 1, 1, 1, parameter

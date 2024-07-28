@@ -1,0 +1,13 @@
+@RELATION FeatureTable
+
+@ATTRIBUTE 'Id' STRING
+@ATTRIBUTE 'Description' STRING
+@ATTRIBUTE 'ExtractorId' NUMERIC
+@ATTRIBUTE 'WindowSize' NUMERIC
+@ATTRIBUTE 'StepSize' NUMERIC
+@ATTRIBUTE 'Dimensions' NUMERIC
+@ATTRIBUTE 'FeatureType' {'WindowedNumeric','WindowedNumeric'}
+
+@DATA
+'32','Angles in phase domain',1,512,512,1,'WindowedNumeric'
+'33','Distances in phase domain',1,512,512,1,'WindowedNumeric'

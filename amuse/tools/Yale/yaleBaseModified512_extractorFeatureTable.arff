@@ -1,0 +1,12 @@
+@relation 'Music feature'
+
+@attribute Id numeric
+@attribute Description string
+@attribute ConfigurationId string
+@attribute WindowSize numeric
+@attribute StepSize numeric
+@attribute Dimensions numeric
+@attribute Consider numeric
+
+@data
+401,Tempo,'',512,512,1,1

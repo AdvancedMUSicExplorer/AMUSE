@@ -1,0 +1,7 @@
+@RELATION ExtractorConfig
+
+@ATTRIBUTE 'MusicFileList' STRING
+@ATTRIBUTE 'FeatureTable' STRING
+
+@DATA
+'/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/tasks/jazz_classification_experiment_with_10_training/filelists/task_0_fe.arff','/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/tasks/jazz_classification_experiment_with_10_training/featurelists/task_0_fe.arff'

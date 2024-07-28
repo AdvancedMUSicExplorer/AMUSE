@@ -35,7 +35,10 @@ import java.util.ListIterator;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
-import amuse.data.io.attributes.StringAttribute;
+import amuse.data.io.attributes.StringAttribute;     
+import amuse.data.Measure.Parameter;    /*added for parameter adjustment*/
+import java.util.ArrayList;    /*added for parameter adjustment*/
+import java.util.List;   /*added for parameter adjustment*/
 
 /**
  * @author Clemens Waeltken
@@ -49,12 +52,21 @@ public class MeasureTable implements List<Measure>, Serializable {
     
     public MeasureTable(File file) throws IOException {
         MeasureTableSet measureTableSet = new MeasureTableSet(file);
+        
         for (int i = 0; i < measureTableSet.getValueCount(); i++) {
+        	
             int id = measureTableSet.getIdAttribute().getValueAt(i).intValue();
             String name = measureTableSet.getNameAttribute().getValueAt(i);
             String category = measureTableSet.getCategoryAttribute().getValueAt(i);
             Double optimalValue = measureTableSet.getOptimalValueAttribute().getValueAt(i);
             String measureClass = measureTableSet.getMeasureClassAttribute().getValueAt(i);
+            String changeParameters = measureTableSet.getChangeParameters().getValueAt(i);
+            String paramName = measureTableSet.getParameterNameAttribute().getValueAt(i);/*added for parameter adjustment*/
+            Double paramValue = measureTableSet.getParameterValueAttribute().getValueAt(i);/*added for parameter adjustment*/
+            Double paramDefault = measureTableSet.getParameterDefaultAttribute().getValueAt(i);/*added for parameter adjustment*/
+            Double paramRange = measureTableSet.getParameterRangeAttribute().getValueAt(i);/*added for parameter adjustment*/
+            String paramDefinition = measureTableSet.getParameterDefinitionAttribute().getValueAt(i);/*added for parameter adjustment*/
+
             if (!measureClass.equalsIgnoreCase("?")) {
             	Measure newMeasure = new Measure(id, name, category, optimalValue, measureClass);
             	if(measureTableSet.getCalculateForTracks().getValueAt(i).equalsIgnoreCase(new String("false"))) {
@@ -63,12 +75,21 @@ public class MeasureTable implements List<Measure>, Serializable {
             	if(measureTableSet.getCalculateForWindows().getValueAt(i).equalsIgnoreCase(new String("false"))) {
             		newMeasure.setWindowLevelSelected(false);
             	}
+            	if(measureTableSet.getChangeParameters().getValueAt(i).equalsIgnoreCase(new String("false"))) {
+            		newMeasure.setChangeParameterSelected(false);
+            	}
                 measures.add(newMeasure);
+                Measure.Parameter parameter = new Measure.Parameter(paramName, paramValue, paramDefault, paramRange, paramDefinition);/*added for parameter adjustment*/
+                newMeasure.addParameter(parameter);/*added for parameter adjustment*/
+                
             }
         }
     }
 
-    public MeasureTable() {
+
+
+
+	public MeasureTable() {
         
     }
 
@@ -195,7 +216,8 @@ public class MeasureTable implements List<Measure>, Serializable {
 
     private class MeasureTableSet extends ArffDataSet {
 
-        private static final String strId = "Id";
+        private static final long serialVersionUID = 1L;
+		private static final String strId = "Id";
         private static final String strName = "Name";
         private static final String strOptimalValue = "OptimalValue";
         private static final String strMeasureClass = "MeasureClass";
@@ -203,6 +225,14 @@ public class MeasureTable implements List<Measure>, Serializable {
         private static final String strDataSetName = "Category";
         private String strCalculateForTracks = "CalculateForTracks";
         private String strCalculateForWindows = "CalculateForWindows";
+        private String strChangeParameters = "ChangeParameters";/*added for parameter adjustment*/
+        private static final String strParameterName = "ParameterName";/*added for parameter adjustment*/
+        private static final String strParameterValue = "ParameterValue";/*added for parameter adjustment*/
+        private static final String strParameterDefault = "ParameterDefault";/*added for parameter adjustment*/
+        private static final String strParameterRange = "ParameterRange";/*added for parameter adjustment*/
+        private static final String strParameterDefinition = "ParameterDefinition";/*added for parameter adjustment*/
+        
+        
 
         private MeasureTableSet(File measureTable) throws IOException {
             super(measureTable);
@@ -213,6 +243,7 @@ public class MeasureTable implements List<Measure>, Serializable {
             checkNominalAttribute(strCategory);
             checkNominalAttribute(strCalculateForTracks);
             checkNominalAttribute(strCalculateForWindows);
+            checkNominalAttribute(strChangeParameters);
         }
 
         private MeasureTableSet(List<Measure> measures) {
@@ -224,6 +255,7 @@ public class MeasureTable implements List<Measure>, Serializable {
             List<String> measureClasses = new ArrayList<String>();
             List<Boolean> calculateForTracks = new ArrayList<Boolean>();
             List<Boolean> calculateForWindows = new ArrayList<Boolean>();
+            List<Boolean> changeParameters = new ArrayList<Boolean>();
             for (Measure m: measures) {
                 ids.add((double)m.getID());
                 names.add(m.getName());
@@ -232,6 +264,7 @@ public class MeasureTable implements List<Measure>, Serializable {
                 measureClasses.add(m.getMeasureClass());
                 calculateForTracks.add(m.isTrackLevelSelected());
                 calculateForWindows.add(m.isWindowLevelSelected());
+                changeParameters.add(m.isChangeParameterSelected());
             }
             addAttribute(new NumericAttribute(strId, ids));
             addAttribute(new StringAttribute(strName, names));
@@ -240,6 +273,7 @@ public class MeasureTable implements List<Measure>, Serializable {
             addAttribute(new StringAttribute(strMeasureClass, measureClasses));
             addAttribute(NominalAttribute.createFromBooleans(strCalculateForTracks, calculateForTracks));
             addAttribute(NominalAttribute.createFromBooleans(strCalculateForWindows, calculateForWindows));
+            addAttribute(NominalAttribute.createFromBooleans(strChangeParameters, changeParameters));
         }
 
         private NumericAttribute getIdAttribute() {
@@ -265,10 +299,40 @@ public class MeasureTable implements List<Measure>, Serializable {
         private NominalAttribute getCalculateForWindows() {
             return (NominalAttribute) this.getAttribute(strCalculateForWindows);
         }
+        private NominalAttribute getChangeParameters() {/*added for parameter adjustment*/
+            return (NominalAttribute) this.getAttribute(strChangeParameters);
+        }
         
         private StringAttribute getMeasureClassAttribute() {
             return (StringAttribute) this.getAttribute(strMeasureClass);
         }
+        /*added for parameter adjustment*/
+        private StringAttribute getChangeParametersAttribute() {
+            return (StringAttribute) this.getAttribute(strChangeParameters);
+        }
+      
+        private StringAttribute getParameterNameAttribute() {
+            return (StringAttribute) this.getAttribute(strParameterName);
+        }
+
+        private NumericAttribute getParameterValueAttribute() {
+            return (NumericAttribute) this.getAttribute(strParameterValue);
+        }
+
+        private NumericAttribute getParameterDefaultAttribute() {
+            return (NumericAttribute) this.getAttribute(strParameterDefault);
+        }
+
+        private NumericAttribute getParameterRangeAttribute() {
+            return (NumericAttribute) this.getAttribute(strParameterRange);
+        }
+
+        private StringAttribute getParameterDefinitionAttribute() {
+            return (StringAttribute) this.getAttribute(strParameterDefinition);
+        }
+        
     }
+    
 }
+
 

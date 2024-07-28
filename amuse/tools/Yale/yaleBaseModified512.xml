@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><operator class="Experiment" name="Root">
+    <parameter key="logfile" value="featureslogfile.log"/>
+    <parameter key="logverbosity" value="warning"/>
+    <parameter key="random_seed" value="-1"/>
+    <operator class="MusicPreprocessing" name="Input">
+        <parameter key="first_sample" value="0"/>
+        <parameter key="number_of_samples" value="-1"/>
+        <parameter key="random_sample" value="false"/>
+        <parameter key="source_dir" value="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/config/node/extractor/input/task_0/1"/>
+        <parameter key="use_interval_attributes" value="false"/>
+        <operator class="OperatorChain" name="Preprocessing">
+            <operator class="MultivariateWindowing" name="MultivariateWindowing">
+                <parameter key="overlap" value="0.0"/>
+                <parameter key="step_size" value="512"/>
+                <parameter key="window_size" value="512"/>
+                <operator class="OperatorChain" name="FeatureExtraction">
+                    <operator class="Branching" name="Branching">
+                        
+                        
+                        <operator class="OperatorChain" name="BeatHistogramFeatures">
+                            <operator class="AutoCorrelation" name="Correlation">
+                                <parameter key="end" value="300"/>
+                                <parameter key="start" value="40"/>
+                            </operator>
+                            <operator class="Branching" name="TempoFeatures">
+                                <operator class="MinIndex" name="TempoFinder ID=401">
+                                </operator>
+                                
+                                
+                            </operator>
+                        </operator>
+                        
+                        
+                        
+                    </operator>
+                </operator>
+            </operator>
+            <operator class="GnuPlotWriter" name="GnuPlotWriter">
+                <parameter key="output_file" value="/Users/aylinozek/Desktop/RWTH/hiwiamuse/AMUSE/amuse/config/node/extractor/input/task_0/1/702021__ztidlen__classicaliasound-classicalgenre-3_Yale_features.arff"/>
+            </operator>
+        </operator>
+    </operator>
+    <operator activated="no" class="ExampleSetWriter" name="Output">
+        <parameter key="attribute_description_file" value="processed_data.att"/>
+        <parameter key="example_set_file" value="processed_data.exa"/>
+    </operator>
+</operator>

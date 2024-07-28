@@ -1,0 +1,65 @@
+% Table with all audio signal features available
+% for computation in Amuse. If you wish to use
+% some subset of features, please create a copy
+% of this file and leave only the features you
+% want to extract. 
+
+@RELATION features
+
+% Unique feature ID
+@ATTRIBUTE Id NUMERIC
+% Feature description
+@ATTRIBUTE Description STRING
+% ID of tool to extract the feature (see extractorTable.arff)
+@ATTRIBUTE ExtractorId NUMERIC
+% Window size in samples
+@ATTRIBUTE WindowSize NUMERIC
+% Step size in samples
+@ATTRIBUTE StepSize NUMERIC
+% Number of feature dimensions
+@ATTRIBUTE Dimensions NUMERIC
+% Type of feature:
+%   Windowed*: Indicates that the audiosignal was evenly split into windows of the same length
+%   Segmented*: Indicates that non overlapping segments were defined for the audio, starting and ending at any time
+%   Event: feature marks events as points in time, but has no duration or value
+@ATTRIBUTE FeatureType {WindowedNumeric, WindowedString, Event, SegmentedNumeric, SegmentedString}
+
+@DATA
+% Timbre features
+
+11, "RMS peak number in 3 seconds", 4, 66150, 66150, 1, WindowedNumeric
+12, "RMS peak number above half of maximum peak in 3 seconds", 4, 66150, 66150, 1, WindowedNumeric
+15, "Spectral irregularity", 4, 512, 512, 1, WindowedNumeric
+23, "Spectral brightness", 4, 512, 512, 1, WindowedNumeric
+24, "Sensory roughness", 4, 1024, 1024, 1, WindowedNumeric
+39, "Mel frequency cepstral coefficients - MIR Toolbox", 4, 512, 512, 13, WindowedNumeric
+40, "Bark scale magnitudes", 4, 512, 512, 23, WindowedNumeric
+48, "Delta MFCCs - MIR Toolbox", 4, 512, 512, 13, WindowedNumeric
+60, "Zero-crossing rate for ERB bands", 4, 512, 512, 10, WindowedNumeric
+61, "Root mean square for ERB bands", 4, 512, 512, 10, WindowedNumeric
+62, "Spectral centroid for ERB bands", 4, 512, 512, 10, WindowedNumeric
+
+% Harmony and melody features
+
+201, "Inharmonicity", 4, 512, 512, 1, WindowedNumeric
+202, "Key and its clarity", 4, 512, 512, 2, WindowedNumeric
+203, "Major/minor alignment", 4, 512, 512, 1, WindowedNumeric
+206, "Chroma vector - MIR Toolbox", 4, 512, 512, 12, WindowedNumeric
+209, "Strengths of major keys", 4, 512, 512, 12, WindowedNumeric
+210, "Strengths of minor keys", 4, 512, 512, 12, WindowedNumeric
+216, "Tonal centroid vector", 4, 512, 512, 6, WindowedNumeric
+217, "Harmonic change detection function", 4, 512, 512, 1, WindowedNumeric
+
+% Tempo features
+
+418, "Rhythmic clarity", 4, 66150, 66150, 1, WindowedNumeric
+419, "Onset times", 4, -1, -1, 1, Event
+420, "Estimated onset number per minute", 4, 229376, 229376, 1, WindowedNumeric
+423, "Attack times", 4, -1, -1, 1, Event
+424, "Release times", 4, -1, -1, 1, Event
+425, "Tempo based on onset times", 4, 66150, 66150, 1, WindowedNumeric
+426, "Attack slopes", 4, -1, -1, 1, Event
+427, "Five peaks of fluctuation curves summed across all bands", 4, 229376, 229376, 5, WindowedNumeric
+428, "Rise times", 4, -1, -1, 1, Event
+429, "Attack slopes as windowed numeric", 4, 512, 512, 1, WindowedNumeric
+430, "Rise times as windowed numeric", 4, 512, 512, 1, WindowedNumeric
