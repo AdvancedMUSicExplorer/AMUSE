@@ -28,9 +28,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import amuse.data.modality.Modality.ModalityEnum;
 import amuse.preferences.AmusePreferences;
 import amuse.preferences.KeysStringValue;
 import amuse.scheduler.gui.controller.SingleFileAnnotationController;
+import amuse.scheduler.gui.filesandfeatures.ModalityFileFilter;
 import amuse.scheduler.gui.navigation.HasCaption;
 import amuse.scheduler.gui.navigation.HasLoadButton;
 import amuse.scheduler.gui.navigation.HasSaveButton;
@@ -157,6 +159,7 @@ public class AnnotationView extends JPanel implements HasCaption, HasLoadButton,
 	public void loadButtonClicked() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setCurrentDirectory(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)));
+		fileChooser.setAcceptAllFileFilterUsed(false);
 		fileChooser.setFileFilter(new FileNameExtensionFilter("", "mp3", "wav"));
 		if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 			loadPanelLabel.setText("Loading...");
