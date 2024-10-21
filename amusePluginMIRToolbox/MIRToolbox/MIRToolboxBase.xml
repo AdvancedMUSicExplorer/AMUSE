@@ -35,9 +35,9 @@
 function mirtoolbox_base(input_file,output_dir)
 
 % Add the paths to AMUSE Matlab and MIR Toolbox libraries
-addpath('/home/pingel/AMUSE/amuse/tools/MatlabFeatures');
-addpath('/home/pingel/AMUSE/amuse/tools/MIRToolbox/MIRToolbox');
-addpath('/home/pingel/AMUSE/amuse/tools/MIRToolbox/AuditoryToolbox');
+addpath('%AMUSEHOME%/tools/MatlabFeatures');
+addpath('%AMUSEHOME%/tools/MIRToolbox/MIRToolbox');
+addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
@@ -49,7 +49,7 @@ wlength = 512;
 woffset = wlength;
 
 % create prefix for AMUSE ARFF feature file
-p=strfind(input_file,'/');
+p=strfind(input_file,filesep);
 k=strfind(input_file,'.');
 output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 </text>
@@ -515,7 +515,7 @@ mirres=mirrms(f);
 <amuseEnableFeature id="424" dimensions="1">
 	<text>
 		% Release times
-		mirres = get(onsets,'ReleasePosUnit');
+		mirres = get(onsets,'OffsetPosUnit');
 		res = mirres{1}{1}{1};
 		arff_saver([output_file_prefix,'424.arff'],'End points of release intervals',res,-1);
 	</text>
