@@ -37,7 +37,6 @@ import amuse.data.Feature;
 import amuse.data.FeatureTable;
 import amuse.data.io.ArffDataSet;
 import amuse.data.io.DataSetAbstract;
-import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 import amuse.scheduler.gui.dialogs.SelectArffFileChooser;
 
@@ -121,7 +120,14 @@ public class FeatureTableController implements ActionListener {
             }
             JOptionPane.showMessageDialog(view.getView(), "FileList successfully saved!", "Success", JOptionPane.INFORMATION_MESSAGE);
         }
+        // Delete key or minus key unselect the chosen features
+        else if ((e.getActionCommand().equals("delete")) || (e.getActionCommand().equals("unselect")))
+        	uncheckSelected();
+        // Plus key selects chosen features
+        else if (e.getActionCommand().equals( "select")) 
+        	checkSelected();
     }
+ 
 
     private void checkSelected() {
         int[] selectedRows = view.getSelectedRows();
@@ -168,11 +174,11 @@ public class FeatureTableController implements ActionListener {
             	Integer id = null;
             	Integer confId = null;
                 if(idString.contains("_")) {
-                	id = new Double(idString.substring(0, idString.indexOf("_"))).intValue();
-                	confId = new Double(idString.substring(idString.indexOf("_") + 1)).intValue();
+                	id = Double.valueOf(idString.substring(0, idString.indexOf("_"))).intValue();
+                	confId = Double.valueOf(idString.substring(idString.indexOf("_") + 1)).intValue();
                 	containsCustomFeatures = true;
                 } else {
-                	id = new Double(idString).intValue();
+                	id = Double.valueOf(idString).intValue();
                 }
                 ids.add(id);
                 confIds.add(confId);
@@ -220,5 +226,9 @@ public class FeatureTableController implements ActionListener {
 
     void loadFeatureTableSelection(FeatureTable featureTable) {
         loadFeatureTableSelection(featureTable.getAccordingDataSet());
+    }
+    
+    public FeatureTableView getFeatureTableView() {
+    	return view;
     }
 }
