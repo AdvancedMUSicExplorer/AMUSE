@@ -26,28 +26,24 @@ package amuse.scheduler.gui.filesandfeatures;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
-
-import amuse.data.FeatureTable;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.KeyStroke;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 
 /**
  *
@@ -55,29 +51,13 @@ import amuse.data.FeatureTable;
  */
 public class FeatureTableView {
     private JPanel view = new JPanel();
-    private JTable table = new JTable() {
-    	@Override
-    	public Component prepareRenderer (TableCellRenderer renderer, int index_row, int index_col){
-            Component comp = super.prepareRenderer(renderer, index_row, index_col);
-            
-			FeatureTableModel model = (FeatureTableModel)this.getModel();
-			int currentFeatureID = (int) this.getModel().getValueAt(index_row, 1);
-			FeatureTable featureTable = model.getCurrentFeatureTable();
-            if( featureTable.getFeatureByID(currentFeatureID).isDisabled() ){
-            	comp.setEnabled(false);
-            } else {
-            	comp.setEnabled(true);
-            }
-			return comp;                           
-        }
-    };
+    private JTable table = new JTable();
     private JPanel jPanelFeatureExtractionButtons;
     private JButton saveSelectionButton;
     private JButton loadSelectionButton;
     private JButton jButtonSelectAll;
     private JButton jButtonDeselectAll;
     private JCheckBox customFeatureCheckBox;
-    private JCheckBox showFeaturesAllModalitiesCheckbox;
 
     /**
      * Creates a new Feature Table View.
@@ -136,7 +116,6 @@ public class FeatureTableView {
             jPanelFeatureExtractionButtons.add(getJButtonSelectAll());
             jPanelFeatureExtractionButtons.add(getJButtonDeselectAll());
             jPanelFeatureExtractionButtons.add(getCustomFeatureCheckBox());
-            jPanelFeatureExtractionButtons.add(getShowFeaturesAllModalitiesCheckbox());
             jPanelFeatureExtractionButtons.add(Box.createHorizontalGlue());
             jPanelFeatureExtractionButtons.add(getLoadButton());
             jPanelFeatureExtractionButtons.add(getSaveButton());
@@ -197,22 +176,6 @@ public class FeatureTableView {
     	}
     	return customFeatureCheckBox;
     }
-    
-    private JCheckBox getShowFeaturesAllModalitiesCheckbox() {
-    	if(showFeaturesAllModalitiesCheckbox == null) {
-    		showFeaturesAllModalitiesCheckbox = new JCheckBox();
-    		showFeaturesAllModalitiesCheckbox.setText("Show features of all modalities");
-    		showFeaturesAllModalitiesCheckbox.addActionListener(l -> {
-    			FeatureTableModel model = (FeatureTableModel)table.getModel();
-    			if(showFeaturesAllModalitiesCheckbox.isSelected()) {
-    				model.showAllModalities();
-    			} else {
-    				model.hideAllModalities();
-    			}
-    		});
-    	}
-    	return showFeaturesAllModalitiesCheckbox;
-    }
 
     private void initGUI() {
         BorderLayout layout = new BorderLayout();
@@ -242,16 +205,13 @@ public class FeatureTableView {
         view.add(getJPanelFeatureExtractionButtons(), BorderLayout.SOUTH);
         // Add Titled Border
         view.setBorder(new TitledBorder("Select Features"));
-       
     }
     // Add a key listener
     private void setupKeyBindings(ActionListener controller) {
         InputMap inputMap = table.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap actionMap = table.getActionMap();
-
         // Add delete key option
         inputMap.put(KeyStroke.getKeyStroke("DELETE"), "delete");
-
         actionMap.put("delete", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -280,8 +240,6 @@ public class FeatureTableView {
             }
         });
     }
-    
-
     public void showCustomFeatures(boolean show) {
     	getCustomFeatureCheckBox().setSelected(show);
     }
