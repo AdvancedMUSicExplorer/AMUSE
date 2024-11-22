@@ -305,12 +305,10 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			
 			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
-			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MatlabFeatures.log\"");
+			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MIRToolbox.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(inputBatchFolder));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
-			
-			
 			// Monitor the path that contains the log file
 			WatchService watcher = FileSystems.getDefault().newWatchService();
 			Path pathToWatch = FileSystems.getDefault().getPath(properties.getProperty("extractorFolder"));

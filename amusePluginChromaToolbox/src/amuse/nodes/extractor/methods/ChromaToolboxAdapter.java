@@ -267,13 +267,12 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 			
 			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
-			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MatlabFeatures.log\"");
+			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "ChromaToolbox.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(inputBatchFolder));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
 			
 			Process pc = matlab.start();
-			
 		    pc.waitFor();
 		    convertOutput();
 		    AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
