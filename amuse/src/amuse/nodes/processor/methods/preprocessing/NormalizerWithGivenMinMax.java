@@ -23,10 +23,15 @@
  */
 package amuse.nodes.processor.methods.preprocessing;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
@@ -60,6 +65,56 @@ public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionPro
 		// TODO Set path (optionally) to file with information about normalized features
 	}
 	
+	/*
+	 obtain all indices of features that are available in the normalization table
+	 */
+	 public static List<Integer> extractIndicesFromArff(String filePath) throws IOException {
+	        List<Integer> indices = new ArrayList<>();
+	        
+	        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+	            String line;
+	            boolean dataSection = false;
+	            
+	            while ((line = br.readLine()) != null) {
+	                line = line.trim();
+	                
+	                // Detect the start of the @DATA section
+	                if (line.equalsIgnoreCase("@DATA")) {
+	                    dataSection = true;
+	                    continue;
+	                }
+	                // Process only the @DATA section
+	                if (dataSection && !line.isEmpty() && !line.startsWith("%")) {
+	                    // Extract the first value (index) from the line
+	                    String[] parts = line.split(","); 
+	                    indices.add(Integer.parseInt(parts[0].trim()));
+	                }
+	            }
+	        }
+	        
+	        return indices;
+	    }
+	 
+	 	/*
+	 	 check if feature id is in the normalization table
+	 	 */
+	 
+	 public static String checkIdInList(int id, String filePath)
+	    {
+	    	try {
+	    		 List<Integer> indices = extractIndicesFromArff(filePath);
+	    		 Set<Integer> indicesSet = new HashSet<>(indices);
+	    		 if (!indicesSet.contains(id)) 
+	    			 return "not in the list";
+	    		 else
+	    			 return "in the list";
+	    	}
+	    	catch (IOException e)
+	    	{
+	    		throw new IllegalArgumentException();
+	    	}
+	    
+	    }
 	/**
 	 * Perform normalization
 	 */
@@ -82,13 +137,33 @@ public class NormalizerWithGivenMinMax extends AmuseTask implements DimensionPro
 				
 				// Go through feature dimensions
 				for(int l=0;l<features.get(j).getValues().get(k).length;l++) {
-					int featureId = features.get(j).getId();
+int featureId = features.get(j).getId();
+					
+					String filePathMinMax =AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + 
+							"tools" + File.separator+ "Normalizer"+  File.separator +  "featureTableMaxMin.arff";
+					try {
+						String result = checkIdInList(featureId,filePathMinMax);
+						if (result == "not in the list")
+							throw new NodeException("Feature " + Integer.toString(featureId) + " can not be normalized with Min Max normalization, since there is no information on its min and max values available.");
+						
+					}
+					catch (IllegalArgumentException e)
+					{
+						throw new NodeException("Can't access the min max normalization file");
+					}
+					
+					try {
 					
 					// Normalize
 					if(!maxs.get(featureId)[l].equals(mins.get(featureId)[l])) {
 						features.get(j).getValues().get(k)[l] = new Double(
 							((features.get(j).getValues().get(k)[l]-mins.get(featureId)[l]) /
 							 (maxs.get(featureId)[l]-mins.get(featureId)[l])));
+					}
+					}
+					catch (java.lang.NullPointerException e)
+					{
+						throw new NodeException("Can not normalize these features: " + e.getMessage());
 					}
 				}
 				
