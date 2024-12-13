@@ -93,6 +93,7 @@ public class ProcessingController extends AbstractController {
             pcmController = new ProcessingMethodsController(this, pcmListModel,
                     mtvComboBoxModel);
         }
+        filesAndFeatures.getFileTreeModel().addTreeModelModalityListener(filesAndFeatures.getFeatureTableModel());
     }
 
     public void goToProcessingMethods() {
