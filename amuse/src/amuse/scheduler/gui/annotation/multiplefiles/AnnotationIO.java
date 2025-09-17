@@ -14,6 +14,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+
 import org.apache.log4j.Level;
 
 import amuse.data.io.ArffDataSet;
@@ -126,6 +127,10 @@ public class AnnotationIO {
 	}
 
 	public void saveAnnotation(String path, String dataSetName){
+		String escapedPath = path;
+		if(!path.contains("\\\\") && System.getProperty("os.name").startsWith("Windows")) {
+			escapedPath = escapedPath.replace("\\", "\\\\");
+		}
 		DefaultTableModel tableModel = annotationController.getTableModel();
 		TableColumnModel columnModel = annotationController.getColumnModel();
 		PrintWriter writer = null;
@@ -230,7 +235,7 @@ public class AnnotationIO {
 		// add new line in categoryTable
 		try {
 		    Files.write(Paths.get(AmusePreferences.getMultipleTracksAnnotationTablePath()),
-		    		("\n" + (maxId + 1) + ",'" + path + "','" + dataSetName + "'").getBytes() ,
+		    		("\n" + (maxId + 1) + ",'" + escapedPath + "','" + dataSetName + "'").getBytes() ,
 		    		StandardOpenOption.APPEND);
 		}catch (IOException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Unable to synchronize the annotation with the multipleTracksAnnotationTable. While appending a line to '"
@@ -245,4 +250,3 @@ public class AnnotationIO {
 
 	
 }
-
