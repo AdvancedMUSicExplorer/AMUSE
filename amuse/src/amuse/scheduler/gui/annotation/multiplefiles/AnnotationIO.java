@@ -125,7 +125,11 @@ public class AnnotationIO {
 		loadedPath = path;
 		loadedDataSetName = dataSetName;
 	}
-
+	
+	private static String escapeForArff(String path) {
+	    if (path == null) return "?";
+	    return path.replace("\\", "\\\\");  // double every backslash
+	}
 	public void saveAnnotation(String path, String dataSetName){
 		String escapedPath = path;
 		if(!path.contains("\\\\") && System.getProperty("os.name").startsWith("Windows")) {
@@ -178,7 +182,10 @@ public class AnnotationIO {
 			// Write the data of the attribute
 			writer.write("@DATA\n");
 			for(int row = 0; row < tableModel.getRowCount(); row++){
-				String rowData = row + ", '" + tableModel.getValueAt(row, 1) + "', milliseconds, 0, -1, ";
+				// changed!!!!
+				String rawPath = (String) tableModel.getValueAt(row, 1);
+				String safePath = escapeForArff(rawPath);
+				String rowData = row + ", '" + safePath + "', milliseconds, 0, -1, ";
 				for(int col = 2; col < columnModel.getColumnCount(); col++){
 					String value = tableModel.getValueAt(row, col) + "";
 					if(value.equals(null + "") || value.equals("")){
