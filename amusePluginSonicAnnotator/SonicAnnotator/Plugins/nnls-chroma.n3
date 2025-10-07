@@ -6,6 +6,7 @@
 @prefix dc:       <http://purl.org/dc/elements/1.1/> .
 @prefix af:       <http://purl.org/ontology/af/> .
 @prefix foaf:     <http://xmlns.com/foaf/0.1/> .
+@prefix doap: 	  <http://usefulinc.com/ns/doap#> .
 @prefix cc:       <http://web.resource.org/cc/> .
 @prefix :         <#> .
 
@@ -13,21 +14,33 @@
     foaf:maker          <http://www.vamp-plugins.org/doap.rdf#template-generator> ;
     foaf:primaryTopic   <http://vamp-plugins.org/rdf/plugins/nnls-chroma> .
 
+:maker
+    foaf:name "Matthias Mauch" ;
+    foaf:logo <http://vamp-plugins.org/rdf/plugins/makers/qm.png> ;
+    foaf:page <http://c4dm.eecs.qmul.ac.uk/> .
+
 :nnls-chroma a  vamp:PluginLibrary ;
-    vamp:identifier "nnls-chroma"  ; 
+    vamp:identifier "nnls-chroma"  ;
+    dc:title "Chordino and NNLS Chroma" ;
+    dc:description "Harmony and chord extraction plugins by Matthias Mauch at C4DM" ;
     vamp:available_plugin plugbase:chordino ; 
     vamp:available_plugin plugbase:nnls-chroma ; 
     vamp:available_plugin plugbase:tuning ;  
     foaf:page <http://www.isophonics.net/nnls-chroma> ;
+    doap:download-page <http://www.isophonics.net/nnls-chroma> ;
     foaf:page <http://www.omras2.org/> ;
     foaf:page <http://www.matthiasmauch.net/> ; 
+    foaf:maker :maker ;
+    vamp:has_source true ;
+    vamp:has_binary "win32" ;
+    vamp:has_binary "osx" ;
     .
 
 plugbase:chordino a   vamp:Plugin ;
     dc:title              "Chordino" ;
     vamp:name             "Chordino" ;
     dc:description        """Chordino provides a simple chord transcription based on NNLS Chroma (as in the NNLS Chroma plugin). Chord profiles given by the user in the file chord.dict are used to calculate frame-wise chord similarities. Two simple (non-state-of-the-art!) algorithms are available that smooth these to provide a chord transcription: a simple chord change method, and a standard HMM/Viterbi approach.""" ;
-    foaf:maker            [ foaf:name "Matthias Mauch" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """GPL""" ;
 #   cc:license            <Place plugin license URI here and uncomment> ; 
     vamp:identifier       "chordino" ;
@@ -42,10 +55,8 @@ plugbase:chordino a   vamp:Plugin ;
     vamp:parameter   plugbase:chordino_param_tuningmode ;
     vamp:parameter   plugbase:chordino_param_whitening ;
     vamp:parameter   plugbase:chordino_param_s ;
-    vamp:parameter   plugbase:chordino_param_boostn ;
 
     vamp:output      plugbase:chordino_output_simplechord ;
-    vamp:output      plugbase:chordino_output_chordnotes ;
     vamp:output      plugbase:chordino_output_harmonicchange ;
     .
 plugbase:chordino_param_useNNLS a  vamp:QuantizedParameter ;
@@ -111,16 +122,6 @@ plugbase:chordino_param_s a  vamp:Parameter ;
     vamp:unit           ""  ;
     vamp:default_value   0.7 ;
     vamp:value_names     ();
-
-plugbase:chordino_param_boostn a  vamp:Parameter ;
-    vamp:identifier     "boostn" ;
-    dc:title            "Boost likelihood of the N (no chord) label." ;
-    dc:format           "" ;
-    vamp:min_value       0 ;
-    vamp:max_value       1 ;
-    vamp:unit           ""  ;
-    vamp:default_value   0.1 ;
-    vamp:value_names     ();
     .
 plugbase:chordino_output_simplechord a  vamp:SparseOutput ;
     vamp:identifier       "simplechord" ;
@@ -134,21 +135,6 @@ plugbase:chordino_output_simplechord a  vamp:SparseOutput ;
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      21.5332 ;
     vamp:computes_event_type   af:ChordSegment ;
-
-plugbase:chordino_output_chordnotes a vamp:SparseOutput ;
-    vamp:identifier       "chordnotes" ;
-    dc:title              "Note Representation of Chord Estimate" ;
-    dc:description        """A simple represenation of the estimated chord with bass note (if applicable) and chord notes."""  ;
-    vamp:fixed_bin_count  "true" ;
-    vamp:unit             "MIDI units" ;
-    a                     vamp:QuantizedOutput ;
-    vamp:quantize_step    1  ;
-    a                 vamp:KnownExtentsOutput ;
-    vamp:min_value    0  ;
-    vamp:max_value    127  ;
-    vamp:bin_count        1 ;
-    vamp:sample_type      vamp:VariableSampleRate ;
-    vamp:computes_event_type   af:Note ;
     .
 plugbase:chordino_output_harmonicchange a  vamp:DenseOutput ;
     vamp:identifier       "harmonicchange" ;
@@ -166,7 +152,7 @@ plugbase:nnls-chroma a   vamp:Plugin ;
     dc:title              "NNLS Chroma" ;
     vamp:name             "NNLS Chroma" ;
     dc:description        """This plugin provides a number of features derived from a DFT-based log-frequency amplitude spectrum: some variants of the log-frequency spectrum, including a semitone spectrum derived from approximate transcription using the NNLS algorithm; and based on this semitone spectrum, different chroma features.""" ;
-    foaf:maker            [ foaf:name "Matthias Mauch" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """GPL""" ;
 #   cc:license            <Place plugin license URI here and uncomment> ; 
     vamp:identifier       "nnls-chroma" ;
@@ -188,7 +174,6 @@ plugbase:nnls-chroma a   vamp:Plugin ;
     vamp:output      plugbase:nnls-chroma_output_chroma ;
     vamp:output      plugbase:nnls-chroma_output_basschroma ;
     vamp:output      plugbase:nnls-chroma_output_bothchroma ;
-    vamp:output      plugbase:nnls-chroma_output_consonance ;
     .
 plugbase:nnls-chroma_param_useNNLS a  vamp:QuantizedParameter ;
     vamp:identifier     "useNNLS" ;
@@ -311,28 +296,18 @@ plugbase:nnls-chroma_output_bothchroma a  vamp:DenseOutput ;
     vamp:bin_names        ( "A  (bass)" "Bb (bass)" "B  (bass)" "C  (bass)" "C# (bass)" "D  (bass)" "Eb (bass)" "E  (bass)" "F  (bass)" "F# (bass)" "G  (bass)" "Ab (bass)" "A" "Bb" "B" "C" "C#" "D" "Eb" "E" "F" "F#" "G" "Ab");
     vamp:computes_signal_type  af:Chromagram ;
     .
-
-plugbase:nnls-chroma_output_consonance a  vamp:DenseOutput ;
-    vamp:identifier       "consonance" ;
-    dc:title              "Consonance estimate." ;
-    dc:description        """A simple consonance value based on the convolution of a consonance profile with the semitone spectrum."""  ;
-    vamp:fixed_bin_count  "true" ;
-    vamp:unit             "" ;
-    vamp:bin_count        1 ; 
-    vamp:computes_signal_type  af:TonalChangeDetectionFunction;
-    .
-
 plugbase:tuning a   vamp:Plugin ;
     dc:title              "Tuning" ;
     vamp:name             "Tuning" ;
     dc:description        """The tuning plugin can estimate the local and global tuning of piece. The same tuning method is used for the NNLS Chroma and Chordino plugins.""" ;
-    foaf:maker            [ foaf:name "Matthias Mauch" ] ; # FIXME could give plugin author's URI here
+    foaf:maker            :maker ;
     dc:rights             """GPL""" ;
 #   cc:license            <Place plugin license URI here and uncomment> ; 
     vamp:identifier       "tuning" ;
     vamp:vamp_API_version vamp:api_version_2 ;
     owl:versionInfo       "1" ;
     vamp:input_domain     vamp:FrequencyDomain ;
+
 
     vamp:parameter   plugbase:tuning_param_rollon ;
 
@@ -359,10 +334,10 @@ plugbase:tuning_output_tuning a  vamp:SparseOutput ;
     a                 vamp:KnownExtentsOutput ;
     vamp:min_value    427.47  ;
     vamp:max_value    452.89  ;
-    vamp:bin_count        1 ;
+    vamp:bin_count        0 ;
     vamp:sample_type      vamp:VariableSampleRate ;
     vamp:sample_rate      2.38221e-44 ;
-    vamp:computes_event_type   af:Segment;
+    vamp:computes_event_type   af:MusicSegment;
     .
 plugbase:tuning_output_localtuning a  vamp:DenseOutput ;
     vamp:identifier       "localtuning" ;
