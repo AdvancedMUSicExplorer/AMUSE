@@ -45,7 +45,7 @@ r.dynamics.rms = mirrms(a,'Frame');
 r.fluctuation = mirstruct;
 r.fluctuation.tmp.f = mirfluctuation(a,'Summary');
 r.fluctuation.peak = mirpeaks(r.fluctuation.tmp.f,'Total',1);%only one?
-r.fluctuation.centroid = mircentroid(r.fluctuation.tmp.f,'MaxEntropy',0);
+r.fluctuation.centroid = mircentroid(r.fluctuation.tmp.f);
 
 r.rhythm = mirstruct;
 r.rhythm.tmp.onsets = mironsets(a);
@@ -73,8 +73,8 @@ r.spectral.brightness = mirbrightness(r.spectral.tmp.s);
 r.spectral.spread = mirspread(r.spectral.tmp.s);
 r.spectral.skewness = mirskewness(r.spectral.tmp.s);
 r.spectral.kurtosis = mirkurtosis(r.spectral.tmp.s);
-r.spectral.rolloff95 = mirrolloff(r.spectral.tmp.s,'Threshold',95);
-r.spectral.rolloff85 = mirrolloff(r.spectral.tmp.s,'Threshold',85);
+r.spectral.rolloff95 = mirrolloff(r.spectral.tmp.s,95);
+r.spectral.rolloff85 = mirrolloff(r.spectral.tmp.s,85);
 r.spectral.spectentropy = mirentropy(r.spectral.tmp.s);
 r.spectral.flatness = mirflatness(r.spectral.tmp.s);
 
@@ -95,8 +95,8 @@ r.timbre.spectralflux = mirflux(f);
 
 r.tonal = mirstruct;
 r.tonal.tmp.chromagram = mirchromagram(a,'Frame','Wrap',0,'Pitch',0);
-r.tonal.chromagram.peak = mirpeaks(r.tonal.tmp.chromagram,'Total',1);
-r.tonal.chromagram.centroid = mircentroid(r.tonal.tmp.chromagram);
+r.tonal.chromagram.peak=mirpeaks(r.tonal.tmp.chromagram,'Total',1);
+r.tonal.chromagram.centroid=mircentroid(r.tonal.tmp.chromagram);
 
 % TONALITY/HARMONY
 % ----------------

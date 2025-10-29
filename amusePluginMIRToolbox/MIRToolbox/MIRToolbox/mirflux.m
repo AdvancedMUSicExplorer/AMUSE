@@ -10,7 +10,7 @@ function varargout = mirflux(orig,varargin)
 %           not already decomposed into frames. Default values are frame 
 %           length of .2 seconds and hop factor of 1.3.
 %       f = mirflux(x,'Dist',d) specifies the distance between 
-%           successive  frames:
+%           successive  frames:                 (IF 'COMPLEX': DISTANCE = 'CITY' ALWAYS)
 %           d = 'Euclidian': Euclidian distance (Default)
 %           d = 'City': City-block distance
 %           d = 'Cosine': Cosine distance (or normalized correlation)
@@ -18,10 +18,6 @@ function varargout = mirflux(orig,varargin)
 %           summed, in order to focus on increase of energy solely.
 %       f = mirflux(...,'Complex'), for spectral flux, combines use of
 %           energy and phase information (Bello et al, 2004).
-%       f = mirflux(..., ‘SubBand’) decomposes first the input waveform
-%           using a 10-channel filterbank of octave-scaled second-order
-%           elliptical filters, with frequency cut of the first (low-pass)
-%           filter at 50 Hz.
 %       f = mirflux(...,'Halfwave'): performs a half-wave  rectification on
 %           the result.
 %       f = mirflux(...,'Median',l,C): removes small spurious peaks by
@@ -40,55 +36,27 @@ function varargout = mirflux(orig,varargin)
 %           (Alonso, David, Richard, 2004). To ensure accurate detection,
 %           the length l of the median filter must be longer than the
 %           average width of the peaks of the detection function.
-%       f = mirflux(...,'Normal') normalises with respect to dynamics.
-%       f = mirflux(..., ‘Buzzing’) tailors the computation of spectral 
-%           flux with the view to unveil salient aspects of sonic
-%           unsteadiness (Lartillot and Weisser, 2021).
 %
 %   (Bello et al, 2004) Juan P. Bello, Chris Duxbury, Mike Davies, and Mark
 %   Sandler, On the Use of Phase and Energy for Musical Onset Detection in
 %   the Complex Domain, IEEE SIGNAL PROCESSING LETTERS, VOL. 11, NO. 6,
 %   JUNE 2004
-%   Lartillot, O. & Weisser, S. (2021). Roughness, Crackliness,
-%   Buzzingness, ...: Characterizations of Sonic Unsteadiness and
-%   Application to the Analysis of Traditional Music from Ethiopia, Kenya,
-%   Morocco and India. 16th International Conference on Music Perception
-%   and Cognition (ICMPC) & the 11th triennial conference of ESCOM
 
         dist.key = 'Dist';
         dist.type = 'String';
-        dist.default = NaN;
+        dist.choice = {'Euclidian','City','Cosine'};  %PDIST???? (euclidean)
+        dist.default = 'Euclidian';
     option.dist = dist;
     
         inc.key = 'Inc';
         inc.type = 'Boolean';
-        inc.default = NaN;
+        inc.default = 0;
     option.inc = inc;
-
-        bs.key = 'BackSmooth';
-        bs.type = 'String';
-        bs.choice = {'Goto','Lartillot'};
-        bs.default = '';
-        bs.keydefault = 'Goto';
-    option.bs = bs;
     
         complex.key = 'Complex';
         complex.type = 'Boolean';
         complex.default = 0;
     option.complex = complex;
-    
-        gap.key = 'Gaps';
-        gap.type = 'Integer';
-        gap.default = 0;
-        gap.keydefault = .2;
-    option.gap = gap;
-    
-        sb.key = 'SubBand';
-        sb.type = 'String';
-        sb.choice = {'Gammatone','2Channels','Manual'};
-        sb.default = '';
-        sb.keydefault = 'Manual';
-    option.sb = sb;
     
         h.key = 'Halfwave';
         h.type = 'Boolean';
@@ -107,41 +75,8 @@ function varargout = mirflux(orig,varargin)
         frame.key = 'Frame';
         frame.type = 'Integer';
         frame.number = 2;
-        frame.default = [.05 NaN];
+        frame.default = [.05 .5];
     option.frame = frame;
-    
-        norm.key = 'Normal';
-        norm.type = 'Integer';
-        norm.default = NaN;
-        norm.keydefault = .03;
-    option.norm = norm;
-    
-        min.key = 'Min';
-        min.type = 'Integer';
-        min.default = NaN;
-    option.min = min;
-    
-        max.key = 'Max';
-        max.type = 'Integer';
-        max.default = NaN;
-    option.max = max;
-    
-        mingate.key = 'MinGate';
-        mingate.type = 'Integer';
-        mingate.default = NaN;
-    option.mingate = mingate;
-    
-        normspec.key = 'NormalSpectrum';
-        normspec.type = 'String';
-        normspec.choice = {'Local','Global',0,'no','off'};
-        normspec.default = NaN;
-        normspec.keydefault = 1;
-    option.normspec = normspec;
-    
-        buzz.key = 'Buzzing';
-        buzz.type = 'Boolean';
-        buzz.default = 0;
-    option.buzz = buzz;
     
 specif.option = option;
      
@@ -149,80 +84,17 @@ varargout = mirfunction(@mirflux,orig,varargin,nargout,specif,@init,@main);
 
 
 function [x type] = init(x,option)
-if isamir(x,'miraudio')
-    if isnan(option.frame.hop.val)
-        if option.buzz
-            option.frame.hop.val = .1;
-        else
-            option.frame.hop.val = .5;
-        end
-    end
-    if isnan(option.min)
-        if option.buzz
-            option.min = 500;
-        else
-            option.min = 0;
-        end
-    end
-    if isnan(option.max)
-        if option.buzz
-            option.max = 20000;
-        else
-            option.max = Inf;
-        end
-    end
-    if isnan(option.mingate)
-        if option.buzz
-            option.mingate = .01;
-        else
-            option.mingate = 0;
-        end
-    end
-    if isnan(option.normspec)
-        if option.buzz
-            option.normspec = 'Global';
-        else
-            option.normspec = 0;
-        end
-    elseif isequal(option.normspec,1)
-        if option.buzz
-            option.normspec = 'Global';
-        else
-            option.normspec = 'Local';
-        end
-    end
-    
-    if ~isempty(option.sb)
-        if strcmpi(option.sb,'Manual')
-            x = mirfilterbank(x,'Manual',[-Inf 50*2.^(0:1:8) Inf],'Order',2);
-        else
-            x = mirfilterbank(x,option.sb);
-        end
-    end
-
+if isamir(x,'miraudio') 
     if isframed(x)
-        x = mirspectrum(x,'Min',option.min,'Max',option.max,...
-                          'MinGate',option.mingate,...
-                          'Normal',option.normspec);
+        x = mirspectrum(x);
     else
-        x = mirspectrum(x,'Min',option.min,'Max',option.max,...
-                          'MinGate',option.mingate,...
-                          'Normal',option.normspec,...
-                          'Frame',option.frame.length.val,...
-                                  option.frame.length.unit,...
-                                  option.frame.hop.val,...
-                                  option.frame.hop.unit,...
-                                  option.frame.phase.val,...
-                                  option.frame.phase.unit,...
-                                  option.frame.phase.atend);
+        x = mirspectrum(x,'Frame',option.frame.length.val,option.frame.length.unit,...
+                                  option.frame.hop.val,option.frame.hop.unit,...
+                                  option.frame.phase.val,option.frame.phase.unit);
     end
 end
 if isa(x,'mirdesign')
-    if strcmpi(option.bs,'Goto')
-        x = set(x,'Overlap',2);
-    else
-        x = set(x,'Overlap',1);
-    end
+    x = set(x,'Overlap',1);
 end
 type = 'mirscalar';
 
@@ -250,29 +122,6 @@ else
         end
         ph = get(s,'Phase');
     end
-    
-    if isnan(option.inc)
-        if option.buzz
-            option.inc = 1;
-        else
-            option.inc = 0;
-        end
-    end
-    if isnan(option.dist)
-        if option.buzz
-            option.dist = 'City';
-        else
-            option.dist = 'Euclidean';
-        end
-    end
-    if isnan(option.norm)
-        if option.buzz
-            option.norm = .03;
-        else
-            option.norm = 0;
-        end
-    end
-    
     param.complex = option.complex;
     param.inc = option.inc;
     fp = get(s,'FramePos');
@@ -281,13 +130,11 @@ else
     else
         t = [t,' flux'];
     end
-    %disp(['Computing ' t '...'])
+    disp(['Computing ' t '...'])
     ff = cell(1,length(m));
     newsr = cell(1,length(m));
     dist = str2func(option.dist);
-    if option.bs
-        [tmp s] = gettmp(s);
-    end
+    %[tmp s] = gettmp(s); %get(s,'Tmp');
     for h = 1:length(m)
         ff{h} = cell(1,length(m{h}));
         if not(iscell(m{h}))
@@ -298,18 +145,19 @@ else
             if size(mi,3) > 1 && size(mi,1) == 1
                 mi = reshape(mi,size(mi,2),size(mi,3))';
             end
-            if strcmpi(option.bs,'Lartillot')
-                mi = mi + 120; %- min(min(min(mi)));
-            end
             if option.complex
                 phi = ph{h}{i};
             end
             fpi = fp{h}{i};
+            %if 0 %not(isempty(tmp)) && isstruct(tmp) && isfield(tmp,'mi')
+            %    mi = [tmp.mi mi];
+            %    fpi = [tmp.fpi fpi];
+            %end
             nc = size(mi,2);
             np = size(mi,3);
             if nc == 1
                 warning('WARNING IN MIRFLUX: Flux can only be computed on signal decomposed into frames.');
-                ff{h}{i} = [];
+                ff{h}{i} = NaN(1,1,np);
             else
                 if option.complex
                     fl = zeros(1,nc-2,np);
@@ -324,108 +172,20 @@ else
                     end
                     fp{h}{i} = fpi(:,3:end);
                 else
-                    if strcmpi(option.bs,'Goto')
-                        limit = nc-2;
-                    else
-                        limit = nc-1;
-                    end
-                    fl = zeros(1,limit,np);
-                    if option.gap
-                        mimi = min(min(mi));
-                        mi = (mi - mimi)/(max(max(mi)) - mimi);
-                    end
+                    fl = zeros(1,nc-1,np);
                     for k = 1:np
-                        if option.gap
-                            for j = 1:nc-1
-                                fl(1,j,k) = detectgap(mi(:,j,k),...
-                                                      mi(:,j+1,k),...
-                                                      option.gap);
-                            end
-                        elseif ~isempty(option.bs)
-                            p = get(s,'Pos');
-                            res = diff(p{1}{1}(1:2));
-                            if strcmpi(option.bs,'Goto')
-                                l = round(43/res); 
-                            else
-                                l = round(17/res); 
-                            end
-                            memo = 4;
-                            if isempty(tmp)
-                                tmp = -Inf(size(mi,1),memo-1,np);
-                            end
-                            mi = [tmp mi];
-                            mi2 = mi; % Transformed spectrogram where filtering along frequencies will be applied (only for 'Lartillot')
-                            if 0
-                                bk = zeros(size(mi));
-                                bs = zeros(size(mi));
-                            end
-                            for j = 1:limit
-                                mj = mi(:,j+memo-1,k);
-                                mj2 = zeros(length(mj)-l,l-1);
-                                for j2 = 1:l-1
-                                    mj2(:,j2) = mj(j2:j2+length(mj)-l-1);
-                                end
-                                mj(1+floor(l/2):end-ceil(l/2)) = max(mj2,[],2); ...
-                                    %max(mj(1:end-l),mj(1+l:end));
-                                mi2(:,j+memo-1,k) = mj;
-                                if strcmpi(option.bs,'Goto')
-                                    back = max(mj,mi(:,j+memo-2,k));
-                                else
-                                    back = max(mi2(:,j:j+memo-1,k),[],2);
-                                end
-                                if 0
-                                    bk(:,j+1) = back;
-                                    fbs = find(mi(:,j+memo,k) > back);
-                                    bs(fbs,j+1) = mi(fbs,j+memo,k);
-                                end
-                                if strcmpi(option.bs,'Goto')
-                                    forth = mi(:,j+memo+1,k);
-                                    forth(1+floor(l/2):end-ceil(l/2)) = ...
-                                        min(forth(1:end-l),forth(1+l:end));
-                                    fl(1,j,k) = Goto(back,mi(:,j+memo,k),forth,mi(:,j+memo+1,k));
-                                else
-                                    fl(1,j,k) = dist(back,mi(:,j+memo,k));
-                                end
-                                if 0
-                                    figure%(1)
-                                    %hold off
-                                    plot(mi2(:,j+memo-1,k))
-                                    hold on
-                                    plot(back,'r')
-                                    plot(mi(:,j+memo,k),'k')
-                                    %figure(2)
-                                    %plot(mean(fp{h}{i}(:,1:j)),fl(1,1:j,k))
-                                    %drawnow
-                                end
-                            end
-                        elseif option.inc
-                            for j = 1:nc-1
-                                back = mi(:,j,k);
-                                fl(1,j,k) = dist(back,mi(:,j+1,k),1);
-                            end
-                        else
-                            for j = 1:nc-1
-                                fl(1,j,k) = pdist(mi(:,[j j+1],k)',...
-                                                  option.dist);
-                            end
+                        for j = 1:nc-1
+                            fl(1,j,k) = dist(mi(:,j,k),mi(:,j+1,k),option.inc);
                         end
                     end
-                end
-                if option.complex || strcmpi(option.bs,'Goto')
-                    fp{h}{i} = fpi(:,2:end-1);
-                else
                     fp{h}{i} = fpi(:,2:end);
                 end
-                
-                if option.norm
-                    sm = sum(mi(:,2:end));
-                    fl(sm<max(sm)*option.norm) = NaN;
-                    fl = fl./sm;
-                end
-                
                 ff{h}{i} = fl;
+                %tmp.mi = mi(:,end,:);
+                %tmp.fpi = fpi(:,end,:);
             end
         end
+        %tmp = [];
         if size(fpi,2)<2
             newsr{h} = 0;
         else
@@ -433,13 +193,10 @@ else
         end
     end
     f = mirscalar(s,'Data',ff,'FramePos',fp,'Sampling',newsr,...
-                    'Title',t,'Parameter',param);
+                        'Title',t,'Parameter',param); %,'Tmp',tmp);
+    %f = settmp(f,tmp);
     if not(isequal(postoption,struct))
         f = modif(f,postoption);
-    end
-    if ~isempty(option.bs) && nc > 1
-        tmp = mi2(:,max(1,end-memo+1):end-1,k);
-        f = settmp(f,tmp);
     end
 end
 
@@ -472,7 +229,7 @@ end
 f = set(f,'Data',fl);
 
 
-function y = Euclidean(mi,mj,inc)
+function y = Euclidian(mi,mj,inc)
 if inc
     y = sqrt(sum(max(0,(mj-mi)).^2));
 else
@@ -488,29 +245,7 @@ else
 end
 
 
-function y = Gate(mi,mj,inc)
-y = sum(mj .* (mj>mi)); %max?
-%y = sum(max(mj-mi,0));
-
-
-function y = Goto(mi,mj,mk,mk2)
-%y = sum(max(mj,mk2) .* (mj>mi).* (mk>mi));
-y = sum( (max(mj,mk2) - mi) .* (mj>mi).* (mk>mi));
-
-
-%function y = NewGate(mi,mj,inc)
-%N = 9;
-%M = zeros(length(mi)-N+1,N);
-%for i = 1:N
-%    M(:,i) = mi(i:end-(N-i));
-%end
-%mj0 = mj(ceil(N/2):end-floor(N/2));
-%y = abs(repmat(mj0,[1 N]) - M);
-%y = min(y,[],2);
-%y = sum(y); %.*mj0);
-
-
-function d = Cosine(r,s,inc) % inc does not work here!
+function d = Cosine(r,s,inc)
 nr = sqrt(r'*r);
 ns = sqrt(s'*s);
 if or(nr == 0, ns == 0);
@@ -518,7 +253,3 @@ if or(nr == 0, ns == 0);
 else
     d = 1 - r'*s/nr/ns;
 end
-
-
-function d = detectgap(mi,mj,thr)
-d = length(find(abs(mi-mj)>thr)) / length(mi);

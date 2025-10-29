@@ -32,16 +32,6 @@ function varargout = mirkey(orig,varargin)
         tri.type = 'Boolean';
         tri.default = 0;
     option.tri = tri;
-    
-        meth.type = 'String';
-        meth.choice = {'Gomez','Lartillot','Gomez+'};
-        meth.default = 'Gomez';
-    option.meth = meth;
-
-        origin.key = 'Tuning';
-        origin.type = 'Integer';
-        origin.default = 261.6256;
-    option.origin = origin;
 
 specif.option = option;
 specif.defaultframelength = 1;
@@ -52,9 +42,7 @@ varargout = mirfunction(@mirkey,orig,varargin,nargout,specif,@init,@main);
 
 function [p type] = init(x,option)
 if not(isamir(x,'mirkeystrength'))
-    x = mirkeystrength(x,'Weight',option.wth,...
-        'Triangle',option.tri,option.meth,...
-        'Tuning',option.origin);
+    x = mirkeystrength(x,'Weight',option.wth,'Triangle',option.tri);
 end
 p = mirpeaks(x,'Total',option.tot,'Contrast',option.thr);
 type = {'mirscalar','mirscalar','mirkeystrength'};

@@ -97,11 +97,6 @@ function b = main(x,option,postoption)
 if iscell(x)
     x = x{1};
 end
-
-if ~isamir(x,'miraudio')
-    mirerror('MIRFILTERBANK','The input should be an audio waveform.');
-end
-
 f = get(x,'Sampling');
     
 if strcmpi(option.presel,'Scheirer')
@@ -164,8 +159,7 @@ else
     output = cell(1,length(d));
     nch = cell(1,length(d));
     for i = 1:length(d)
-        if isempty(tmp)
-            %% Determination of the filterbank specifications
+        if isempty(tmp) && i == 1
             if strcmpi(option.filtertype,'Gammatone')
                 if not(Ch)
                     Ch = 1:nCh;
@@ -209,28 +203,23 @@ else
                     j = j+1;
                 end
                 step = option.overlap;
-                if length(freqi) <= step
-                    Hd = {};
-                    nch = [];
-                else
-                    for j = 1:length(freqi)-step
-                        if isinf(freqi(j))
-                            [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                                freqi(j+step)/f{i}*2);
-                        elseif isinf(freqi(j+step))
-                            [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                                freqi(j)/f{i}*2,'high');
-                        else
-                            [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
-                                                freqi([j j+step])/f{i}*2);
-                        end
+                for j = 1:length(freqi)-step
+                    if isinf(freqi(j))
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi(j+step)/f{i}*2);
+                    elseif isinf(freqi(j+step))
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi(j)/f{i}*2,'high');
+                    else
+                        [z{j},p{j},k{j}] = ellip(option.filterorder,3,40,...
+                                            freqi([j j+step])/f{i}*2);
                     end
-                    for j = 1:length(z)
-                        [sos,g] = zp2sos(z{j},p{j},k{j});
-                        Hd{j} = dfilt.df2tsos(sos,g);
-                    end
-                    nch{i} = 1:length(freqi)-step;
                 end
+                for j = 1:length(z)
+                    [sos,g] = zp2sos(z{j},p{j},k{j});
+                    Hd{j} = dfilt.df2tsos(sos,g);
+                end
+                nch{i} = 1:length(freqi)-step;
             end
             
             if length(d) == 1

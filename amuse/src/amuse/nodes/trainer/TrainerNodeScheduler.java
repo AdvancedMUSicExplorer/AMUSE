@@ -231,7 +231,7 @@ public class TrainerNodeScheduler extends NodeScheduler {
 		} catch(NodeException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR,  
 					"Could not run data preprocessing: " + e.getMessage()); 
-			errorDescriptionBuilder.append(e.getMessage());
+			errorDescriptionBuilder.append(taskConfiguration.getDescription());
 			this.fireEvent(new NodeEvent(NodeEvent.TRAINING_FAILED, this));
 			return;
 		}
@@ -331,7 +331,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 			
 			List<Integer> attributesToPredict = ((TrainingConfiguration)this.taskConfiguration).getAttributesToPredict();
 			List<Integer> attributesToIgnore = ((TrainingConfiguration)this.taskConfiguration).getAttributesToIgnore();
-			
 			int numberOfCategories = attributesToPredict.size();
 			
 			//Check if the number of categories is correct
@@ -464,7 +463,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 					// Load the first classifier input for attributes information
 					String currentInputFile = classifierGroundTruthSet.getAttribute("Path").getValueAt(0).toString();
 					String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
-					
 					// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
 					musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
 					if(currentInputFile.startsWith(musicDatabasePath)) {
@@ -502,24 +500,16 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							+ ((TrainingConfiguration)this.taskConfiguration).getInputFeaturesDescription() + ".arff";
 					}
 					currentInputFile = currentInputFile.replaceAll(File.separator + "+", File.separator);
-
+					
 					ArffLoader classifierInputLoader = new ArffLoader();
 					Instance inputInstance;
 					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 					File processedFeatureFile = new File(currentInputFile);
 					if(!processedFeatureFile.exists()) {
-						throw new NodeException("Could not load data from processed feature files: " + processedFeatureFile);
+						throw new NodeException("The processed feature file does not exist.");
 					}
 					classifierInputLoader.setFile(processedFeatureFile);
 					inputInstance = classifierInputLoader.getNextInstance(classifierInputLoader.getStructure());
-					
-					// Check if attributesToIgnore matches training input
-					for(int i=0; i<attributesToIgnore.size(); i++) {
-						if(attributesToIgnore.get(i)<0 || attributesToIgnore.get(i) >= classifierInputLoader.getStructure().numAttributes()-3) {
-							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
-									"Training input does not contain attribute with number " + attributesToIgnore.get(i) + ". This attribute will not be ignored.");
-						}
-					}
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
 					for(int i=0;i<classifierInputLoader.getStructure().numAttributes()-3;i++) {
@@ -667,16 +657,14 @@ public class TrainerNodeScheduler extends NodeScheduler {
 						}
 						newInputFile = newInputFile.replaceAll(File.separator + "+", File.separator);
 						
+						
+						
 						// Go to the next music file?
 						if(!newInputFile.equals(currentInputFile) || (Double)classifierGroundTruthSet.getAttribute("Start").getValueAt(i + 1) == 0) {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							classifierInputLoader = new ArffLoader();
-							processedFeatureFile = new File(currentInputFile);
-							if(!processedFeatureFile.exists()) {
-								throw new NodeException("Could not load data from processed feature files: " + processedFeatureFile);
-							}
-							classifierInputLoader.setFile(processedFeatureFile);
+							classifierInputLoader.setFile(new File(currentInputFile));
 						} 
 						
 						// Load the next input vector
@@ -698,7 +686,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 				// load the raw features
 				try {
 					labeledInputForTraining = new DataSet("TrainingSet");
-					
 					// Load the classifier description
 					DataSetAbstract classifierGroundTruthSet = new ArffDataSet(new File(pathToFileWithLabeledInstances));
 					
@@ -719,15 +706,6 @@ public class TrainerNodeScheduler extends NodeScheduler {
 							break;
 						}
 					}
-					
-					// Check if attributesToIgnore matches training input
-					for(int i=0; i<attributesToIgnore.size(); i++) {
-						if(attributesToIgnore.get(i)<0 || attributesToIgnore.get(i) >= numberOfValuesPerWindow) {
-							AmuseLogger.write(this.getClass().getName(), Level.WARN, 
-									"Training input does not contain attribute with number " + attributesToIgnore.get(i) + ". This attribute will not be ignored.");
-						}
-					}
-					
 					// set the numberOfValuesPerWindow in the TrainingConfiguration for the training algorithm
 					// (the training algorithm needs the size of the windows after the attributesToIgnore have been removed)
 					((TrainingConfiguration)this.getConfiguration()).setNumberOfValuesPerWindow(numberOfValuesPerWindow - numberOfAttributesToIgnore);

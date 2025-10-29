@@ -48,8 +48,7 @@ if isamir(x,'miraudio')
     else
         x = mirrms(x,'Frame',option.frame.length.val,option.frame.length.unit,...
                              option.frame.hop.val,option.frame.hop.unit,...
-                             option.frame.phase.val,option.frame.phase.unit,...
-                             option.frame.phase.atend);
+                             option.frame.phase.val,option.frame.phase.unit);
     end
 end
 type = 'mirscalar';

@@ -1,5 +1,10 @@
-function res = displot(x,y,xlab,ylab,t,fp,pp,tp,tv,ch,multidata,pm,op,ap,rp,of,cl,ax)
+function res = displot(x,y,xlab,ylab,t,fp,pp,tp,tv,ch,multidata,pm,ap,rp,cl,axis)
 % graphical display of any data (except mirscalar data) computed by MIRToolbox
+
+%opengl('OpenGLWobbleTesselatorBug',1)
+% Rendering complex patch object may cause segmentation violation and
+% return a tesselator error message in the stack trace. This command
+% enables a workaround of that bug that might work sometimes...
 
 if isempty(y)
     res = 0;
@@ -13,7 +18,6 @@ if length(y) == 1
         x = x{1};
     end
 end
-
 if isempty(y)
     res = 0;
     return
@@ -23,7 +27,7 @@ if isstruct(cl)
     y = cl.centr(:,cl.index);
 end
 
-if isempty(ax)
+if isempty(axis)
     figure
 end
 
@@ -51,13 +55,13 @@ else
         l = 1;
     end
 end
-if not(iscell(y)) && l > 20
+if not(iscell(y)) && l > 20 %&& size(y,3) == 1
     manychannels = 1;
     if lx == 1
         y = reshape(y,[c l])';
         lx = l;
         l = 1;
-    elseif c == 1
+    else
         y = reshape(y,[lx l])';
         fp = reshape(x,[1 lx size(x,3)]);
         fp = fp(:,:,1);
@@ -69,11 +73,10 @@ if not(iscell(y)) && l > 20
         else
             x = ch';
         end
-    else
-        mirerror('display','This data cannot be displayed.');
     end
 end
 curve = (not(iscell(y)) && not(isequal(fp2,0)) && size(fp2,2)==1) || ...
+        ...%(iscell(y) && size(y{1}) == 1) || ...
         c == 1 || (strcmp(xlab,'time (s)') && not(manychannels));
 if curve
     for i = 1:l
@@ -124,33 +127,27 @@ if curve
                             set(gca,'xticklabel',x);
                         end
                         hold on
-                        axis tight
-%                         axis 'auto y'
                     end
                 end
             end
             if length(y) > 1
-                if isempty(cl)
+                if isempty(cl)% || isempty(cl{1}) ... this because of a bug..
+                    %|| isempty(cl{i})
                     colr = h;
-
+                %elseif iscell(cl{i})
+                %    colr = cl{i}(h);
                 elseif length(cl) == 1
                     colr = cl;
                 else
-                    colr = cl(h);
+                    colr = cl(h); %cl{i}(h);
                 end
                 if not(isempty(x{h}))
-                    yhi = y{h}(:,:,i);
-                    yhi(isnan(yhi)) = [];
-                    yhi(isinf(yhi)) = [];
-                    if ~isempty(yhi)
-                        rectangle('Position',[x{h}(1),...
-                                              min(min(yhi)),...
-                                              x{h}(end)-x{h}(1),...
-                                              max(max(yhi))-...
-                                              min(min(yhi))]+1e-16,...
-                                  'EdgeColor',num2col(colr),...
-                                  'Curvature',.1,'LineWidth',1)
-                    end
+                    rectangle('Position',[x{h}(1),...
+                                          min(min(y{h}(:,:,i))),...
+                                          x{h}(end)-x{h}(1),...
+                                          max(max(y{h}(:,:,i)))-...
+                                          min(min(y{h}(:,:,i)))]+1e-16,...
+                        'EdgeColor',num2col(colr),'Curvature',.1,'LineWidth',1)
                 end
             end
         end
@@ -170,7 +167,7 @@ if curve
                                 xj(end)-xj(1),max(yk)-min(yk)]+1e-16,...
                                 'EdgeColor',col{h}(j,:,k))
                         end
-                        if length(pp) >= h && not(isempty(pp{h}))
+                        if not(isempty(pp)) && not(isempty(pp{1}))
                             [ppj order] = sort(pp{h}{1,j,i});
                             if not(isempty(pm)) && not(isempty(pm{1}))
                                 pmj = pm{h}{1,j,i}(order);
@@ -188,30 +185,22 @@ if curve
                                     plot(xj(ppj),yk(ppj),'or')
                                 end
                             end
-                        end
-                        if not(isempty(op)) && not(isempty(op{h}))
-                            opj = op{h}{1,j,i};
-                            if ~isempty(opj)
+                            if not(isempty(ap)) && not(isempty(ap{1}))
                                 apj = ap{h}{1,j,i};
-                                plot(xj(opj),yk(opj),'dm')
-                                plot(xj(apj),yk(apj),'dm')
-                                for g = 1:length(opj)
-                                    line([xj(opj(g)),xj(apj(g))],...
-                                        [yk(opj(g)),yk(apj(g))],...
-                                        'Color','m')
+                                plot(xj(apj),yk(apj),'dr') 
+                                for g = 1:length(ppj)
+                                    line([xj(ppj(g)),xj(apj(g))],...
+                                         [yk(ppj(g)),yk(apj(g))],...
+                                         'Color','r')
                                 end
                             end
-                        end
-                        if not(isempty(of)) && not(isempty(of{h}))
-                            ofj = of{h}{1,j,i};
-                            if ~isempty(ofj)
+                            if not(isempty(rp)) && not(isempty(rp{1}))
                                 rpj = rp{h}{1,j,i};
-                                plot(xj(ofj),yk(ofj),'dm')
-                                plot(xj(rpj),yk(rpj),'dm')
-                                for g = 1:length(ofj)
-                                    line([xj(rpj(g)),xj(ofj(g))],...
-                                        [yk(rpj(g)),yk(ofj(g))],...
-                                        'Color','m')
+                                plot(xj(rpj),yk(rpj),'dr') 
+                                for g = 1:length(rpj)
+                                    line([xj(ppj(g)),xj(rpj(g))],...
+                                         [yk(ppj(g)),yk(rpj(g))],...
+                                         'Color','r')
                                 end
                             end
                         end
@@ -226,16 +215,15 @@ if curve
             xlabel(xlab)
         end
         if l > 1
-            if isempty(ch)
-                num = i;
-            else
+            %if iscell(x)
+            %    num = x{i}(1);
+            %else
                 num = ch(i);
-            end
+            %end
             pos = get(gca,'Position');
             axes('Position',[pos(1)-.05 pos(2)+pos(4)/2 .01 .01],'Visible','off');
             text(0,0,num2str(num),'FontSize',12,'Color','r')
         end
-        axis tight
     end
 else
     % 2-dimensional image
@@ -274,8 +262,10 @@ else
         for i = 1:l
             if l>1
                 subplot(l,1,l-i+1,'align');
+%                subplot('Position',[0.1 (i-1)*il+0.1 0.89 il-0.02])
             end
             hold on
+            %surfplot(segt,x{1},repmat(x{1}/x{1}(end)*.1,[1,length(segt)]));
             if length(x)==1 && length(y)>1
                 for k = 2:length(y)
                     x{k} = x{1};
@@ -289,7 +279,7 @@ else
                     else
                         mel = 0;
                     end
-                    xx = zeros(size(x{j},1)*size(y{j},4),1);
+                    xx = zeros(size(x{j},1)*size(y{j},4),1); %,size(x{j},2));
                     yy = zeros(size(y{j},1)*size(y{j},4),size(y{j},2));
                     for k = 1:size(y{j},4)
                         xx((k-1)*size(x{j},1)+1:k*size(x{j},1),1) = x{j}(:,1);
@@ -323,6 +313,10 @@ else
                                     ppj(:,:,1) = ppj(:,:,1) + (ppj(:,:,2)-1)*size(x,1);
                                     ppj(:,:,2) = [];
                                     plot(mean(fp{j}(:,k)),ppj-.5,'+w')
+                                elseif 0 %(exist('pm') == 1) && not(isempty(pm))
+                                    pmj = pm{k}{1,1,i};
+                                    ppj(:,:) = ppj(:,:) + (pmj(:,:)-1)*size(x,1);
+                                    plot(mean(fp{j}(:,k)),ppj-.5,'+w') % fp shows segmentation points
                                 elseif not(isempty(ppj))
                                     plot(mean(fp{j}(:,k)),xx(ppj),'+k')
                                 end
@@ -371,7 +365,7 @@ else
             if l>1
                 subplot('Position',[0.1 (i-1)*il+0.1 0.89 il-0.02])
             end
-            xx = zeros(size(x,1)*size(y,4),1);
+            xx = zeros(size(x,1)*size(y,4),1); %,size(x,2));
             yy = zeros(size(y,1)*size(y,4),size(y,2));
             for k = 1:size(y,4)
                 xx((k-1)*size(x,1)+1:k*size(x,1),1) = x(:,1);
@@ -404,7 +398,6 @@ else
                 else
                     xxx = (0:size(yy,1))';
                 end
-                %colormap('gray')
                 surfplot(ttt,xxx,yy);
                 if not(isempty(ticky))
                     set(gca,'ytick',ticky);
@@ -413,19 +406,20 @@ else
                 set(gca,'YDir','normal');
             end
             hold on
-
+            %if iscell(pp)
+            %    pp = uncell(pp);
+            %    if iscell(pm)
+            %        pm = uncell(pm);
+            %    end
+            %end
             if (exist('tp') == 1) && not(isempty(tp))
                 tp = tp{i}{1};
                 tv = tv{i}{1};
                 for k = 1:size(tp,1)
                     prej = 0;
                     for j = 1:size(tp,2)
-                        if ~isnan(tv(k,j)) && tv(k,j)
-                            if prej && prej == j-1
-                                if tp(k,j) == size(xxx,1) || ...
-                                        tp(k,prej) == size(xxx,1)
-                                    continue
-                                end
+                        if tv(k,j)
+                            if prej% && not(isempty(tp(k,j)))
                                 plot([(ttt(prej)+ttt(prej+1))/2,...
                                       (ttt(j)+ttt(j+1))/2],...
                                      [(xxx(tp(k,prej))+xxx(tp(k,prej)+1))/2,...
@@ -471,6 +465,7 @@ else
                                 ppj(:,:,:) = ppj(:,:,:) + (pmj(:,:,:)-1)*size(x,1);
                             end
                             if not(isempty(ppj))
+                                %plot((segt(j)+segt(j+1))/2,xx(ppj),'+k','MarkerSize',10)
                                 plot((ttt(j)+ttt(j+1))/2,(xxx(ppj)+xxx(ppj+1))/2,'+w','MarkerSize',10)
                             end
                         end
@@ -484,7 +479,8 @@ else
                             pmj = [];
                         end
                         if not(isempty(ppj))
-                            plot((ttt(ppj)+ttt(ppj+1))/2,(xxx(j)+xxx(j+1))/2,'+k','MarkerSize',10)
+                            %plot((segt(j)+segt(j+1))/2,xx(ppj),'+k','MarkerSize',10)
+                            plot((ttt(ppj)+ttt(ppj+1))/2,(xxx(j)+xxx(j+1))/2,'+w','MarkerSize',10)
                         end
                     end
                 end
@@ -493,11 +489,7 @@ else
                 title(t)
             end
             if i == 1
-                if manychannels
-                    xlabel(xlab);
-                else
-                    xlabel('time axis (in s.)');
-                end
+                xlabel('time axis (in s.)');
             end
             if l > 1
                 if iscell(x)
@@ -514,7 +506,11 @@ else
 end
 if l == 1
     if curve
-        ylabel(ylab);
+        %if (exist('dbv') == 1) && dbv
+        %    ylabel([ylab ' (logarithmic scale)']);
+        %else
+            ylabel(ylab);
+        %end
     elseif manychannels
         ylabel('Channels');
     else

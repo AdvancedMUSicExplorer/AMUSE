@@ -13,8 +13,6 @@ switch propName
         val = p.mean;
     case 'Degrees'
         val = p.degrees;
-    case 'Stable'
-        val = p.stable;
     otherwise
         val = get(mirscalar(p),propName);
 end

@@ -1,4 +1,4 @@
-function y = mirevalparallel(d,a,sr,lg,w,single,ch,export)
+function y = mirevalparallel(a,sr,w,single,ch,export)
 % Function in separate M file, because the "parfor" command is not 
 % recognized by old versions of Matlab, where this function is not used 
 % anyway.
@@ -6,14 +6,12 @@ function y = mirevalparallel(d,a,sr,lg,w,single,ch,export)
 l = length(a);
 y = cell(1,l);
 parfor i = 1:l
-    mirverbose(0);
-    mirwaitbar(0);
     if l > 1
         fprintf('\n')
         display(['*** File # ',num2str(i),'/',num2str(l),': ',a{i}]);
     end
     tic
-    yi = mirevalaudiofile(d,a{i},sr(i),lg(i),w(:,i),{},0,i,single,'',ch);
+    yi = evalaudiofile(d,a{i},sr(i),lg(i),w(:,i),{},0,i,single,'',ch);
     toc
     y{i} = yi;
     if not(isempty(export))
@@ -32,4 +30,3 @@ parfor i = 1:l
         end
     end
 end
-matlabpool close;

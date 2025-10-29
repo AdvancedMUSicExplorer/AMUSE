@@ -39,7 +39,7 @@ for k = 1:nf
         end
         lywrite(nmat{k},nk);
     end
-    disp([nk,' saved.']);
+    disp([n,' saved.']);
 end
 
 

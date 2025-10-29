@@ -86,11 +86,6 @@ function varargout = mirautocor(orig,varargin)
         end
         max.opposite = 'min';
     option.max = max;
-    
-        xtend.key = {'Extend','Extended'};
-        xtend.type = 'Boolean';
-        xtend.default = 0;
-    option.xtend = xtend;
         
         scaleoptbw.key = 'Normal'; %'Normal' keyword optional
         scaleoptbw.key = 'Boolean';
@@ -136,33 +131,7 @@ function varargout = mirautocor(orig,varargin)
         e.keydefault = 2:10;
         e.when = 'After';
     option.e = e;
-
-        extract.key = 'ExtractPeaks';
-        extract.type = 'Integer';
-        extract.default = 0;
-        extract.keydefault = 3;
-        extract.when = 'After';
-    option.extract = extract;
-
-        cutlow.key = 'CutLow';
-        cutlow.type = 'Boolean';
-        cutlow.default = 0;
-        cutlow.when = 'After';
-    option.cutlow = cutlow;
-    
-        highpass.key = 'HighPass';
-        highpass.type = 'Integer';
-        highpass.default = 0;
-        highpass.keydefault = .01;
-        highpass.when = 'After';
-    option.highpass = highpass;
-    
-        gauss.key = 'Gauss';
-        gauss.type = 'Boolean';
-        gauss.default = 0;
-        gauss.when = 'After';
-    option.gauss = gauss;
-
+        
         fr.key = 'Freq';
         fr.type = 'Boolean';
         fr.default = 0;
@@ -185,17 +154,6 @@ function varargout = mirautocor(orig,varargin)
         win.default = NaN;
     option.win = win;
     
-        phase.key = 'Phase';
-        phase.type = 'Boolean';
-        phase.when = 'Both';
-        phase.default = 0;
-    option.phase = phase;
-    
-%         order.key = 'Order';
-%         order.type = 'Integer';
-%         order.default = 1;
-%     option.order = order;
-
 specif.option = option;
 
 specif.defaultframelength = 0.05;
@@ -211,9 +169,6 @@ varargout = mirfunction(@mirautocor,orig,varargin,nargout,specif,@init,@main);
 
 
 function [x type] = init(x,option)
-% if option.order == 2
-%     x = mirautocor(x,'Min', option.min,'Max',option.max,'NormalWindow',0,'Extend');
-% end
 type = 'mirautocor';
 
 
@@ -221,7 +176,7 @@ function a = main(orig,option,postoption)
 if iscell(orig)
     orig = orig{1};
 end
-if isa(orig,'mirautocor') %&& option.order == 1
+if isa(orig,'mirautocor')
     a = orig;
     if not(isempty(option)) && ...
             (option.min || iscell(option.max) || option.max < Inf)
@@ -257,9 +212,6 @@ else
     a.ofspectrum = 0;
     a.window = {};
     a.normalwindow = 0;
-    a.resonance = '';
-    a.input = [];
-    a.phase = {};
     a = class(a,'mirautocor',mirdata(orig));
     a = purgedata(a);
     a = set(a,'Ord','coefficients');
@@ -331,29 +283,29 @@ else
             pl = pl-repmat(pl(1,:,:),[size(pl,1),1,1]);
             ls = size(sl,1);
             if mi
-                misp = find(pl(:,1,1)>=mi,1);
+                misp = find(pl(:,1,1)>=mi);
                 if isempty(misp)
                     warning('WARNING IN MIRAUTOCOR: The specified range of delays exceeds the temporal length of the signal.');
                     disp('Minimum delay set to zero.')
                     misp = 1;  % misp is the lowest index of the lag range
                     mi = 0;
+                else
+                    misp = misp(1);
                 end
             else
                 misp = 1;
             end
             if ma
-                masp = find(pl(:,1,1)>=ma,1);
+                masp = find(pl(:,1,1)>=ma);
                 if isempty(masp)
                     masp = Inf;
+                else
+                    masp = masp(1);
                 end
             else
                 masp = Inf;
             end
-            if option.xtend
-                masp = min(masp,ls);
-            else
-                masp = min(masp,ceil(ls/2));
-            end
+            masp = min(masp,ceil(ls/2));
             if masp <= misp
                 if size(sl,2) > 1
                     warning('WARNING IN MIRAUTOCOR: Frame length is too small.');    
@@ -399,28 +351,23 @@ else
                         ss = abs(fft(sl(:,i,j)));
                         ss = ss.^option.gener;
                         cc = ifft(ss);
-                        % We forgot the normalization!!
                         ll = (0:masp-1);
                         c(:,i,j) = cc(ll+1);
                     end
                 end
-
                 if strcmpi(option.scaleopt,'coeff') && option.gener == 2
                     % to be adapted to generalized autocor
-                    xc = xcorr(sum(sl(:,i,:),3),0);
-                    if xc
-                        c(:,i,:) = c(:,i,:)/xc;
-                        % This is a kind of generalization of the 'coeff'
-                        % normalization for multi-channels signals. In the
-                        % original 'coeff' option, the autocorrelation at zero
-                        % lag is identically 1.0. In this multi-channels
-                        % version, the autocorrelation at zero lag is such that
-                        % the sum over channels becomes identically 1.0. 
-                    end
+                    c(:,i,:) = c(:,i,:)/xcorr(sum(sl(:,i,:),3),0);
+                    % This is a kind of generalization of the 'coeff'
+                    % normalization for multi-channels signals. In the
+                    % original 'coeff' option, the autocorrelation at zero
+                    % lag is identically 1.0. In this multi-channels
+                    % version, the autocorrelation at zero lag is such that
+                    % the sum over channels becomes identically 1.0. 
                 end
             end
             coeffk{l} = c(misp:end,:,:);
-            pl = pl(misp:end,:,:);
+            pl = pl(find(pl(:,1,1) >=mi),:,:);
             lagsk{l} = pl(1:min(size(coeffk{l},1),size(pl,1)),:,:);
             windk{l} = kw;
         end
@@ -429,15 +376,9 @@ else
         wind{k} = windk;
     end
     a = set(a,'Coeff',coeff,'Delay',lags,'Window',wind);
-    if option.phase
-        a = set(a,'Input',orig);
-    end
     if not(isempty(postoption))
         a = post(a,postoption);
     end
-%     if option.order == 2
-%         a = mirtimes(a,orig);
-%     end
 end
 
 
@@ -450,17 +391,13 @@ freq = option.fr && not(get(a,'FreqDomain'));
 if isequal(option.e,1)
     option.e = 2:10;
 end
-if option.phase
-    x = get(a,'Input');
-    d = get(x,'Data');
-    pk = get(a,'PeakPos');
-    sr = get(a,'Sampling');
-    phas = cell(1,length(coeff));
+if max(option.e) > 1
+    pa = mirpeaks(a,'NoBegin','NoEnd','Contrast',.01);
+    va = mirpeaks(a,'Valleys','Contrast',.01);
+    pv = get(pa,'PeakVal');
+    vv = get(va,'PeakVal');
 end
 for k = 1:length(coeff)
-    if option.phase
-        phask = cell(1,length(coeff{k}));
-    end
     for l = 1:length(coeff{k})
         c = coeff{k}{l};  % Coefficients of autocorrelation
         t = lags{k}{l};   % Delays of autocorrelation
@@ -478,7 +415,7 @@ for k = 1:length(coeff)
                 c = c./ xw;
                 a.normalwindow = 1;
             end
-            if ischar(option.reso) && isempty(a.resonance) && ...
+            if ischar(option.reso) && ...
                     (strcmpi(option.reso,'ToiviainenSnyder') || ...
                     strcmpi(option.reso,'Toiviainen') || ...
                     strcmpi(option.reso,'vanNoorden'))
@@ -504,32 +441,11 @@ for k = 1:length(coeff)
                     w = w/max(w);
                     c = c.* repmat(w,[1,size(c,2),size(c,3)]);
                 end
-                a.resonance = option.reso;
             end
             if option.h
                 c = hwr(c);
             end
-            coeff{k}{l} = c;
-            lags{k}{l} = t;
-        end
-    end
-end
-a = set(a,'Coeff',coeff,'Delay',lags);
-if max(option.e) > 1
-    pa = mirpeaks(a,'NoBegin','NoEnd','Contrast',.01,'Normalize','Local');
-    va = mirpeaks(a,'Valleys','Contrast',.01,'Normalize','Local');
-    pv = get(pa,'PeakVal');
-    vv = get(va,'PeakVal');
-elseif option.extract
-    pa = mirpeaks(a,'NoBegin','NoEnd','Contrast',.01,'Normalize','Local');
-    pp = get(pa,'PeakPos');
-end
-for k = 1:length(coeff)
-    for l = 1:length(coeff{k})
-        c = coeff{k}{l};  % Coefficients of autocorrelation
-        t = lags{k}{l};   % Delays of autocorrelation
-        if max(option.e) > 1
-            if not(isempty(c))
+            if max(option.e) > 1
                 if a.freq
                     freq = 1;
                     for i = 1:size(c,3)
@@ -545,11 +461,11 @@ for k = 1:length(coeff)
                             pvk = pv{k}{l}{1,g,h};
                             mv = [];
                             if not(isempty(pvk))
-                                mp = min(pvk); %Lowest peak
+                                mp = min(pv{k}{l}{1,g,h}); %Lowest peak
                                 vvv = vv{k}{l}{1,g,h}; %Valleys
                                 mv = vvv(find(vvv<mp,1,'last'));
-                                %Highest valley below the lowest peak
-                                
+                                    %Highest valley below the lowest peak
+
                                 if not(isempty(mv))
                                     cgh = cgh-mv;
                                 end
@@ -560,17 +476,17 @@ for k = 1:length(coeff)
                             tcoef = tgh2(2)-tgh2(1);
                             deter = 0;
                             inter = 0;
-                            
+
                             repet = find(not(diff(tgh2)));  % Avoid bug if repeated x-values
                             if repet
                                 warning('WARNING in MIRAUTOCOR: Two successive samples have exactly same temporal position.');
                                 tgh2(repet+1) = tgh2(repet)+1e-12;
                             end
-                            
+
                             if coef < 0
                                 % initial descending slope removed
                                 deter = find(diff(cgh2)>0,1)-1;
-                                % number of removed points
+                                    % number of removed points
                                 if isempty(deter)
                                     deter = 0;
                                 end
@@ -578,175 +494,93 @@ for k = 1:length(coeff)
                                 tgh2(1:deter) = [];
                                 coef = cgh2(2)-cgh2(1);
                             end
-                            
+
                             if coef > 0
                                 % initial ascending slope prolonged to the left
                                 % until it reaches the x-axis
                                 while cgh2(1) > 0
                                     coef = coef*1.1;
-                                    % the further to the left, ...
-                                    % the more ascending is the slope
-                                    % (not sure it always works, though...)
+                                        % the further to the left, ...
+                                        % the more ascending is the slope
+                                        % (not sure it always works, though...)
                                     inter = inter+1;
-                                    % number of added points
+                                        % number of added points
                                     cgh2 = [cgh2(1)-coef; cgh2];
                                     tgh2 = [tgh2(1)-tcoef; tgh2];
                                 end
                                 cgh2(1) = 0;
                             end
-                            
+
                             for i = option.e  % Enhancing procedure
                                 % option.e is the list of scaling factors
                                 % i is the scaling factor
                                 if i
                                     be = find(tgh2 & tgh2/i >= tgh2(1),1);
-                                    % starting point of the substraction
-                                    % on the X-axis
-                                    
+                                        % starting point of the substraction
+                                        % on the X-axis
+
                                     if not(isempty(be))
                                         ic = interp1(tgh2,cgh2,tgh2/i);
-                                        % The scaled autocorrelation
+                                            % The scaled autocorrelation
                                         ic(1:be-1) = 0;
                                         ic(find(isnan(ic))) = Inf;
-                                        % All the NaN values are changed
-                                        % into 0 in the resulting curve
+                                            % All the NaN values are changed
+                                            % into 0 in the resulting curve
                                         ic = max(ic,0);
-                                        
+
                                         if debug
-                                            hold off,plot(tgh2,cgh2)
+                                           hold off,plot(tgh2,cgh2)
                                         end
-                                        
-                                        cgh2 = cgh2 - ic;
-                                        % The scaled autocorrelation
-                                        % is substracted to the initial one
-                                        
+
+                                        cgh2 = cgh2 - ic;       
+                                            % The scaled autocorrelation
+                                            % is substracted to the initial one
+
                                         cgh2 = max(cgh2,0);
-                                        % Half-wave rectification
-                                        
+                                            % Half-wave rectification
+
                                         if debug
-                                            hold on,plot(tgh2,ic,'r')
-                                            hold on,plot(tgh2,cgh2,'g')
-                                            drawnow
-                                            figure
+                                           hold on,plot(tgh2,ic,'r')
+                                           hold on,plot(tgh2,cgh2,'g')
+                                           drawnow
+                                           figure
                                         end
                                     end
                                 end
                             end
-                            
-                            if 0 %~isempty(mv)
-                                cgh2 = max(cgh2 + mv,0);
-                            end
-                            
+
                             % The  temporary modifications are
                             % removed from the final curve
                             if inter>=deter
                                 c(:,g,h) = cgh2(inter-deter+1:end);
+                                if not(isempty(mv))
+                                    c(:,g,h) = c(:,g,h) + mv;
+                                end
                             else
                                 c(:,g,h) = [zeros(deter-inter,1);cgh2];
                             end
-                            if not(isempty(mv))
-                                c(:,g,h) = c(:,g,h) + mv;
-                            end
                         end
                     end
                 end
             end
-            if option.phase
-                ph = cell(1,size(d{k}{l},2),size(d{k}{l},3));
-                for i = 1:size(ph,2)
-                    for j = 1:size(ph,3)
-                        if ~isempty(pk{k}{l})
-                            option.phase = 2;
-                            pkj = pk{k}{l}{1,i,j};
-                            phj = zeros(1,length(pkj));
-                            for h = 1:length(pkj)
-                                lag = round(t(pkj(h))*sr{k});
-                                if ~lag
-                                    continue
-                                end
-                                pha = zeros(1,lag);
-                                for g = 1:lag
-                                    pha(g) = sum(d{k}{l}(g:lag:end,i,j));
-                                end
-                                [unused phj(h)] = max(pha);
-                            end
-                            ph{1,i,j} = phj;
-                        end
-                    end
+            if freq
+                if t(1,1) == 0
+                    c = c(2:end,:,:);
+                    t = t(2:end,:,:);
                 end
-                phask{l} = ph;
-            end
-        elseif option.extract
-            minc = min(min(min(c)));
-            for g = 1:size(c,2)
-                for h = 1:size(c,3)
-                    cgh = c(:,g,h);
-                    if length(cgh)>1
-                        ppk = pp{k}{l}{1,g,h};
-                        extract = zeros(1,length(cgh));
-                        for i = ppk
-                            extract(max(1,i-option.extract):...
-                                min(length(cgh),i+option.extract)) = 1;
-                        end
-                        c(~extract,g,h) = minc;
-                    end
+                for i = 1:size(c,3)
+                    c(:,:,i) = flipud(c(:,:,i));
                 end
+                t = flipud(1./t);
             end
-        elseif option.cutlow
-            for g = 1:size(c,2)
-                for h = 1:size(c,3)
-                    cgh = c(:,g,h);
-                    if length(cgh)>1
-                        mcgh = cgh(1);
-                        deter = 1;
-                        for i = 2:length(cgh)
-                            if cgh(i) > mcgh + .01
-                                break
-                            end
-                            deter = i;
-                            mcgh = min(mcgh,cgh(i));
-                        end
-                        c(1:deter,g,h) = 0;
-                    end
-                end
-            end
-        elseif option.highpass
-            c = highpass(c,option.highpass);
-        elseif option.gauss
-            for g = 1:size(c,2)
-                for h = 1:size(c,3)
-                    cgh = c(:,g,h);
-                    sigma = 10;
-                    gauss = 1/sigma/2/pi...
-                        *exp(- (-4*sigma:4*sigma).^2 /2/sigma^2);
-                    y = filter(gauss,1,[cgh;zeros(4*sigma,1)]);
-                    c(:,g,h) = y(4*sigma:end-1);
-                end
-            end
+            coeff{k}{l} = c;
+            lags{k}{l} = t;
         end
-        if freq
-            if t(1,1) == 0
-                c = c(2:end,:,:);
-                t = t(2:end,:,:);
-            end
-            for i = 1:size(c,3)
-                c(:,:,i) = flipud(c(:,:,i));
-            end
-            t = flipud(1./t);
-        end
-        coeff{k}{l} = c;
-        lags{k}{l} = t;
-    end
-    if option.phase
-        phas{k} = phask;
     end
 end
 a = set(a,'Coeff',coeff,'Delay',lags,'Freq');
 if freq
     a = set(a,'FreqDomain',1,'Abs','frequency (Hz)');
-end
-if option.phase == 2
-    a = set(a,'Phase',phas);
 end
 
 
@@ -764,9 +598,6 @@ if abs(size(dn,1)-size(do,1)) <= 2 % Probleme of border fluctuation
     mi = min(size(dn,1),size(do,1));
     dn = dn(1:mi,:,:);
     do = do(1:mi,:,:);
-    po = get(old,'Pos');
-    po{1}{1} = po{1}{1}(1:mi,:,:);
-    old = set(old,'Pos',po);
 elseif length(dn) < length(do)
     dn(length(do),:,:) = 0; % Zero-padding
 end

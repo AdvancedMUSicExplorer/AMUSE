@@ -1,7 +1,7 @@
 /** 
  * This file is part of AMUSE framework (Advanced MUsic Explorer).
  * 
- * Copyright 2006-2022 by code authors
+ * Copyright 2006-2010 by code authors
  * 
  * Created at TU Dortmund, Chair of Algorithm Engineering
  * (Contact: <http://ls11-www.cs.tu-dortmund.de>) 
@@ -24,7 +24,6 @@
 package amuse.nodes.processor.methods.converters;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Level;
 
@@ -44,49 +43,11 @@ import amuse.util.AmuseLogger;
  */
 public class QuartileConverter extends AmuseTask implements MatrixToVectorConverterInterface {
 
-	/** Save the min values? */
-	private boolean saveMinValues = false;
-	
-	/** Save the 1st quartile values? */
-	private boolean save1stQuartileValues = false;
-
-	/** Save the median values? */
-	private boolean saveMedianValues = false;
-
-	/** Save the 3rd quartile values? */
-	private boolean save3rdQuartileValues = false;
-
-	/** Save the max values? */
-	private boolean saveMaxValues = false;
-	
 	/**
 	 * @see amuse.nodes.processor.interfaces.DimensionProcessorInterface#setParameters(String)
 	 */
 	public void setParameters(String parameterString) throws NodeException {
-		if(parameterString == null || parameterString == "") {
-			saveMinValues = true;
-			save1stQuartileValues = true;
-			saveMedianValues = true;
-			save3rdQuartileValues = true;
-			saveMaxValues = true;
-		} else {
-			StringTokenizer tok = new StringTokenizer(parameterString,"_");
-			if(tok.nextToken().equals(new String("true"))) {
-				saveMinValues = true;
-			}
-			if(tok.nextToken().equals(new String("true"))) {
-				save1stQuartileValues = true;
-			}
-			if(tok.nextToken().equals(new String("true"))) {
-				saveMedianValues = true;
-			}
-			if(tok.nextToken().equals(new String("true"))) {
-				save3rdQuartileValues = true;
-			}
-			if(tok.nextToken().equals(new String("true"))) {
-				saveMaxValues = true;
-			}
-		}
+		// Do nothing
 	}
 	
 	/*
@@ -105,10 +66,6 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 		AmuseLogger.write(this.getClass().getName(), Level.INFO, "Starting the quartile conversion...");
 		
 		int windowSize = ((ProcessorNodeScheduler)this.correspondingScheduler).getMinimalStepSize();
-		
-		// How many quartiles will be stored?
-		int numberOfQuartileDimensions = ((saveMinValues ? 1 : 0) + (save1stQuartileValues ? 1 : 0) + (saveMedianValues ? 1 : 0) + 
-				(save3rdQuartileValues ? 1 : 0) + (saveMaxValues ? 1 : 0));
 				
 		// Single features used as classifier input vector
 		ArrayList<Feature> endFeatures = new ArrayList<Feature>();
@@ -120,43 +77,33 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 				int sampleRate = features.get(i).getSampleRate();
 				int numberOfAllSingleFeatures = features.get(i).getValues().get(0).length;
 				
-				ArrayList<Feature> newFeatures = new ArrayList<Feature>(numberOfAllSingleFeatures * numberOfQuartileDimensions);
+				ArrayList<Feature> newFeatures = new ArrayList<Feature>(numberOfAllSingleFeatures*5);
 				for(int j=0;j<numberOfAllSingleFeatures;j++) {
-					if(saveMinValues) {
-						Feature minOfCurrentSingleFeature = new Feature(-1);
-						minOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
-						minOfCurrentSingleFeature.getHistory().add("Min_" + (j+1));
-						minOfCurrentSingleFeature.setSampleRate(sampleRate);
-						newFeatures.add(minOfCurrentSingleFeature);
-					} 
-					if(save1stQuartileValues) {
-						Feature firstQBoundOfCurrentSingleFeature = new Feature(-1);
-						firstQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
-						firstQBoundOfCurrentSingleFeature.getHistory().add("1st_quartile_bound" + (j+1));
-						firstQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
-						newFeatures.add(firstQBoundOfCurrentSingleFeature);
-					}
-					if(saveMedianValues) {
-						Feature secondQBoundOfCurrentSingleFeature = new Feature(-1);
-						secondQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
-						secondQBoundOfCurrentSingleFeature.getHistory().add("2nd_quartile_bound" + (j+1));
-						secondQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
-						newFeatures.add(secondQBoundOfCurrentSingleFeature);
-					}
-					if(save3rdQuartileValues) {
-						Feature thirdQBoundOfCurrentSingleFeature = new Feature(-1);
-						thirdQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
-						thirdQBoundOfCurrentSingleFeature.getHistory().add("3rd_quartile_bound" + (j+1));
-						thirdQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
-						newFeatures.add(thirdQBoundOfCurrentSingleFeature);
-					}
-					if(saveMaxValues) {
-						Feature maxOfCurrentSingleFeature = new Feature(-1);
-						maxOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
-						maxOfCurrentSingleFeature.getHistory().add("Max_" + (j+1));
-						maxOfCurrentSingleFeature.setSampleRate(sampleRate);
-						newFeatures.add(maxOfCurrentSingleFeature);
-					}
+					Feature minOfCurrentSingleFeature = new Feature(-1);
+					minOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
+					minOfCurrentSingleFeature.getHistory().add("Min_" + (j+1));
+					minOfCurrentSingleFeature.setSampleRate(sampleRate);
+					Feature firstQBoundOfCurrentSingleFeature = new Feature(-1);
+					firstQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
+					firstQBoundOfCurrentSingleFeature.getHistory().add("1st_quartile_bound" + (j+1));
+					firstQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
+					Feature secondQBoundOfCurrentSingleFeature = new Feature(-1);
+					secondQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
+					secondQBoundOfCurrentSingleFeature.getHistory().add("2nd_quartile_bound" + (j+1));
+					secondQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
+					Feature thirdQBoundOfCurrentSingleFeature = new Feature(-1);
+					thirdQBoundOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
+					thirdQBoundOfCurrentSingleFeature.getHistory().add("3rd_quartile_bound" + (j+1));
+					thirdQBoundOfCurrentSingleFeature.setSampleRate(sampleRate);
+					Feature maxOfCurrentSingleFeature = new Feature(-1);
+					maxOfCurrentSingleFeature.setHistory(features.get(i).getHistory());
+					maxOfCurrentSingleFeature.getHistory().add("Max_" + (j+1));
+					maxOfCurrentSingleFeature.setSampleRate(sampleRate);
+					newFeatures.add(minOfCurrentSingleFeature);
+					newFeatures.add(firstQBoundOfCurrentSingleFeature);
+					newFeatures.add(secondQBoundOfCurrentSingleFeature);
+					newFeatures.add(thirdQBoundOfCurrentSingleFeature);
+					newFeatures.add(maxOfCurrentSingleFeature);
 				}
 				
 				double classificationWindowSizeInWindows;
@@ -172,7 +119,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 					numberOfAllClassificationWindows = 1;
 				} else {
 					
-					// In 2nd case we can calculate the number of windows which belong to each classification window
+					// In 2nd case we can calculate the number of windows which belong to each classificatoin window
 					if(unit == Unit.SAMPLES) {
 						classificationWindowSizeInWindows = aggregationWindowSize;
 						overlapSizeInWindows = aggregationWindowSize - stepSize;
@@ -280,8 +227,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 								maxD[0] = Double.NaN;
 							}
 							
-							// OLD: Always store all quartiles
-							/*newFeatures.get(5*k).getValues().add(minD);
+							newFeatures.get(5*k).getValues().add(minD);
 							newFeatures.get(5*k).getWindows().add(new Double(classificationWindowStart));
 							newFeatures.get(5*k+1).getValues().add(firstQD);
 							newFeatures.get(5*k+1).getWindows().add(new Double(classificationWindowStart));
@@ -290,27 +236,7 @@ public class QuartileConverter extends AmuseTask implements MatrixToVectorConver
 							newFeatures.get(5*k+3).getValues().add(thirdQD);
 							newFeatures.get(5*k+3).getWindows().add(new Double(classificationWindowStart));
 							newFeatures.get(5*k+4).getValues().add(maxD);
-							newFeatures.get(5*k+4).getWindows().add(new Double(classificationWindowStart));*/
-							if(saveMinValues) {
-								newFeatures.get(numberOfQuartileDimensions*k).getValues().add(minD);
-								newFeatures.get(numberOfQuartileDimensions*k).getWindows().add(new Double(classificationWindowStart));
-							}
-							if(save1stQuartileValues) {
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)).getValues().add(firstQD);
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
-							}
-							if(saveMedianValues) {
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)).getValues().add(secondQD);
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
-							}
-							if(save3rdQuartileValues) {
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)+(saveMedianValues ? 1 : 0)).getValues().add(thirdQD);
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)+(saveMedianValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
-							}
-							if(saveMaxValues) {
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)+(saveMedianValues ? 1 : 0)+(save3rdQuartileValues ? 1 : 0)).getValues().add(maxD);
-								newFeatures.get(numberOfQuartileDimensions*k+(saveMinValues ? 1 : 0)+(save1stQuartileValues ? 1 : 0)+(saveMedianValues ? 1 : 0)+(save3rdQuartileValues ? 1 : 0)).getWindows().add(new Double(classificationWindowStart));
-							}
+							newFeatures.get(5*k+4).getWindows().add(new Double(classificationWindowStart));
 						}
 							
 						// Go with the current window back because of overlap (some time windows used in the

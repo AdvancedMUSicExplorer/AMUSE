@@ -46,8 +46,13 @@ end
 v = ver('MIRtoolbox');
 title = ['MIRtoolbox' v.Version];
 class = {};
-add = 0;
-raw = 0;
+if not(isempty(varargin)) && ischar(varargin{end}) && strcmp(varargin{end},'#add')
+    add = 1;
+    varargin(end) = [];
+    narg = narg-1;
+else
+    add = 0;
+end
 for v = 2:narg
     argv = varargin{v-1};
     if isa(argv,'mirdesign')
@@ -58,37 +63,26 @@ for v = 2:narg
             format = 'Matrix';
         elseif strcmpi(argv,'ARFF')
             format = 'ARFF';
-        elseif strcmpi(argv,'#add')
-            add = 1;
-        elseif strcmpi(argv,'Raw')
-            raw = 1;
-        end
-    end
-end
-for v = 2:narg
-    argv = varargin{v-1};
-    if ischar(argv)
-        if ~strcmpi(argv,'Matrix') && ~strcmpi(argv,'ARFF') && ...
-                ~strcmpi(argv,'#add') && ~strcmpi(argv,'Raw')
+        else
             imported = importdata(argv,'\t',1);
             imported.name = {};
-            [stored class] = integrate(stored,imported,raw);
+            [stored class] = integrate(stored,imported);
         end
     elseif isstruct(argv) && isfield(argv,'data')
         new.data = argv.data;
         new.textdata = argv.fields;
         new.name = {};
-        [stored class] = integrate(stored,new,raw);
+        [stored class] = integrate(stored,new);
     else
         new.data = argv;
         new.textdata = '';
         new.name = {};
-        [stored class] = integrate(stored,new,raw);
+        [stored class] = integrate(stored,new);
     end
 end
 switch format
     case 'Matrix'
-        matrixformat(stored,f,title,add,raw);
+        matrixformat(stored,f,title,add);
         m = 1;
     case 'ARFF'
         classes = {};
@@ -104,10 +98,10 @@ switch format
 end
 
 
-%%
-function [stored class] = integrate(stored,new,raw,class)
 
-if nargin<4
+function [stored class] = integrate(stored,new,class)
+
+if nargin<3
     class = {};
 end
     
@@ -143,32 +137,30 @@ if isstruct(data)
         % Field information
         field = fields{w};
         newfield.data = data.(field);
-        if isempty(textdata)
-            newfield.textdata = field;
-        else
-            newfield.textdata = strcat(textdata,'_',field);
+        if 1 %not(isnumeric(newfield.data) && all(all(isnan(newfield.data))))
+            if isempty(textdata)
+                newfield.textdata = field;
+            else
+                newfield.textdata = strcat(textdata,'_',field);
+            end
+
+            % Processing of the field
+            [n class] = integrate({},newfield,class);
+
+            % Concatenation of the results
+            newdata = {newdata{:} n.data{:}};
+            newtextdata = {newtextdata{:} n.textdata{:}};
+            newname = checkname(newname,name);
         end
-
-        % Processing of the field
-        [n class] = integrate({},newfield,raw,class);
-
-        % Concatenation of the results
-        newdata = {newdata{:} n.data{:}};
-        newtextdata = {newtextdata{:} n.textdata{:}};
-        newname = checkname(newname,name);
     end
 elseif isa(data,'mirdata')
-    if raw
-        newinput.data = mirgetdata(data);
-    else
-        newinput.data = mirstat(data);
-    end
+    newinput.data = mirstat(data);
     if isfield(newinput.data,'FileNames')
         newinput.data = rmfield(newinput.data,'FileNames');
     end
     title = get(data,'Title');
     newinput.textdata = [textdata '_' title(find(not(isspace(title))))];
-    [n class] = integrate({},newinput,raw,class);
+    [n class] = integrate({},newinput,class);
     newdata = n.data;
     newtextdata = n.textdata;
     newname = get(data,'Name');
@@ -190,7 +182,7 @@ elseif iscell(data)
             newelement.textdata = [textdata num2str(i)];
 
             % Processing of the element
-            [n class] = integrate({},newelement,raw,class);
+            [n class] = integrate({},newelement,class);
 
             % Concatenation of the results
             newdata = {newdata{:} n.data{:}};
@@ -210,7 +202,7 @@ elseif size(data,4)>1
         end
         
         % Processing of the bin
-        [n class] = integrate({},bin,raw,class);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -228,7 +220,7 @@ elseif size(data,3)>1
         end
         
         % Processing of the bin
-        [n class] = integrate({},bin,raw,class);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -246,7 +238,7 @@ elseif size(data,1)>1 && size(data,1)<=50
         end
         
         % Processing of the bin
-        [n class] = integrate({},bin,raw,class);
+        [n class] = integrate({},bin,class);
         
         % Concatenation of the results
         newdata = {newdata{:} n.data{:}};
@@ -275,15 +267,9 @@ else
 end
 
 
-function m = matrixformat(data,filename,title,add,raw)
+function m = matrixformat(data,filename,title,add)
 named = ~isempty(data.name);
-if raw
-    rawl = 0;
-    for i = 1:length(data.data)
-        rawl = max(rawl,length(data.data{i}));
-    end
-end
-if named && ~raw
+if named
     if not(add)
         m(1,:) = {title,data.textdata{:}};
     end
@@ -295,19 +281,11 @@ elseif not(add)
 end
 for i = 1:length(data.data)
     m((1:length(data.data{i}))+~add,i+named) = num2cell(data.data{i});
-    if raw
-        for j =length(data.data{i})+1:rawl
-            m{j+~add,i+named} = NaN;
-        end
-    end
 end
 if add
     fid = fopen(filename,'at');
 else
     fid = fopen(filename,'wt');
-end
-if fid == -1
-    mirerror('MIREXPORT','Cannot open file')
 end
 for i = 1:size(m,1)
     for j = 1:size(m,2)
@@ -321,7 +299,9 @@ for i = 1:size(m,1)
             end
         end
     end
-    fprintf(fid,'\n');
+    %if i < size(m,1)
+        fprintf(fid,'\n');
+    %end
 end
 fclose(fid);
 disp(['Data exported to file ',filename,'.']);

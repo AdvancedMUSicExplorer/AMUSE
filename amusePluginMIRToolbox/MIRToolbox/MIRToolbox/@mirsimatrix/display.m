@@ -1,4 +1,4 @@
-function display(m)
+function display(m,ax,tracks)
 % DISSIMATRIX/DISPLAY display of a dissimilarity matrix
 disp(' ');
 d = get(m,'Data');
@@ -12,14 +12,13 @@ pp = get(m,'PeakPos');
 g = get(m,'Graph');
 b = get(m,'Branch');
 wr = get(m,'Warp');
-cl = get(m,'Clusters');
 if isnan(get(m,'DiagWidth'))    % Similarity matrix between 2 files
     figure
     fp1 = cell2mat(fp{1});
     fp2 = cell2mat(fp{2});
     fp1 = (fp1(1,:,:,:)+fp1(2,:,:,:))/2;
     fp2 = (fp2(1,:,:,:)+fp2(2,:,:,:))/2;
-    imagesc(fp2,fp1,d{1}{1}); % We should use image instead!
+    imagesc(fp2,fp1,d{1}{1});
     if not(isempty(wr))
         hold on
         paths = wr{1};
@@ -61,9 +60,18 @@ if isnan(get(m,'DiagWidth'))    % Similarity matrix between 2 files
     disp(['The ',t,' between files ',nam{1},' and ',nam{2},...
         ' is displayed in Figure ',num2str(fig),'.']);
 else
-    for i = 1:length(d)  %For each audio file
-       
-        figure
+    if nargin<3 || isempty(tracks)
+        tracks=1:length(d);
+    end
+    
+    for track = 1:length(tracks)  %For each audio file
+        i=tracks(track);
+        
+        if nargin<2 || isempty(ax)
+            figure
+        else
+            axes(ax)
+        end
         
         if iscell(d{i})
             d{i} = d{i}{1};
@@ -78,11 +86,8 @@ else
             if size(fpi,1) == 2
                 fpi = (fpi(1,:,:,:)+fpi(2,:,:,:))/2;
             end
-            % We should use image instead!
-            if strcmp(m.view,'l') && ~m.half
-                h = imagesc(fpi,...
-                            [-fpi(end:-1:2) fpi(1:end)]-fpi(1),...
-                             d{i}(:,:,k));
+            if strcmp(m.view,'l')
+                h = imagesc(fpi,fpi(1:size(d{i},1))-fpi(1),d{i}(:,:,k));
             else
                 h = imagesc(fpi,fpi,d{i}(:,:,k));
             end
@@ -92,7 +97,7 @@ else
                 for j = 1:size(g{i}{1},2)
                     pi{j} = sort(pp{i}{1}{j});
                 end
-                for j = 1:0 %size(g{i}{1},2)
+                for j = 1:size(g{i}{1},2)
                     for h = 1:length(g{i}{1}{1,j,l})
                         next = g{i}{1}{1,j,l}{h};
                         if length(next)>1
@@ -113,41 +118,39 @@ else
                         end
                     end
                 end
-                for h = 1:length(b{i}{1})
-                    bh = b{i}{1}{h};
-                    for j = 1:size(bh,1)-1
-                        plot([fpi(bh(j,1)) fpi(bh(j+1,1))],...
-                            [fpi(pi{bh(j,1)}(bh(j,2))) - fpi(1), ...
-                            fpi(pi{bh(j+1,1)}(bh(j+1,2))) - fpi(1)],...
-                            'w','LineWidth',1.5)
-                        plot([fpi(bh(j,1)) fpi(bh(j+1,1))],...
-                            [fpi(pi{bh(j,1)}(bh(j,2))) - fpi(1), ...
-                            fpi(pi{bh(j+1,1)}(bh(j+1,2))) - fpi(1)],...
-                            'w+','MarkerSize',15)
-                        plot([fpi(bh(j,1)) fpi(bh(j+1,1))],...
-                            [fpi(pi{bh(j,1)}(bh(j,2))) - fpi(1), ...
-                            fpi(pi{bh(j+1,1)}(bh(j+1,2))) - fpi(1)],...
-                            'kx','MarkerSize',15)
-                    end
+                bi = b{i}{1}{1};
+                for j = 1:size(bi,1)-1
+                    plot([fpi(bi(j,1)) fpi(bi(j+1,1))],...
+                        [fpi(pi{bi(j,1)}(bi(j,2))) - fpi(1), ...
+                        fpi(pi{bi(j+1,1)}(bi(j+1,2))) - fpi(1)],...
+                        'w','LineWidth',1.5)
+                    plot([fpi(bi(j,1)) fpi(bi(j+1,1))],...
+                        [fpi(pi{bi(j,1)}(bi(j,2))) - fpi(1), ...
+                        fpi(pi{bi(j+1,1)}(bi(j+1,2))) - fpi(1)],...
+                        'w+','MarkerSize',15)
+                    plot([fpi(bi(j,1)) fpi(bi(j+1,1))],...
+                        [fpi(pi{bi(j,1)}(bi(j,2))) - fpi(1), ...
+                        fpi(pi{bi(j+1,1)}(bi(j+1,2))) - fpi(1)],...
+                        'kx','MarkerSize',15)
                 end
             elseif not(isempty(tp)) && not(isempty(tp{i}))
                 hold on
-                for h = 1:size(tp{i}{1}{1},1)
+                for k = 1:size(tp{i}{1}{1},1)
                     prej = 0;
                     for j = 1:size(tp{i}{1}{1},2)
-                        if tv{i}{1}{1}(h,j)
-                            if prej% && not(isempty(tp(h,j)))
+                        if tv{i}{1}{1}(k,j)
+                            if prej% && not(isempty(tp(k,j)))
                                 plot([fpi(prej) fpi(j)],...
-                                    [fpi(tp{i}{1}{1}(h,prej)) - fpi(1) ...
-                                    fpi(tp{i}{1}{1}(h,j)) - fpi(1)],...
+                                    [fpi(tp{i}{1}{1}(k,prej)) - fpi(1) ...
+                                    fpi(tp{i}{1}{1}(k,j)) - fpi(1)],...
                                     'k','LineWidth',1)
                                 plot([fpi(prej) fpi(j)],...
-                                    [fpi(tp{i}{1}{1}(h,prej)) - fpi(1) ...
-                                    fpi(tp{i}{1}{1}(h,j)) - fpi(1)],...
+                                    [fpi(tp{i}{1}{1}(k,prej)) - fpi(1) ...
+                                    fpi(tp{i}{1}{1}(k,j)) - fpi(1)],...
                                     'w+','MarkerSize',10)
                                 plot([fpi(prej) fpi(j)],...
-                                    [fpi(tp{i}{1}{1}(h,prej)) - fpi(1) ...
-                                    fpi(tp{i}{1}{1}(h,j)) - fpi(1)],...
+                                    [fpi(tp{i}{1}{1}(k,prej)) - fpi(1) ...
+                                    fpi(tp{i}{1}{1}(k,j)) - fpi(1)],...
                                     'kx','MarkerSize',10)
                             end
                             prej = j;
@@ -156,36 +159,10 @@ else
                 end
             elseif not(isempty(pp)) && not(isempty(pp{i}))
                 hold on
-                for h = 1:length(pp{i}{1})
-                    for j = 1:length(pp{i}{1}{h})
-                        plot(fpi(k),fpi(pp{i}{1}{h}(j)) - fpi(1), ...
+                for k = 1:length(pp{i}{1})
+                    for j = 1:length(pp{i}{1}{k})
+                        plot(fpi(k),fpi(pp{i}{1}{k}(j)) - fpi(1), ...
                             'w+','MarkerSize',10)
-                    end
-                end
-            end
-            if ~isempty(cl) && ~isempty(cl{i})
-                hold on
-                sims = cl{i}{1}(:);
-                sims(isnan(sims)) = [];
-                minsim = min(sims);
-                ransim = max(sims)-minsim;
-                sim = (cl{i}{1}-minsim)/ransim;
-                for h = 1:size(cl{1}{1},1)
-                    for j = 1:size(cl{1}{1},2)
-                        if ~isnan(cl{1}{1}(h,j))
-                            x = fpi(h) - fpi(1)/2;
-                            y = x + fpi(j + 1);
-                            col = sim(h,j);
-                            wid = 1; %sim(h,j)^.05*.8 + .1;
-                            line([x y],[x x],...
-                                 'Color',[col col col],'LineWidth',wid)
-                            line([x y],[y y],...
-                                 'Color',[col col col],'LineWidth',wid)
-                            line([x x],[x y],...
-                                 'Color',[col col col],'LineWidth',wid)
-                            line([y y],[x y],...
-                                 'Color',[col col col],'LineWidth',wid)
-                        end
                     end
                 end
             end
@@ -213,9 +190,6 @@ else
             end
         end
         fig = get(0,'CurrentFigure');
-        if isa(fig,'matlab.ui.Figure')
-            fig = fig.Number;
-        end
         disp(['The ',t,' related to file ',nam{i},' is displayed in Figure ',num2str(fig),'.']);
     end
 end

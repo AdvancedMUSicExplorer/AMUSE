@@ -210,12 +210,10 @@ public class ProcessingMethodsPanel extends javax.swing.JPanel implements
 		leftLower.add(matrixToVectorPanel, BorderLayout.CENTER);
 		globalSettingsPanel.add(new JLabel("Window Size:"));
 		classificationWindowSize = new IntegerTextField("5000");
-		classificationWindowSize.setToolTipText("Use -1 to process whole track as one window");
 		globalSettingsPanel.add(classificationWindowSize,
 				"gap rel, w 1.5cm:max, growx");
 		globalSettingsPanel.add(new JLabel("Step Size:"), "gap unrel");
 		classificationWindowStepSize = new IntegerTextField("2500");
-		classificationWindowStepSize.setToolTipText("Use -1 to process whole track as one window");
 		globalSettingsPanel.add(classificationWindowStepSize,
 				"gap rel, w 1.5cm:max, growx, wrap");
 		globalSettingsPanel.add(new JLabel("Unit:"), "");

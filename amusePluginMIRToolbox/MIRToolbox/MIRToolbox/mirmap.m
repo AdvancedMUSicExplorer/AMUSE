@@ -18,21 +18,9 @@ crosscor_thres = .6;
 
 dist = str2func(dist);
 
-try
-    predics = import(predics_ref);
-catch err
-    mirerror('MIRMAP',['Cannot load properly the predictors file ' ...
-                       predics_ref '. Check MIRtoolbox User''s Manual']);
-end    
+predics = import(predics_ref);
+ratings = import(ratings_ref);
 
-try
-    ratings = import(ratings_ref);
-catch err
-    display(err.message)
-    mirerror('MIRMAP',['Cannot load properly the ratings file ' ...
-                       ratings_ref '. Check MIRtoolbox User''s Manual']);
-end  
-    
 predics  = normalize(predics,dist,alpha,delta,'predictions',predics_ref);
 if isempty(predics.data)
     res = [];

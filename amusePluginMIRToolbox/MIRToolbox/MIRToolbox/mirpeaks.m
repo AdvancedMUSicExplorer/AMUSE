@@ -126,7 +126,7 @@ function varargout = mirpeaks(orig,varargin)
         cthr.type = 'Integer';
         cthr.default = .1;
     option.cthr = cthr;
-    
+        
         first.key = 'SelectFirst';
         first.type = 'Integer';
         first.default = 0;
@@ -146,7 +146,7 @@ function varargout = mirpeaks(orig,varargin)
         graph.key = 'Graph';
         graph.type = 'Integer';
         graph.default = 0;
-        graph.keydefault = 1; %.25;
+        graph.keydefault = .25;
     option.graph = graph;
         
         interpol.key = 'Interpol';
@@ -189,15 +189,9 @@ function varargout = mirpeaks(orig,varargin)
         
         normal.key = 'Normalize';
         normal.type = 'String';
-        normal.choice = {'Local','Global','No',0};
+        normal.choice = {'Local','Global'};
         normal.default = 'Global';
     option.normal = normal;
-    
-        localfactor.key = 'LocalFactor';
-        localfactor.type = 'Integer';
-        localfactor.default = 0;
-        localfactor.keydefault = .8;
-    option.localfactor = localfactor;
 
         extract.key = 'Extract';
         extract.type = 'Boolean';
@@ -215,27 +209,10 @@ function varargout = mirpeaks(orig,varargin)
         delta.keydefault = Inf;
     option.delta = delta;
     
-        harmo.key = 'Harmonic';
-        harmo.type = 'Integer';
-        harmo.default = 0;
-        harmo.keydefault = Inf;
-    option.harmo = harmo;
-    
-        maxpeak.key = 'MaxPeak';
-        maxpeak.type = 'Integer';
-        maxpeak.default = inf;
-    option.maxpeak = maxpeak;
-    
         mem.key = 'TrackMem';
         mem.type = 'Integer';
-        mem.default = 0;
-        mem.keydefault = Inf;
+        mem.default = Inf;
     option.mem = mem;
-    
-        fuse.key = 'Fuse';
-        fuse.type = 'Boolean';
-        fuse.default = 0;
-    option.fuse = fuse;
 
         shorttrackthresh.key = 'CollapseTracks';
         shorttrackthresh.type = 'Integer';
@@ -246,11 +223,6 @@ function varargout = mirpeaks(orig,varargin)
         scan.key = 'ScanForward'; % specific to mironsets(..., 'Klapuri99')
         scan.default = [];
     option.scan = scan;
-    
-%         highest.key = 'Highest';
-%         highest.type = 'Boolean';
-%         highest.default = 0;
-%     option.highest = highest;
     
 specif.option = option;
 
@@ -343,22 +315,12 @@ else
         t = get(x,'Pos');
     end
 end
-
-interpol = get(x,'Interpolable') && not(isempty(option.interpol)) && ...
-    ((isnumeric(option.interpol) && option.interpol) || ...
-     (ischar(option.interpol) && not(strcmpi(option.interpol,'No')) && ...
-      not(strcmpi(option.interpol,'Off'))));
-                
 pp = cell(1,length(d));
 pv = cell(1,length(d));
 pm = cell(1,length(d));
 ppp = cell(1,length(d));
 ppv = cell(1,length(d));
 tp = cell(1,length(d));
-if interpol
-    tpp = cell(1,length(d));
-    tpv = cell(1,length(d));
-end
 tv = cell(1,length(d));
 
 if isnan(option.thr)
@@ -383,6 +345,10 @@ if not(isempty(option.scan))
     pscan = get(option.scan,'PeakPos');
 end
 
+interpol = get(x,'Interpolable') && not(isempty(option.interpol)) && ...
+                ((isnumeric(option.interpol) && option.interpol) || ...
+                 (ischar(option.interpol) && not(strcmpi(option.interpol,'No')) && not(strcmpi(option.interpol,'Off'))));
+                
 for i = 1:length(d) % For each audio file,...
     di = d{i};
     if cha == 1
@@ -396,39 +362,13 @@ for i = 1:length(d) % For each audio file,...
             ti = {ti};
         end
     end
-    
-    if option.vall
-        for h = 1:length(di)
-            di{h} = -di{h};
-        end
-    end
-
-    if strcmpi(option.normal,'Global')
-        % Normalizing across segments
-        madi = zeros(1,length(di));
-        midi = zeros(1,length(di));
-        for h = 1:length(di)
-            if isempty(di{h})
-                madi(h) = -Inf;
-                midi(h) = Inf;
-            else
-                madi(h) = max(max(max(max(di{h},[],1),[],2),[],3),[],4);
-                midi(h) = min(min(min(min(di{h},[],1),[],2),[],3),[],4);
-            end
-        end
-        mad = max(madi);
-        mid = min(midi);
-    end
-        
     for h = 1:length(di)    % For each segment,...
-        dhu = di{h}; % This copy of the data is kept untransformed and used for output.
-        if isempty(dhu)
-            continue
+        dh0 = di{h};
+        if option.vall
+            dh0 = -dh0;
         end
-        dht = dhu; % This copy of the data will be transformed (normalization, etc.)
-        
-        [nl0 nc np nd0] = size(dhu);
-        
+        dh2 = dh0;
+        [nl0 nc np nd0] = size(dh0);
         if cha == 1
             if iscell(ti)
                 %% problem here!!!
@@ -440,24 +380,13 @@ for i = 1:length(d) % For each audio file,...
             if iscell(th)  % Non-numerical abscissae are transformed into numerical ones. 
                 th = repmat((1:size(th,1))',[1,nc,np]);
             else
-                if 0 %size(th,2) == 1 && nc>1
-                    error('Problematic case. New code below to be used.');
-                    th = repmat(th,[1,nc,1]);
-                end
                 if size(th,3)<np
                     th = repmat(th,[1,1,np]);
                 end
             end
         end
-        
-        if strcmpi(option.normal,'Global')
-            % Normalizing across segments
-            dht = (dht - repmat(mid,[nl0 nc np nd0]))./... 
-                  repmat(mad-mid,[nl0 nc np nd0]);
-        end
-        
         if option.c    % If a prefered region is specified, the data is amplified accordingly
-            dht = dht.*exp(-(th-option.c(1)).^2/2/option.c(2)^2)...
+            dh0 = dh0.*exp(-(th-option.c(1)).^2/2/option.c(2)^2)...
                                     /option.c(2)/sqrt(2*pi)/2;
         end
 
@@ -466,89 +395,72 @@ for i = 1:length(d) % For each audio file,...
         state = warning('query','MATLAB:divideByZero');
         warning('off','MATLAB:divideByZero');
         
-        % Why is the following commented out??
-%         for l = 1:nd0
-%             mht = shiftdim(max(dht(:,:,:,l)),1);
-%             [low1,low2] = find(mht<option.thr);
-%             dht(:,low1,low2,l) = 0;
-%         end
+        % Let's first normalize all frames globally:
+        dh0 = (dh0-repmat(min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]))./...
+            repmat(max(max(max(dh0,[],1),[],2),[],4)...
+                  -min(min(min(dh0,[],1),[],2),[],4),[nl0 nc 1 nd0]);
+        for l = 1:nd0 
+            [unused lowc] = find(max(dh0(:,:,:,l))<option.thr);
+            dh0(:,lowc,1,l) = 0;
+        end
         
         if strcmpi(option.normal,'Local')
-            if option.localfactor
-                maxl = 0;
-                for l = 1:size(dht,2)
-                    maxl = max(maxl*option.localfactor,...
-                               max(max(max(dht(:,l,:,:),[],1),[],3),[],4));
-                    dht(:,l,:,:) = dht(:,l,:,:) / maxl;
-                end
-            else
-                % Normalizing each frame separately:
-                dht = (dht-repmat(min(min(dht,[],1),[],4),[nl0 1 1 nd0]))./... 
-                    repmat(max(max(dht,[],1),[],4)...
-                          -min(min(dht,[],1),[],4),[nl0 1 1 nd0]);
-            end
+            % Normalizing each frame separately:
+            dh0 = (dh0-repmat(min(min(dh0,[],1),[],4),[nl0 1 1 nd0]))./... 
+                repmat(max(max(dh0,[],1),[],4)...
+                      -min(min(dh0,[],1),[],4),[nl0 1 1 nd0]);
         end
         warning(state.state,'MATLAB:divideByZero');
 
-        szth = size(th);
-        szth(1) = 1;
         if option.nobegin
-            dht = [Inf(1,nc,np,nd0);dht];   
+            dh0 = [Inf(1,nc,np,nd0);dh0];   
             % This infinite value at the beginning
             % prevents the selection of the first sample of data
-            dhu = [Inf(1,nc,np,nd0);dhu];
-            th = [NaN(szth);th];
+            dh2 = [Inf(1,nc,np,nd0);dh2];
+            th = [NaN(1,nc,np,1);th];
         else
-            dht = [-Inf(1,nc,np,nd0);dht];
+            dh0 = [-Inf(1,nc,np,nd0);dh0];
             % This infinite negative value at the beginning
             % ensures the selection of the first sample of data
-            dhu = [-Inf(1,nc,np,nd0);dhu];
-            th = [NaN(szth);th];
+            dh2 = [-Inf(1,nc,np,nd0);dh2];
+            th = [NaN(1,nc,np,1);th];
         end
         if option.noend
-            dht = [dht;Inf(1,nc,np,nd0)];
+            dh0 = [dh0;Inf(1,nc,np,nd0)];
             % idem for the last sample of data
-            dhu = [dhu;Inf(1,nc,np,nd0)];
-            th = [th;NaN(szth)];
+            dh2 = [dh2;Inf(1,nc,np,nd0)];
+            th = [th;NaN(1,nc,np,1)];
         else
-            dht = [dht;-Inf(1,nc,np,nd0)];
-            dhu = [dhu;-Inf(1,nc,np,nd0)];
-            th = [th;NaN(szth)];
+            dh0 = [dh0;-Inf(1,nc,np,nd0)];
+            dh2 = [dh2;-Inf(1,nc,np,nd0)];
+            th = [th;NaN(1,nc,np,1)];
         end
         nl0 = nl0+2;
 
         % Rearrange the 4th dimension (if used) into the 1st one.
         nl = nl0*nd0;
-        dht4 = zeros(nl,nc,np);
-        dhu4 = zeros(nl,nc,np);
-        th2 = zeros(size(th));
+        dh = zeros(nl,nc,np);
+        dh3 = zeros(nl,nc,np);
+        th2 = zeros(nl,nc,np);
         for l = 1:nd0
-            dhu4((l-1)*nl0+(1:nl0)',:,:) = dhu(:,:,:,l);
-            dht4((l-1)*nl0+(1:nl0)',:,:) = dht(:,:,:,l);
+            dh((l-1)*nl0+(1:nl0)',:,:) = dh0(:,:,:,l);
+            dh3((l-1)*nl0+(1:nl0)',:,:) = dh2(:,:,:,l);
             th2((l-1)*nl0+(1:nl0)',:,:) = th(:,:,:);
         end
-        dht = dht4;
-        dhu = dhu4;
         
         th = th2; % The X-abscissa
 
-        ddh = diff(dht);
+        ddh = diff(dh);
         % Let's find the local maxima
         for l = 1:np
-            dl = dht(2:end-1,:,l);
+            dl = dh(2:end-1,:,l);
             for k = 1:nc
                 dk = dl(:,k);
-                if isequal(option.normal, 0) || strcmpi(option.normal,'No')
-                    mx{1,k,l} = find(and(dk >= option.thr,...     
-                                         and(ddh(1:(end-1),k,l) > 0, ...
-                                             ddh(2:end,k,l) <= 0)))+1;
-                else
-                    mx{1,k,l} = find(and(and(dk >= option.cthr, ...
-                                             dk >= option.thr),...     
-                                             ... dk <= option.lthr)),
-                                         and(ddh(1:(end-1),k,l) > 0, ...
-                                             ddh(2:end,k,l) <= 0)))+1;
-                end
+                mx{1,k,l} = find(and(and(dk >= option.cthr, ...
+                                         dk >= option.thr),...     
+                                         ... dk <= option.lthr)),
+                                     and(ddh(1:(end-1),k,l) > 0, ...
+                                         ddh(2:end,k,l) <= 0)))+1;
             end
         end
         if option.cthr
@@ -558,7 +470,7 @@ for i = 1:length(d) % For each audio file,...
                     mxk = mx{1,k,l};
                     if not(isempty(mxk))
                         wait = 0;
-                        if (length(mxk)>5000) && mirwaitbar
+                        if length(mxk)>5000
                             wait = waitbar(0,['Selecting peaks... (0 out of 0)']);
                         end
                         %if option.m < Inf
@@ -569,18 +481,18 @@ for i = 1:length(d) % For each audio file,...
                         mxkj = mxk(j); % The current peak
                         jj = j+1;
                         bufmin = Inf;
-                        bufmax = dht(mxkj,k,l);
-                        oldbufmin = min(dht(1:mxk(1)-1,k,l));
+                        bufmax = dh(mxkj,k,l);
+                        oldbufmin = min(dh(1:mxk(1)-1,k,l));
                         while jj <= length(mxk)
-                            if isa(wait,'matlab.ui.Figure') && not(mod(jj,5000))
+                            if wait && not(mod(jj,5000))
                                 waitbar(jj/length(mxk),wait,['Selecting peaks... (',num2str(length(finalmxk)),' out of ',num2str(jj),')']);
                             end
                             bufmin = min(bufmin, ...
-                                min(dht(mxk(jj-1)+1:mxk(jj)-1,k,l)));
+                                min(dh(mxk(jj-1)+1:mxk(jj)-1,k,l)));
                             if bufmax - bufmin < option.cthr
                                 % There is no contrastive notch
-                                if dht(mxk(jj),k,l) > bufmax && ...
-                                        (dht(mxk(jj),k,l) - bufmax > option.first ...
+                                if dh(mxk(jj),k,l) > bufmax && ...
+                                        (dh(mxk(jj),k,l) - bufmax > option.first ...
                                         || (bufmax - oldbufmin < option.cthr))
                                     % If the new peak is significantly
                                     % higher than the previous one,
@@ -588,11 +500,11 @@ for i = 1:length(d) % For each audio file,...
                                     % position
                                     j = jj;
                                     mxkj = mxk(j); % The current peak
-                                    bufmax = dht(mxkj,k,l);
+                                    bufmax = dh(mxkj,k,l);
                                     oldbufmin = min(oldbufmin,bufmin);
                                     bufmin = Inf;
-                                elseif dht(mxk(jj),k,l) - bufmax <= option.first
-                                    bufmax = max(bufmax,dht(mxk(jj),k,l));
+                                elseif dh(mxk(jj),k,l) - bufmax <= option.first
+                                    bufmax = max(bufmax,dh(mxk(jj),k,l));
                                     oldbufmin = min(oldbufmin,bufmin);
                                 end
                             else
@@ -608,7 +520,7 @@ for i = 1:length(d) % For each audio file,...
                                     finalmxk(end+1) = mxkj;
                                     oldbufmin = bufmin;
                                 end
-                                bufmax = dht(mxk(jj),k,l);
+                                bufmax = dh(mxk(jj),k,l);
                                 j = jj;
                                 mxkj = mxk(j); % The current peak
                                 bufmin = Inf;
@@ -616,11 +528,11 @@ for i = 1:length(d) % For each audio file,...
                             jj = jj+1;
                         end
                         if bufmax - oldbufmin >= option.cthr && ...
-                                bufmax - min(dht(mxk(j)+1:end,k,l)) >= option.cthr
+                                bufmax - min(dh(mxk(j)+1:end,k,l)) >= option.cthr
                             % The last peak candidate is OK and stored
                             finalmxk(end+1) = mxk(j);
                         end
-                        if isa(wait,'matlab.ui.Figure')
+                        if wait
                             waitbar(1,wait);
                             close(wait);
                             drawnow
@@ -642,11 +554,11 @@ for i = 1:length(d) % For each audio file,...
                             % current seed
                         fmx = mx{1,k,l}(fmx);
                         if jj<lp && (isempty(fmx) || fmx>=pscankl(jj+1))
-                            [unused fmx] = max(dht(pscankl(jj):...
+                            [unused fmx] = max(dh(pscankl(jj):...
                                                   pscankl(jj+1)-1,k,l));
                             fmx = fmx+pscankl(jj)-1;
                         elseif jj==lp && isempty(fmx)
-                            [unused fmx] = max(dht(pscankl(jj):end,k,l));
+                            [unused fmx] = max(dh(pscankl(jj):end,k,l));
                             fmx = fmx+pscankl(jj)-1;
                         end
                         mxkl = [mxkl fmx];
@@ -663,7 +575,7 @@ for i = 1:length(d) % For each audio file,...
             end
             for l = 1:np
                 for k = 1:nc
-                    [unused ind] = sort(dht(mx{1,k,l}),'descend');
+                    [unused ind] = sort(dh(mx{1,k,l}),'descend');
                     mxlk = mx{1,k,l}(ind);
                     del = [];
                     j = 1;
@@ -705,220 +617,24 @@ for i = 1:length(d) % For each audio file,...
                 end
             end
         end
-        if option.harmo
-            tol = .15;
-            minamp = .4;
-            tp{i}{h} = cell(1,np);
-            %if interpol
-                tpp{i}{h} = cell(1,np);
-                tpv{i}{h} = cell(1,np);
-            %end
-            for l = 1:np
-                mxl = NaN(1,nc);
-                txl = NaN(1,nc);
-                myl = zeros(1,nc);
-                segm = 0;
-                current = [];
-                for k = 1:nc
-                    mxk = mx{1,k,l};        
-                    txk = th(mxk,k);
-                    myk = dht(mxk,k);
-                    
-                    ff = find(txk < option.maxpeak);
-                    txkm = txk(ff);
-                    mykm = myk(ff);
-                    
-                    if isempty(txkm)
-                        segm = 0;
-                        current = [];
-                        continue
-                    end
-                    
-                    [maxk idx] = max(mykm);
-                    
-                    if maxk < minamp
-                        segm = 0;
-                        current = [];
-                        continue
-                    end
-                    
-                    if idx > 1
-                        if k > 1 && ~isempty(find(txl(:,k-1)))
-                            [unused r] = min(abs(txk(idx)-txl(:,k-1)));
-                            if r > 1
-                                [unused ik] = min(abs(txk(idx)/r - th(:,k)));
-                                if dht(ik,k) / maxk > .8
-                                    mxl(1,k) = ik;
-                                    txl(1,k) = th(ik,k);
-                                    myl(1,k) = dht(ik,k);
-                                    idx = 0;
-                                    current = th(ik,k);
-                                end
-                            end
-                        end
-                        if idx
-                            idxr = [];
-                            r = [];
-                            if k > 1 && ~isempty(find(txl(:,k-1)))
-                                [unused r] = min(abs(txk-txl(1,k-1)));
-                            end
-                            for n = 1:idx-1
-                                if myk(n)/myk(idx) < .5
-                                    continue
-                                end
-                                if n == r
-                                    idx = n;
-                                    idr = [];
-                                    break
-                                end
-                                harmo = mod(txk(idx)/txk(n),1);
-                                if round(txk(idx)/txk(n)) > 1 && ...
-                                        (harmo < tol || harmo > 1-tol)
-                                    idxr(end+1) = n;
-                                end
-                            end
-                            if ~isempty(idxr)
-                                [unused best] = max(myl(idxr));
-                                idx = idxr(best);
-                            end
-                        end
-                    end
-                    
-%                     if ~isempty(constant)
-%                         [unused r] = min(abs(txk - constant.t));
-%                         if myk(r) / maxk < 1
-%                             constant = [];
-%                         else
-%                             mat = max(txk(r),constant.t);
-%                             mit = min(txk(r),constant.t);
-%                             if mat/mit > 1.2
-%                                 constant = [];
-%                             else
-%                                 constant.t = txk(r);
-%                             end
-%                         end
-%                     end
-%                     if isempty(constant)
-%                         constant.k = k;
-%                         constant.t = txk(idx);
-%                     elseif ~isnan(txl(1,k-1))
-%                         [unused r] = min(abs(txk-txl(1,k-1)));
-%                         if r == idx 
-%                             if r > 1 && txk(r-1)/txk(r) > .7 && mxk(r-1) > mxk(r) / 2
-% %                                 1
-%                             elseif r < length(txk) && txk(r)/txk(r+1) > .7 && mxk(r+1) > mxk(r) / 2
-% %                                 1
-%                             end
-%                         end
-%                     end
-
-                    %idx = find(myk>.7);
-                    %if isempty(idx)
-                    %    continue
-                    %end
-                    
-                    %if k == 1
-                    %    idx = idx(1);
-                    %else
-                    %    [unused c] = min(abs(txk(idx)-txl(1,k-1)));
-                    %    idx = idx(c);
-                    %end
-                    
-                    if idx
-                        if ~segm
-                            segm = k;
-                        elseif 1
-%                             dist = abs(txk - txl(1,k-1));
-%                             [unused idx2] = min(dist);
-%                             if idx2 ~= idx 
-%                                 mat = max(txk(idx2),txl(1,k-1));
-%                                 mit = min(txk(idx2),txl(1,k-1));
-%                                 if mat/mit<1.025
-%                                     idx = idx2;
-%                                 end
-%                             end
-                            mat = max(txl(1,k-1),txk(idx));
-                            mit = min(txl(1,k-1),txk(idx));
-                            if mat/mit > 1.2
-%                                 if txk(idx) < txl(1,k-1) %k - segm < 2
-%                                     mxl(:,segm:k-1) = NaN;
-%                                     txl(:,segm:k-1) = NaN;
-%                                     myl(:,segm:k-1) = 0;
-%                                 else
-%                                     
-%                                 end
-                                segm = k;
-                            end
-                        end
-
-                        %ser = cell(1,length(mxk));
-                        %for n1 = 1:length(mxk)
-                        %    ser{n1} = 1;
-                        %    for n2 = n1+1:length(mxk)
-                        %        harmo = mod(txk(n2)/txk(n1),1);
-                        %        rk = round(txk(n2)/txk(n1));
-                        %        if rk > 1 && ~ismember(rk,ser{n1}) && ...
-                        %                harmo <.2 || harmo > .8
-                        %            ser{n1}(end+1) = rk;
-                        %        end
-                        %    end
-                        %end
-                        %ser;
-
-                        mxl(1,k) = mxk(idx)-1;
-                        txl(1,k) = txk(idx);
-                        myl(1,k) = myk(idx);
-                        current = txk(idx);
-                    end
-
-                    for n = 1:length(mxk)
-                        if mxk(n) <= mxl(1,k)
-                            continue
-                        end
-                        harmo = mod(txk(n)/txl(1,k),1);
-                        rk = round(txk(n)/txl(1,k));
-                        if ((size(mxl,1) < rk || myk(n) > myl(rk,k)) && ...
-                                harmo < tol || harmo > 1-tol) && ...
-                                rk <= option.harmo
-                            if rk > size(mxl,1)
-                                mxl(size(mxl)+1:rk,:) = NaN;
-                                txl(size(mxl):rk,:) = NaN;
-                                myl(size(mxl):rk,:) = 0;
-                            end
-                            mxl(rk,k) = mxk(n);
-                            txl(rk,k) = txk(n);
-                            myl(rk,k) = myk(n);
-                        end
-                    end
-                    
-%                     if size(myl,1) > 2 && isnan(myl(2,k))
-%                         mxl(:,k) = NaN;
-%                         txl(:,k) = NaN;
-%                         myl(:,k) = NaN;
-%                     end
-                end
-                tp{i}{h}{l} = mxl;
-                tpp{i}{h}{l} = txl;
-                tv{i}{h}{l} = myl;
-                tpv{i}{h}{l} = myl;
-            end
-        elseif option.delta % Peak tracking
+        if option.delta % Peak tracking
             tp{i}{h} = cell(1,np);
             if interpol
                 tpp{i}{h} = cell(1,np);
                 tpv{i}{h} = cell(1,np);
             end
             for l = 1:np
+                
                 % mxl will be the resulting track position matrix
                 % and myl the related track amplitude
                 % In the first frame, tracks can be identified to peaks.
                 mxl = mx{1,1,l}(:)-1;        
-                myl = dht(mx{1,1,l}(:),k,l); 
-                                
+                myl = dh(mx{1,1,l}(:),k,l); 
+                
                 % To each peak is associated the related track ID
                 tr2 = 1:length(mx{1,1,l});
                 
-                grvy = []; % The graveyard.
+                grvy = []; % The graveyard...
                 
                 wait = 0;
                 if nc-1>500
@@ -941,8 +657,7 @@ for i = 1:length(d) % For each audio file,...
                     mxk2 = mx{1,k+1,l}; % w^{k+1}
                     thk1 = th(mxk1,k,l);
                     thk2 = th(mxk2,k,l);
-                    matched = zeros(size(thk2));
-                    myk2 = dht(mx{1,k+1,l},k,l); % amplitude
+                    myk2 = dh(mx{1,k+1,l},k,l); % amplitude
                     tr1 = tr2;
                     tr2 = NaN(1,length(mxk2));
                     
@@ -958,68 +673,54 @@ for i = 1:length(d) % For each audio file,...
                             tr = tr1(n); % Current track.
 
                             if not(isnan(tr))
-                                % track currently active
+                                % still alive...
 
                                 % Step 1 in Mc Aulay & Quatieri
                                 [int m] = min(abs(thk2-thk1(n)));
-                                % Finding w^{k+1} closest to current w^k
-                                
                                 if isinf(int) || int > option.delta
                                     % all w^{k+1} outside matching interval:
-                                        % partial becomes inactive
+                                        % partial becomes dead
                                     mxl(tr,k+1) = mxl(tr,k);
                                     myl(tr,k+1) = 0;
                                     grvy = [grvy; tr k]; % added to the graveyard
                                 else
-                                    [best mm] = min(abs(thk2(m)-th(mxk1,k,l)));
-                                    % the mmth peak in frame k is the closest to w^{k+1}
+                                    % closest w^{k+1} is tentatively selected:
+                                        % candidate match
 
-                                    % Let's first test whether candidate
-                                    % match w^{k+1} is particularly closed to an inactive track. (Lartillot)
-                                    if isempty(grvy)
-                                        testprev = 0;
-                                    else
-                                        [best2 mm2] = min(abs(thk2(m)-th(mxl(grvy(:,1),k),k,l)));
-                                        if best2 < best
-                                            oldk = grvy(mm2,2);
-                                            if mxl(tr,oldk)
-                                                oldt1 = th(mxl(grvy(mm2,1),oldk),oldk,l);
-                                                oldt2 = th(mxl(tr,oldk),oldk,l);
-                                                dif1 = abs(oldt1-thk2(m));
-                                                dif2 = abs(oldt2-thk2(m));
-                                                if dif1 < dif2
-                                                    testprev = 1;
-                                                end
-                                            else
-                                                testprev = 1;
-                                            end
-                                        else
-                                            testprev = 0;
-                                        end
-                                    end
-                                    if testprev
-                                        % Yes, candidate match w^{k+1} is particularly closed to an inactive track. (Lartillot)
-                                        otr = grvy(mm2,1);
-                                        mxl(otr,k+1) = mxk2(m)-1;
-                                        myl(otr,k+1) = myk2(m);
-                                        tr2(m) = otr;
-                                        thk2(m) = Inf;  % selected w^{k+1} is eliminated from further consideration
-                                        matched(m) = 1;
-                                        grvy(mm2,:) = [];
-                                        
-                                    else
-                                        % Step 2 in Mc Aulay & Quatieri
-                                        if option.fuse || mm == n
-                                            % candidate match w^{k+1} is not closer to any remaining w^k:
+                                    % Step 2 in Mc Aulay & Quatieri
+                                    [best mm] = min(abs(thk2(m)-th(mx{1,k,l})));
+                                    if mm == n
+                                        % no better match to remaining w^k:
                                             % definite match
-                                            mxl(tr,k+1) = mxk2(m)-1;
-                                            myl(tr,k+1) = myk2(m);
-                                            tr2(m) = tr;
-                                            matched(m) = 1;
-                                            if ~option.fuse
-                                                thk1(n) = -Inf; % selected w^k is eliminated from further consideration
-                                                thk2(m) = Inf;  % selected w^{k+1} is eliminated as well
-                                            end
+                                        mxl(tr,k+1) = mxk2(m)-1;
+                                        myl(tr,k+1) = myk2(m);
+                                        tr2(m) = tr;
+                                        thk1(n) = -Inf; % selected w^k is eliminated from further consideration
+                                        thk2(m) = Inf;  % selected w^{k+1} is eliminated as well
+                                        if not(isempty(grvy))
+                                            zz = find ((mxl(grvy(:,1),k) >= mxl(tr,k) & ...
+                                                        mxl(grvy(:,1),k) <= mxl(tr,k+1)) | ...
+                                                       (mxl(grvy(:,1),k) <= mxl(tr,k) & ...
+                                                        mxl(grvy(:,1),k) >= mxl(tr,k+1)));
+                                            grvy(zz,:) = [];
+                                        end
+                                    else
+                                        % let's look at adjacent lower w^{k+1}...
+                                        [int mmm] = min(abs(thk2(1:m)-thk1(n)));
+                                        if int > best || ... % New condition added (Lartillot 16.4.2010)
+                                                isinf(int) || ... % Conditions proposed in Mc Aulay & Quatieri (all w^{k+1} below matching interval)
+                                                int > option.delta
+                                            % partial becomes dead
+                                            mxl(tr,k+1) = mxl(tr,k);
+                                            myl(tr,k+1) = 0;
+                                            grvy = [grvy; tr k]; % added to the graveyard
+                                        else
+                                            % definite match
+                                            mxl(tr,k+1) = mxk2(mmm)-1;
+                                            myl(tr,k+1) = myk2(mmm);
+                                            tr2(mmm) = tr;
+                                            thk1(n) = -Inf;     % selected w^k is eliminated from further consideration
+                                            thk2(mmm) = Inf;    % selected w^{k+1} is eliminated as well
                                             if not(isempty(grvy))
                                                 zz = find ((mxl(grvy(:,1),k) >= mxl(tr,k) & ...
                                                             mxl(grvy(:,1),k) <= mxl(tr,k+1)) | ...
@@ -1028,66 +729,34 @@ for i = 1:length(d) % For each audio file,...
                                                 grvy(zz,:) = [];
                                             end
                                         end
-                                        
-                                        if ~option.fuse && mm ~= n
-                                            % candidate match w^{k+1} is closer to another w^k
-                                            
-                                            % let's look at adjacent lower w^{k+1}...
-                                            [int mmm] = min(abs(thk2(1:m)-thk1(n)));
-                                            if int > best || ... % New condition added (Lartillot 16.4.2010)
-                                                    isinf(int) || ... % Conditions proposed in Mc Aulay & Quatieri (all w^{k+1} below matching interval)
-                                                    int > option.delta
-                                                % no other suitable candidate match w^{k+1} found
-                                                % partial becomes inactive
-                                                mxl(tr,k+1) = mxl(tr,k);
-                                                myl(tr,k+1) = 0;
-                                                grvy = [grvy; tr k]; % added to the graveyard
-                                            else
-                                                
-                                                % definite match
-                                                mxl(tr,k+1) = mxk2(mmm)-1;
-                                                myl(tr,k+1) = myk2(mmm);
-                                                tr2(mmm) = tr;
-                                                thk1(n) = -Inf;     % selected w^k is eliminated from further consideration
-                                                thk2(mmm) = Inf;    % selected w^{k+1} is eliminated as well
-                                                matched(mmm) = 1;
-                                                if not(isempty(grvy))
-                                                    zz = find ((mxl(grvy(:,1),k) >= mxl(tr,k) & ...
-                                                                mxl(grvy(:,1),k) <= mxl(tr,k+1)) | ...
-                                                               (mxl(grvy(:,1),k) <= mxl(tr,k) & ...
-                                                                mxl(grvy(:,1),k) >= mxl(tr,k+1)));
-                                                    grvy(zz,:) = [];
-                                                end
-                                            end
-                                        end
                                     end
                                 end
                             end
                         end
                     end
                     
-                    
                     % Step 3 in Mc Aulay & Quatieri
                     for m = 1:length(mxk2)
-                        if ~matched(m)
+                        if not(isinf(thk2(m)))
                             % unmatched w^{k+1}
+                            
                             if isempty(grvy)
                                 int = [];
                             else
-                                % Let's try to reuse an inactive track from the
+                                % Let's try to reuse a zombie from the
                                 % graveyard (Lartillot).
                                 [int z] = min(abs(th(mxl(grvy(:,1),k+1)+1,k,l)-thk2(m)));
                             end
                             if isempty(int) || int > option.delta ...
                                     || int > min(abs(th(mxl(:,k+1)+1,k,l)-thk2(m)))
-                                % No suitable inactive track.
+                                % No suitable zombie.
                                 % birth of a new partial (Mc Aulay &
                                 % Quatieri)
                                 mxl = [mxl;zeros(1,k+1)];
                                 tr = size(mxl,1);
                                 mxl(tr,k) = mxk2(m)-1;
                             else
-                                % Suitable inactive track found, turned active. (Lartillot)
+                                % Suitable zombie found. (Lartillot)
                                 tr = grvy(z,1);
                                 grvy(z,:) = [];
                             end
@@ -1135,33 +804,28 @@ for i = 1:length(d) % For each audio file,...
                 
                 tp{i}{h}{l} = mxl;
                 tv{i}{h}{l} = myl;
-
+                
                 if interpol  
                     tpv{i}{h}{l} = zeros(size(mxl));
                     tpp{i}{h}{l} = zeros(size(mxl));
                     for k = 1:size(mxl,2)
                         for j = 1:size(mxl,1)
-                            if myl(j,k)
-                                mj = mxl(j,k);
-                                if mj>2 && mj<size(dhu,1)-1
-                                    % More precise peak position
-                                    y0 = dhu(mj,k,l);
-                                    ym = dhu(mj-1,k,l);
-                                    yp = dhu(mj+1,k,l);
-                                    p = (yp-ym)/(2*(2*y0-yp-ym));
-                                    tpv{i}{h}{l}(j,k) = y0 - 0.25*(ym-yp)*p;
-                                    if p >= 0
-                                        tpp{i}{h}{l}(j,k) = (1-p)*th(mj,k,l)+p*th(mj+1,k,l);
-                                    elseif p < 0
-                                        tpp{i}{h}{l}(j,k) = (1+p)*th(mj,k,l)-p*th(mj-1,k,l);
-                                    end
-                                elseif mj
-                                    tpv{i}{h}{l}(j,k) = dhu(mj,k,l);
-                                    tpp{i}{h}{l}(j,k) = th(mj,k,l);
+                            mj = mxl(j,k);
+                            if mj>2 && mj<size(dh3,1)-1
+                                % More precise peak position
+                                y0 = dh3(mj,k,l);
+                                ym = dh3(mj-1,k,l);
+                                yp = dh3(mj+1,k,l);
+                                p = (yp-ym)/(2*(2*y0-yp-ym));
+                                tpv{i}{h}{l}(j,k) = y0 - 0.25*(ym-yp)*p;
+                                if p >= 0
+                                    tpp{i}{h}{l}(j,k) = (1-p)*th(mj,k,l)+p*th(mj+1,k,l);
+                                elseif p < 0
+                                    tpp{i}{h}{l}(j,k) = (1+p)*th(mj,k,l)-p*th(mj-1,k,l);
                                 end
-                            else
-                                tpv{i}{h}{l}(j,k) = 0;
-                                tpp{i}{h}{l}(j,k) = NaN;
+                            elseif mj
+                                tpv{i}{h}{l}(j,k) = dh3(mj,k,l);
+                                tpp{i}{h}{l}(j,k) = th(mj,k,l);
                             end
                         end
                     end
@@ -1180,7 +844,7 @@ for i = 1:length(d) % For each audio file,...
             scob{i}{h} = [];
                 % Score related to each branch
             for l = 1:np
-                wait =0 % waitbar(0,['Creating peaks graph...']);
+                wait = waitbar(0,['Creating peaks graph...']);
                 for k = 1:nc
                     g{i}{h}{1,k,l} = cell(size(mx{1,k,l}));
                     scog{i}{h}{1,k,l} = zeros(size(mx{1,k,l}));
@@ -1188,13 +852,10 @@ for i = 1:length(d) % For each audio file,...
                         waitbar(k/(nc-1),wait);
                     end
                     mxk = mx{1,k,l}; % Peaks in current frame
-                    for j = k-1:-1:max(1,k-10) % Recent frames
+                    for j = k-1:-1:max(1,k-100) % Recent frames
                         mxj = mx{1,j,l};        % Peaks in one recent frame
                         for kk = 1:length(mxk)
                             mxkk = mxk(kk);     % For each of current peaks
-                            if mxkk < 10
-                                continue
-                            end
                             for jj = 1:length(mxj)
                                 mxjj = mxj(jj); % For each of recent peaks
                                 sco = k-j - abs(mxkk-mxjj);
@@ -1211,10 +872,10 @@ for i = 1:length(d) % For each audio file,...
                                         % Each point in that straight line.
                                         mxm = mxjj + (mxkk-mxjj)*(m-j)/(k-j);
                                         if mxm == floor(mxm)
-                                            dist = dist + 1-dht(mxm,m,l);
+                                            dist = dist + 1-dh(mxm,m,l);
                                         else
-                                            dhm0 = dht(floor(mxm),m,l);
-                                            dhm1 = dht(ceil(mxm),m,l);
+                                            dhm0 = dh(floor(mxm),m,l);
+                                            dhm1 = dh(ceil(mxm),m,l);
                                             dist = dist + 1-...
                                                 (dhm0 + ...
                                                  (dhm1-dhm0)*(mxm-floor(mxm)));
@@ -1288,10 +949,6 @@ for i = 1:length(d) % For each audio file,...
                     end
                 end
                 [scob{i}{h} IX] = sort(scob{i}{h},'descend');
-                if length(IX) > option.m
-                    scob{i}{h} = scob{i}{h}(1:option.m);
-                    IX = IX(1:option.m);
-                end
                     % Branch are ordered from best score to lowest
                 br{i}{h} = br{i}{h}(IX);
                 if wait
@@ -1301,34 +958,21 @@ for i = 1:length(d) % For each audio file,...
                 end
             end
         end
-        if ~option.graph
-            for l = 1:np % Orders the peaks and select the best ones
-                for k = 1:nc
-                    mxk = mx{1,k,l};
-                    if length(mxk) > option.m 
-                        [unused,idx] = sort(dht(mxk,k,l),'descend');
-                        idx = idx(1:option.m);
-                    elseif strcmpi(option.order,'Amplitude')
-                        [unused,idx] = sort(dht(mxk,k,l),'descend');
-                    else
-                        idx = 1:length(dht(mxk,k,l));
-                    end
-                    if strcmpi(option.order,'Abscissa')
-                        mx{1,k,l} = sort(mxk(idx));
-                    elseif strcmpi(option.order,'Amplitude')
-                        mx{1,k,l} = mxk(idx);
-                    end
-                    
-                    %% Alternate code, allowing using order to get first peak:
-%                     if strcmpi(option.order,'Amplitude')
-%                         [unused,idx] = sort(dht(mxk,k,l),'descend');
-%                     else
-%                         idx = 1:length(dht(mxk,k,l));
-%                     end
-%                     if length(mxk) > option.m 
-%                         idx = idx(1:option.m);
-%                     end
-%                     mx{1,k,l} = mxk(idx);
+        for l = 1:np % Orders the peaks and select the best ones
+            for k = 1:nc
+                mxk = mx{1,k,l};
+                if length(mxk) > option.m 
+                    [unused,idx] = sort(dh(mxk,k,l),'descend');
+                    idx = idx(1:option.m);
+                elseif strcmpi(option.order,'Amplitude')
+                    [unused,idx] = sort(dh(mxk,k,l),'descend');
+                else
+                    idx = 1:length(dh(mxk,k,l));
+                end
+                if strcmpi(option.order,'Abscissa')
+                    mx{1,k,l} = sort(mxk(idx));
+                elseif strcmpi(option.order,'Amplitude')
+                    mx{1,k,l} = mxk(idx);
                 end
             end
         end
@@ -1338,16 +982,16 @@ for i = 1:length(d) % For each audio file,...
             else
                 filn = 10;
             end
-            if filn>1 && size(dhu,1)>5
-                filn = min(filn,floor(size(dhu,1)/3));
-                fild = filtfilt(ones(1,filn)/2,1,dhu(2:end-1,:,:))/filn/2;
+            if filn>1 && size(dh3,1)>5
+                filn = min(filn,floor(size(dh3,1)/3));
+                fild = filtfilt(ones(1,filn)/2,1,dh3(2:end-1,:,:))/filn/2;
             else
-                fild = dhu(2:end-1,:,:);
+                fild = dh3(2:end-1,:,:);
             end
             fild = [zeros(1,size(fild,2),size(fild,3));diff(fild)];
             for l = 1:np
                 for k = 1:nc
-                    idx = 1:size(dht,1);
+                    idx = 1:size(dh,1);
                     mxlk = sort(mx{1,k,l}-1);
                     for j = 1:length(mxlk)
                         
@@ -1369,7 +1013,7 @@ for i = 1:length(d) % For each audio file,...
                         end
                         if j>1 && bef(end)<aft(1)+2
                             idx(mxlk(j-1):mxlk(j)) = 0;
-                            [unused btw] = min(dhu(mxlk(j-1)+1:mxlk(j)+1,k,l));
+                            [unused btw] = min(dh3(mxlk(j-1)+1:mxlk(j)+1,k,l));
                             btw = btw+mxlk(j-1);
                             idx(btw-2:btw+2) = btw-2:btw+2;
                             bef = btw+2;
@@ -1395,52 +1039,13 @@ for i = 1:length(d) % For each audio file,...
                         idx(bef(end)+3:aft(1)-3) = 0;
                     end
                     idx = idx(find(idx));
-                    dhu(idx,k,l) = NaN;
+                    dh3(idx,k,l) = NaN;
                 end
             end
         end
         if option.vall
-            dhu = -dhu;
+            dh3 = -dh3;
         end
-%         if option.highest
-%             for l = 1:np
-%                 prev = [];
-%                 buf = [];
-%                 low = 0;
-%                 for k = 1:nc
-%                     mk = max(mx{1,k,l});
-%                     if isempty(mk)
-%                         if low && k - start < 30
-%                             for g = start:k-1
-%                                 mx{1,g,l} = [];
-%                             end
-%                         end
-%                     else
-%                         if isempty(prev)
-%                             start = k;
-%                         else
-%                             if abs(log2(th(mk,1)/th(prev,1))) > .2
-%                                 if mk > prev
-%                                     if k - start < 30
-%                                         for g = start:k-1
-%                                             mx{1,g,l} = [];
-%                                         end
-%                                     end
-%                                 else
-%                                     low = 1;
-%                                 end
-%                                 start = k;
-%                             end
-%                         end
-%                         mx{1,k,l} = mk;
-%                     end
-%                     if ~isempty(mk)
-%                         buf(end+1) = mk;
-%                     end
-%                     prev = mx{1,k,l};
-%                 end
-%             end
-%         end
         mmx = cell(1,nc,np);
         mmy = cell(1,nc,np);
         mmv = cell(1,nc,np);
@@ -1448,7 +1053,7 @@ for i = 1:length(d) % For each audio file,...
             for k = 1:nc
                 mmx{1,k,l} = mod(mx{1,k,l}(:,:,1),nl0)-1;
                 mmy{1,k,l} = ceil(mx{1,k,l}/nl0);
-                mmv{1,k,l} = dhu(mx{1,k,l}(:,:,1),k,l);
+                mmv{1,k,l} = dh3(mx{1,k,l}(:,:,1),k,l);
             end
         end
         pp{i}{h} = mmx;
@@ -1468,11 +1073,11 @@ for i = 1:length(d) % For each audio file,...
                     for j = 1:length(mxlk)
                         mj = mxlk(j); % Current values
                         if strcmpi(option.interpol,'quadratic')
-                            if mj>2 && mj<size(dhu,1)-1
+                            if mj>2 && mj<length(dh3)-1
                                 % More precise peak position
-                                y0 = dhu(mj,k,l);
-                                ym = dhu(mj-1,k,l);
-                                yp = dhu(mj+1,k,l);
+                                y0 = dh3(mj,k,l);
+                                ym = dh3(mj-1,k,l);
+                                yp = dh3(mj+1,k,l);
                                 p = (yp-ym)/(2*(2*y0-yp-ym));
                                 vih{1,k,l}(j) = y0 - 0.25*(ym-yp)*p;
                                 if p >= 0
@@ -1481,7 +1086,7 @@ for i = 1:length(d) % For each audio file,...
                                     pih{1,k,l}(j) = (1+p)*th(mj,k,l)-p*th(mj-1,k,l);
                                 end
                             else
-                                vih{1,k,l}(j) = dhu(mj,k,l);
+                                vih{1,k,l}(j) = dh3(mj,k,l);
                                 pih{1,k,l}(j) = th(mj,k,l);
                             end
                         end
@@ -1492,15 +1097,15 @@ for i = 1:length(d) % For each audio file,...
             ppv{i}{h} = vih;
         end
         if not(iscell(d{i})) % for chromagram
-            d{i} = dhu(2:end-1,:,:,:);
+            d{i} = dh3(2:end-1,:,:,:);
         else
             if cha == 1
-                d{i}{h} = zeros(1,size(dhu,2),size(dhu,1)-2);
-                for k = 1:size(dhu,2)
-                     d{i}{h}(1,k,:) = dhu(2:end-1,k);
+                d{i}{h} = zeros(1,size(dh3,2),size(dh3,1)-2);
+                for k = 1:size(dh3,2)
+                     d{i}{h}(1,k,:) = dh3(2:end-1,k);
                 end
             else
-                d{i}{h} = dhu(2:end-1,:,:,:);
+                d{i}{h} = dh3(2:end-1,:,:,:);
             end
         end
         if option.only
@@ -1526,7 +1131,7 @@ empty = cell(1,length(d));
 if option.only
     p = set(p,'Data',d,'PeakPos',empty,'PeakVal',empty,'PeakMode',empty);
 end
-if option.harmo || option.delta
+if option.delta
     p = set(p,'TrackPos',tp,'TrackVal',tv);
     if interpol
        p = set(p,'TrackPrecisePos',tpp,'TrackPreciseVal',tpv);

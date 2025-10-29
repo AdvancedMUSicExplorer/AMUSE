@@ -46,8 +46,6 @@ public class TrainingDescriptionPanel extends JPanel {
 		this.setBorder(title);
 		this.add(textFieldLabel, "pushx,wrap");
 		this.add(textField, "growx, wrap");
-		
-		textField.setToolTipText("Description will be added to model name");
 	}
 	
 	public String getTrainingDescription() {

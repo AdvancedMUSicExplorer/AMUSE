@@ -90,10 +90,8 @@ end
     option.center = center;
         
         normal.key = 'Normal';
-        normal.type = 'String';
-        normal.choice = {'RMS','Max'};
+        normal.type = 'Boolean';
         normal.default = 0;
-        normal.keydefault = 'RMS';
         normal.when = 'After';
     option.normal = normal;
     
@@ -118,13 +116,6 @@ end
         trimthreshold.default = .06;
         trimthreshold.when = 'After';
     option.trimthreshold = trimthreshold;
-    
-        smoothborder.key = 'SmoothBorder';
-        smoothborder.type = 'Integer';
-        smoothborder.default = 0;
-        smoothborder.keydefault = 1;
-        smoothborder.when = 'After';
-    option.smoothborder = smoothborder;
         
         label.key = 'Label';
         label.default = '';
@@ -143,17 +134,17 @@ end
    %     segment.when = 'After';
    % option.segment = segment;
 
+        reverse.key = 'Reverse';
+        reverse.type = 'Boolean';
+        reverse.default = 0;
+        reverse.when = 'After';
+    option.reverse = reverse;
+
         mono.key = 'Mono';
         mono.type = 'Boolean';
         mono.default = NaN;
         mono.when = 'After';
-    option.mono = mono; 
-    
-        fwr.key = 'FWR';
-        fwr.type = 'Boolean';
-        fwr.default = 0;
-        fwr.when = 'After';
-    option.fwr = fwr; 
+    option.mono = mono;    
 
         separate.key = 'SeparateChannels';
         separate.type = 'Boolean';
@@ -203,25 +194,10 @@ if iscell(orig)
 end
 if ischar(orig)
     if nargin < 5
-        % When is this used?
         extract = [];
-    else
-        presil = extract(3);
-        postsil = extract(4);
-        extract = extract(1:2);
     end
-    [d{1},tp{1},fp{1},f{1},l{1},b{1},n{1},ch{1}] = mirread(extract(1:2),orig,1,0);
+    [d{1},tp{1},fp{1},f{1},l{1},b{1},n{1},ch{1}] = mirread(extract,orig,1,0);
     l{1}{1} = l{1}{1}*f{1};
-    if presil
-        d{1}{1} = [zeros(2000,1,size(d{1}{1},3));d{1}{1}];
-        tp1 = tp{1}{1};
-        tp{1}{1} = [tp1(1)-(2000:-1:1)'*(tp1(2)-tp1(1));tp1];
-    end
-    if postsil
-        d{1}{1} = [d{1}{1};zeros(2000,1,size(d{1}{1},3))];
-        tp1 = tp{1}{1};
-        tp{1}{1} = [tp1;tp1(end)+(1:2000)'*(tp1(2)-tp1(1))];
-    end
     t = mirtemporal([],'Time',tp,'Data',d,'FramePos',fp,'Sampling',f,...
                        'Name',n,'Label',cell(1,length(d)),...
                        'Clusters',cell(1,length(d)),'Length',l,...
@@ -306,34 +282,23 @@ for h = 1:length(d)
             dk = center(dk);
             a = set(a,'Centered',1);
         end
-        if isfield(para,'normal') && not(isequal(para.normal,0))
+        if isfield(para,'normal') && para.normal
             nl = size(dk,1);
-            nf = size(dk,2);
             nc = size(dk,3);
             if isempty(ac)
-                if strcmpi(para.normal,'RMS')
-                    ee = 0;
-                    for j = 1:nc
-                        for i = 1:nf
-                            ee = ee+sum(dk(:,i,j).^2);
-                        end
-                    end
-                    ee = sqrt(ee/nl/nc/nf);
-                elseif strcmpi(para.normal,'Max')
-                    ee = max(max(max(abs(dk),[],1),[],2),[],3);
-                else
-                    mirerror('MIRAUDIO','Incorrect parameter for ''Normal'' option');
+                ee = 0;
+                for j = 1:nc
+                    ee = ee+sum(dk(:,:,j).^2);
                 end
-            elseif strcmpi(para.normal,'RMS')
-                ee = sqrt(sum(ac.sqrsum)/ac.samples);
-            elseif strcmpi(para.normal,'Max')
-                ee = ac.max;
+                ee = sqrt(ee/nl/nc);
+            else
+                ee = sqrt(sum(ac.sqrsum.^2)/ac.samples);
             end
             if ee
-                dk = dk./repmat(ee,[nl,nf,nc]);
+                dk = dk./repmat(ee,[nl,1,nc]);
             end
         end
-        if isfield(para,'trim') && not(isequal(para.trim,0)) ... %%%% NOT A POST OPERATION!!
+        if isfield(para,'trim') && not(isequal(para.trim,0)) ...
                 && not(strcmpi(para.trim,'NoTrim'))
             if not(para.trimthreshold)
                 para.trimthreshold = 0.06;
@@ -371,16 +336,6 @@ for h = 1:length(d)
             tk = tk(n1:n2);
             dk = dk(n1:n2,1,:);
         end
-        if isfield(para,'smoothborder') && para.smoothborder
-            [Lx,Ly,Lz] = size(dk);
-            Lw = para.smoothborder / 1000 * f{k};
-            w = ones(size(dk));
-            l = min(floor(Lx/2),Lw);
-            hw = hann(l*2);
-            w(1:l,:,:) = repmat(hw(1:l),[1,Ly,Lz]);
-            w(Lx-l+1:Lx,:,:) = repmat(flipud(hw(1:l)),[1,Ly,Lz]);
-            dk = dk .* w;
-        end
         if isfield(para,'sampling') && para.sampling
             if and(f{k}, not(f{k} == para.sampling))
                 for j = 1:size(dk,3)
@@ -391,9 +346,6 @@ for h = 1:length(d)
                             /para.sampling + tk(1,:,:);
             end
             f{k} = para.sampling;
-        end
-        if isfield(para,'fwr') && para.fwr
-            dk = abs(dk);
         end
         d{h}{k} = dk;
         t{h}{k} = tk;
@@ -432,7 +384,7 @@ if isfield(para,'label')
 end
 
 
-function [new orig] = beforechunk(orig,option,postoption)
+function [new orig] = beforechunk(orig,option,missing)
 option.normal = 0;
 a = miraudio(orig,option);
 d = get(a,'Data');
@@ -440,22 +392,16 @@ old = get(orig,'AcrossChunks');
 if isempty(old)
     old.sqrsum = 0;
     old.samples = 0;
-    old.max = 0;
 end
-new = mircompute(@crossum,d,postoption.mono);
+new = mircompute(@crossum,d);
 new = new{1}{1};
 new.sqrsum = old.sqrsum + new.sqrsum;
 new.samples = old.samples + new.samples;
-new.max = max(old.max,new.max);
 
 
-function s = crossum(d,mono)
-if isnan(mono) || mono
-    d = mean(d,3);
-end
-s.sqrsum = sum(sum(sum(d.^2)));
-s.samples = numel(d);
-s.max = max(max(max(abs(d))));
+function s = crossum(d)
+s.sqrsum = sum(d.^2);
+s.samples = length(d);
 
 
 function [y orig] = eachchunk(orig,option,missing)

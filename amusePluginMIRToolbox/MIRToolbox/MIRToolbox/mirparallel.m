@@ -1,5 +1,5 @@
 function p = mirparallel(s)
-% mirparallel(1) toggles on parallel processing.
+% mirparallel(1) toggles on parallel processing: (BETA)
 %   When ?Folder? or ?Folders? is used, several audio files can be analysed
 %   in parallel using several  parallel Matlab sessions running on the 
 %   different processors and/or  processor cores of your computer.
@@ -9,11 +9,12 @@ function p = mirparallel(s)
 persistent mir_parallel
 
 if nargin
+    warning('MIRtoolbox Parallel computing is currently in Beta Version.');
     if s
         try
             matlabpool size;
         catch
-            mirerror('mirparallel','mirparallel does not work for Matlab 2013b and more recent. If you would like MIRtoolbox to be developed for parallel processing or for other purposes, and if you have any funding to suggest, please contact us.')
+            mirerror('mirparallel','Are you sure Parallel Processing Toolbox is installed?');
         end
     end
     mir_parallel = s;

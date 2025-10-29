@@ -5,7 +5,6 @@ function ee = set(e,varargin)
 propertyArgIn = varargin;
 ds = e.downsampl;
 hw = e.hwr;
-lg = e.log;
 df = e.diff;
 mt = e.method;
 ph = e.phase;
@@ -22,8 +21,6 @@ while length(propertyArgIn) >= 2,
            hw = val;
        case 'Diff'
            df = val;
-       case 'Log'
-           lg = val;
    otherwise
            t = set(t,prop,val);
    end
@@ -31,7 +28,6 @@ end
 ee.downsampl = ds;
 ee.hwr = hw;
 ee.diff = df;
-ee.log = lg;
 ee.method = mt;
 ee.phase = ph;
 ee = class(ee,'mirenvelope',t);

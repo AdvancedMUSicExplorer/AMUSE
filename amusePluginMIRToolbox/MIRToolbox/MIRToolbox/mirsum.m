@@ -1,5 +1,5 @@
 function varargout = mirsum(orig,varargin)
-%   s = mirsum(f) sums the channels together
+%   s = mirsum(f) sums the envelope of the multi-channel object f.
 %
 %   Optional arguments:
 %       mirsum(f,'Centered') centers the resulting envelope.
@@ -45,10 +45,10 @@ type = mirtype(x);
 
 
 function s = main(x,option,postoption)
+x = purgedata(x);
 if iscell(x)
     x = x{1};
 end
-x = purgedata(x);
 d = get(x,'Data');
 pp = get(x,'PeakPos');
 pv = get(x,'PeakVal');

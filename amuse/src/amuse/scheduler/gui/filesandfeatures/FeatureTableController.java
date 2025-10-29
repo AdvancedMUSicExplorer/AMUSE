@@ -121,12 +121,6 @@ public class FeatureTableController implements ActionListener {
             }
             JOptionPane.showMessageDialog(view.getView(), "FileList successfully saved!", "Success", JOptionPane.INFORMATION_MESSAGE);
         }
-        
-        else if ((e.getActionCommand().equals("delete")) || (e.getActionCommand().equals("unselect")))
-        	uncheckSelected();
-        // Plus key selects chosen features
-        else if (e.getActionCommand().equals( "select")) 
-        	checkSelected();
     }
 
     private void checkSelected() {

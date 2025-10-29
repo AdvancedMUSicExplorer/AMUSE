@@ -70,8 +70,6 @@ public class ProcessingHistoryPanel extends JPanel {
         this.add(textField, "growx, wrap");
         this.add(attributesToIgnoreLabel, "pushx, wrap");
         this.add(attributesToIgnoreTextField, "growx, wrap");
-        attributesToIgnoreTextField.setToolTipText("Attributes of the processed feature file that should be ignored separed by comma");
-        
         try {
 			DefaultComboBoxModel model = new DefaultComboBoxModel(ProcessingHistory.getHistoryList());
             comboBox.setModel(model);

@@ -274,7 +274,10 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 		try {
 			List<String> commands = new ArrayList<String>();
 			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
+			commands.add("-nodisplay");
 			commands.add("-nosplash");
+			commands.add("-nojvm");
+			commands.add("-r");
 			File inputBatchFile = new File(properties.getProperty("inputExtractorBatch"));
 			String inputBatchName = inputBatchFile.getName();
 			inputBatchName = inputBatchName.substring(0, inputBatchName.lastIndexOf("."));
@@ -282,17 +285,6 @@ public class MatlabAdapter extends AmuseTask implements ExtractorInterface {
 			if(properties.getProperty("inputExtractorBatch").startsWith(File.separator)) {
 				inputBatchFolder = inputBatchFile.getParent();
 			}
-			if (System.getProperty("os.name").startsWith("Windows"))
-			{
-				commands.add("-batch");
-			}
-			else
-			{
-				commands.add("-nodisplay");
-				commands.add("-nojvm");
-				commands.add("-r");
-			}
-			
 			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
 			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MatlabFeatures.log\"");

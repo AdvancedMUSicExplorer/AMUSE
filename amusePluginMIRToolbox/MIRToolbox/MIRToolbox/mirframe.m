@@ -46,20 +46,17 @@ elseif isa(x,'mirdesign')
         flu = get(x,'FrameLengthUnit');
         fhu = get(x,'FrameHopUnit');
         fpu = get(x,'FramePhaseUnit');
-        fpe = get(x,'FramePhaseAtEnd');
         if fl
             f = set(f,'FrameLength',fl,'FrameLengthUnit',flu,...
                       'FrameHop',fh,'FrameHopUnit',fhu,...
-                      'FramePhase',fp,'FramePhaseUnit',fpu,...
-                      'FramePhaseAtEnd',fpe);
+                      'FramePhase',fp,'FramePhaseUnit',fpu);
         else
             f = set(f,'FrameLength',para.wlength.val,...
                       'FrameLengthUnit',para.wlength.unit,...
                       'FrameHop',para.hop.val,...
                       'FrameHopUnit',para.hop.unit,...
                       'FramePhase',para.phase.val,...
-                      'FramePhaseUnit',para.phase.unit,...
-                      'FramePhaseAtEnd',fpe);
+                      'FramePhaseUnit',para.phase.unit);
         end
         f = set(f,'FrameEval',1,...
                   'SeparateChannels',get(x,'SeparateChannels'));
@@ -88,15 +85,10 @@ elseif isa(x,'mirdesign')
                     varargin{1}.hop.val = varargin{1}.hop.val(sc);
                 end
             end
-            if get(x,'ChunkDecomposed')
-                varargin{1}.phase.val = 0;
+            varargin{1}.phase.val = 0;
                 % The phase has already been taken into account in the
                 % chunk decomposition.
-            end
-            options = varargin{1};
-            options.presilence = get(x,'PreSilence');
-            options.postsilence = get(x,'PostSilence');
-            f = mirframe(e,options);
+            f = mirframe(e,varargin{:});
         end
     end
 elseif isa(x,'mirdata')
@@ -116,8 +108,6 @@ elseif isa(x,'mirdata')
         dx2 = cell(1,length(dx));   % magnitude in framed structure 
         dt2 = cell(1,length(dx));   % time positions in framed structure
         fp = cell(1,length(dx));    % frame positions
-        l2 = cell(1,length(dx));
-        fr = cell(1,length(dx));
         for k = 1:length(dx)    % For each audio file, ...
             dxk = dx{k};
             dtk = dt{k};
@@ -128,39 +118,28 @@ elseif isa(x,'mirdata')
             end
             if strcmpi(para.hop.unit,'/1')
                 h = para.hop.val*l;
-                fr{k} = sf{k}/h;
             elseif strcmpi(para.hop.unit,'%')
                 h = para.hop.val*l*.01;
-                fr{k} = sf{k}/h;
             elseif strcmpi(para.hop.unit,'s')
                 h = para.hop.val*sf{k};
-                fr{k} = 1/para.hop.val;
             elseif strcmpi(para.hop.unit,'sp')
                 h = para.hop.val;
-                fr{k} = sf{k}/h;
             elseif strcmpi(para.hop.unit,'Hz')
                 h = sf{k}/para.hop.val;
-                fr{k} = para.hop.val;
-            end
-            if para.phase.atend
-                p = mod(-l,h);
-            else
-                p = 0;
             end
             if strcmpi(para.phase.unit,'s')
-                p = p + para.phase.val*sf{k};
+                p = para.phase.val*sf{k};
             elseif strcmpi(para.phase.unit,'sp')
-                p = p + para.phase.val;
+                p = para.phase.val;
             elseif strcmpi(para.phase.unit,'/1')
-                p = p + para.phase.val*h;
+                p = para.phase.val*h;
             elseif strcmpi(para.phase.unit,'%')
-                p = p + para.phase.val*h*.01;
+                p = para.phase.val*h*.01;
             end
             l = floor(l);
             dx2k = cell(1,length(dxk));
             dt2k = cell(1,length(dxk));
             fpk = cell(1,length(dxk));
-            l2k = cell(1,length(dxk));
             if size(l)==1
                 for j = 1:length(dxk)   % For each segment, ...
                     dxj = dxk{j};
@@ -170,15 +149,7 @@ elseif isa(x,'mirdata')
                         dtj = dtj(1,:)';
                     end
 
-                     % Number of frames
-                    if isfield(para,'presilence') && para.presilence && para.postsilence
-                        n = floor((size(dxj,1)+l-floor(h)-p)/h)+1;
-                    elseif isfield(para,'presilence') && (para.presilence || para.postsilence)
-                        n = floor((size(dxj,1)-floor(h)-p)/h)+1;
-                    else
-                        n = floor((size(dxj,1)-l-p)/h)+1;
-                    end
-
+                    n = floor((size(dxj,1)-l-p)/h)+1; % Number of frames
                     dx2j = zeros(l,n,size(dxj,3));
                     dt2j = zeros(l,n);
                     fpj = zeros(2,n);
@@ -186,40 +157,23 @@ elseif isa(x,'mirdata')
                         disp('Frame length longer than total sequence size. No frame decomposition.');
                         dx2j = dxj(:,1,:);
                         dt2j = dtj;
-                        if isempty(dtj)
-                            fpk = [];
-                        else
-                            fpj = [dtj(1) ; dtj(end)];
-                        end
+                        fpj = [dtj(1) ; dtj(end)];
                     else
                         for i = 1:n % For each frame, ...
                             st = floor((i-1)*h+p+1);
-                            if isfield(para,'presilence') && para.presilence
-                                st = st - l + floor(h);
-                            end
                             stend = st+l-1;
-                            if st < 1
-                                dx2j(:,i,:) = [zeros(-st+1,1,size(dxj,3)); dxj(1:stend,1,:)];
-                                dt2j(:,i) = dtj(1:l) - (dtj(-st+2) - dtj(1));
-                            elseif stend > size(dtj,1)
-                                dx2j(:,i,:) = [dxj(st:end,1,:); zeros(stend-size(dtj,1),1,size(dxj,3))];
-                                dt2j(:,i) = dtj(1:l) + dtj(st) - dtj(1);
-                            else
-                                dx2j(:,i,:) = dxj(st:stend,1,:);
-                                dt2j(:,i) = dtj(st:stend);
-                            end
-                            fpj(:,i) = [dt2j(1,i), dt2j(end,i)];
+                            dx2j(:,i,:) = dxj(st:stend,1,:);
+                            dt2j(:,i) = dtj(st:stend);
+                            fpj(:,i) = [dtj(st) dtj(stend)];
                         end
                     end
                     dx2k{j} = dx2j;
                     dt2k{j} = dt2j;
                     fpk{j} = fpj;
-                    l2k{j} = l;
                 end
                 dx2{k} = dx2k;
                 dt2{k} = dt2k;
                 fp{k} = fpk;
-                l2{k} = l2k;
             else % Multi-scale version
                 if size(h) == 1
                     h = repmat(h,size(l));
@@ -253,23 +207,19 @@ elseif isa(x,'mirdata')
                     dx2k{j} = dx2j;
                     dt2k{j} = dt2j;
                     fpk{j} = fpj;
-                    l2k{j} = l(j);
                 end
                 dx2{k} = dx2k;
                 dt2{k} = dt2k;
                 fp{k} = fpk;
-                l2{k} = l2k;
             end
         end
         if isa(x,'mirtemporal')
-            f = set(x,'Time',dt2,'Data',dx2,...
-                      'FramePos',fp,'FrameRate',fr,'Length',l2);
+            f = set(x,'Time',dt2,'Data',dx2,'FramePos',fp);
         else
-            f = mirtemporal([],'Time',dt2,'Data',dx2,...
-                    'FramePos',fp,'FrameRate',fr,...
+            f = mirtemporal([],'Time',dt2,'Data',dx2,'FramePos',fp,...
                     'Sampling',get(x,'Sampling'),'Name',get(x,'Name'),...
                     'Label',get(x,'Label'),'Channels',get(x,'Channels'),...
-                    'Centered',0,'Length',l2,'Title',get(x,'Title'));
+                    'Centered',0,'Title',get(x,'Title'));
         end
     end
 else
@@ -285,8 +235,6 @@ if not(isempty(v)) && isstruct(v{1})
         para.wlength = v{1};
         para.hop = v{2};
         para.phase = v{3};
-        para.presilence = v{4};
-        para.postsilence = v{5};
     end
     return
 end
@@ -296,7 +244,6 @@ para.hop.val = 0.5;
 para.hop.unit = '/1';
 para.phase.val = 0;
 para.phase.unit = '/1';
-para.phase.atend = 0;
 nv = length(v);
 i = 1;
 j = 1;
@@ -344,10 +291,6 @@ while i <= nv
             i = i+1;
             para.phase.unit = v{i};
         end
-        if i < nv && ischar(v{i+1}) && strcmpi(v{i+1},'AtEnd')
-            i = i+1;
-            para.phase.atend = 'AtEnd';
-        end
     elseif isnumeric(arg)
         switch j
             case 1
@@ -376,13 +319,6 @@ while i <= nv
                          strcmpi(v{i+1},'s') || strcmpi(v{i+1},'sp'))
                     i = i+1;
                     para.phase.unit = v{i};
-                end
-                if i < nv && ischar(v{i+1}) && strcmpi(v{i+1},'AtEnd')
-                    i = i+1;
-                    para.phase.atend = 'AtEnd';
-                elseif i < nv && isnumeric(v{i+1}) && ~v{i+1}
-                    i = i+1;
-                    para.phase.atend = 0;
                 end
             otherwise
                 error('ERROR IN MIRFRAME: Syntax error. See help mirframe.');

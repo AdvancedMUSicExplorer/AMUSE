@@ -484,19 +484,13 @@ public class SonicAnnotatorAdapter extends AmuseTask implements ExtractorInterfa
 				commands.add("csv"); // Set the output format
 				commands.add("--csv-basedir");
 				commands.add(folder.getAbsolutePath()); // Set the output folder
-				//ExternalProcessBuilder sonic = new ExternalProcessBuilder(commands);
-				//sonic.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
+				ExternalProcessBuilder sonic = new ExternalProcessBuilder(commands);
+				sonic.setWorkingDirectory(new File(properties.getProperty("extractorFolder")));
 				// Set VAMP_PATH environment variable to the "Plugins" folder so Sonic Annotator finds the NNLS-Chroma Plugin
-				//sonic.setEnv("VAMP_PATH", properties.getProperty("extractorFolder")+File.separator+"Plugins");
-				//Process pc = sonic.start();
-				ProcessBuilder pb = new ProcessBuilder(commands);
-				pb.directory(new File(properties.getProperty("extractorFolder")));
-				pb.environment().put("VAMP_PATH", properties.getProperty("extractorFolder")+File.separator+"Plugins");
-				pb.redirectError(ProcessBuilder.Redirect.INHERIT);
-				pb.redirectOutput(ProcessBuilder.Redirect.INHERIT);
-				Process pc = pb.start();
-				int exit = pc.waitFor();
-			    //pc.waitFor(); // Wait for Sonic Annotator to finish
+				sonic.setEnv("VAMP_PATH", properties.getProperty("extractorFolder")+File.separator+"Plugins");
+				Process pc = sonic.start();
+				
+			    pc.waitFor(); // Wait for Sonic Annotator to finish
 			}
 		} catch (IOException e) {
         	throw new NodeException("Extraction with Sonic Annotator failed: " + e.getMessage());

@@ -13,10 +13,11 @@ option.thr = thr;
     mono.default = 1;
 option.mono = mono;
 
-    decay.key = {'Decay','Decays'};
-    decay.type = 'Boolean';
-    decay.default = 1;
-option.decay = decay;
+    release.key = {'Release','Releases'};
+    release.type = 'String';
+    release.choice = {'Olivier','Valeri',0,'no','off'};
+    release.default = 'Valeri';
+option.release = release;
 
 specif.option = option;
 
@@ -33,7 +34,7 @@ if not(isamir(x,'mirmidi')) && not(isamir(x,'mirpitch'))
     if isa(x,'mirdesign') && not(option.mono)
         x = set(x,'SeparateChannels',1);
     end
-    o = mironsets(x,'Attacks','Decays',option.decay);
+    o = mironsets(x,'Attacks','Releases',option.release);
     x = {o x};
 end
 type = 'mirmidi';
@@ -41,14 +42,14 @@ type = 'mirmidi';
 
 function m = main(x,option,postoption)
 transcript = 0;
-if isstruct(postoption) && isfield(postoption,'new')
-    a = postoption.new;
-    do = get(x,'PeakVal');
-    da = get(x,'OnsetPosUnit');
-    dr = get(x,'DecayPosUnit');
-    s = mirsegment(a,x);
+if iscell(x)
+    o = x{1};
+    do = get(o,'PeakVal');
+    da = get(o,'AttackPosUnit');
+    dr = get(o,'ReleasePosUnit');
+    a = x{2};
+    s = mirsegment(a,o);
     x = mirpitch(s,'Contrast',option.thr,'Sum',0);
-    % x = mircentroid(s);
     dp = get(x,'Data');
 else
     do = [];
@@ -62,8 +63,8 @@ else
             transcript = 1;
         end
     else
-        da = get(x,'OnsetPosUnit');
-        dr = get(x,'DecayPosUnit');
+        da = get(x,'AttackPosUnit');
+        dr = get(x,'ReleasePosUnit');
     end
 end
 df = get(x,'FramePos');
@@ -94,11 +95,7 @@ else
                 vij = 120;
             else
                 tij = da{i}{1}{1}(j-1);
-                if isempty(dr{i})
-                    dij = 0;
-                else
-                    dij = dr{i}{1}{1}(j-1) - tij;
-                end
+                dij = dr{i}{1}{1}(j-1) - tij;
                 vij = round(do{i}{1}{1}(j-1)/max(do{i}{1}{1})*120);
             end
             for k = 1:size(dp{i}{j},3)

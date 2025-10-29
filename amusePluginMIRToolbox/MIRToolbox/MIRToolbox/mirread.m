@@ -20,20 +20,6 @@ function [d,tp,fp,f,l,b,n,ch] = mirread(extract,orig,load,folder,verbose)
 if nargin < 5
     verbose = 0;
 end
-
-if ~isempty(extract)
-    extract(1) = max(extract(1),1);
-end
-
-p = ver('MATLAB');
-if str2num(p.Version) >= 8.6
-    [d,tp,fp,f,l,b,n,ch] = mirread2015(extract,orig,load,folder,verbose);
-    return
-elseif str2num(p.Version) >= 8.3
-    [d,tp,fp,f,l,b,n,ch] = mirread2014(extract,orig,load,folder,verbose);
-    return
-end
-
 d = {};
 f = {};
 l = {};
@@ -110,7 +96,8 @@ if load
     end
 else
     if isequal(reader,@mp3read)
-        [dsize,f,b] = reader(file,'size');
+        [dd,f,b] = reader(file);
+        dsize = size(dd);
     else
         [unused,f,b] = reader(file,1);
         dsize = reader(file,'size');

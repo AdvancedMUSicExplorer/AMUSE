@@ -11,8 +11,6 @@ switch propName
         val = a.unit;
     case 'FramePos'
         val = a.framepos;
-    case 'FrameRate'
-        val = a.framerate;
     case 'Framed'
         val = a.framed;
     case 'Sampling'
@@ -35,18 +33,14 @@ switch propName
         val = a.multidata;
     case 'PeakPos'
         val = a.peak.pos;
-    case {'PeakPosUnit','OnsetPosUnit','OffsetPosUnit','AttackPosUnit','DecayPosUnit'}
+    case {'PeakPosUnit','AttackPosUnit','ReleasePosUnit'}
         switch propName
             case 'PeakPosUnit'
                 pp = a.peak.pos;
-            case 'OnsetPosUnit'
-                pp = a.onset.pos;      
-            case 'OffsetPosUnit'
-                pp = a.offset.pos; 
             case 'AttackPosUnit'
                 pp = a.attack.pos;
-            case 'DecayPosUnit'
-                pp = a.decay.pos;
+            case 'ReleasePosUnit'
+                pp = a.release.pos;
         end
         po = a.pos;
         d = a.data;
@@ -88,10 +82,7 @@ switch propName
                         if size(poi,3) > 1 && size(poi,1) == 1
                             val{k}{i}{1,j,h} = ppi{1,j,h};
                         else
-                            for x = 1:size(ppi{1,j,h},1)
-                                val{k}{i}{1,j,h}(x,:) = ...
-                                    poi(ppi{1,j,h}(x,:),1);
-                            end
+                            val{k}{i}{1,j,h} = poi(ppi{1,j,h},1);
                         end
                     end
                 end
@@ -125,29 +116,17 @@ switch propName
         end
     case 'PeakMode'
         val = a.peak.mode;
-    case 'OnsetPos'
-        if isempty(a.onset)
-            val = [];
-        else
-            val = a.onset.pos;
-        end
     case 'AttackPos'
-        if isempty(a.onset)
+        if isempty(a.attack)
             val = [];
         else
             val = a.attack.pos;
         end
-    case 'DecayPos'
-        if isempty(a.decay)
+    case 'ReleasePos'
+        if isempty(a.release)
             val = [];
         else
-            val = a.decay.pos;
-        end
-    case 'OffsetPos'
-        if isempty(a.offset)
-            val = [];
-        else
-            val = a.offset.pos;
+            val = a.release.pos;
         end
     case 'TrackPos'
         if isempty(a.track)
@@ -197,7 +176,7 @@ switch propName
                     else
                         for h = 1:size(ppi,2)
                             for j = 1:size(ppi,1)
-                                if ~isnan(ppi(j,h)) && ppi(j,h)
+                                if ppi(j,h)
                                     val{k}{i}{1}(j,h) = poi(ppi(j,h),1);
                                 else
                                     val{k}{i}{1}(j,h) = 0;
@@ -240,6 +219,8 @@ switch propName
         val = a.acrosschunks;
     case 'Interpolable'
         val = a.interpolable;
+    case 'TmpFile'
+        val = a.tmpfile;
     case 'Index'
         val = a.index;
     otherwise

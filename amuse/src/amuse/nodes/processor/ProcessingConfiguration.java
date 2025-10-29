@@ -148,7 +148,7 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	}
 	
 	/**
-	 * Constructor with use of FeatureTableSet (InputSourceType is automatically set to RAW_FEATURE_LIST
+	 * Constructor with use of FeatureTableSet
 	 * @param inputMusicFile Music file list for feature processing
 	 * @param inputFeatureList List with features to process
 	 * @param reductionSteps Processing steps (feature or time dimension processing)
@@ -156,6 +156,8 @@ public class ProcessingConfiguration extends TaskConfiguration {
 	 * @param classificationWindowStepSize Classification window step size
 	 * @param conversionStep Method for conversion of matrix (features over time) to vector
 	 * @param featureDescription Feature description, if required
+	 * 
+	 * @deprecated Old constructor when only raw features are used as input
 	 */
 	public ProcessingConfiguration(FileTable musicFileList, FeatureTable inputFeatureList, String reductionSteps, Unit unit,
 			Integer classificationWindowSize, Integer classificationWindowStepSize, String conversionStep, String featureDescription) {

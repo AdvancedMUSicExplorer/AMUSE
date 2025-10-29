@@ -367,7 +367,6 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 		// is here calculated and the features from larger time windows are converted, e.g. "Duration of a music pieces"
 		// becomes a vector with a larger number of equal values
 		this.minimalStepSize = Integer.MAX_VALUE;
-		//this.minimalStepSize = 8000;
 		int exampleOfFeatureWithMinimalStep = -1; // Used later
 		for(int i=0;i<features.size();i++) {
 			if(features.get(i).getSourceFrameSize() != -1 && features.get(i).getSourceFrameSize() < minimalStepSize) {
@@ -1060,33 +1059,14 @@ public class ProcessorNodeScheduler extends NodeScheduler {
 	private Double[] loadEventTimes(String string) throws NodeException {
 		Double[] eventTimes = null;
 		
-		// TODO check IDs for librosa-extracted onsets
 		String idPostfix = null;
 		if(string.equals(new String("onset"))) {
-			if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1["))) {
-				idPostfix = new String("_419.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("100["))) {
-				idPostfix = new String("_20084.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("101["))) {
-				idPostfix = new String("_20087.arff");
-			}
+			idPostfix = new String("_419.arff");
 		} else if(string.equals(new String("attack"))) {
-			if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1["))) {
-				idPostfix = new String("_423.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("100["))) {
-				idPostfix = new String("_20085.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("101["))) {
-				idPostfix = new String("_20088.arff");
-			}
+			idPostfix = new String("_423.arff");
 		} if(string.equals(new String("release"))) {
-			if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("1["))) {
-				idPostfix = new String("_424.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("100["))) {
-				idPostfix = new String("_20086.arff");
-			} else if (((ProcessingConfiguration)this.taskConfiguration).getConversionStep().startsWith(new String("101["))) {
-				idPostfix = new String("_20089.arff");
-			}
-		}  
+			idPostfix = new String("_424.arff");
+		} 
 		
 		try {
 			

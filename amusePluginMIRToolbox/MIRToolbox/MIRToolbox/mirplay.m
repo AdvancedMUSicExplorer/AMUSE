@@ -52,7 +52,7 @@ function varargout = mirplay(a,varargin)
 
         burst.key = 'Burst';
         burst.type = 'Boolean';
-        burst.default = 0; %1;
+        burst.default = 1;
     option.burst = burst;
 
 specif.option = option;
@@ -137,12 +137,7 @@ if not(isempty(order))
                 if isa(a,'miraudio')
                     for j = 1:size(di,2)
                         tic
-                        pl = audioplayer(di(:,j,l),f{k});
-                        playblocking(pl);
-                        % We should scale, in order to avoid clipping 
-                        % (when reading AIF files for instance).
-                        % But global scaling across segments, to avoid
-                        % problem with silent segments.
+                        sound(di(:,j,l),f{k});
                         idealtime = size(di,1)/f{k};
                         practime = toc;
                         if practime < idealtime
@@ -150,23 +145,25 @@ if not(isempty(order))
                         end
                     end
                 else
-                    synth = zeros(1,ceil((fp{k}{i}(end)-fp{k}{i}(1))*44100)+1);
                     if isa(a,'mirpitch')
-                        stp = get(a,'Start');
-                        transcribed = ~(isempty(stp) || isempty(stp{k}) ...
-                                        || isempty(stp{k}{i}));
+                        deg = get(a,'Degrees');
+                        if isempty(deg)
+                            transcribed = 0;
+                        else
+                            transcribed = ~isempty(deg{k}{i});
+                        end
                     else
                         transcribed = 0;
                     end
                     if transcribed
                         stp = get(a,'Start');
                         enp = get(a,'End');
-                        mep = get(a,'Mean');
+                        deg = deg{k}{i}{1}-5;
                         stp = stp{k}{i}{1};
                         enp = enp{k}{i}{1};
-                        mep = mep{k}{i}{1};
-                        for j = 1:length(mep)
-                            fj = mep(j); %2^(mep(j)/1200);
+                        synth = zeros(1,ceil((fp{k}{i}(end)-fp{k}{i}(1))*44100)+1);
+                        for j = 1:length(deg)
+                            fj = 440 * 2^(deg(j)/12);
                             k1 = floor((fp{k}{i}(1,stp(j))-fp{k}{i}(1))*44100)+1;
                             k2 = floor((fp{k}{i}(2,enp(j))-fp{k}{i}(1))*44100)+1;
                             ampj = ones(1,k2-k1+1);
@@ -178,6 +175,7 @@ if not(isempty(order))
                         if isa(a,'mirpitch')
                             ampi = amp{k}{i};
                         end
+                        synth = zeros(1,ceil((fp{k}{i}(end)-fp{k}{i}(1))*44100)+1);
                         for j = 1:size(di,2)
                             if iscell(di)
                                 dj = di{j};
@@ -207,13 +205,10 @@ if not(isempty(order))
                             end
                         end
                     end
-                    synth = synth/max(abs(synth));
-                    pl = audioplayer(synth,44100);
-                    playblocking(pl);
+                    soundsc(synth,44100);
                 end
                 if option.burst && sgk(end)>1
-                    pl = audioplayer(rand(1,10),8192);
-                    playblocking(pl);
+                    sound(rand(1,10))
                 end
             end
         end

@@ -41,15 +41,13 @@ addpath('%AMUSEHOME%/tools/MIRToolbox/AuditoryToolbox');
 % Do not use MIR Toolbox logging (otherway Matlab may stop due to the large number of log lines!)
 mirverbose(0);
 
-mirwaitbar(0);
-
 % define window length of analysis window in number of samples
 wlength = 512;
 % define window offset in number of samples
 woffset = wlength;
 
 % create prefix for AMUSE ARFF feature file
-p=strfind(input_file,filesep);
+p=strfind(input_file,'/');
 k=strfind(input_file,'.');
 output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 </text>
@@ -358,30 +356,6 @@ mirres=mirrms(f);
 	chroma = mirchromagram(a,'Frame',wlength,'sp',woffset,'sp');
 	chroma4096 = mirchromagram(a,'Frame',4096,'sp',4096,'sp');
 </text>
-
-<amuseEnableTransform>
-<transformContent>
-<text>
-	mirres=mirkeystrength(chroma);
-	res=mirgetdata(mirres);
-</text>
-<amuseEnableFeature id="209" dimensions="12">
-	<text>
-		% Strengths of major keys
-		major_strengths=res(:,:,1);
-		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
-	</text>
-</amuseEnableFeature>
-<amuseEnableFeature id="210" dimensions="12">
-	<text>
-		% Strengths of minor keys
-		minor_strengths=res(:,:,2);
-		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
-	</text>
-</amuseEnableFeature>
-</transformContent>
-</amuseEnableTransform>
-
 <amuseEnableFeature id="206" dimensions="12">
 	<text>
 		% Chroma vector (harmonic pitch class profile)
@@ -404,6 +378,17 @@ mirres=mirrms(f);
 		mirres=mirmode(chroma);
 		res=mirgetdata(mirres);
 		arff_saver_with_windows_number([output_file_prefix,'203.arff'],'Major/minor alignment',res,wlength,woffset);
+	</text>
+</amuseEnableFeature>
+<amuseEnableFeature id="209,210" dimensions="12,12">
+	<text>
+		% Strengths of major keys
+		mirres=mirkeystrength(chroma);
+		res=mirgetdata(mirres);
+		major_strengths=res(:,:,1);
+		minor_strengths=res(:,:,2);
+		arff_saver_with_windows_number([output_file_prefix,'209.arff'],'Strengths of major keys',major_strengths,wlength,woffset);
+		arff_saver_with_windows_number([output_file_prefix,'210.arff'],'Strengths of minor keys',minor_strengths,wlength,woffset);
 	</text>
 </amuseEnableFeature>
 <amuseEnableFeature id="216" dimensions="6">
@@ -490,7 +475,7 @@ mirres=mirrms(f);
 		% Attack times
 		mirres = get(onsets,'AttackPosUnit');
 		res = mirres{1}{1}{1};
-		arff_saver([output_file_prefix,'423.arff'],'Start points of attack intervals',res,-1);
+		arff_saver([output_file_prefix,'423.arff'],'Start points of attack intervals',res',-1);
 	</text>
 </amuseEnableFeature>
 
@@ -515,9 +500,9 @@ mirres=mirrms(f);
 <amuseEnableFeature id="424" dimensions="1">
 	<text>
 		% Release times
-		mirres = get(onsets,'OffsetPosUnit');
+		mirres = get(onsets,'ReleasePosUnit');
 		res = mirres{1}{1}{1};
-		arff_saver([output_file_prefix,'424.arff'],'End points of release intervals',res,-1);
+		arff_saver([output_file_prefix,'424.arff'],'End points of release intervals',res',-1);
 	</text>
 </amuseEnableFeature>
 
@@ -553,7 +538,7 @@ mirres=mirrms(f);
 	<text>
 		% Five peaks of fluctuation curves summed across all bands
 		% Default settings: calculated for aprr. 10 second frames
-		s = mirsegment(input_file, num2cell(0:10.4025396825:10000));
+		s = mirsegment(input_file, 0:10.4025396825:10000);
 		fluct = mirfluctuation(s,'Summary');
 		mirres = mirpeaks(fluct, 'Total', 5);
 		res=mirgetdata(mirres);

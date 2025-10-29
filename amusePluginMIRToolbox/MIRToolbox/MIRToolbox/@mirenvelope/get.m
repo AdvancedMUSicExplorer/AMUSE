@@ -9,8 +9,6 @@ switch propName
         val = e.hwr;
     case 'Diff'
         val = e.diff;
-    case 'Log';
-        val = e.log;
     case 'Phase'
         val = e.phase;
     otherwise
