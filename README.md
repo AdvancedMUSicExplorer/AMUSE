@@ -1,4 +1,4 @@
-|AMUSE framework (Advanced MUsic Explorer) v0.3 beta|
+|AMUSE framework (Advanced MUsic Explorer) v0.4 beta|
 |---------------------------------------------------|
 
 Copyright 2006-2025 by code authors
