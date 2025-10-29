@@ -1,7 +1,7 @@
 |AMUSE framework (Advanced MUsic Explorer) v0.3 beta|
 |---------------------------------------------------|
 
-Copyright 2006-2021 by code authors
+Copyright 2006-2025 by code authors
 
 For more details see the manual:
 <https://github.com/AdvancedMUSicExplorer/AMUSE/blob/master/amuse/docs/user_manual.pdf>
