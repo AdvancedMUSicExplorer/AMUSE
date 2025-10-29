@@ -395,14 +395,9 @@ public class AudioFileConversion {
     }
 
     private static void sampleToTargetSize(File file, int targetKHZ, boolean isReduceToMono) throws UnsupportedAudioFileException, IOException {
-        AudioFormat format = AudioSystem.getAudioFileFormat(file).getFormat();
         File tmpFile = new File(file.getParent() + File.separator + "tmp_" + file.getName());
         fileCopy(file, tmpFile);
-        float hz = format.getSampleRate();
-        while (hz > targetKHZ) {
-		    hz = hz / 2;
-		}
-	        SampleRateConverter.changeFormat(tmpFile, file, hz, isReduceToMono);
-	        tmpFile.delete();
-	    }
+        SampleRateConverter.changeFormat(tmpFile, file, targetKHZ, isReduceToMono);
+	    tmpFile.delete();
+	}
 }

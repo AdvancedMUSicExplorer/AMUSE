@@ -37,7 +37,7 @@ wlength = 512;
 woffset = wlength;
 
 % create prefix for AMUSE ARFF feature file
-p=strfind(input_file,'/');
+p=strfind(input_file,filesep);
 k=strfind(input_file,'.');
 output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 </text>
@@ -46,7 +46,7 @@ output_file_prefix = [output_dir,'/',input_file(p(end)+1:k(end)-1),'_'];
 <transformContent>
         <text>
 	  % Split the file name as required for wav_to_audio
-	  p=strfind(input_file,'/');
+	  p=strfind(input_file,filesep);
 	  dir_abs = input_file(1:p(end-4));
 	  dir_rel = input_file(p(end-4)+1:p(end));
 	  wavfilename = input_file(p(end)+1:length(input_file));

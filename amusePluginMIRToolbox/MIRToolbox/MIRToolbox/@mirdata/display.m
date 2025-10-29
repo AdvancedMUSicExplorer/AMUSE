@@ -1,4 +1,4 @@
-function display(d,axis,tracks)
+function display(d)
 % MIRDATA/DISPLAY display of a MIR data
 
 ST = dbstack;
@@ -7,12 +7,4 @@ if strcmp(ST(end).file,'arrayviewfunc.m')
     return
 end
 
-if nargin<2
-    axis = [];
-end
-
-if nargin<3
-    tracks = [];
-end
-
-mirdisplay(d,inputname(1),axis,tracks);
+mirdisplay(d,inputname(1));

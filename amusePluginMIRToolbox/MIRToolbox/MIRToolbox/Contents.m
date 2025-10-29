@@ -1,5 +1,5 @@
 % MIRtoolbox
-% Version 1.4 30-May-2012
+% Version 1.8.1 30-July-2021
 %
 % A more detailed documentation of each function is available using the
 % help command. For instance, type help miraudio.
@@ -12,6 +12,7 @@
 % mirframe         - Decomposes into successive frames
 % mirsegment       - Decomposes into successive segments
 % mirlength        - Temporal length
+% mirpeaks         - Peak picking
 %
 %DATA OUTPUT
 % mirgetdata       - Return result as a Matlab standard structure
@@ -31,12 +32,18 @@
 % mirenvelope      - Amplitude envelope (global shape of the waveform)
 % mironsets        - Note onset positions and characteristics
 % mirattacktime    - Duration of note attacks
+% mirdecaytime     - Duration of note decays
 % mirattackslope   - Average slope of note attacks
+% mirdecayslope    - Average slope of note decays
 % mirattackleap    - Change of amplitude in note attacks
+% mirdecayleap     - Change of amplitude in note decays
+% mirduration      - Note duration from attack to decay
 % mireventdensity  - Average frequency of events
 %
 %RHYTHM
 % mirtempo         - Tempo (in beats per minute)
+% mirmetre         - Metrical analysis
+% mirmetroid       - Dynamic metrical centroid and strength
 % mirfluctuation   - Fluctuation strength (periodicities in each channel)
 % mirbeatspectrum  - Beat spectrum, characterizing the rhythmic content
 % mirpulseclarity  - Rhythmic clarity, i.e., beat strength

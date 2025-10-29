@@ -38,7 +38,8 @@ if isamir(x,'miraudio')
                                   option.frame.hop.val,...
                                   option.frame.hop.unit,...
                                   option.frame.phase.val,...
-                                  option.frame.phase.unit);
+                                  option.frame.phase.unit,...
+                                  option.frame.phase.atend);
     else
         s = mirspectrum(x);
     end
@@ -52,7 +53,8 @@ if isempty(option.f0)
                                       option.frame.hop.val,...
                                       option.frame.hop.unit,...
                                       option.frame.phase.val,...
-                                      option.frame.phase.unit);
+                                      option.frame.phase.unit,...
+                                      option.frame.phase.atend);
     else
         p = mirpitch(x,'Mono');
     end
@@ -64,11 +66,13 @@ type = {'mirscalar','mirspectrum','mirscalar'};
 
 
 function ih = main(x,option,postoption)
-if isa(x{2},'mirdesign')
-    x = x{1};
+if iscell(x)
+    s = x{1};
+    p = x{2};
+else
+    s = x;
+    p = postoption.new;
 end
-s = x{1};
-p = x{2};
 if iscell(p)
     p = p{1};
 end
@@ -98,18 +102,19 @@ for h = 1:length(m)
         end
         for j = 1:size(mi,3)
             for k = 1:size(mi,2)
-                mk = mi(:,k,j);
-                fk = fi(:,k,j);
-                pfk = pfi(:,k);
+                mk = mi(:,k,j); % Spectrum magnitudes
+                fk = fi(:,k,j); % Spectrum frequencies
+                pfk = pfi(:,k); % Pitch frequency
                 if isempty(pfk{1})
                     v{h}{i}(1,k,j) = NaN;
                 else
-                    r = fk/pfk{1}(1);
-                    rr = 2*abs(r-round(r));
+                    r = fk/pfk{1}(1);   % Spectrum frequencies wrt pitch
+                    rr = 2*abs(r-round(r)); % Triangular weighting curve
                     if isempty(rr)
                         v{h}{i}(1,k,j) = NaN;
                     else
                         v{h}{i}(1,k,j) = sum(rr.*mk) / sum(mk);
+                        % Averaging of weighted spectral energy
                     end
                 end
             end

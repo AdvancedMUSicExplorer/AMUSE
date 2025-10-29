@@ -46,7 +46,7 @@ function varargout = mirchromagram(orig,varargin)
 %           chromagram in number of bins per octave.
 %               Default value, r = 12.
 %
-% Gómez, E. (2006). Tonal description of music audio signal. Phd thesis, 
+% G?mez, E. (2006). Tonal description of music audio signal. Phd thesis, 
 %   Universitat Pompeu Fabra, Barcelona .
 
         cen.key = 'Center';
@@ -109,6 +109,11 @@ function varargout = mirchromagram(orig,varargin)
         transp.default = 0;
     option.transp = transp;
    
+        db.key = 'dB';
+        db.type = 'Boolean';
+        db.default = 0;
+    option.db = db;
+
 specif.option = option;
 specif.defaultframelength = .2;
 specif.defaultframehop = .05;
@@ -128,7 +133,8 @@ if isamir(x,'mirtemporal') || isamir(x,'mirspectrum')
         %   between the first two bins of the chromagram 
         
     x = mirspectrum(x,'dB',option.thr,'Min',freqmin,'Max',freqmax,...
-                      'NormalInput','MinRes',option.res,'OctaveRatio',.85);
+                      'NormalInput','MinRes',option.res,'OctaveRatio',.85,...
+                      'dB',option.db);
                   %freqres*.5,...
                   %    'WarningRes',freqres);
 end

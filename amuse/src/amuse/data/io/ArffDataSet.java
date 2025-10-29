@@ -41,8 +41,6 @@ import amuse.data.io.attributes.NominalAttribute;
 import amuse.data.io.attributes.NumericAttribute;
 import amuse.data.io.attributes.StringAttribute;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * DataSet is used to represent data vectors in Amuse and is closely related to
  * the <a
@@ -325,7 +323,7 @@ public class ArffDataSet extends DataSetAbstract {
 	 * java.lang.Object)
 	 */
 	public void addValue(Attribute attribute, Object value) {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	private void assertInBuffer(int index) {

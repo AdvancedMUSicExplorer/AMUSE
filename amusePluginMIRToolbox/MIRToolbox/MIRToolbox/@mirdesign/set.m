@@ -43,6 +43,8 @@ while length(propertyArgIn) >= 2,
            a.frame.hop.unit = val;
        case 'FramePhaseUnit'
            a.frame.phase.unit = val;
+       case 'FramePhaseAtEnd'
+           a.frame.phase.atend = val;
        case 'FrameEval'
            a.frame.eval = val;
        case 'FrameDontChunk'
@@ -63,8 +65,6 @@ while length(propertyArgIn) >= 2,
            a.stored = val;
        case 'Index'
            a.index = val;
-       case 'TmpFile'
-           a.tmpfile = val;
        case 'TmpOf'
            a.tmpof = val;
        case 'ChunkDecomposed'
@@ -81,6 +81,8 @@ while length(propertyArgIn) >= 2,
            a.channel = val;
        case 'Scale'
            a.scale = val;
+       case 'ChunkSizeFactor'
+           a.chunksizefactor = val;
        otherwise
            error(['Unknown MIRdesign property: ' prop])
    end

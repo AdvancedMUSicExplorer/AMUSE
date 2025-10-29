@@ -284,10 +284,7 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 		try {
 			List<String> commands = new ArrayList<String>();
 			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
-			commands.add("-nodisplay");
 			commands.add("-nosplash");
-			commands.add("-nojvm");
-			commands.add("-r");
 			File inputBatchFile = new File(properties.getProperty("inputExtractorBatch"));
 			String inputBatchName = inputBatchFile.getName();
 			inputBatchName = inputBatchName.substring(0, inputBatchName.lastIndexOf("."));
@@ -295,14 +292,23 @@ public class MIRToolboxAdapter extends AmuseTask implements ExtractorInterface {
 			if(properties.getProperty("inputExtractorBatch").startsWith(File.separator)) {
 				inputBatchFolder = inputBatchFile.getParent();
 			}
+			if (System.getProperty("os.name").startsWith("Windows"))
+			{
+				commands.add("-batch");
+			}
+			else
+			{
+				commands.add("-nodisplay");
+				commands.add("-nojvm");
+				commands.add("-r");
+			}
+			
 			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
 			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "MIRToolbox.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(inputBatchFolder));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
-			
-			
 			// Monitor the path that contains the log file
 			WatchService watcher = FileSystems.getDefault().newWatchService();
 			Path pathToWatch = FileSystems.getDefault().getPath(properties.getProperty("extractorFolder"));

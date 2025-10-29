@@ -213,19 +213,48 @@ public class PluginRemover {
 	 */
 	private void removePluginJar() throws SchedulerException {
 		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"Deleting the plugin jar...");
-		
+		boolean isRemoved = false;
 		File pathToPluginJar = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "lib" + File.separator + "plugins" + File.separator + removeProperties.getProperty("PLUGIN_JAR"));
-		
 		// Remove plugin jar
 		if(pathToPluginJar.exists()) {
-			boolean isRemoved = FileOperations.delete(pathToPluginJar, Level.INFO);
+			 isRemoved= FileOperations.delete(pathToPluginJar, Level.INFO);
+			if(!isRemoved)
+			{
+			try {
+				// wait 5 seconds and try again
+			    Thread.sleep(5000);  
+			    isRemoved = FileOperations.delete(pathToPluginJar, Level.INFO);
+				} catch (InterruptedException e) {
+				    e.printStackTrace();
+				}
 			
-			if(!isRemoved) {
-				throw new SchedulerException("Could not remove the plugin jar!");
+			if (!isRemoved)
+			{
+				// if file still exists, create an arff file that is going to delete this jar file the next time application launches
+					File fileToDelete = new File( AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginRemover.arff");
+					AmuseLogger.write(PluginRemover.class.getName(),Level.ERROR,"Could not remove the plugin jar! It will be deleted with the next program launch.");
+					try {
+						File pluginRemover = new File(AmusePreferences.get(KeysStringValue.AMUSE_PATH) + File.separator + "config" + File.separator + "pluginRemover.arff");
+						DataOutputStream values_writer = new DataOutputStream(new FileOutputStream(pluginRemover, true));
+						String sep = System.getProperty("line.separator");
+						if (pluginRemover.length() == 0)
+						{
+							values_writer.writeBytes("% All jar files that need to be deleted" + sep);
+						}						
+						values_writer.writeBytes(pathToPluginJar + sep);
+						values_writer.close();
+						}
+						catch (IOException e)
+						{
+							AmuseLogger.write(PluginRemover.class.getName(),Level.ERROR,e.getMessage());
+						}
+				
 			}
 		}
-		
-		AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"..deleting finished");
+		}
+		// if jar file is deleted, show this message
+		if (isRemoved)
+			AmuseLogger.write(PluginRemover.class.getName(),Level.INFO,"..deleting finished"); 
 	}
 	
 	/**

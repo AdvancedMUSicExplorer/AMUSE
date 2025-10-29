@@ -146,6 +146,8 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 			// Train the model
 			Operator pca = OperatorService.createOperator(PCA.class);
 			pca.setParameter("number_of_components", numberOfComponents.toString());
+			if (numberOfComponents == 0) 
+				throw new IllegalArgumentException();
 			pca.setParameter("dimensionality_reduction", "fixed_number");
 			process.getRootOperator().getSubprocess(0).addOperator(pca);
 			
@@ -163,7 +165,12 @@ public class PrincipalComponentsAnalysis extends AmuseTask implements DimensionP
 			IOContainer result = process.run(new IOContainer(exampleSet));
 			
 			exampleSet = result.get(ExampleSet.class);
-		} catch(OperatorException e) {
+		}
+			catch (IllegalArgumentException e) 
+		{
+				throw new NodeException("The dimensionality of the input can't be 0 ");
+		}
+			catch(OperatorException e) {
 			throw new NodeException("Problem occured during PCA: " + e.getMessage());
 		} catch (OperatorCreationException e) {
 			throw new NodeException("Problem occured during PCA operator creation: " + e.getMessage());

@@ -8,6 +8,7 @@ ps = p.start;
 pe = p.end;
 pm = p.mean;
 deg = p.degrees;
+stb = p.stable;
 s = mirscalar(p);
 while length(propertyArgIn) >= 2,
    prop = propertyArgIn{1};
@@ -16,6 +17,16 @@ while length(propertyArgIn) >= 2,
    switch prop
        case 'Amplitude'
            a = val;
+       case 'Start'
+           ps = val;
+       case 'End'
+           pe = val;
+       case 'Mean'
+           pm = val;
+       case 'Degrees'
+           deg = val;
+       case 'Stable'
+           stb = val;
        otherwise
            s = set(s,prop,val);
    end
@@ -25,4 +36,5 @@ pp.start = ps;
 pp.end = pe;
 pp.mean = pm;
 pp.degrees = deg;
+pp.stable = stb;
 pp = class(pp,'mirpitch',s);

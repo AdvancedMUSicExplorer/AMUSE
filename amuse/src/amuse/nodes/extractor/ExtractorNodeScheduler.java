@@ -33,6 +33,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,8 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		String musicDatabasePath = AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
 		// Make sure music database path ends with file separator to catch tracks that have the data base path as suffix but are not in the database
 		musicDatabasePath += musicDatabasePath.endsWith(File.separator) ? "" : File.separator;
-		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath)) {
+		boolean osWindows =  System.getProperty("os.name").startsWith("Windows");
+		if(((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).startsWith(musicDatabasePath) && ! osWindows ) {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0).substring(new File(AmusePreferences.get(KeysStringValue.MUSIC_DATABASE)).getPath().length());
 		} else {
 			relativeName = ((ExtractionConfiguration)extractorConfiguration).getMusicFileList().getFileAt(0);
@@ -673,21 +675,55 @@ public class ExtractorNodeScheduler extends NodeScheduler {
 		if(copyDirectlyToDatabase) {
 			path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
 		} else {
-			for(int i=0;i<pathsArray.size();i++) {
+			
 				path2Create = new StringBuffer();
 				path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
-				for(int j=0;j<i+1;j++) {
-					path2Create.append(File.separator);
+				path2Create.append(File.separator);
+				if ( System.getProperty("os.name").startsWith("Windows")) // special path creation for windows
+				{
+					String musicDatabase =  AmusePreferences.get(KeysStringValue.MUSIC_DATABASE);
+					String normalizedDatabasePath = musicDatabase.replace("\\\\", "\\");
+					String relativePath = "";
+					if (inputFileName.startsWith( normalizedDatabasePath)) // if music file is in database
+					{
+						relativePath = inputFileName.substring(normalizedDatabasePath.length() + 1);
+					}
+					else // if it comes from somewhere else
+					{
+						String[] pathParts = inputFileName.split(File.separator.equals("\\") ? "\\\\" : File.separator);
+				        
+				        // Reconstruct the path starting from the second segment (not using disk name in path creation)
+				        if (pathParts.length > 1) {
+				            String.join(File.separator, Arrays.copyOfRange(pathParts, 1, pathParts.length));
+				            relativePath = String.join(File.separator, Arrays.copyOfRange(pathParts, 1, pathParts.length)); 
+				        }
+					}
+					int lastDotIndex = relativePath.lastIndexOf("."); // remove file extension
+		            if (lastDotIndex != -1) { 
+			            relativePath = relativePath.substring(0, lastDotIndex);
+			        }
+		            path2Create.append(relativePath);
 					
-					// Cut the extension for the folder with music file name
-					if(i == pathsArray.size()-1 && j == i) {
-						int l = pathsArray.get(j).lastIndexOf(".");
-						path2Create.append(pathsArray.get(j).substring(0,l));
-					} else {
-						path2Create.append(pathsArray.get(j));
+				}
+								
+				else {					// old part creation for other os
+					for(int i=0;i<pathsArray.size();i++) {
+						path2Create = new StringBuffer();
+						path2Create.append(((ExtractionConfiguration)this.taskConfiguration).getFeatureDatabase());
+						for(int j=0;j<i+1;j++) {
+							path2Create.append(File.separator);
+							
+							// Cut the extension for the folder with music file name
+							if(i == pathsArray.size()-1 && j == i) {
+								int l = pathsArray.get(j).lastIndexOf(".");
+								path2Create.append(pathsArray.get(j).substring(0,l));
+							} else {
+								path2Create.append(pathsArray.get(j));
+							}
+						}
 					}
 				}
-			}
+			
 		}
 	
 		// Move the extracted features

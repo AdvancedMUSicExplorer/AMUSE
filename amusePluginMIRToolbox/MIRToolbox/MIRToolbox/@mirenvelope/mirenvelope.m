@@ -96,7 +96,7 @@ function varargout = mirenvelope(orig,varargin)
     
         filter.key = 'FilterType';
         filter.type = 'String';
-        filter.choice = {'IIR','HalfHann',0};
+        filter.choice = {'IIR','HalfHann','Butter',0};
         if isamir(orig,'mirenvelope')
             filter.default = 0; % no more envelope extraction, already done
         else
@@ -110,14 +110,11 @@ function varargout = mirenvelope(orig,varargin)
             tau.default = .02;
     option.tau = tau;
     
-        zp.key = 'ZeroPhase'; % internal use: for manual filtfilt
-        zp.type = 'Boolean';
-        if isamir(orig,'mirenvelope')
-            zp.default = 0;
-        else
-            zp.default = NaN;
-        end
-    option.zp = zp;
+            %% options related to 'Butter': 
+            cutoff.key = 'CutOff';
+            cutoff.type = 'Integer';
+            cutoff.default = 37;
+    option.cutoff = cutoff;
 
         ds.key = {'Down','PostDecim'};
         ds.type = 'Integer';
@@ -126,7 +123,7 @@ function varargout = mirenvelope(orig,varargin)
         else
             ds.default = NaN; % 0 if 'PreDecim' is used, else 16
         end
-        ds.when = 'After';
+        ds.when = 'Both';
         ds.chunkcombine = 'During';
     option.ds = ds;
 
@@ -155,7 +152,39 @@ function varargout = mirenvelope(orig,varargin)
         complex.default = 0;
         complex.when = 'After';
     option.complex = complex;    
+
+        powerspectrum.key = 'PowerSpectrum';
+        powerspectrum.type = 'Boolean';
+        powerspectrum.default = 1;
+    option.powerspectrum = powerspectrum;
+
+        timesmooth.key = 'TimeSmooth';
+        timesmooth.type = 'Boolean';
+        timesmooth.default = 0;
+        timesmooth.keydefault = 10;
+    option.timesmooth = timesmooth;
     
+        terhardt.key = 'Terhardt';
+        terhardt.type = 'Boolean';
+        terhardt.default = 0;
+    option.terhardt = terhardt;
+    
+        frame.key = 'Frame';
+        frame.type = 'Integer';
+        frame.number = 2;
+        frame.default = [.1 .1];
+    option.frame = frame;
+    
+        presilence.key = 'PreSilence';
+        presilence.type = 'Boolean';
+        presilence.default = 0;
+    option.presilence = presilence;
+
+        postsilence.key = 'PostSilence';
+        postsilence.type = 'Boolean';
+        postsilence.default = 0;
+    option.postsilence = postsilence;
+
 %% Options related to all methods:
     
         sampling.key = 'Sampling';
@@ -195,8 +224,14 @@ function varargout = mirenvelope(orig,varargin)
         oplog.when = 'After';
     option.log = oplog;
 
+        minlog.key = 'MinLog';
+        minlog.type = 'Integer';
+        minlog.default = 0;
+        minlog.when = 'After';
+    option.minlog = minlog;
+
         oppow.key = 'Power';
-        oppow.type = 'Integer';
+        oppow.type = 'Boolean';
         oppow.default = 0;
         oppow.when = 'After';
     option.power = oppow;
@@ -235,9 +270,17 @@ function varargout = mirenvelope(orig,varargin)
         gauss.when = 'After';
     option.gauss = gauss;
 
+   %     iir.key = 'IIR';
+   %     iir.type = 'Boolean';
+   %     iir.default = 0;
+   %     iir.when = 'After';
+   % option.iir = iir;
+
         norm.key = 'Normal';
-        norm.type = 'Boolean';
+        norm.type = 'String';
+        norm.choice = {0,1,'AcrossSegments'};
         norm.default = 0;
+        norm.keydefault = 1;
         norm.when = 'After';
     option.norm = norm;
 
@@ -245,13 +288,7 @@ function varargout = mirenvelope(orig,varargin)
         presel.choice = {'Klapuri06'};
         presel.default = 0;
     option.presel = presel;    
-    
-        frame.key = 'Frame';
-        frame.type = 'Integer';
-        frame.number = 2;
-        frame.default = [.1 .1];
-    option.frame = frame;
-        
+            
 specif.option = option;
 
 specif.eachchunk = 'Normal';
@@ -263,24 +300,33 @@ varargout = mirfunction(@mirenvelope,orig,varargin,nargout,specif,@init,@main);
 
 function [x type] = init(x,option)
 type = 'mirenvelope';
-if isamir(x,'mirscalar')
+if isamir(x,'mirscalar') %% Should return in other cases as well?
     return
 end
 if ischar(option.presel) && strcmpi(option.presel,'Klapuri06')
     option.method = 'Spectro';
 end
 if not(isamir(x,'mirenvelope'))
+    if option.presilence && isa(x,'mirdesign')
+        x.presilence = 1;
+    end
+    if option.postsilence && isa(x,'mirdesign')
+        x.postsilence = 1;
+    end
     if strcmpi(option.method,'Filter')
-        if isnan(option.zp)
-            if strcmpi(option.filter,'IIR')
-                option.zp = 1;
-            else
-                option.zp = 0;
+        if isa(x,'mirdesign')
+            ds = option.ds(end);
+            if isnan(ds)
+                if option.decim
+                    ds = 0;
+                else
+                    ds = 16;
+                end
             end
-        end
-        if option.zp == 1
-            x = mirenvelope(x,'ZeroPhase',2,'Down',1,...
-                              'Tau',option.tau,'PreDecim',option.decim);
+            if ~ds
+                ds = 1;
+            end
+            x = set(x,'Overlap',[3200,ds]);
         end
     elseif strcmpi(option.method,'Spectro')
         x = mirspectrum(x,'Frame',option.frame.length.val,...
@@ -289,9 +335,13 @@ if not(isamir(x,'mirenvelope'))
                                   option.frame.hop.unit,...
                                   option.frame.phase.val,...
                                   option.frame.phase.unit,...
-                                  'Window','hanning',...
-                                  option.band,'Power');
-
+                                  option.frame.phase.atend,...
+                                  option.presilence,option.postsilence,...
+                                  'Window','hanning',option.band,...
+                                  ...'dB',
+                                  'Power',option.powerspectrum,...
+                                  'TimeSmooth',option.timesmooth,...
+                                  'Terhardt',option.terhardt);%,'Mel');
     end
 end
 
@@ -312,16 +362,20 @@ if isamir(orig,'mirscalar')
     e.downsampl = 0;
     e.hwr = 0;
     e.diff = 0;
-    e.method = 'Spectro';
+    e.log = 0;
+    e.method = 'Scalar';
     e.phase = {{}};
     e = class(e,'mirenvelope',mirtemporal(orig));
-    e = set(e,'Title','Envelope','Data',d,'Pos',p,'FramePos',{{}});
+    e = set(e,'Title','Envelope','Data',d,'Pos',p,...
+              'FramePos',{{p{1}{1}([1 end])}},...
+              'Sampling',{1/diff(p{1}{1}([1 2]))});
     postoption.trim = 0;
     postoption.ds = 0;
     e = post(e,postoption);
     return
 end
-if isfield(option,'presel') && ischar(option.presel) && ...
+
+if isfield(option,'presel') && ischar(option.presel) && ... %% does not work in chunk mode! option is empty afterchunk
         strcmpi(option.presel,'Klapuri06')
     option.method = 'Spectro';
     postoption.up = 2;
@@ -329,11 +383,14 @@ if isfield(option,'presel') && ischar(option.presel) && ...
     postoption.diffhwr = 1;
     postoption.lambda = .8;
 end
-if isfield(postoption,'ds') && isnan(postoption.ds)
-    if option.decim
-        postoption.ds = 0;
-    else
-        postoption.ds = 16;
+if isfield(postoption,'ds') 
+    postoption.ds = postoption.ds(1);
+    if isnan(postoption.ds)
+        if option.decim
+            postoption.ds = 0;
+        else
+            postoption.ds = 16;
+        end
     end
 end
 if not(isfield(option,'filter')) || not(ischar(option.filter))
@@ -348,7 +405,7 @@ elseif strcmpi(option.method,'Spectro')
         sr{h} = 0;
         for i = 1:length(d{h})
             if size(d{h}{i},3)>1 % Already in bands (channels in 3d dim)
-                d{h}{i} = permute(sum(d{h}{i}),[2 1 3]);
+                d{h}{i} = permute(sum(d{h}{i},1),[2 1 3]);
                 if ~isempty(ph)
                     ph{h}{i} = permute(ph{h}{i},[2 1 3]);
                 end
@@ -358,7 +415,7 @@ elseif strcmpi(option.method,'Spectro')
                     ph{h}{i} = permute(ph{h}{i},[2 3 1]);
                 end
             end
-            p{h}{i} = mean(fp{h}{i})';
+            p{h}{i} = mean(fp{h}{i})'; %fp{h}{i}(2,:)'; 
             if not(sr{h}) && size(fp{h}{i},2)>1
                 sr{h} = 1/(fp{h}{i}(1,2)-fp{h}{i}(1,1));
             end
@@ -371,29 +428,20 @@ elseif strcmpi(option.method,'Spectro')
     e.downsampl = 0;
     e.hwr = 0;
     e.diff = 0;
-    %e.todelete = {};
+    e.log = 0;
     e.method = 'Spectro';
     e.phase = ph;
     e = class(e,'mirenvelope',mirtemporal(orig));
     e = set(e,'Title','Envelope','Data',d,'Pos',p,...
-              'Sampling',sr,'Channels',ch,'FramePos',{{p{1}{1}([1 end])}});
+              'Sampling',sr,'Channels',ch,'FramePos',{{fp{1}{1}([1 end])'}});
     postoption.trim = 0;
     postoption.ds = 0;
     e = post(e,postoption);
 else
-    if isnan(option.zp)
-        if strcmpi(option.filter,'IIR')
-            option.zp = 1;
-        else
-            option.zp = 0;
-        end
-    end
-    if option.zp == 1
-        option.decim = 0;
-    end
     e.downsampl = 1;
     e.hwr = 0;
     e.diff = 0;
+    e.log = 0;
     e.method = option.filter;
     e.phase = {};
     e = class(e,'mirenvelope',mirtemporal(orig));
@@ -402,7 +450,7 @@ else
     sig = get(e,'Data');
     x = get(e,'Pos');
     sr = get(e,'Sampling');
-    disp('Extracting envelope...')
+    %disp('Extracting envelope...')
     d = cell(1,length(sig));
     for k = 1:length(sig)
         if length(sig)==1
@@ -421,13 +469,13 @@ else
             a = 1;
             b = hann(sr{k}*.4);
             b = b(ceil(length(b)/2):end);
+        elseif strcmpi(option.filter,'Butter')
+            w = option.cutoff / ( sr{k}/2 );
+            [b,a] = butter(3, w);
         end
         d{k} = cell(1,length(sig{k}));
         for i = 1:length(sig{k})
             sigi = sig{k}{i};
-            if option.zp == 2
-                sigi = flipdim(sigi,1);
-            end
             if option.hilb
                 try
                     for h = 1:size(sigi,2)
@@ -454,35 +502,34 @@ else
                 x{k}{i} = x{k}{i}(1:option.decim:end,:,:);
             end
             
-            % tmp = filtfilt(1-a,[1 -a],sigi); % zero-phase IIR filter for smoothing the envelope
-
-            % Manual filtfilt
-            emptystate = isempty(state);
             tmp = zeros(size(sigi));
+
+            % zero-phase IIR filter for smoothing the envelope
             for c = 1:size(sigi,3)
-                if emptystate
-                    [tmp(:,:,c) state(:,c,1)] = filter(b,a,sigi(:,:,c));
-                else
-                    [tmp(:,:,c) state(:,c,1)] = filter(b,a,sigi(:,:,c),...
-                                                        state(:,c,1));
-                end
+                tmp(:,:,c) = filtfilt(b,a,sigi(:,:,c));
             end
+
+%             % Manual filtfilt
+%             emptystate = isempty(state);
+%             for c = 1:size(sigi,3)
+%                 if emptystate
+%                     [tmp(:,:,c) state(:,c,1)] = filter(b,a,sigi(:,:,c));
+%                 else
+%                     [tmp(:,:,c) state(:,c,1)] = filter(b,a,sigi(:,:,c),...
+%                                                         state(:,c,1));
+%                 end
+%             end
             
             tmp = max(tmp,0); % For security reason...
-            if option.zp == 2
-                tmp = flipdim(tmp,1);
-            end
             d{k}{i} = tmp;
             %td{k} = round(option.tau*sr{k}*1.5); 
         end
     end
-    e = set(e,'Data',d,'Pos',x,'Sampling',sr); %,'ToDelete',td
+    e = set(e,'Data',d,'Pos',x,'Sampling',sr);
     if length(sig)==1
         e = settmp(e,state);
     end
-    if not(option.zp == 2)
-        e = post(e,postoption);
-    end
+    e = post(e,postoption);
 end
 if isfield(option,'presel') && ischar(option.presel) && ...
         strcmpi(option.presel,'Klapuri06')
@@ -503,19 +550,24 @@ sr = get(e,'Sampling');
 ds = get(e,'DownSampling');
 ph = get(e,'Phase');
 for k = 1:length(d)
-    if isfield(postoption,'sampling')
-        if postoption.sampling
-            newsr = postoption.sampling;
-        elseif isfield(postoption,'ds') && postoption.ds>1
-            newsr = sr{k}/postoption.ds;
-        else
-            newsr = sr{k};
-        end
+    newsr = sr{k};
+    if isfield(postoption,'sampling') && postoption.sampling
+        newsr = postoption.sampling;
+    elseif isfield(postoption,'ds') && postoption.ds>1
+        newsr = sr{k}/postoption.ds;
     end
     if isfield(postoption,'up') && postoption.up
         [z,p,gain] = butter(6,10/newsr/postoption.up*2,'low');
         [sos,g] = zp2sos(z,p,gain);
         Hd = dfilt.df2tsos(sos,g);
+    end
+    if isfield(postoption,'norm') && ...
+            ischar(postoption.norm) && ...
+            strcmpi(postoption.norm,'AcrossSegments')
+        mdk = 0;
+        for i = 1:length(d{k})
+            mdk = max(mdk,max(abs(d{k}{i})));
+        end
     end
     for i = 1:length(d{k})
         if isfield(postoption,'sampling') && postoption.sampling
@@ -544,108 +596,135 @@ for k = 1:length(d)
             tp{k}{i} = tp{k}{i}(1:ds:end,:,:); % Downsampling...
             d{k}{i} = d{k}{i}(1:ds:end,:,:);
         end
-        if isfield(postoption,'sampling')
-            if not(strcmpi(e.method,'Spectro')) && postoption.trim 
-                tdk = round(newsr*.1); 
-                d{k}{i}(1:tdk,:,:) = repmat(d{k}{i}(tdk,:,:),[tdk,1,1]); 
-                d{k}{i}(end-tdk+1:end,:,:) = repmat(d{k}{i}(end-tdk,:,:),[tdk,1,1]);
+        if not(strcmpi(e.method,'Spectro')) && isfield(postoption,'trim') && postoption.trim
+            tdk = round(newsr*.1);
+            d{k}{i}(1:tdk,:,:) = repmat(d{k}{i}(tdk,:,:),[tdk,1,1]);
+            d{k}{i}(end-tdk+1:end,:,:) = repmat(d{k}{i}(end-tdk,:,:),[tdk,1,1]);
+        end
+        if isfield(postoption,'log') && postoption.log && ~get(e,'Log')
+            d{k}{i} = log10(d{k}{i});
+        end
+        if isfield(postoption,'mu') && postoption.mu
+            dki = max(0,d{k}{i});
+            mu = postoption.mu;
+            dki = log(1+mu*dki)/log(1+mu);
+            dki(~isfinite(d{k}{i})) = NaN;
+            d{k}{i} = dki;
+        end
+        if isfield(postoption,'power') && postoption.power
+            d{k}{i} = d{k}{i}.^2;
+        end
+        if isfield(postoption,'up') && postoption.up
+            dki = zeros(size(d{k}{i},1).*postoption.up,...
+                size(d{k}{i},2),size(d{k}{i},3));
+            dki(1:postoption.up:end,:,:) = d{k}{i};
+            dki = filter(Hd,[dki;...
+                zeros(6,size(d{k}{i},2),size(d{k}{i},3))]);
+            d{k}{i} = dki(1+ceil(6/2):end-floor(6/2),:,:);
+            tki = zeros(size(tp{k}{i},1).*postoption.up,...
+                size(tp{k}{i},2),...
+                size(tp{k}{i},3));
+            dt = repmat((tp{k}{i}(2)-tp{k}{i}(1))...
+                /postoption.up,...
+                [size(tp{k}{i},1),1,1]);
+            for j = 1:postoption.up
+                tki(j:postoption.up:end,:,:) = tp{k}{i}+dt*(j-1);
             end
-            if postoption.log
-                d{k}{i} = log10(d{k}{i});
-            end
-            if postoption.mu
-                dki = max(0,d{k}{i});
-                mu = postoption.mu;
-                dki = log(1+mu*dki)/log(1+mu);
-                dki(~isfinite(d{k}{i})) = NaN;
-                d{k}{i} = dki;
-            end
-            if postoption.power
-                d{k}{i} = d{k}{i}.^2;
-            end
-            if postoption.up
-                dki = zeros(size(d{k}{i},1).*postoption.up,...
-                            size(d{k}{i},2),size(d{k}{i},3));
-                dki(1:postoption.up:end,:,:) = d{k}{i};
-                dki = filter(Hd,[dki;...
-                                zeros(6,size(d{k}{i},2),size(d{k}{i},3))]);
-                d{k}{i} = dki(1+ceil(6/2):end-floor(6/2),:,:);
-                tki = zeros(size(tp{k}{i},1).*postoption.up,...
-                            size(tp{k}{i},2),...
-                            size(tp{k}{i},3));
-                dt = repmat((tp{k}{i}(2)-tp{k}{i}(1))...
-                                /postoption.up,...
-                            [size(tp{k}{i},1),1,1]);
-                for j = 1:postoption.up
-                    tki(j:postoption.up:end,:,:) = tp{k}{i}+dt*(j-1);
-                end
-                tp{k}{i} = tki;
-                newsr = sr{k}*postoption.up;
-            end
-            if (postoption.diffhwr || postoption.diff) && ...
-                    not(get(e,'Diff'))
-                tp{k}{i} = tp{k}{i}(1:end-1,:,:);
+            tp{k}{i} = tki;
+            newsr = sr{k}*postoption.up;
+        end
+        if ((isfield(postoption,'diffhwr') && postoption.diffhwr) || ...
+                (isfield(postoption,'diff') && postoption.diff)) && ...
+                not(get(e,'Diff'))
+            tp{k}{i} = tp{k}{i}(1:end-1,:,:);
+            if ~isfield(postoption,'diffhwr')
+                order = postoption.diff;
+            elseif ~isfield(postoption,'diff')
+                order = postoption.diffhwr;
+            else
                 order = max(postoption.diffhwr,postoption.diff);
-                if postoption.complex
-                    dph = diff(ph{k}{i},2);
-                    dph = dph/(2*pi);% - round(dph/(2*pi));
-                    ddki = sqrt(d{k}{i}(3:end,:,:).^2 + d{k}{i}(2:end-1,:,:).^2 ...
-                                              - 2.*d{k}{i}(3:end,:,:)...
-                                                 .*d{k}{i}(2:end-1,:,:)...
-                                                 .*cos(dph));
-                    d{k}{i} = d{k}{i}(2:end,:,:); 
-                    tp{k}{i} = tp{k}{i}(2:end,:,:);
-                elseif order == 1
-                    ddki = diff(d{k}{i},1,1);
-                else
-                    b = firls(order,[0 0.9],[0 0.9*pi],'differentiator');
-                    ddki = filter(b,1,...
-                        [repmat(d{k}{i}(1,:,:),[order,1,1]);...
-                         d{k}{i};...
-                         repmat(d{k}{i}(end,:,:),[order,1,1])]);
-                    ddki = ddki(order+1:end-order-1,:,:);
-                end
-                if postoption.diffhwr
-                    ddki = hwr(ddki);
-                end
+            end
+            if isfield(postoption,'complex') && postoption.complex
+                dph = diff(ph{k}{i},2);
+                dph = dph/(2*pi);% - round(dph/(2*pi));
+                ddki = sqrt(d{k}{i}(3:end,:,:).^2 + d{k}{i}(2:end-1,:,:).^2 ...
+                    - 2.*d{k}{i}(3:end,:,:)...
+                    .*d{k}{i}(2:end-1,:,:)...
+                    .*cos(dph));
+                d{k}{i} = d{k}{i}(2:end,:,:);
+                tp{k}{i} = tp{k}{i}(2:end,:,:);
+            elseif order == 1
+                ddki = diff(d{k}{i},1,1);
+            else
+                b = firls(order,[0 0.9],[0 0.9*pi],'differentiator');
+                ddki = filter(b,1,...
+                    [repmat(d{k}{i}(1,:,:),[order,1,1]);...
+                    d{k}{i};...
+                    repmat(d{k}{i}(end,:,:),[order,1,1])]);
+                ddki = ddki(order+1:end-order-1,:,:);
+            end
+            if isfield(postoption,'diffhwr') && postoption.diffhwr
+                ddki = hwr(ddki);
+            end
+            if postoption.lambda == 1
+                d{k}{i} = ddki;
+            else
                 d{k}{i} = (1-postoption.lambda)*d{k}{i}(1:end-1,:,:)...
-                            + postoption.lambda*sr{k}/10*ddki;
+                    + postoption.lambda*sr{k}/10*ddki;
             end
-            if postoption.aver
-                y = filter(ones(1,postoption.aver),1,...
-                            [d{k}{i};zeros(postoption.aver,...
-                                           size(d{k}{i},2),...
-                                           size(d{k}{i},3))]);
-                d{k}{i} = y(1+ceil(postoption.aver/2):...
-                             end-floor(postoption.aver/2),:,:);
+        end
+        if isfield(postoption,'aver') && postoption.aver
+            y = filter(ones(1,postoption.aver),1,...
+                [d{k}{i};zeros(postoption.aver,...
+                size(d{k}{i},2),...
+                size(d{k}{i},3))]);
+            d{k}{i} = y(1+ceil(postoption.aver/2):...
+                end-floor(postoption.aver/2),:,:);
+        end
+        if isfield(postoption,'gauss') && postoption.gauss
+            sigma = postoption.gauss;
+            gauss = 1/sigma/2/pi...
+                *exp(- (-4*sigma:4*sigma).^2 /2/sigma^2);
+            y = filter(gauss,1,[d{k}{i};zeros(4*sigma,1,size(d{k}{i},3))]);
+            y = y(4*sigma:end,:,:);
+            d{k}{i} = y(1:size(d{k}{i},1),:,:);
+        end
+        %if postoption.iir
+        %    a2 = exp(-1/(.4*sr{k}));
+        %    d{k}{i} = filter(1-a2,[1 -a2],d{k}{i});
+        %                 %    [d{k}{i};zeros(postoption.filter,...
+        %                 %                   size(d{k}{i},2),...
+        %                 %                   size(d{k}{i},3))]);
+        %    %d{k}{i} = y(1+ceil(postoption.filter/2):...
+        %    %             end-floor(postoption.filter/2),:,:);
+        %end
+        if isfield(postoption,'chwr') && postoption.chwr
+            d{k}{i} = center(d{k}{i});
+            d{k}{i} = hwr(d{k}{i});
+        end
+        if isfield(postoption,'hwr') && postoption.hwr
+            d{k}{i} = hwr(d{k}{i});
+        end
+        if isfield(postoption,'c') && postoption.c
+            d{k}{i} = center(d{k}{i});
+        end
+        if get(e,'Log')
+            if isfield(postoption,'minlog') && postoption.minlog
+                d{k}{i}(d{k}{i} < -postoption.minlog) = NaN;
             end
-            if postoption.gauss
-                sigma = postoption.gauss;
-                gauss = 1/sigma/2/pi...
-                        *exp(- (-4*sigma:4*sigma).^2 /2/sigma^2);
-                y = filter(gauss,1,[d{k}{i};zeros(4*sigma,1,size(d{k}{i},3))]);
-                y = y(4*sigma:end,:,:);
-                d{k}{i} = y(1:size(d{k}{i},1),:,:);
+        else
+            if isfield(postoption,'norm')
+                if postoption.norm == 1
+                    d{k}{i} = d{k}{i}./repmat(max(abs(d{k}{i})),...
+                        [size(d{k}{i},1),1,1]);
+                elseif ischar(postoption.norm) && ...
+                        strcmpi(postoption.norm,'AcrossSegments')
+                    d{k}{i} = d{k}{i}./repmat(mdk,[size(d{k}{i},1),1,1]);
+                end
             end
-            if postoption.chwr
-                d{k}{i} = center(d{k}{i});
-                d{k}{i} = hwr(d{k}{i});
-            end
-            if postoption.hwr
-                d{k}{i} = hwr(d{k}{i});
-            end
-            if postoption.c
-                d{k}{i} = center(d{k}{i});
-            end    
-            if postoption.norm
-                d{k}{i} = d{k}{i}./repmat(max(abs(d{k}{i})),...
-                                         [size(d{k}{i},1),1,1]);
-            end        
         end
     end
-    if isfield(postoption,'sampling')
-        sr{k} = newsr;
-    end
+    sr{k} = newsr;
 end
 if isfield(postoption,'ds') && postoption.ds>1
     e = set(e,'DownSampling',postoption.ds,'Sampling',sr);
@@ -654,24 +733,22 @@ elseif isfield(postoption,'sampling') && postoption.sampling
 elseif isfield(postoption,'up') && postoption.up
     e = set(e,'Sampling',sr);
 end
-if isfield(postoption,'sampling')
-    if postoption.hwr
-        e = set(e,'Halfwave',1);
-    end
-    if postoption.diff
-        e = set(e,'Diff',1,'Halfwave',0,'Title','Differentiated envelope');
-    end
-    if postoption.diffhwr
-        e = set(e,'Diff',1,'Halfwave',1,'Centered',0);
-    end
-    if postoption.c
-        e = set(e,'Centered',1);
-    end
-    if postoption.chwr
-        e = set(e,'Halfwave',1,'Centered',1);
-    end
+if isfield(postoption,'hwr') && postoption.hwr
+    e = set(e,'Halfwave',1);
 end
-e = set(e,'Data',d,'Time',tp); 
-%if isfield(postoption,'frame') && isstruct(postoption.frame)
-%    e = mirframenow(e,postoption);
-%end
+if isfield(postoption,'diff') && postoption.diff
+    e = set(e,'Diff',1,'Halfwave',0,'Title','Differentiated envelope');
+end
+if isfield(postoption,'diffhwr') && postoption.diffhwr
+    e = set(e,'Diff',1,'Halfwave',1,'Centered',0);
+end
+if isfield(postoption,'c') && postoption.c
+    e = set(e,'Centered',1);
+end
+if isfield(postoption,'chwr') && postoption.chwr
+    e = set(e,'Halfwave',1,'Centered',1);
+end
+if isfield(postoption,'log') && postoption.log
+    e = set(e,'Log',1);
+end
+e = set(e,'Data',d,'Time',tp);

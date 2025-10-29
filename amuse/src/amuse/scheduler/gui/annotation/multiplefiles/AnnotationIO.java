@@ -14,6 +14,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
+
 import org.apache.log4j.Level;
 
 import amuse.data.io.ArffDataSet;
@@ -124,8 +125,16 @@ public class AnnotationIO {
 		loadedPath = path;
 		loadedDataSetName = dataSetName;
 	}
-
+	
+	private static String escapeForArff(String path) {
+	    if (path == null) return "?";
+	    return path.replace("\\", "\\\\");  // double every backslash
+	}
 	public void saveAnnotation(String path, String dataSetName){
+		String escapedPath = path;
+		if(!path.contains("\\\\") && System.getProperty("os.name").startsWith("Windows")) {
+			escapedPath = escapedPath.replace("\\", "\\\\");
+		}
 		DefaultTableModel tableModel = annotationController.getTableModel();
 		TableColumnModel columnModel = annotationController.getColumnModel();
 		PrintWriter writer = null;
@@ -173,7 +182,10 @@ public class AnnotationIO {
 			// Write the data of the attribute
 			writer.write("@DATA\n");
 			for(int row = 0; row < tableModel.getRowCount(); row++){
-				String rowData = row + ", '" + tableModel.getValueAt(row, 1) + "', milliseconds, 0, -1, ";
+				// changed!!!!
+				String rawPath = (String) tableModel.getValueAt(row, 1);
+				String safePath = escapeForArff(rawPath);
+				String rowData = row + ", '" + safePath + "', milliseconds, 0, -1, ";
 				for(int col = 2; col < columnModel.getColumnCount(); col++){
 					String value = tableModel.getValueAt(row, col) + "";
 					if(value.equals(null + "") || value.equals("")){
@@ -230,7 +242,7 @@ public class AnnotationIO {
 		// add new line in categoryTable
 		try {
 		    Files.write(Paths.get(AmusePreferences.getMultipleTracksAnnotationTablePath()),
-		    		("\n" + (maxId + 1) + ",'" + path + "','" + dataSetName + "'").getBytes() ,
+		    		("\n" + (maxId + 1) + ",'" + escapedPath + "','" + dataSetName + "'").getBytes() ,
 		    		StandardOpenOption.APPEND);
 		}catch (IOException e) {
 			AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Unable to synchronize the annotation with the multipleTracksAnnotationTable. While appending a line to '"
@@ -245,4 +257,3 @@ public class AnnotationIO {
 
 	
 }
-

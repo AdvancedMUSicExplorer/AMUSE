@@ -29,7 +29,7 @@ if ischar(x) || ...
     end
     orig = mirdesign(@miraudio,'Design',{varg},postoption,struct,'miraudio'); 
     % Implicitly, the audio file needs to be loaded first.
-elseif isnumeric(x)
+elseif isnumeric(x) && ~isequal(method,@mirsimatrix)
     mirerror(func2str(method),'The input should be a file name or a MIRtoolbox object.');
 else
     design_init = 0;
@@ -53,7 +53,8 @@ if isa(orig,'mirdesign')
                                  during.frame.hop.val,...
                                  during.frame.hop.unit,...
                                  during.frame.phase.val,...
-                                 during.frame.phase.unit);   
+                                 during.frame.phase.unit,...
+                                 during.frame.phase.atend);   
         end
         
         % The 'init' part of the function can be integrated into the design
@@ -82,15 +83,7 @@ if isa(orig,'mirdesign')
         % During the top-down traversal of the flowchart (evaleach), at the
         % beginning of the evaluation process.
         
-        if not(isempty(get(orig,'TmpFile'))) && get(orig,'ChunkDecomposed')
-            orig = evaleach(orig);
-            if iscell(orig)
-                orig = orig{1};
-            end
-            x = orig;
-        else
-            [orig x] = evaleach(orig);
-        end
+        [orig x] = evaleach(orig);
         
         if not(isequal(method,@nthoutput))
             if iscell(orig)
@@ -139,7 +132,9 @@ else
                 isstruct(during.frame) && during.frame.auto
             orig = mirframe(orig,during.frame.length,...
                             during.frame.hop,...
-                            during.frame.phase);        
+                            during.frame.phase,...
+                            during.frame.presilence,...
+                            during.frame.postsilence);
         end
         % The input of the function is not a design flowchart, which
         % the 'init' part of the function could be integrated into.
@@ -195,7 +190,7 @@ end
 if not(iscell(o) && length(o)>1) || (isa(x,'mirdesign') && get(x,'Eval'))
     o = {o x};
 elseif iscell(x) && isa(x{1},'mirdesign') && get(x{1},'Eval')
-    o = {o x{1}};
+    o = {o x};
 elseif not(isempty(varg)) && isstruct(varg{1}) ...
             && not(iscell(o) && iscell(o{1}))
     % When the function was called by mireval, the output should be packed

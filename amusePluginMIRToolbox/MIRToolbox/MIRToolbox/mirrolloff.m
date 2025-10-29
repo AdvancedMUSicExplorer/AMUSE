@@ -18,9 +18,14 @@ function varargout = mirrolloff(x,varargin)
         p.key = 'Threshold';
         p.type = 'Integer';
         p.default = 85;
-        p.position = 2;
     option.p = p;
-    
+
+        minrms.key = 'MinRMS';
+        minrms.when = 'After';
+        minrms.type = 'Numerical';
+        minrms.default = .005;
+    option.minrms = minrms;
+
 specif.option = option;
 
 varargout = mirfunction(@mirrolloff,x,varargin,nargout,specif,@init,@main);
@@ -42,6 +47,9 @@ if option.p>1
 end
 v = mircompute(@algo,m,f,option.p);
 r = mirscalar(s,'Data',v,'Title','Rolloff','Unit','Hz.');
+if isstruct(postoption)
+    r = after(s,r,postoption.minrms);
+end
 
 
 function v = algo(m,f,p)
@@ -50,11 +58,29 @@ thr = cs(end,:,:)*p;   % threshold corresponding to the rolloff point
 v = zeros(1,size(cs,2),size(cs,3));
 for l = 1:size(cs,3)
     for k = 1:size(cs,2)
-        fthr = find(cs(:,k,l) >= thr(1,k,l)); % find the location of the threshold
+        fthr = find(cs(:,k,l) >= thr(1,k,l),1); % find the location of the threshold
         if isempty(fthr)
             v(1,k,l) = NaN;
         else
-            v(1,k,l) = f(fthr(1));
+            v(1,k,l) = f(fthr);
         end
     end
 end
+
+
+function r = after(s,r,minrms)
+v = get(r,'Data');
+if minrms
+    rms = mirrms(s,'Warning',0);
+    v = mircompute(@trimrms,v,get(rms,'Data'),minrms);
+end
+r = set(r,'Data',v);
+
+    
+function d = trimrms(d,r,minrms)
+r = r/max(max(r));
+pos = find(r<minrms);
+for i = 1:length(pos)
+    d(pos(i)) = NaN;
+end
+d = {d};

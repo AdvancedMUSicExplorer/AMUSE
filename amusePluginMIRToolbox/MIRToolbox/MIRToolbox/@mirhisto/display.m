@@ -29,11 +29,16 @@ for i = 1:length(d)
     xlabel(['values',u]);
     ylabel('number of occurrences')
     title(t)
+    axis tight
+    axis 'auto y'
     nl = size(d{i},1);
     if nl>1
         legend(l,'Location','Best')
     end
     fig = get(0,'CurrentFigure');
+    if isa(fig,'matlab.ui.Figure')
+        fig = fig.Number;
+    end
     va = inputname(1);
     if isempty(va)
         va = 'ans';

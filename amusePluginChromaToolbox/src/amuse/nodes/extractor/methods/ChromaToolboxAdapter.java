@@ -246,10 +246,7 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 		try {
 			List<String> commands = new ArrayList<String>();
 			commands.add(AmusePreferences.get(KeysStringValue.MATLAB_PATH));
-			commands.add("-nodisplay");
 			commands.add("-nosplash");
-			commands.add("-nojvm");
-			commands.add("-r");
 			File inputBatchFile = new File(properties.getProperty("inputExtractorBatch"));
 			String inputBatchName = inputBatchFile.getName();
 			inputBatchName = inputBatchName.substring(0, inputBatchName.lastIndexOf("."));
@@ -257,14 +254,25 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 			if(properties.getProperty("inputExtractorBatch").startsWith(File.separator)) {
 				inputBatchFolder = inputBatchFile.getParent();
 			}
+			if (System.getProperty("os.name").startsWith("Windows"))
+			{
+				commands.add("-batch");
+			}
+			else
+			{
+				commands.add("-nodisplay");
+				commands.add("-nojvm");
+				commands.add("-r");
+			}
+			
 			commands.add(inputBatchName + "('" + this.musicFile + "','" + folder + "')");
 			commands.add("-logfile");
 			commands.add("\"" + properties.getProperty("extractorFolder") + File.separator + "ChromaToolbox.log\"");
 			ExternalProcessBuilder matlab = new ExternalProcessBuilder(commands);
 			matlab.setWorkingDirectory(new File(inputBatchFolder));
 			matlab.setEnv("MATLABPATH", properties.getProperty("extractorFolder"));
-			Process pc = matlab.start();
 			
+			Process pc = matlab.start();
 		    pc.waitFor();
 		    convertOutput();
 		    AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "...Extraction succeeded");
@@ -292,7 +300,7 @@ public class ChromaToolboxAdapter extends AmuseTask implements ExtractorInterfac
 		for(Feature feature : featureTable.getFeatures()) {
 			if(feature.getCustomScript() != null && feature.getCustomScript().equals(properties.getProperty("inputExtractorBatch"))) {
 				ids.add(feature.getId());
-				idToConfiguration.put(feature.getId(), feature.getConfigurationId());
+				idToConfiguration.put(feature.getId(), feature.getConfigurationId().toString());
 			}
 		}
 		

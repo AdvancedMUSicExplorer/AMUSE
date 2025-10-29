@@ -38,6 +38,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.TableRowSorter;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.KeyStroke;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 
 /**
  *
@@ -73,6 +79,7 @@ public class FeatureTableView {
         getJButtonSelectAll().addActionListener(controller);
         getLoadButton().addActionListener(controller);
         getSaveButton().addActionListener(controller);
+        setupKeyBindings(controller); 
     }
 
     void setModel(FeatureTableModel model) {
@@ -199,7 +206,40 @@ public class FeatureTableView {
         // Add Titled Border
         view.setBorder(new TitledBorder("Select Features"));
     }
-    
+    // Add a key listener
+    private void setupKeyBindings(ActionListener controller) {
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap actionMap = table.getActionMap();
+        // Add delete key option
+        inputMap.put(KeyStroke.getKeyStroke("DELETE"), "delete");
+        actionMap.put("delete", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ActionEvent deleteEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "delete");
+                controller.actionPerformed(deleteEvent);
+            }
+        });
+        
+        // Add a minus key option, the same as delete
+        inputMap.put(KeyStroke.getKeyStroke('-'), "unselect");
+        actionMap.put( "unselect", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ActionEvent deleteEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,  "unselect");
+                controller.actionPerformed(deleteEvent);
+            }
+        });
+        
+        // Add a plus key option
+        inputMap.put(KeyStroke.getKeyStroke('+'), "select");
+        actionMap.put( "select", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ActionEvent plusEvent = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,  "select");
+                controller.actionPerformed(plusEvent);
+            }
+        });
+    }
     public void showCustomFeatures(boolean show) {
     	getCustomFeatureCheckBox().setSelected(show);
     }

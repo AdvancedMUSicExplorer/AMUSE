@@ -533,7 +533,13 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 					ArffLoader validatorInputLoader = new ArffLoader();
 					Instance inputInstance;
 					AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
-					validatorInputLoader.setFile(new File(currentInputFile));
+					
+					File inputFile = new File(currentInputFile);
+					if(!inputFile.exists()) {
+						throw new NodeException("Could not load data from processed feature files: " + currentInputFile);
+					}
+					
+					validatorInputLoader.setFile(inputFile);
 					inputInstance = validatorInputLoader.getNextInstance(validatorInputLoader.getStructure());
 					
 					// Create the attributes omitting UNIT, START and END attributes (they describe the classification window for modeled features)
@@ -701,7 +707,12 @@ public class ValidatorNodeScheduler extends NodeScheduler {
 							currentInputFile = newInputFile;
 							AmuseLogger.write(this.getClass().getName(), Level.DEBUG, "Loading: " + currentInputFile);
 							validatorInputLoader = new ArffLoader();
-							validatorInputLoader.setFile(new File(currentInputFile));
+							
+							File currentInput = new File(currentInputFile);
+							if(!currentInput.exists()) {
+								throw new NodeException("Could not load data from current input file: " + currentInputFile);
+							}
+							validatorInputLoader.setFile(currentInput);
 						} 
 						
 						// Load the next input vector

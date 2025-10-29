@@ -1,8 +1,8 @@
-Congratulations! You have downloaded MIRtoolbox 1.4
----------------------------------------------------
+Congratulations! You have downloaded MIRtoolbox 1.8.1
+ÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑÑ
 
 The list of new features and bug fixes offered by this new version is shown in the ReleaseNotes text file located in the toolbox folder, and also available from our website. New versions of the toolbox will also be released at the same address:
-http://www.jyu.fi/hum/laitokset/musiikki/en/research/coe/materials/mirtoolbox
+https://www.jyu.fi/hytk/fi/laitokset/mutku/en/research/materials/mirtoolbox
 
 Please inform me if you find any bug when using the toolbox.
 
@@ -31,7 +31,7 @@ MIRtoolbox requires Matlab version 7 and Mathworks' Signal Processing toolbox.
 
 This distribution actually includes four different toolboxes:
 
-- the MIRtoolbox itself, version 1.4,
+- the MIRtoolbox itself, version 1.8.1,
 
 - the Auditory toolbox, version 2, by Malcolm Slaney
 (also available directly at http://cobweb.ecn.purdue.edu/~malcolm/interval/1998-010/),
@@ -45,15 +45,16 @@ This distribution actually includes four different toolboxes:
 **
 
 MIRtoolbox license is based on GPL 2.0. As such, it can integrate codes from other GPL 2.0 projects, as long as their origins are explicitly stated.
-- codes from the Music Analysis Toolbox by Elias Pampalk (2004), related to the computation of Terhardt outer ear modeling, Bark band decomposition and masking effects.
+- codes from the Music Analysis Toolbox by Elias Pampalk (2004), related to the computation of Terhardt outer ear modeling, Bark band decomposition and masking effects
 
-- openbdf and readbdf script by T.S. Lorig to read BDF files, based on openedf and readedf by Alois Schloegl,
+- openbdf and readbdf script by T.S. Lorig to read BDF files, based on openedf and readedf by Alois Schloegl
 
-- implementation of Earth Mover Distance written by Yossi Rubner and wrapped for Matlab by Elias Pampalk.
+- implementation of Earth Mover Distance written by Yossi Rubner and wrapped for Matlab by Simon Dixon
 
 Code integrated with BSD license:
-- mp3read for Matlab by Dan Ellis, which calls the mpg123 decoder and the mp3info scanner,
-- aiffread for Matlab by Kenneth Eaton.
+- mp3read by Dan Ellis, which calls the mpg123 decoder and the mp3info scanner
+- aiffread by Kenneth Eaton
+- convolve2 by David Young
 
 **
 

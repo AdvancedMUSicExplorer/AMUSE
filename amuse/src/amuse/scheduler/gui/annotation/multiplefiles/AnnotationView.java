@@ -168,6 +168,7 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
         }
         return path;
 	}
+	
 
 	@Override
 	public String getLoadButtonText() {
@@ -176,31 +177,60 @@ public class AnnotationView extends JSplitPane implements HasCaption, HasLoadBut
 
 	@Override
 	public void loadButtonClicked() {
-		ArffDataSet categoryList = null;
-		try {
-			categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
-		} catch (IOException e) {
-			AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Could not load the MultipleTracksAnnotationTable. In file '"
-					+ AmusePreferences.getMultipleTracksAnnotationTablePath()
-					+ "' following error occured"
-					+ e.getMessage());
-			return; 
-		}
-		String[] categories = new String[categoryList.getValueCount()];
-		for(int i = 0; i < categoryList.getValueCount(); i++) {
-			categories[i] = categoryList.getAttribute("CategoryName").getValueAt(i).toString();
-		}
-		JComboBox<String> categoryComboBox = new JComboBox<String>(categories);
-		if(JOptionPane.showConfirmDialog(
-				null,
-				new JComponent[] {categoryComboBox},
-				"Choose the annotation name to load",
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION
-				&& categoryComboBox.getSelectedIndex() != -1){
+		JPopupMenu popupMenu = new JPopupMenu();
+		JMenuItem MultipleTracksAnnotationTableItem = new JMenuItem("Load from last saved Annotations");
+		
+		MultipleTracksAnnotationTableItem.addActionListener(e -> {
+			ArffDataSet categoryList = null;
+			try {
+				categoryList = new ArffDataSet(new File(AmusePreferences.getMultipleTracksAnnotationTablePath()));
+			} catch (IOException ex) {
+				AmuseLogger.write(this.getClass().getName(), Level.ERROR, "Could not load the MultipleTracksAnnotationTable. In file '"
+						+ AmusePreferences.getMultipleTracksAnnotationTablePath()
+						+ "' following error occured"
+						+ ex.getMessage());
+				return; 
+			}
+			String[] categories = new String[categoryList.getValueCount()];
+			for(int i = 0; i < categoryList.getValueCount(); i++) {
+				categories[i] = categoryList.getAttribute("CategoryName").getValueAt(i).toString();
+			}
+			
+			JComboBox<String> categoryComboBox = new JComboBox<String>(categories);
+			if(JOptionPane.showConfirmDialog(
+					null,
+					new JComponent[] {categoryComboBox},
+					"Choose the annotation name to load",
+					JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION
+					&& categoryComboBox.getSelectedIndex() != -1){
+				annotationController.clearAnnotation();
+				annotationController.loadAnnotation(categoryList.getAttribute("Path").getValueAt(categoryComboBox.getSelectedIndex()).toString(), (String) categoryComboBox.getSelectedItem());
+				
+			}
+		});
+		
+		JMenuItem FileChooserItem = new JMenuItem("Choose from file system");
+		FileChooserItem.addActionListener(e-> {
+			String loadPath = this.showPathDialog();
+			if(loadPath == null){
+				return;
+			}
+			String[] result = loadPath.split("\\\\");
+			String dataSetName = result[result.length-1];
+			dataSetName = dataSetName.substring(0, dataSetName.lastIndexOf('.'));
 			annotationController.clearAnnotation();
-			annotationController.loadAnnotation(categoryList.getAttribute("Path").getValueAt(categoryComboBox.getSelectedIndex()).toString(), (String) categoryComboBox.getSelectedItem());
-		}
+			annotationController.loadAnnotation(loadPath, dataSetName);
+			
+		});
+		
+		popupMenu.add(MultipleTracksAnnotationTableItem);
+		popupMenu.add(FileChooserItem);
+		
+		Point mousePos = this.getParent().getParent().getMousePosition();
+		JButton saveButton = (JButton) ((Container) this.getParent().getParent().getComponentAt(mousePos)).getComponentAt(mousePos);
+		popupMenu.show(this, saveButton.getX(), saveButton.getY());
+		
 	}
 
 	@Override

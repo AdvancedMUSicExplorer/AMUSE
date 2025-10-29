@@ -1,6 +1,6 @@
-The MIRtoolbox 1.4 Software Package, Copyright © 2012, University of  Jyvaskyla
+The MIRtoolbox 1.8.1 Software Package, Copyright © 2021, Olivier Lartillot, University of Jyvaskyla, University of Geneva, University of Oslo
 
-Developed by Olivier Lartillot, Petri Toiviainen and Tuomas Eerola Department of Music
+Developed by Olivier Lartillot, Petri Toiviainen, Pasi Saari et al.
 
 
 This program is free software; you can redistribute it and/or modify it
